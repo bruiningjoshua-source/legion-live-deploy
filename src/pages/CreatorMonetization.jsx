@@ -76,21 +76,20 @@ export default function CreatorMonetization() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (planType) => {
-      // Admins get instant access
+      // Admins get instant lifetime access
       if (user?.role === 'admin') {
-        const expiryDate = planType === 'monthly' 
-          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-        
+        const expiryDate = new Date(2099, 12, 31); // Lifetime for admins
+
         await base44.entities.CreatorSubscription.create({
           creator_id: creator.id,
-          plan_type: planType,
+          plan_type: 'admin_lifetime',
           status: 'active',
           start_date: new Date().toISOString(),
           expiry_date: expiryDate.toISOString(),
-          auto_renew: planType === 'monthly'
+          auto_renew: false,
+          admin_activated: true
         });
-        
+
         queryClient.invalidateQueries(['creator-subscription']);
         return;
       }
