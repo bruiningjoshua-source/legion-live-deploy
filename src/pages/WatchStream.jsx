@@ -40,7 +40,9 @@ export default function WatchStream() {
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = React.useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -203,6 +205,36 @@ export default function WatchStream() {
 
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      videoRef.current?.requestFullscreen?.() || 
+      videoRef.current?.webkitRequestFullscreen?.();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+      setIsFullscreen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   if (streamLoading) {
     return (
       <div className="min-h-screen bg-stone-950 pt-16">
@@ -249,21 +281,26 @@ export default function WatchStream() {
           <div className="flex-1">
             {/* Video Player */}
             <div className="relative aspect-video bg-black rounded-2xl overflow-hidden mb-4">
-              {/* Placeholder for actual video player */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-stone-900 to-stone-950">
-                {stream.thumbnail_url ? (
-                  <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover opacity-50" />
-                ) : (
-                  <div className="text-8xl opacity-30">🎬</div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <Badge className="bg-red-500 text-white border-0 animate-pulse text-lg px-4 py-2 mb-4">
-                      ● LIVE
-                    </Badge>
-                    <p className="text-amber-100/80 text-sm">Stream preview</p>
-                  </div>
-                </div>
+              {/* HTML5 Video Player */}
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                autoPlay
+                playsInline
+                muted={isMuted}
+                poster={stream.thumbnail_url}
+                controls={false}
+              >
+                {/* Demo video source - replace with actual stream URL */}
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+                Your browser does not support video playback.
+              </video>
+              
+              {/* Live Badge Overlay */}
+              <div className="absolute top-4 left-4 z-10">
+                <Badge className="bg-red-500 text-white border-0 animate-pulse">
+                  ● LIVE
+                </Badge>
               </div>
 
               {/* PK Battle Overlay */}
@@ -279,7 +316,7 @@ export default function WatchStream() {
               )}
 
               {/* Video Controls */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge className="bg-red-500 text-white border-0">
@@ -288,10 +325,10 @@ export default function WatchStream() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => setIsMuted(!isMuted)} className="text-white hover:bg-white/20">
+                    <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/20">
                       {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                    <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
                       <Maximize className="w-5 h-5" />
                     </Button>
                   </div>
