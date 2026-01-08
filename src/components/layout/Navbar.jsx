@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+import { Link, useLocation } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,253 +10,209 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Home, 
-  Compass, 
-  Trophy, 
-  Wallet, 
-  User, 
-  Settings, 
-  LogOut,
-  Radio,
-  Plus,
-  Search,
-  Bell,
+import {
   Menu,
   X,
-  Coins,
-  Sparkles,
-  ShoppingBag,
-  Palette,
+  Home,
+  Compass,
   Gamepad2,
-  Mic,
-  Video,
-  Briefcase,
-  Zap,
-  Crown
+  Music,
+  Radio,
+  Heart,
+  Wallet,
+  User,
+  LogOut,
+  Settings,
+  Trophy,
+  MessageSquare,
+  Bell,
+  Shield,
+  MoreHorizontal
 } from 'lucide-react';
-import GamificationPanel from '@/components/engagement/GamificationPanel';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ user, wallet }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-  const formatCurrency = (amount) => {
-    if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `${(amount / 1000).toFixed(1)}K`;
-    return amount?.toLocaleString() || '0';
+  const navLinks = [
+    { name: 'Home', path: createPageUrl('Home'), icon: Home },
+    { name: 'Explore', path: createPageUrl('Explore'), icon: Compass },
+    { name: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
+    { name: 'Amphitheatre', path: createPageUrl('TheAmphitheatre'), icon: Music },
+    { name: 'Leaderboard', path: createPageUrl('Leaderboard'), icon: Trophy },
+  ];
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await base44.auth.logout();
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-900/95 via-stone-900/95 to-amber-900/95 backdrop-blur-lg border-b border-amber-600/30">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-2xl">🏛️</span>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-amber-100 tracking-wide">LEGION LIVE</h1>
-              <p className="text-[10px] text-amber-400/70 -mt-1 tracking-widest">STREAM • CONQUER • THRIVE</p>
-            </div>
-          </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-stone-950 via-stone-900/95 to-transparent border-b border-amber-600/20 backdrop-blur-lg">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link to={createPageUrl('Home')} className="flex items-center gap-2">
+          <div className="text-2xl">🏛️</div>
+          <span className="font-bold text-amber-100 text-lg hidden sm:inline">Legion Live</span>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
-            <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Home className="w-4 h-4 mr-1" />
-                Home
-              </Button>
-            </Link>
-            <Link to={createPageUrl('Explore')}>
-              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Compass className="w-4 h-4 mr-1" />
-                Explore
-              </Button>
-            </Link>
-            <Link to={createPageUrl('Events')}>
-              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Trophy className="w-4 h-4 mr-1" />
-                Events
-              </Button>
-            </Link>
-            <Link to={createPageUrl('Leaderboard')}>
-              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Trophy className="w-4 h-4 mr-1" />
-                Ranks
-              </Button>
-            </Link>
-          </div>
-
-          {/* Right Side */}
-          <div className="flex items-center gap-3">
-            {/* Currency Display */}
-            {wallet && (
-              <Link to={createPageUrl('Wallet')}>
-                <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-amber-800/50 to-amber-700/50 rounded-full px-4 py-2 border border-amber-500/30 hover:border-amber-400/50 transition-all cursor-pointer">
-                  <div className="flex items-center gap-1">
-                    <span className="text-amber-300 text-lg">🪙</span>
-                    <span className="text-amber-100 font-semibold text-sm">{formatCurrency(wallet.denarii_balance || 0)}</span>
-                  </div>
-                  <div className="w-px h-4 bg-amber-500/30" />
-                  <Plus className="w-4 h-4 text-amber-400" />
-                </div>
+        {/* Desktop Nav */}
+        <div className="hidden lg:flex items-center gap-1">
+          {navLinks.map(link => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  isActive(link.path)
+                    ? 'bg-amber-600 text-white'
+                    : 'text-amber-300 hover:bg-amber-800/20'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="text-sm">{link.name}</span>
               </Link>
-            )}
+            );
+          })}
+        </div>
 
-            {/* Go Live Button */}
+        {/* Right Section */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Wallet Display */}
+          {wallet && (
+            <Link to={createPageUrl('Wallet')}>
+              <div className="hidden sm:flex items-center gap-2 bg-stone-800/50 border border-amber-600/20 rounded-full px-3 py-1.5 hover:border-amber-500/50 transition-colors">
+                <span className="text-amber-300 text-sm font-semibold">{wallet.denarii_balance || 0}</span>
+                <span className="text-lg">🪙</span>
+              </div>
+            </Link>
+          )}
+
+          {/* Go Live Button */}
+          {user && (
             <Link to={createPageUrl('GoLive')}>
-              <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full shadow-lg shadow-red-500/30">
-                <Radio className="w-4 h-4 mr-2 animate-pulse" />
-                <span className="hidden sm:inline">Go Live</span>
+              <Button className="hidden sm:flex bg-red-600 hover:bg-red-700 text-white gap-2">
+                <Radio className="w-4 h-4" />
+                Go Live
               </Button>
             </Link>
+          )}
 
-            {/* Gamification Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-amber-100 hover:bg-amber-800/50">
-                  <Zap className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-stone-900 border-amber-600/30 p-0">
-                <div className="max-h-[80vh] overflow-y-auto">
-                  <GamificationPanel user={user} />
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="text-amber-100 hover:bg-amber-800/50 relative">
+          {/* Notifications */}
+          {user && (
+            <Button variant="ghost" size="icon" className="text-amber-300 hover:bg-amber-800/20">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </Button>
+          )}
 
-            {/* User Menu */}
+          {/* User Menu */}
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-amber-100 hover:bg-amber-800/50 rounded-full w-10 h-10 overflow-hidden border-2 border-amber-500/30">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-5 h-5" />
-                  )}
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                    <span className="text-sm">👤</span>
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-stone-900 border-amber-600/30">
-                <div className="px-3 py-2 border-b border-amber-600/20">
-                  <p className="text-amber-100 font-medium">{user?.full_name || 'Legionnaire'}</p>
-                  <p className="text-amber-400/70 text-xs">{user?.email}</p>
+              <DropdownMenuContent align="end" className="w-56 bg-stone-900 border-amber-600/20">
+                <div className="px-2 py-1.5 text-xs text-amber-300">
+                  {user.full_name}
                 </div>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('Profile')}>
+                <DropdownMenuSeparator className="bg-amber-600/20" />
+                
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('Profile')} className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
-                    My Profile
+                    Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('Wallet')}>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('CreatorMonetization')} className="cursor-pointer">
                     <Wallet className="w-4 h-4 mr-2" />
-                    Treasury
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('AffiliateDashboard')}>
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    Affiliate
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('CreatorMonetization')}>
-                    <Crown className="w-4 h-4 mr-2" />
                     Monetization
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('CustomizeTheme')}>
-                    <Palette className="w-4 h-4 mr-2" />
-                    Customize
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('GamingSetup')}>
-                    <Gamepad2 className="w-4 h-4 mr-2" />
-                    Gaming
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                  <Link to={createPageUrl('Settings')}>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('Settings')} className="cursor-pointer">
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Link>
                 </DropdownMenuItem>
-                {user?.role === 'admin' && (
+
+                {user.role === 'admin' && (
                   <>
                     <DropdownMenuSeparator className="bg-amber-600/20" />
-                    <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
-                      <Link to={createPageUrl('AdminDashboard')}>
-                        <Zap className="w-4 h-4 mr-2" />
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer">
+                        <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
                       </Link>
                     </DropdownMenuItem>
                   </>
                 )}
+
                 <DropdownMenuSeparator className="bg-amber-600/20" />
-                <DropdownMenuItem 
-                  onClick={() => base44.auth.logout()}
-                  className="text-red-400 focus:bg-red-900/30 focus:text-red-300"
-                >
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400">
                   <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Mobile Menu Toggle */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden text-amber-100"
-              onClick={() => setMobileOpen(!mobileOpen)}
+          ) : (
+            <Button
+              onClick={() => base44.auth.redirectToLogin()}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              Sign In
             </Button>
-          </div>
-        </div>
+          )}
 
-        {/* Mobile Navigation */}
-        {mobileOpen && (
-          <div className="lg:hidden py-4 border-t border-amber-600/20">
-            <div className="flex flex-col gap-1">
-              <Link to={createPageUrl('Home')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
-                  <Home className="w-4 h-4 mr-2" />
-                  Home
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Explore')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
-                  <Compass className="w-4 h-4 mr-2" />
-                  Explore
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Events')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Events
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Wallet')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Treasury
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 text-amber-300 hover:bg-amber-800/20 rounded-lg"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="lg:hidden bg-stone-900 border-t border-amber-600/20"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
+              {navLinks.map(link => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive(link.path)
+                        ? 'bg-amber-600 text-white'
+                        : 'text-amber-300 hover:bg-amber-800/20'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
