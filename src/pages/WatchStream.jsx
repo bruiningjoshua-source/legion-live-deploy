@@ -44,6 +44,7 @@ export default function WatchStream() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = React.useRef(null);
   const [liveStream, setLiveStream] = useState(null);
+  const [showModeration, setShowModeration] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
