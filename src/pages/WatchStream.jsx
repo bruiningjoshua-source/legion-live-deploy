@@ -277,16 +277,16 @@ export default function WatchStream() {
   // Optimize video performance for portrait streaming
   React.useEffect(() => {
     const initLiveStream = async () => {
-      if (stream?.status === 'live') {
+      if (stream?.status === 'live' && user?.email === creator?.user_email) {
+        // Only get camera stream if you're the creator
         try {
-          // Portrait video constraints (9:16 aspect ratio)
           const constraints = {
             video: { 
               width: { ideal: 1080 },
               height: { ideal: 1920 },
               aspectRatio: { ideal: 9/16 },
               frameRate: { ideal: 30, max: 60 },
-              facingMode: 'user' // Front camera for mobile
+              facingMode: 'user'
             },
             audio: {
               echoCancellation: true,
@@ -299,22 +299,26 @@ export default function WatchStream() {
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
-            videoRef.current.playbackRate = 1.0;
-            try { await videoRef.current.play(); } catch (e) {}
+            videoRef.current.muted = false;
+            await videoRef.current.play().catch(e => console.error('Play error:', e));
           }
         } catch (error) {
-          console.error('Stream error:', error);
+          console.error('Camera access error:', error);
+          alert('Unable to access camera. Please ensure permissions are granted.');
         }
+      } else if (stream?.status === 'live') {
+        // Viewers see the stream URL (when available from streaming service)
+        setLiveStream(true); // Mark as connected for viewers
       }
     };
     initLiveStream();
     
     return () => {
-      if (liveStream) {
+      if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [stream?.status]);
+  }, [stream?.status, user?.email, creator?.user_email]);
 
   const toggleMute = () => {
     if (videoRef.current) {
