@@ -10,9 +10,8 @@ export default function Layout({ children, currentPageName }) {
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
-      if (!authenticated) {
-        base44.auth.redirectToLogin();
-      }
+      // Allow public access - no redirect to login
+      // This allows Stripe and other services to access the app
     };
     checkAuth();
   }, []);
@@ -40,19 +39,7 @@ export default function Layout({ children, currentPageName }) {
     enabled: !!user?.email
   });
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">🏛️</span>
-          </div>
-          <h1 className="text-2xl font-bold text-amber-100 mb-2">Legion Live</h1>
-          <p className="text-amber-400/70">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Removed authentication gate - app is publicly accessible
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
