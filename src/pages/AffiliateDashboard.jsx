@@ -105,8 +105,8 @@ export default function AffiliateDashboard() {
                 Brand Campaigns
               </Button>
             </Link>
-          <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
-            <DialogTrigger asChild>
+            <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
+              <DialogTrigger asChild>
               <Button className="bg-amber-600 hover:bg-amber-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
@@ -116,7 +116,7 @@ export default function AffiliateDashboard() {
               <DialogHeader>
                 <DialogTitle className="text-amber-100">Add Affiliate Product</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+                <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-amber-200">Product Name</Label>
                   <Input
@@ -181,9 +181,10 @@ export default function AffiliateDashboard() {
                 >
                   Add Product
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Analytics Overview */}
