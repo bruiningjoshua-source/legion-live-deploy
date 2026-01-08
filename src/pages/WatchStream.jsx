@@ -24,13 +24,15 @@ import {
   Volume2,
   VolumeX,
   Maximize,
-  Radio
+  Radio,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamChat from '@/components/stream/StreamChat';
 import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
+import ModerationDashboard from '@/components/moderation/ModerationDashboard';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -376,6 +378,19 @@ export default function WatchStream() {
 
             {/* Stream Info */}
             <div className="bg-stone-900/50 rounded-2xl p-4 border border-amber-600/20">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                {user?.email === creator?.user_email && (
+                  <Button
+                    onClick={() => setShowModeration(!showModeration)}
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-600/30 text-amber-300 hover:bg-amber-800/20"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Moderation Dashboard
+                  </Button>
+                )}
+              </div>
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div className="flex items-start gap-4">
                   <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
@@ -444,6 +459,7 @@ export default function WatchStream() {
                   <SheetContent className="bg-stone-900 border-amber-600/30 p-0 w-full sm:w-[400px]">
                     <div className="h-full">
                       <StreamChat 
+                        streamId={streamId}
                         messages={chatMessages}
                         onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
                         onOpenGifts={() => setShowGiftPanel(true)}
@@ -456,14 +472,22 @@ export default function WatchStream() {
             </div>
           </div>
 
-          {/* Chat Sidebar - Desktop */}
+          {/* Chat/Moderation Sidebar - Desktop */}
           <div className="hidden lg:block w-96 h-[calc(100vh-8rem)] sticky top-20">
-            <StreamChat 
-              messages={chatMessages}
-              onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-              onOpenGifts={() => setShowGiftPanel(true)}
-              currentUser={user}
-            />
+            {showModeration && user?.email === creator?.user_email ? (
+              <ModerationDashboard 
+                streamId={streamId}
+                onClose={() => setShowModeration(false)}
+              />
+            ) : (
+              <StreamChat 
+                streamId={streamId}
+                messages={chatMessages}
+                onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+                onOpenGifts={() => setShowGiftPanel(true)}
+                currentUser={user}
+              />
+            )}
           </div>
         </div>
       </div>

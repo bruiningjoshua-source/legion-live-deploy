@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Gift, Crown, Star, Sparkles } from 'lucide-react';
+import { Send, Gift, Crown, Star, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useChatModeration } from '@/components/moderation/useChatModeration';
+import { toast } from 'sonner';
 
 const vipColors = [
   'text-gray-300',    // 0
@@ -34,9 +36,11 @@ const vipBadges = {
   10: { icon: '✨', label: 'Divine' },
 };
 
-export default function StreamChat({ messages, onSendMessage, onOpenGifts, currentUser }) {
+export default function StreamChat({ messages, onSendMessage, onOpenGifts, currentUser, streamId }) {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef(null);
+  const { moderateMessage } = useChatModeration(streamId);
+  const [isCheckingMessage, setIsCheckingMessage] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -44,10 +48,35 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
     }
   }, [messages]);
 
-  const handleSend = () => {
-    if (newMessage.trim()) {
-      onSendMessage(newMessage);
+  const handleSend = async () => {
+    if (!newMessage.trim()) return;
+
+    const messageText = newMessage.trim();
+    setIsCheckingMessage(true);
+
+    try {
+      const modResult = await moderateMessage.mutateAsync({
+        message: messageText,
+        senderEmail: currentUser?.email || 'anonymous',
+        senderName: currentUser?.full_name || 'Guest'
+      });
+
+      if (modResult.should_block) {
+        toast.error(`Message blocked: ${modResult.reason}`, {
+          description: 'Please follow community guidelines',
+          icon: <Shield className="w-4 h-4" />
+        });
+        setNewMessage('');
+      } else {
+        onSendMessage(messageText);
+        setNewMessage('');
+      }
+    } catch (error) {
+      console.error('Moderation check failed:', error);
+      onSendMessage(messageText);
       setNewMessage('');
+    } finally {
+      setIsCheckingMessage(false);
     }
   };
 
@@ -196,10 +225,14 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
           
           <Button
             onClick={handleSend}
-            disabled={!newMessage.trim()}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
+            disabled={!newMessage.trim() || isCheckingMessage}
+            className="bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
           >
-            <Send className="w-4 h-4" />
+            {isCheckingMessage ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>
