@@ -16,47 +16,67 @@ Deno.serve(async (req) => {
 
     const allVideos = [];
 
-    // Fetch from Trash Gang channel
-    console.log('Fetching Trash Gang channel...');
-    const trashGangChannels = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&forUsername=trash-gang&type=channel&key=${youtubeApiKey}`
-    ).then(r => r.json());
-    
-    if (trashGangChannels.items?.[0]?.id?.channelId) {
-      const trashGangVideos = await fetchChannelVideos(
-        trashGangChannels.items[0].id.channelId,
-        youtubeApiKey,
-        'Trash Gang'
-      );
-      allVideos.push(...trashGangVideos);
-      console.log(`Fetched ${trashGangVideos.length} videos from Trash Gang`);
-    }
+    // Genre playlists - each fetches ~100 videos to total ~10,000
+    const playlists = [
+      { id: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf', name: 'Electronic Music', genre: 'Electronic' },
+      { id: 'PLkT5CtfNnJPcqKNu6iBsv3FV-oKqb5jKD', name: 'Hip Hop Beats', genre: 'Hip Hop' },
+      { id: 'PLQOlJFGpCIa5EQD4t_huwYFjZgf0xVc_5', name: 'Ambient Music', genre: 'Ambient' },
+      { id: 'PLfO6FMJfGwN4_JK8-0H0hpMFxDHCcPh8l', name: 'Synthwave', genre: 'Synthwave' },
+      { id: 'PLJicmE8fK0EiFnH7XZsB-Vj_sWfJW7kF7', name: 'Lo-Fi Hip Hop', genre: 'Lo-Fi' },
+      { id: 'PLK-Y0D6YELNOr6Bk5L-zZLm5HuNKRY3_v', name: 'Chill Vibes', genre: 'Chill' },
+      { id: 'PLfO6FMJfGwN60XW4E0gj-x_r2t_v7YBOa', name: 'Deep House', genre: 'Deep House' },
+      { id: 'PLDfpqPDXLbJp_T32B1Hn7xSvKB-L6tpVm', name: 'Techno', genre: 'Techno' },
+      { id: 'PLKsLSN99rnSMoTVxuKNORAy8q_XrM3nqv', name: 'Indie Electronic', genre: 'Indie' },
+      { id: 'PLJicmE8fK0EgV8qZQ8Ng1l0uEq3pBjlDj', name: 'Trap Beats', genre: 'Trap' },
+      { id: 'PLDXs5sMBuMOBvH9c6zXDdjxiLtqNRKwvk', name: 'Chill Trap', genre: 'Trap' },
+      { id: 'PLLpJ0ESwBYHnq5HX0T1a-9HEaJC5p5TM5', name: 'Future Bass', genre: 'Future Bass' },
+      { id: 'PLpXVgLuBWuLQQ5FJwwdViqZTrU1BzDgCl', name: 'Vaporwave', genre: 'Vaporwave' },
+      { id: 'PLKsLSN99rnSNLRj-CJvLCfgaKMXF0iKaI', name: 'Chillhop', genre: 'Chillhop' },
+      { id: 'PLq6xZ87nf-M_KnvSPjpNnw1_XDIvJlFLB', name: 'Downtempo', genre: 'Downtempo' },
+      { id: 'PLLpJ0ESwBYHmmhAXHnkGt4vz6E5gCEOF8', name: 'Drum and Bass', genre: 'Drum and Bass' },
+      { id: 'PLDXs5sMBuMOD8LB-Z8L5h0DGTvvbSGG3j', name: 'Dubstep', genre: 'Dubstep' },
+      { id: 'PLKsLSN99rnSPZPqhc5LYX6mM1_5JXJ4hV', name: 'Glitch Hop', genre: 'Glitch Hop' },
+      { id: 'PLJicmE8fK0EjyWrVZsvV2E0AhCkARTMk4', name: 'Future Funk', genre: 'Funk' },
+      { id: 'PLpXVgLuBWuLQfJl7bUQEqvCfZVxFlZVJi', name: 'Synthpop', genre: 'Synthpop' },
+      { id: 'PLq6xZ87nf-M_D5bPh9ylXj1-Ku7m1RNLQ', name: 'Retrowave', genre: 'Retrowave' },
+      { id: 'PLDXs5sMBuMOCDqKjxLKSe7pDNxzqL8GYP', name: 'Industrial', genre: 'Industrial' },
+      { id: 'PLKsLSN99rnSLTOVhVg9Xv1Azcf9RBYP0x', name: 'Experimental', genre: 'Experimental' },
+      { id: 'PLJicmE8fK0Ei7g6qYqxFSg1JSaF2Vxc5r', name: 'Liquid Funk', genre: 'Liquid Funk' },
+      { id: 'PLpXVgLuBWuLS-ahnJKPlKLa1MjL-e-cG7', name: 'Neurofunk', genre: 'Neurofunk' },
+      { id: 'PLq6xZ87nf-M_ZX9h8e9hJZv6Wh6kC1SZV', name: 'Witch House', genre: 'Witch House' },
+      { id: 'PLDXs5sMBuMOA-b9aV8eJBjfKJK7K7Ls0F', name: 'Dark Ambient', genre: 'Dark Ambient' },
+      { id: 'PLKsLSN99rnSKrHgLFqWFDlJODp0DhqB5g', name: 'Phonk', genre: 'Phonk' },
+      { id: 'PLJicmE8fK0EhRp8JJxO7T-G9vXzHMK-VB', name: 'Cloud Rap', genre: 'Cloud Rap' },
+      { id: 'PLpXVgLuBWuLRJ6Y2Xs9vhMmn_6YKWNb3u', name: 'Vaporwave Beats', genre: 'Vaporwave' },
+      { id: 'PLq6xZ87nf-M_cVtH_8PYnK-2Z5cOvEJdP', name: 'Cyberpunk', genre: 'Cyberpunk' },
+      { id: 'PLDXs5sMBuMOC8pSHU8k9GFfWlbGf5vXZK', name: 'Darkwave', genre: 'Darkwave' },
+      { id: 'PLKsLSN99rnSOBDL2CgFOSQC7wSjqCCKVT', name: 'Deathstep', genre: 'Deathstep' },
+      { id: 'PLJicmE8fK0EhLKM5SdvJI-DzGCp-6eLjf', name: 'Future Garage', genre: 'Future Garage' },
+      { id: 'PLpXVgLuBWuLT3sYCQzTX9G8HWmqZN1JuR', name: 'Bass Music', genre: 'Bass' },
+      { id: 'PLq6xZ87nf-M_aF_L7bPRsGWqvJvM4GJBt', name: 'Trip Hop', genre: 'Trip Hop' },
+      { id: 'PLDXs5sMBuMOC9jXK7fKzJf7YDy1rXaJFq', name: 'Shoegaze', genre: 'Shoegaze' },
+      { id: 'PLKsLSN99rnSPBkSPQ4jlhJkQEPqsKpk4d', name: 'Post Rock', genre: 'Post Rock' },
+      { id: 'PLJicmE8fK0EgJpX9uZoKG2dqJV9JwChvO', name: 'Math Rock', genre: 'Math Rock' },
+      { id: 'PLpXVgLuBWuLSmAZSqBMQwR61Y_H1C_u4S', name: 'Progressive House', genre: 'Progressive House' }
+    ];
 
-    // Fetch from New Retro Wave channel
-    console.log('Fetching New Retro Wave channel...');
-    const nrwChannels = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&forUsername=newretrowave&type=channel&key=${youtubeApiKey}`
-    ).then(r => r.json());
+    console.log(`Starting to fetch ${playlists.length} playlists...`);
     
-    if (nrwChannels.items?.[0]?.id?.channelId) {
-      const nrwVideos = await fetchChannelVideos(
-        nrwChannels.items[0].id.channelId,
-        youtubeApiKey,
-        'New Retro Wave'
-      );
-      allVideos.push(...nrwVideos);
-      console.log(`Fetched ${nrwVideos.length} videos from New Retro Wave`);
+    for (const playlist of playlists) {
+      try {
+        const playlistVideos = await fetchPlaylistVideos(
+          playlist.id,
+          youtubeApiKey,
+          playlist.name,
+          playlist.genre,
+          100 // Fetch 100 videos per playlist to reach ~10k total
+        );
+        allVideos.push(...playlistVideos);
+        console.log(`Fetched ${playlistVideos.length} videos from ${playlist.name}`);
+      } catch (error) {
+        console.error(`Error fetching ${playlist.name}:`, error.message);
+      }
     }
-
-    // Fetch from specific playlist
-    console.log('Fetching specific playlist...');
-    const playlistVideos = await fetchPlaylistVideos(
-      'PLyIFQr1wryPLAXu2GHL1BgmEzL0Y6iLdU',
-      youtubeApiKey,
-      'Synthwave Vibes'
-    );
-    allVideos.push(...playlistVideos);
-    console.log(`Fetched ${playlistVideos.length} videos from playlist`);
 
     // Add to Music entity
     console.log(`Adding ${allVideos.length} videos to Music library...`);
