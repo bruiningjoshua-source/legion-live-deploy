@@ -735,7 +735,9 @@ export default function WatchStream() {
           >
             <ModerationDashboard 
               streamId={streamId}
+              chatMessages={chatMessages}
               onClose={() => setShowModeration(false)}
+              onClearStream={() => endStreamMutation.mutate()}
             />
           </motion.div>
         )}
