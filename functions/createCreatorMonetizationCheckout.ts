@@ -25,27 +25,17 @@ Deno.serve(async (req) => {
     console.log('[createCreatorMonetizationCheckout] Plan:', planType, 'Creator:', creatorId);
 
     const isMonthly = planType === 'monthly';
-    const price = isMonthly ? 5.00 : 12.00;
+    
+    // Use your existing Stripe product prices
+    const priceId = isMonthly 
+      ? 'price_1QoGxnKJQ5Xtmx7I1Q8fWUZS' // $5/month
+      : 'price_1QoGxnKJQ5Xtmx7ICuwk3GIr'; // $12/year
 
-    // Create checkout session
+    // Create checkout session using existing prices
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'google_pay', 'apple_pay'],
       line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `Legion Live Creator Monetization - ${isMonthly ? 'Monthly' : 'Yearly'}`,
-            description: isMonthly 
-              ? 'Monthly access to monetization features' 
-              : 'One-year access to monetization features (non-recurring)'
-          },
-          unit_amount: Math.round(price * 100),
-          ...(isMonthly && {
-            recurring: {
-              interval: 'month'
-            }
-          })
-        },
+        price: priceId,
         quantity: 1
       }],
       mode: isMonthly ? 'subscription' : 'payment',
