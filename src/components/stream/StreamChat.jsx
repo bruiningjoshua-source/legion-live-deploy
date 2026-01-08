@@ -79,15 +79,26 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
         senderName: currentUser?.full_name || 'Guest'
       });
 
-      if (modResult.should_block) {
-        toast.error(`Message blocked: ${modResult.reason}`, {
-          description: 'Please follow community guidelines',
-          icon: <Shield className="w-4 h-4" />
-        });
+      if (modResult.approved === false) {
+        if (modResult.action === 'banned') {
+          toast.error('You have been banned from this stream', {
+            icon: <Shield className="w-4 h-4" />
+          });
+        } else if (modResult.action === 'message_removed') {
+          toast.error(`Message not allowed: ${modResult.reason}`, {
+            description: 'Please follow community guidelines',
+            icon: <Shield className="w-4 h-4" />
+          });
+        }
         setNewMessage('');
       } else {
         onSendMessage(messageText);
         setNewMessage('');
+        if (modResult.flagged) {
+          toast.info(`Flagged: ${modResult.flag_reason}`, {
+            duration: 2000
+          });
+        }
       }
     } catch (error) {
       console.error('Moderation check failed:', error);
