@@ -1,6 +1,7 @@
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
+import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorProfile from './pages/CreatorProfile';
 import CustomizeTheme from './pages/CustomizeTheme';
 import EventDetails from './pages/EventDetails';
@@ -17,7 +18,6 @@ import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CreatorMonetization from './pages/CreatorMonetization';
 import __Layout from './Layout.jsx';
 
 
@@ -25,6 +25,7 @@ export const PAGES = {
     "AffiliateDashboard": AffiliateDashboard,
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
+    "CreatorMonetization": CreatorMonetization,
     "CreatorProfile": CreatorProfile,
     "CustomizeTheme": CustomizeTheme,
     "EventDetails": EventDetails,
@@ -41,7 +42,6 @@ export const PAGES = {
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CreatorMonetization": CreatorMonetization,
 }
 
 export const pagesConfig = {

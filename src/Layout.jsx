@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
+import BottomNav from '@/components/layout/BottomNav';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -131,9 +132,11 @@ export default function Layout({ children, currentPageName }) {
       
       <Navbar user={user} wallet={wallet} />
       
-      <main>
+      <main className="pb-20">
         {children}
       </main>
+
+      <BottomNav />
     </div>
   );
 }
