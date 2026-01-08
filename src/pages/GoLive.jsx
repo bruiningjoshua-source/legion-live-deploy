@@ -30,6 +30,7 @@ import {
   Video
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import HostControls from '@/components/stream/HostControls';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -299,10 +300,15 @@ export default function GoLive() {
                   muted
                   className="w-full h-full object-cover mirror"
                 />
-                <Badge className="absolute top-4 left-4 bg-red-500 text-white border-0 animate-pulse">
-                  <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-                  PREVIEW
-                </Badge>
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <Badge className="bg-red-500 text-white border-0 animate-pulse">
+                    <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
+                    PREVIEW
+                  </Badge>
+                </div>
+                <div className="absolute top-4 right-4">
+                  <HostControls videoRef={videoPreviewRef} />
+                </div>
               </div>
             </CardContent>
           </Card>
