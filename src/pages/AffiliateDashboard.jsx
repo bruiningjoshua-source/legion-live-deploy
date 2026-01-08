@@ -99,6 +99,12 @@ export default function AffiliateDashboard() {
             </h1>
             <p className="text-amber-400/70">Manage your products and track earnings in real-time</p>
           </div>
+          <div className="flex gap-2">
+            <Link to={createPageUrl('BrandCampaigns')}>
+              <Button variant="outline" className="border-amber-600/30 text-amber-300 hover:bg-amber-800/20">
+                Brand Campaigns
+              </Button>
+            </Link>
           <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
             <DialogTrigger asChild>
               <Button className="bg-amber-600 hover:bg-amber-700">
