@@ -5,55 +5,19 @@ export function useChatModeration(streamId) {
   const moderateMessage = useMutation({
     mutationFn: async ({ message, senderEmail, senderName }) => {
       try {
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are a content moderator for a live streaming platform. Analyze this chat message for inappropriate content including: hate speech, harassment, threats, doxxing, spam, or severe violations of community guidelines.
-
-IMPORTANT: The following are ALLOWED and should NOT be flagged:
-- References to smoking cigarettes, joints, bongs
-- Mentions of consuming alcohol or marijuana
-- Adult language and profanity (unless targeted harassment)
-- Discussion of legal substances
-
-BLOCK only: hate speech, severe harassment, threats, illegal activities, doxxing, spam.
-
-Message: "${message}"
-
-Respond with JSON indicating if the message should be blocked and why.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              should_block: { type: "boolean" },
-              violation_type: { 
-                type: "string",
-                enum: ["none", "hate_speech", "harassment", "explicit_content", "spam", "threats", "other"]
-              },
-              severity: { 
-                type: "string",
-                enum: ["none", "low", "medium", "high"]
-              },
-              reason: { type: "string" },
-              confidence: { type: "number" }
-            }
-          }
+        // Call backend moderation function
+        const result = await base44.functions.invoke('moderateChat', {
+          message,
+          stream_id: streamId,
+          user_email: senderEmail,
+          user_name: senderName
         });
 
-        // Log moderation action if blocked
-        if (result.should_block && result.severity !== 'none') {
-          await base44.entities.ModerationAction.create({
-            stream_id: streamId,
-            user_email: senderEmail,
-            user_name: senderName,
-            action_type: result.severity === 'high' ? 'timeout' : 'message_removed',
-            reason: `${result.violation_type}: ${result.reason}`,
-            original_message: message,
-            ai_confidence: result.confidence || 0.8
-          });
-        }
-
-        return result;
+        return result.data;
       } catch (error) {
         console.error('Moderation error:', error);
-        return { should_block: false, violation_type: 'none', severity: 'none' };
+        // Fail open on error
+        return { approved: true, flagged: false };
       }
     }
   });
