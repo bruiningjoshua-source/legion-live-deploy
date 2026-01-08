@@ -112,6 +112,14 @@ export default function GoLive() {
   });
 
   React.useEffect(() => {
+    // Attach stream to video element when it becomes available
+    if (cameraStream && videoPreviewRef.current) {
+      videoPreviewRef.current.srcObject = cameraStream;
+      videoPreviewRef.current.play().catch(e => console.error('Play error:', e));
+    }
+  }, [cameraStream]);
+
+  React.useEffect(() => {
     return () => {
       // Cleanup camera stream on unmount
       if (cameraStream) {
