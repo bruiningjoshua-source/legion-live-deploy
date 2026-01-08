@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
-import CreatorCard from '@/components/creator/CreatorCard';
-import EventCard from '@/components/events/EventCard';
+import TrendingSection from '@/components/shared/TrendingSection';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('personalized');
