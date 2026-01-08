@@ -54,22 +54,35 @@ Deno.serve(async (req) => {
     
     console.log(`Successfully fetched from ${successCount}/${playlists.length} playlists`);
 
-    // Add to Music entity
+    // Add to Music entity in batches to avoid timeout
     console.log(`Adding ${allVideos.length} videos to Music library...`);
     const musicsToCreate = allVideos.map(v => ({
       title: v.title,
       artist: v.artist,
       video_url: `https://www.youtube.com/watch?v=${v.videoId}`,
-      thumbnail_url: v.thumbnail,
+      thumbnail_url: v.thumbnail || 'https://via.placeholder.com/120',
       duration_seconds: 0,
-      genre: v.genre || 'Synthwave',
+      genre: v.genre || 'Electronic',
       mood: 'chill',
       is_published: true
     }));
 
     if (musicsToCreate.length > 0) {
-      await base44.asServiceRole.entities.Music.bulkCreate(musicsToCreate);
-      console.log(`Successfully added ${musicsToCreate.length} videos`);
+      // Batch insert in groups of 500 to avoid timeouts
+      const batchSize = 500;
+      let addedCount = 0;
+      
+      for (let i = 0; i < musicsToCreate.length; i += batchSize) {
+        const batch = musicsToCreate.slice(i, i + batchSize);
+        try {
+          await base44.asServiceRole.entities.Music.bulkCreate(batch);
+          addedCount += batch.length;
+          console.log(`Added batch: ${addedCount}/${musicsToCreate.length}`);
+        } catch (batchError) {
+          console.error(`Error adding batch ${i / batchSize + 1}:`, batchError.message);
+        }
+      }
+      console.log(`Successfully added ${addedCount} videos total`);
     }
 
     return Response.json({
