@@ -25,6 +25,12 @@ import EventCard from '@/components/events/EventCard';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('nearby');
+  const [sortBy, setSortBy] = useState('viewers');
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me()
+  });
 
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams'],
@@ -55,39 +61,56 @@ export default function Home() {
     return acc;
   }, {});
 
+  // Sort streams based on selection
+  const getSortedStreams = (streamList) => {
+    const list = [...streamList];
+    switch (sortBy) {
+      case 'viewers':
+        return list.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
+      case 'gifts':
+        return list.sort((a, b) => (b.total_gifts_received || 0) - (a.total_gifts_received || 0));
+      case 'new':
+        return list.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      default:
+        return list;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-stone-950 pt-16">
       {/* Header */}
       <div className="sticky top-16 z-30 bg-stone-950/95 backdrop-blur-lg border-b border-amber-600/20">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-transparent border-0 p-0 gap-4 overflow-x-auto">
-              <TabsTrigger 
-                value="nearby"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
-              >
-                Nearby
-              </TabsTrigger>
-              <TabsTrigger 
-                value="popular"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
-              >
-                Popular
-              </TabsTrigger>
-              <TabsTrigger 
-                value="featured"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
-              >
-                Featured
-              </TabsTrigger>
-              <TabsTrigger 
-                value="explore"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
-              >
-                Explore
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center justify-between mb-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+              <TabsList className="bg-transparent border-0 p-0 gap-4 overflow-x-auto">
+                <TabsTrigger 
+                  value="nearby"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
+                >
+                  Nearby
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="popular"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
+                >
+                  Popular
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="featured"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
+                >
+                  Featured
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="explore"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-amber-400/70 rounded-none pb-2 px-4"
+                >
+                  Explore
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 
@@ -101,7 +124,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {streams.map((stream, i) => (
+            {getSortedStreams(streams).map((stream, i) => (
               <motion.div
                 key={stream.id}
                 initial={{ opacity: 0, scale: 0.9 }}
