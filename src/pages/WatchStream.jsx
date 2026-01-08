@@ -264,28 +264,31 @@ export default function WatchStream() {
 
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
-  // Optimize video performance
+  // Optimize video performance for portrait streaming
   React.useEffect(() => {
     const initLiveStream = async () => {
       if (stream?.status === 'live') {
         try {
+          // Portrait video constraints (9:16 aspect ratio)
           const constraints = {
             video: { 
               width: { ideal: 1080 },
               height: { ideal: 1920 },
-              frameRate: { ideal: 30, max: 60 }
+              aspectRatio: { ideal: 9/16 },
+              frameRate: { ideal: 30, max: 60 },
+              facingMode: 'user' // Front camera for mobile
             },
             audio: {
               echoCancellation: true,
               noiseSuppression: true,
-              autoGainControl: true
+              autoGainControl: true,
+              sampleRate: 48000
             }
           };
           const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
-            // Optimize playback
             videoRef.current.playbackRate = 1.0;
             try { await videoRef.current.play(); } catch (e) {}
           }
@@ -373,12 +376,13 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Video Feed - Full Screen */}
-      <div className="relative flex-1 bg-black overflow-hidden">
-        {/* HTML5 Video Player */}
+      {/* Video Feed - Optimized for Portrait/Vertical Streaming */}
+      <div className="relative flex-1 bg-black overflow-hidden flex items-center justify-center">
+        {/* HTML5 Video Player - Portrait optimized */}
         <video
           ref={videoRef}
           className="w-full h-full object-cover"
+          style={{ aspectRatio: '9/16' }}
           autoPlay
           playsInline
           muted={isMuted}
