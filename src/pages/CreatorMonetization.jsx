@@ -72,6 +72,25 @@ export default function CreatorMonetization() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (planType) => {
+      // Admins get instant access
+      if (user?.role === 'admin') {
+        const expiryDate = planType === 'monthly' 
+          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        
+        await base44.entities.CreatorSubscription.create({
+          creator_id: creator.id,
+          plan_type: planType,
+          status: 'active',
+          start_date: new Date().toISOString(),
+          expiry_date: expiryDate.toISOString(),
+          auto_renew: planType === 'monthly'
+        });
+        
+        queryClient.invalidateQueries(['creator-subscription']);
+        return;
+      }
+
       if (window.self !== window.top) {
         throw new Error('IFRAME_BLOCKED');
       }
@@ -135,9 +154,10 @@ export default function CreatorMonetization() {
                       </div>
                       <Button 
                         onClick={() => subscribeMutation.mutate('monthly')}
+                        disabled={subscribeMutation.isPending}
                         className="w-full bg-amber-600 hover:bg-amber-700"
                       >
-                        Subscribe Monthly
+                        {user?.role === 'admin' ? 'Activate (Admin)' : 'Subscribe Monthly'}
                       </Button>
                     </div>
 
@@ -158,10 +178,11 @@ export default function CreatorMonetization() {
                       </div>
                       <Button 
                         onClick={() => subscribeMutation.mutate('yearly')}
+                        disabled={subscribeMutation.isPending}
                         className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Get Yearly Access
+                        {user?.role === 'admin' ? 'Activate (Admin)' : 'Get Yearly Access'}
                       </Button>
                     </div>
                   </div>

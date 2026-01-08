@@ -11,7 +11,7 @@ const packages = [
     name: 'Recruit\'s Pouch',
     denarii: 1000,
     bonus: 0,
-    price: 1.00,
+    price: 0.99,
     icon: '🪙',
     popular: false,
     color: 'from-stone-600 to-stone-700',
@@ -20,9 +20,9 @@ const packages = [
   {
     id: 'basic',
     name: 'Soldier\'s Chest',
-    denarii: 5500,
-    bonus: 500,
-    price: 5.00,
+    denarii: 5000,
+    bonus: 0,
+    price: 4.99,
     icon: '💰',
     popular: false,
     color: 'from-green-700 to-green-800',
@@ -31,9 +31,10 @@ const packages = [
   {
     id: 'popular',
     name: 'Centurion\'s Treasury',
-    denarii: 12000,
+    denarii: 10000,
     bonus: 2000,
-    price: 10.00,
+    bonusPercent: 20,
+    price: 9.99,
     icon: '⚔️',
     popular: true,
     color: 'from-amber-600 to-amber-700',
@@ -42,9 +43,10 @@ const packages = [
   {
     id: 'premium',
     name: 'Praetor\'s Vault',
-    denarii: 30000,
-    bonus: 5000,
-    price: 25.00,
+    denarii: 25000,
+    bonus: 7500,
+    bonusPercent: 30,
+    price: 24.99,
     icon: '🏛️',
     popular: false,
     color: 'from-purple-700 to-purple-800',
@@ -53,9 +55,10 @@ const packages = [
   {
     id: 'elite',
     name: 'Senator\'s Fortune',
-    denarii: 65000,
-    bonus: 15000,
-    price: 50.00,
+    denarii: 50000,
+    bonus: 20000,
+    bonusPercent: 40,
+    price: 49.99,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-700',
@@ -64,9 +67,10 @@ const packages = [
   {
     id: 'ultimate',
     name: 'Emperor\'s Legacy',
-    denarii: 150000,
+    denarii: 100000,
     bonus: 50000,
-    price: 100.00,
+    bonusPercent: 50,
+    price: 99.99,
     icon: '✨',
     popular: false,
     color: 'from-amber-500 via-rose-500 to-purple-600',
@@ -159,9 +163,9 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
                   </div>
                   
                   {pkg.bonus > 0 && (
-                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30 animate-pulse">
                       <Sparkles className="w-3 h-3 mr-1" />
-                      +{pkg.bonus.toLocaleString()} BONUS
+                      +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
                     </Badge>
                   )}
                 </div>
