@@ -24,6 +24,7 @@ import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import CollaborationHub from './pages/CollaborationHub';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +55,7 @@ export const PAGES = {
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
     "CollaborationHub": CollaborationHub,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {

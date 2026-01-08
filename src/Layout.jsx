@@ -3,15 +3,21 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
+import LoadingScreen from '@/components/shared/LoadingScreen';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
         setIsAuthenticated(authenticated);
+        if (authenticated && !sessionStorage.getItem('loadingShown')) {
+          setShowLoadingScreen(true);
+          sessionStorage.setItem('loadingShown', 'true');
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
       }
@@ -55,6 +61,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
+      {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

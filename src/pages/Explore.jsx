@@ -57,8 +57,8 @@ export default function Explore() {
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams-explore'],
     queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 45 * 1000 // Poll every 45 seconds instead of real-time
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000
   });
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
