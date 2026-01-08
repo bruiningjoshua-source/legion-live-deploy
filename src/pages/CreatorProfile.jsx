@@ -32,25 +32,29 @@ export default function CreatorProfile() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   const { data: creator, isLoading } = useQuery({
     queryKey: ['creator', creatorId],
     queryFn: () => base44.entities.Creator.filter({ id: creatorId }, null, 1).then(r => r[0]),
-    enabled: !!creatorId
+    enabled: !!creatorId,
+    staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
   const { data: streams = [] } = useQuery({
     queryKey: ['creator-streams', creatorId],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creatorId }, '-created_date', 20),
-    enabled: !!creatorId
+    enabled: !!creatorId,
+    staleTime: 60 * 1000 // 1 minute
   });
 
   const { data: videos = [] } = useQuery({
     queryKey: ['creator-videos', creatorId],
-    queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creatorId, is_published: true }, '-view_count', 50),
-    enabled: !!creatorId
+    queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creatorId, is_published: true }, '-view_count', 30),
+    enabled: !!creatorId,
+    staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
   const { data: isFollowing } = useQuery({

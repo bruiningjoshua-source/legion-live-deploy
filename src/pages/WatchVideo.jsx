@@ -27,14 +27,15 @@ export default function WatchVideo() {
     queryFn: async () => {
       const videos = await base44.entities.VlogVideo.filter({ id: videoId }, null, 1);
       if (videos[0]) {
-        // Increment view count
-        await base44.entities.VlogVideo.update(videoId, {
+        // Increment view count asynchronously (don't block)
+        base44.entities.VlogVideo.update(videoId, {
           view_count: (videos[0].view_count || 0) + 1
-        });
+        }).catch(err => console.error('View count update failed:', err));
       }
       return videos[0];
     },
-    enabled: !!videoId
+    enabled: !!videoId,
+    staleTime: 30 * 1000 // 30 seconds
   });
 
   const { data: creator } = useQuery({
@@ -43,21 +44,29 @@ export default function WatchVideo() {
       const creators = await base44.entities.Creator.filter({ id: video.creator_id }, null, 1);
       return creators[0];
     },
-    enabled: !!video?.creator_id
+    enabled: !!video?.creator_id,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   const { data: affiliateProducts = [] } = useQuery({
     queryKey: ['video-affiliate-products', video?.affiliate_products],
     queryFn: async () => {
       if (!video?.affiliate_products?.length) return [];
-      const products = [];
-      for (const productId of video.affiliate_products) {
-        const result = await base44.entities.AffiliateProduct.filter({ id: productId }, null, 1);
-        if (result[0]) products.push(result[0]);
+      try {
+        const products = await Promise.all(
+          video.affiliate_products.map(async (productId) => {
+            const result = await base44.entities.AffiliateProduct.filter({ id: productId }, null, 1);
+            return result[0];
+          })
+        );
+        return products.filter(Boolean);
+      } catch (error) {
+        console.error('Affiliate products fetch failed:', error);
+        return [];
       }
-      return products;
     },
-    enabled: !!video?.affiliate_products?.length
+    enabled: !!video?.affiliate_products?.length,
+    staleTime: 10 * 60 * 1000 // 10 minutes
   });
 
   const { data: user } = useQuery({

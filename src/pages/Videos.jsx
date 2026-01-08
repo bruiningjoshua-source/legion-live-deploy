@@ -42,8 +42,9 @@ export default function Videos() {
     queryFn: () => {
       const filter = { video_type: 'short', is_published: true };
       if (selectedCategory !== 'all') filter.category = selectedCategory;
-      return base44.entities.VlogVideo.filter(filter, '-view_count', 100);
-    }
+      return base44.entities.VlogVideo.filter(filter, '-view_count', 50);
+    },
+    staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
   const { data: longForm = [] } = useQuery({
@@ -51,13 +52,15 @@ export default function Videos() {
     queryFn: () => {
       const filter = { video_type: 'long_form', is_published: true };
       if (selectedCategory !== 'all') filter.category = selectedCategory;
-      return base44.entities.VlogVideo.filter(filter, '-view_count', 100);
-    }
+      return base44.entities.VlogVideo.filter(filter, '-view_count', 50);
+    },
+    staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['creators'],
-    queryFn: () => base44.entities.Creator.list(null, 200)
+    queryFn: () => base44.entities.Creator.list(null, 100),
+    staleTime: 10 * 60 * 1000 // 10 minutes
   });
 
   const creatorMap = creators.reduce((acc, c) => {

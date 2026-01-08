@@ -8,10 +8,12 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      // Allow public access - no redirect to login
-      // This allows Stripe and other services to access the app
+      try {
+        const authenticated = await base44.auth.isAuthenticated();
+        setIsAuthenticated(authenticated);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
     };
     checkAuth();
   }, []);
@@ -19,24 +21,33 @@ export default function Layout({ children, currentPageName }) {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    enabled: isAuthenticated
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
   });
 
   const { data: wallet } = useQuery({
     queryKey: ['user-wallet', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
-      const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
-      if (wallets.length > 0) return wallets[0];
-      // Create wallet if doesn't exist
-      return base44.entities.Wallet.create({ 
-        user_email: user.email, 
-        denarii_balance: 100, // Starting bonus
-        sestertii_balance: 0,
-        as_balance: 0
-      });
+      try {
+        const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
+        if (wallets.length > 0) return wallets[0];
+        // Create wallet lazily in background
+        return base44.entities.Wallet.create({ 
+          user_email: user.email, 
+          denarii_balance: 100,
+          sestertii_balance: 0,
+          as_balance: 0
+        });
+      } catch (error) {
+        console.error('Wallet fetch failed:', error);
+        return null;
+      }
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 1
   });
 
   // Removed authentication gate - app is publicly accessible
