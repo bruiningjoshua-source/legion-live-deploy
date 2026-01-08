@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import HostControls from '@/components/stream/HostControls';
+import AgoraService from '@/components/stream/AgoraService';
+import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -81,6 +83,8 @@ export default function GoLive() {
   const [pkOpponent, setPkOpponent] = useState('');
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
+  const [streamStats, setStreamStats] = useState(null);
+  const [agoraToken, setAgoraToken] = useState(null);
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
@@ -118,6 +122,14 @@ export default function GoLive() {
       videoPreviewRef.current.play().catch(e => console.error('Play error:', e));
     }
   }, [cameraStream]);
+
+  // Monitor stream quality
+  React.useEffect(() => {
+    const unsubscribe = AgoraService.onQualityChange((stats) => {
+      setStreamStats(stats);
+    });
+    return () => unsubscribe?.();
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -166,9 +178,9 @@ export default function GoLive() {
       if (creator?.is_live) {
         throw new Error('You already have a live stream. End it before starting a new one.');
       }
-      
+
       let creatorId = creator?.id;
-      
+
       // Create creator profile if doesn't exist
       if (!creatorId) {
         const newCreator = await createCreatorMutation.mutateAsync();
@@ -188,6 +200,18 @@ export default function GoLive() {
         guests: guestEmail ? [guestEmail] : [],
         pk_opponent_id: pkOpponent || null
       });
+
+      // Initialize Agora
+      await AgoraService.initialize(Deno.env.get('AGORA_APP_ID'));
+
+      // Get Agora token from backend
+      const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
+        channelName: stream.id,
+        uid: Math.floor(Math.random() * 1000000),
+        role: 'host'
+      });
+
+      setAgoraToken(tokenResponse.data.token);
 
       // Update creator to live status
       await base44.entities.Creator.update(creatorId, {
@@ -290,7 +314,7 @@ export default function GoLive() {
           </div>
         </div>
 
-        {/* Camera Preview */}
+        {/* Camera Preview & Quality Monitor */}
         {!hasPermissions ? (
           <Card className="bg-stone-800/30 border-amber-600/20">
             <CardContent className="p-8 text-center">
@@ -310,29 +334,41 @@ export default function GoLive() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="relative aspect-[9/16] bg-black max-w-md mx-auto">
-                <video
-                  ref={videoPreviewRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover mirror"
-                  style={{ aspectRatio: '9/16' }}
+          <div className="space-y-4">
+            <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-[9/16] bg-black max-w-md mx-auto">
+                  <video
+                    ref={videoPreviewRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover mirror"
+                    style={{ aspectRatio: '9/16' }}
+                  />
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <Badge className="bg-red-500 text-white border-0 animate-pulse">
+                      <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
+                      PREVIEW
+                    </Badge>
+                  </div>
+                  <div className="absolute top-4 right-4">
+                    <HostControls videoRef={videoPreviewRef} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stream Quality Monitor */}
+            {streamStats && (
+              <div className="max-w-md mx-auto">
+                <StreamQualityMonitor 
+                  stats={streamStats}
+                  onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
                 />
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <Badge className="bg-red-500 text-white border-0 animate-pulse">
-                    <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-                    PREVIEW
-                  </Badge>
-                </div>
-                <div className="absolute top-4 right-4">
-                  <HostControls videoRef={videoPreviewRef} />
-                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         )}
 
         {/* Stream Setup Form */}
