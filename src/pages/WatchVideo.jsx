@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoPlayer from '@/components/video/VideoPlayer';
+import TipButton from '@/components/stream/TipButton';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
@@ -140,6 +141,12 @@ export default function WatchVideo() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <TipButton 
+                      creatorId={creator?.id}
+                      streamId={null}
+                      variant="outline"
+                      size="default"
+                    />
                     <Button
                       onClick={() => likeMutation.mutate()}
                       variant="outline"

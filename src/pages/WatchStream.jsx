@@ -35,6 +35,7 @@ import GiftAnimation from '@/components/gifts/GiftAnimation';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
 import MultiPanelView from '@/components/stream/MultiPanelView';
+import TipButton from '@/components/stream/TipButton';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -507,6 +508,12 @@ export default function WatchStream() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <TipButton 
+                    creatorId={creator?.id} 
+                    streamId={streamId}
+                    variant="default"
+                    size="default"
+                  />
                   <Button
                     onClick={() => followMutation.mutate()}
                     variant={isFollowing ? "outline" : "default"}
