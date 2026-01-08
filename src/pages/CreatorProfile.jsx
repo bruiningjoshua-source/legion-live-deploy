@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
+import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
+import TipButton from '@/components/stream/TipButton';
 
 export default function CreatorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -55,6 +57,27 @@ export default function CreatorProfile() {
     queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creatorId, is_published: true }, '-view_count', 30),
     enabled: !!creatorId,
     staleTime: 2 * 60 * 1000 // 2 minutes
+  });
+
+  const { data: subscriptionTiers = [] } = useQuery({
+    queryKey: ['subscription-tiers', creatorId],
+    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: creatorId, is_active: true }),
+    enabled: !!creatorId,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const { data: mySubscription } = useQuery({
+    queryKey: ['my-subscription', creatorId, user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const subs = await base44.entities.ViewerSubscription.filter({
+        viewer_email: user.email,
+        creator_id: creatorId,
+        status: 'active'
+      }, null, 1);
+      return subs[0] || null;
+    },
+    enabled: !!creatorId && !!user?.email
   });
 
   const { data: isFollowing } = useQuery({
@@ -221,6 +244,12 @@ export default function CreatorProfile() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                  <TipButton 
+                    creatorId={creatorId} 
+                    streamId={null}
+                    variant="default"
+                    size="lg"
+                  />
                   <Button
                     onClick={() => followMutation.mutate()}
                     variant={isFollowing ? "outline" : "default"}
@@ -268,6 +297,23 @@ export default function CreatorProfile() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 mt-8">
+        {/* Subscription Tiers */}
+        {subscriptionTiers.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-amber-100 mb-4">Support This Creator</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {subscriptionTiers.map(tier => (
+                <SubscriptionTierCard
+                  key={tier.id}
+                  tier={tier}
+                  creatorId={creatorId}
+                  isSubscribed={mySubscription?.tier === tier.tier_name}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <Tabs defaultValue="videos" className="space-y-6">
           <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl">
             <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
