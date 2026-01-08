@@ -1,6 +1,8 @@
+import AdminDashboard from './pages/AdminDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
+import CollaborationHub from './pages/CollaborationHub';
 import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorProfile from './pages/CreatorProfile';
 import CustomizeTheme from './pages/CustomizeTheme';
@@ -23,15 +25,15 @@ import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CollaborationHub from './pages/CollaborationHub';
-import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminDashboard": AdminDashboard,
     "AffiliateDashboard": AffiliateDashboard,
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
+    "CollaborationHub": CollaborationHub,
     "CreatorMonetization": CreatorMonetization,
     "CreatorProfile": CreatorProfile,
     "CustomizeTheme": CustomizeTheme,
@@ -54,8 +56,6 @@ export const PAGES = {
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CollaborationHub": CollaborationHub,
-    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {

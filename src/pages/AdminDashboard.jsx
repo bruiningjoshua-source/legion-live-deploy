@@ -21,7 +21,10 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 // Authorized admin emails - update these as needed
-const AUTHORIZED_ADMINS = ['admin@legionlive.io', 'support@legionlive.io', 'inthestixproductions@gmail.com', 'muggabuckerpro@gmail.com'];
+const AUTHORIZED_ADMINS = ['admin@legionlive.io', 'support@legionlive.io', 'inthestixproductions@gmail.com', 'muggabuckerpro@gmail.com', 'rankincadence@gmail.com'];
+
+// CEO-level affiliates who get special earnings structure
+const CEO_AFFILIATES = ['rankincadence@gmail.com'];
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
