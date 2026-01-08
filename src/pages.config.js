@@ -10,6 +10,8 @@ import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import CustomizeTheme from './pages/CustomizeTheme';
 import AffiliateDashboard from './pages/AffiliateDashboard';
+import PodcastStudio from './pages/PodcastStudio';
+import VlogStudio from './pages/VlogStudio';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +28,8 @@ export const PAGES = {
     "WatchStream": WatchStream,
     "CustomizeTheme": CustomizeTheme,
     "AffiliateDashboard": AffiliateDashboard,
+    "PodcastStudio": PodcastStudio,
+    "VlogStudio": VlogStudio,
 }
 
 export const pagesConfig = {
