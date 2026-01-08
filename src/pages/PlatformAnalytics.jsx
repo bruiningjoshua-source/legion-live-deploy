@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Users, DollarSign, Zap, Target, Activity } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Zap, Target, Activity, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import DynamicBonusEngine from '@/components/monetization/DynamicBonusEngine';
 
 const mockData = {
   dailyRevenue: [
@@ -233,31 +234,85 @@ export default function PlatformAnalytics() {
           </TabsContent>
         </Tabs>
 
-        {/* Projection */}
+        {/* Dynamic Bonus Engine */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8"
+        >
+          <h2 className="text-2xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-amber-400" />
+            Dynamic Bonus System
+          </h2>
+          <DynamicBonusEngine platformGrossRevenue={17484} totalPurchases={347} avgPurchaseValue={20} />
+        </motion.div>
+
+        {/* 2-Year Growth Roadmap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6"
+          className="mt-8 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-6"
         >
-          <div className="flex items-start justify-between">
+          <h3 className="text-xl font-bold text-purple-100 mb-4 flex items-center gap-2">
+            <Rocket className="w-5 h-5 text-purple-400" />
+            2-Year Growth Trajectory
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { label: '3 Months', target: '$125,000', milestone: '1000 creators' },
+              { label: '6 Months', target: '$350,000', milestone: '5000 creators' },
+              { label: '12 Months', target: '$1,200,000', milestone: '25000 creators' },
+              { label: '24 Months', target: '$5,000,000+', milestone: '100k+ creators' }
+            ].map((phase, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="bg-stone-900/50 rounded-lg p-4 border border-purple-500/20"
+              >
+                <div className="text-sm font-semibold text-purple-300 mb-2">{phase.label}</div>
+                <div className="text-2xl font-bold text-purple-200 mb-2">{phase.target}</div>
+                <div className="text-xs text-purple-400/70">{phase.milestone}</div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Monetization Strategy */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-8 bg-gradient-to-r from-amber-900/30 to-stone-900/30 border border-amber-600/20 rounded-xl p-6"
+        >
+          <h3 className="text-xl font-bold text-amber-100 mb-4">Revenue Optimization Strategy</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-amber-200/80">
             <div>
-              <h3 className="text-xl font-bold text-green-100 mb-2">📈 2-Week Projection</h3>
-              <p className="text-green-200/80 mb-4">Based on current growth rate (45% weekly)</p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <div className="text-sm text-green-400/70">Projected Revenue</div>
-                    <div className="text-3xl font-bold text-green-300">$26,000+</div>
-                  </div>
-                  <div className="text-4xl opacity-20">📊</div>
-                </div>
-              </div>
+              <h4 className="font-bold text-amber-100 mb-2">Phase 1: Acquisition</h4>
+              <ul className="space-y-1 text-xs">
+                <li>✓ Aggressive early adopter bonuses</li>
+                <li>✓ 50/50 revenue share foundation</li>
+                <li>✓ $500 signup bonuses</li>
+              </ul>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-green-400/70">With Early Adopter Bonuses</div>
-              <div className="text-2xl font-bold text-green-300 mt-2">$31,500</div>
-              <Badge className="bg-green-600 text-white border-0 mt-2">On Track 🎯</Badge>
+            <div>
+              <h4 className="font-bold text-amber-100 mb-2">Phase 2: Growth</h4>
+              <ul className="space-y-1 text-xs">
+                <li>✓ Dynamic bonuses (scale with velocity)</li>
+                <li>✓ Creator tier promotions</li>
+                <li>✓ 5% referral revenue share</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-amber-100 mb-2">Phase 3: Scale</h4>
+              <ul className="space-y-1 text-xs">
+                <li>✓ Creator earnings 70/30 splits</li>
+                <li>✓ Premium brand partnerships</li>
+                <li>✓ Multi-million dollar ecosystem</li>
+              </ul>
             </div>
           </div>
         </motion.div>

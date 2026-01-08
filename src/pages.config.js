@@ -12,17 +12,17 @@ import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import Home from './pages/Home';
 import Leaderboard from './pages/Leaderboard';
+import MusicStudio from './pages/MusicStudio';
+import PlatformAnalytics from './pages/PlatformAnalytics';
 import PodcastStudio from './pages/PodcastStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import TheAmphitheatre from './pages/TheAmphitheatre';
 import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import TheAmphitheatre from './pages/TheAmphitheatre';
-import MusicStudio from './pages/MusicStudio';
-import PlatformAnalytics from './pages/PlatformAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -41,17 +41,17 @@ export const PAGES = {
     "GoLive": GoLive,
     "Home": Home,
     "Leaderboard": Leaderboard,
+    "MusicStudio": MusicStudio,
+    "PlatformAnalytics": PlatformAnalytics,
     "PodcastStudio": PodcastStudio,
     "Profile": Profile,
     "Settings": Settings,
+    "TheAmphitheatre": TheAmphitheatre,
     "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "TheAmphitheatre": TheAmphitheatre,
-    "MusicStudio": MusicStudio,
-    "PlatformAnalytics": PlatformAnalytics,
 }
 
 export const pagesConfig = {

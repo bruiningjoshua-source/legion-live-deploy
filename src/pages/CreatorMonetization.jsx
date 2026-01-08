@@ -23,6 +23,7 @@ import { motion } from 'framer-motion';
 import MonetizationShowcase from '@/components/monetization/MonetizationShowcase';
 import ViewerSpendingIncentives from '@/components/monetization/ViewerSpendingIncentives';
 import ReferralDashboard from '@/components/monetization/ReferralDashboard';
+import CreatorPayoutOptimizer from '@/components/monetization/CreatorPayoutOptimizer';
 
 export default function CreatorMonetization() {
   const queryClient = useQueryClient();
@@ -283,6 +284,20 @@ export default function CreatorMonetization() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Creator Payout Optimizer */}
+            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+              <CardHeader>
+                <CardTitle className="text-amber-100 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-amber-400" />
+                  Your Payout Tier
+                </CardTitle>
+                <p className="text-amber-400/70 text-sm mt-2">Earn more as you grow—higher tiers unlock better revenue share</p>
+              </CardHeader>
+              <CardContent>
+                <CreatorPayoutOptimizer creatorEarningsUsd={creator?.total_earnings_denarii || 0} />
+              </CardContent>
+            </Card>
 
             {/* Viewer Incentives Section */}
             <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
