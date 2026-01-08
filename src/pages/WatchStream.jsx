@@ -381,7 +381,7 @@ export default function WatchStream() {
               {/* HTML5 Video Player */}
               <video
                 ref={videoRef}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 autoPlay
                 playsInline
                 muted={isMuted}
@@ -560,22 +560,24 @@ export default function WatchStream() {
             </div>
           </div>
 
-          {/* Chat/Moderation Sidebar - Desktop */}
-          <div className="hidden lg:block w-80 h-[calc(100vh-8rem)] sticky top-20">
-            {showModeration && user?.email === creator?.user_email ? (
-              <ModerationDashboard 
-                streamId={streamId}
-                onClose={() => setShowModeration(false)}
-              />
-            ) : (
-              <StreamChat 
-                streamId={streamId}
-                messages={chatMessages}
-                onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-                onOpenGifts={() => setShowGiftPanel(true)}
-                currentUser={user}
-              />
-            )}
+          {/* Chat Overlay - Desktop (Non-intrusive) */}
+          <div className="hidden lg:block absolute bottom-24 right-4 w-80 h-96 z-20">
+            <div className="bg-stone-900/60 backdrop-blur-md rounded-xl border border-amber-600/20 h-full">
+              {showModeration && user?.email === creator?.user_email ? (
+                <ModerationDashboard 
+                  streamId={streamId}
+                  onClose={() => setShowModeration(false)}
+                />
+              ) : (
+                <StreamChat 
+                  streamId={streamId}
+                  messages={chatMessages}
+                  onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+                  onOpenGifts={() => setShowGiftPanel(true)}
+                  currentUser={user}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
