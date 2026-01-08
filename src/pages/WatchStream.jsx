@@ -159,7 +159,7 @@ export default function WatchStream() {
         is_pk_gift: stream.stream_type === 'pk_battle'
       });
 
-      // Update wallet
+      // Update wallet - deduct in real-time
       const currentAs = (wallet.denarii_balance * 100) + (wallet.as_balance || 0);
       const newAs = currentAs - totalCost;
       const newDenarii = Math.floor(newAs / 100);
@@ -168,6 +168,16 @@ export default function WatchStream() {
       await base44.entities.Wallet.update(wallet.id, {
         denarii_balance: newDenarii,
         as_balance: remainingAs
+      });
+
+      // Creator earnings: Convert As to Denarii (85% after 15% platform fee)
+      const platformFee = totalCost * 0.15;
+      const creatorEarning = totalCost - platformFee;
+      const earningInDenarii = Math.floor(creatorEarning / 100); // Convert As to Denarii
+
+      // Update creator earnings
+      await base44.entities.Creator.update(creator.id, {
+        total_earnings_denarii: (creator.total_earnings_denarii || 0) + earningInDenarii
       });
 
       // Add chat message
@@ -188,7 +198,7 @@ export default function WatchStream() {
       // Update stream stats
       await base44.entities.Stream.update(stream.id, {
         total_gifts_received: (stream.total_gifts_received || 0) + quantity,
-        total_denarii_earned: (stream.total_denarii_earned || 0) + Math.floor(totalCost / 100)
+        total_denarii_earned: (stream.total_denarii_earned || 0) + earningInDenarii
       });
 
       return { gift, quantity };
