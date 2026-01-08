@@ -33,6 +33,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StreamChat from '@/components/stream/StreamChat';
 import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
+import AlertNotifications from '@/components/moderation/AlertNotifications';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
 import AlertNotifications from '@/components/moderation/AlertNotifications';
