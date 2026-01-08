@@ -1,4 +1,6 @@
 import AffiliateDashboard from './pages/AffiliateDashboard';
+import BrandCampaigns from './pages/BrandCampaigns';
+import BrandDashboard from './pages/BrandDashboard';
 import CreatorProfile from './pages/CreatorProfile';
 import CustomizeTheme from './pages/CustomizeTheme';
 import EventDetails from './pages/EventDetails';
@@ -10,18 +12,18 @@ import Home from './pages/Home';
 import PodcastStudio from './pages/PodcastStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
-import BrandDashboard from './pages/BrandDashboard';
-import BrandCampaigns from './pages/BrandCampaigns';
-import Videos from './pages/Videos';
 import WatchVideo from './pages/WatchVideo';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AffiliateDashboard": AffiliateDashboard,
+    "BrandCampaigns": BrandCampaigns,
+    "BrandDashboard": BrandDashboard,
     "CreatorProfile": CreatorProfile,
     "CustomizeTheme": CustomizeTheme,
     "EventDetails": EventDetails,
@@ -33,12 +35,10 @@ export const PAGES = {
     "PodcastStudio": PodcastStudio,
     "Profile": Profile,
     "Settings": Settings,
+    "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
-    "BrandDashboard": BrandDashboard,
-    "BrandCampaigns": BrandCampaigns,
-    "Videos": Videos,
     "WatchVideo": WatchVideo,
 }
 

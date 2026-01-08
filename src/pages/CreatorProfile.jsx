@@ -17,7 +17,10 @@ import {
   Users,
   Star,
   ExternalLink,
-  Share2
+  Share2,
+  Video,
+  Play,
+  Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
@@ -41,6 +44,12 @@ export default function CreatorProfile() {
   const { data: streams = [] } = useQuery({
     queryKey: ['creator-streams', creatorId],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creatorId }, '-created_date', 20),
+    enabled: !!creatorId
+  });
+
+  const { data: videos = [] } = useQuery({
+    queryKey: ['creator-videos', creatorId],
+    queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creatorId, is_published: true }, '-view_count', 50),
     enabled: !!creatorId
   });
 
@@ -86,6 +95,8 @@ export default function CreatorProfile() {
 
   const liveStreams = streams.filter(s => s.status === 'live');
   const pastStreams = streams.filter(s => s.status === 'ended');
+  const shorts = videos.filter(v => v.video_type === 'short');
+  const longFormVideos = videos.filter(v => v.video_type === 'long_form');
 
   const levelBadges = {
     1: { label: 'Recruit', color: 'stone', icon: '🔰' },
@@ -253,8 +264,12 @@ export default function CreatorProfile() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 mt-8">
-        <Tabs defaultValue="live" className="space-y-6">
+        <Tabs defaultValue="videos" className="space-y-6">
           <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl">
+            <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+              <Video className="w-4 h-4 mr-2" />
+              Videos ({videos.length})
+            </TabsTrigger>
             <TabsTrigger value="live" className="data-[state=active]:bg-red-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               <Radio className="w-4 h-4 mr-2" />
               Live ({liveStreams.length})
@@ -263,6 +278,47 @@ export default function CreatorProfile() {
               Past Streams
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="videos" className="mt-0">
+            {videos.length > 0 ? (
+              <div className="space-y-6">
+                {shorts.length > 0 && (
+                  <div>
+                    <h3 className="text-amber-100 font-semibold mb-3 flex items-center gap-2">
+                      <Video className="w-5 h-5 text-amber-400" />
+                      Shorts ({shorts.length})
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {shorts.map((video, i) => (
+                        <VideoCard key={video.id} video={video} creator={creator} index={i} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {longFormVideos.length > 0 && (
+                  <div>
+                    <h3 className="text-amber-100 font-semibold mb-3 flex items-center gap-2">
+                      <Video className="w-5 h-5 text-amber-400" />
+                      Long Form ({longFormVideos.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {longFormVideos.map((video, i) => (
+                        <VideoCard key={video.id} video={video} creator={creator} index={i} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Card className="bg-stone-800/30 border-amber-600/20">
+                <CardContent className="py-12 text-center">
+                  <Video className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
+                  <h3 className="text-amber-100 font-semibold mb-2">No Videos Yet</h3>
+                  <p className="text-amber-400/60">This creator hasn't uploaded any videos.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
           <TabsContent value="live" className="mt-0">
             {liveStreams.length > 0 ? (
@@ -316,5 +372,46 @@ export default function CreatorProfile() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+function VideoCard({ video, creator, index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <Link to={createPageUrl(`WatchVideo?id=${video.id}`)}>
+        <div className="bg-stone-800/30 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all cursor-pointer group">
+          <div className={`relative bg-stone-950 ${
+            video.video_type === 'short' ? 'aspect-[9/16]' : 'aspect-video'
+          }`}>
+            {video.thumbnail_url ? (
+              <img src={video.thumbnail_url} className="w-full h-full object-cover" alt={video.title} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Video className="w-8 h-8 text-amber-400/30" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Play className="w-10 h-10 text-white" />
+            </div>
+            {video.duration_seconds && (
+              <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-white text-xs">
+                {Math.floor(video.duration_seconds / 60)}:{(video.duration_seconds % 60).toString().padStart(2, '0')}
+              </div>
+            )}
+          </div>
+          <div className="p-3">
+            <h3 className="text-amber-100 font-semibold text-sm line-clamp-2 mb-2">{video.title}</h3>
+            <div className="flex items-center gap-2 text-xs text-amber-400/70">
+              <Eye className="w-3 h-3" />
+              {video.view_count?.toLocaleString() || 0}
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
