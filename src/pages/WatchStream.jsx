@@ -392,9 +392,24 @@ export default function WatchStream() {
         </video>
         
         {/* Multi-Panel Layout */}
-        {stream.stream_type === 'multi_panel' && stream.panel_creators?.length > 0 && (
+        {stream.stream_type === 'multi_panel' && (
           <div className="absolute inset-0">
-            <MultiPanelView panelCreators={stream.panel_creators} maxPanels={12} />
+            <MultiPanelView 
+              panelCreators={stream.panel_creators || [creator]}
+              maxPanels={9}
+              hostCreatorId={stream.creator_id}
+              currentUserId={creator?.id}
+              isHost={user?.email === creator?.user_email}
+              allowFreeJoin={true}
+              onRequestJoin={(position) => {
+                console.log('Request to join panel position:', position);
+                // TODO: Implement join logic
+              }}
+              onKickUser={(userId) => {
+                console.log('Kick user:', userId);
+                // TODO: Implement kick logic
+              }}
+            />
           </div>
         )}
 
