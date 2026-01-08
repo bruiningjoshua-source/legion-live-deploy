@@ -26,7 +26,12 @@ import {
   Menu,
   X,
   Coins,
-  Sparkles
+  Sparkles,
+  ShoppingBag,
+  Palette,
+  Gamepad2,
+  Mic,
+  Video
 } from 'lucide-react';
 
 export default function Navbar({ user, wallet }) {
@@ -71,6 +76,18 @@ export default function Navbar({ user, wallet }) {
               <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
                 <Trophy className="w-4 h-4 mr-2" />
                 Events
+              </Button>
+            </Link>
+            <Link to={createPageUrl('PodcastStudio')}>
+              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Mic className="w-4 h-4 mr-2" />
+                Podcasts
+              </Button>
+            </Link>
+            <Link to={createPageUrl('VlogStudio')}>
+              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Video className="w-4 h-4 mr-2" />
+                Vlogs
               </Button>
             </Link>
           </div>
@@ -131,6 +148,24 @@ export default function Navbar({ user, wallet }) {
                   <Link to={createPageUrl('Wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
                     Treasury
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
+                  <Link to={createPageUrl('AffiliateDashboard')}>
+                    <ShoppingBag className="w-4 h-4 mr-2" />
+                    Affiliate
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
+                  <Link to={createPageUrl('CustomizeTheme')}>
+                    <Palette className="w-4 h-4 mr-2" />
+                    Customize
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
+                  <Link to={createPageUrl('GamingSetup')}>
+                    <Gamepad2 className="w-4 h-4 mr-2" />
+                    Gaming
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
