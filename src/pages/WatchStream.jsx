@@ -361,7 +361,7 @@ export default function WatchStream() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 pt-16">
+    <div className="min-h-screen bg-stone-950 flex flex-col">
       {/* Gift Animation */}
       <AnimatePresence>
         {giftAnimation && (
@@ -373,219 +373,142 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Video Player */}
-            <div className="relative w-full bg-black rounded-2xl overflow-hidden mb-4" style={{ height: 'calc(100vh - 280px)', minHeight: '500px' }}>
-              {/* HTML5 Video Player */}
-              <video
-                ref={videoRef}
-                className="w-full h-full object-contain"
-                autoPlay
-                playsInline
-                muted={isMuted}
-                poster={stream.thumbnail_url}
-                controls={false}
-                preload="auto"
-              >
-                Your browser does not support video playback.
-              </video>
-              
-              {/* Multi-Panel Layout */}
-              {stream.stream_type === 'multi_panel' && stream.panel_creators?.length > 0 && (
-                <div className="absolute inset-0">
-                  <MultiPanelView panelCreators={stream.panel_creators} maxPanels={12} />
-                </div>
-              )}
+      {/* Video Feed - Full Screen */}
+      <div className="relative flex-1 bg-black overflow-hidden">
+        {/* HTML5 Video Player */}
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          autoPlay
+          playsInline
+          muted={isMuted}
+          poster={stream.thumbnail_url}
+          controls={false}
+          preload="auto"
+        >
+          Your browser does not support video playback.
+        </video>
+        
+        {/* Multi-Panel Layout */}
+        {stream.stream_type === 'multi_panel' && stream.panel_creators?.length > 0 && (
+          <div className="absolute inset-0">
+            <MultiPanelView panelCreators={stream.panel_creators} maxPanels={12} />
+          </div>
+        )}
 
-              {!liveStream && (
-                <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
-                  <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-amber-100">Connecting to live stream...</p>
-                  </div>
-                </div>
-              )}
-              
-              {/* Live Badge Overlay */}
-              <div className="absolute top-4 left-4 z-10">
-                <Badge className="bg-red-500 text-white border-0 animate-pulse">
-                  ● LIVE
-                </Badge>
-              </div>
-
-              {/* PK Battle Overlay */}
-              {stream.stream_type === 'pk_battle' && (
-                <PKBattleOverlay
-                  hostCreator={creator}
-                  opponentCreator={opponentCreator}
-                  hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
-                  opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
-                  timeRemaining={pkBattle ? 300 : 0}
-                  status={pkBattle?.status || 'pending'}
-                />
-              )}
-
-              {/* Video Controls */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-red-500 text-white border-0">
-                      <Eye className="w-3 h-3 mr-1" />
-                      {(stream.viewer_count || 0).toLocaleString()}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/20">
-                      {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
-                      <Maximize className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+        {!liveStream && (
+          <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-amber-100">Connecting to live stream...</p>
             </div>
+          </div>
+        )}
+        
+        {/* Live Badge Overlay */}
+        <div className="absolute top-4 left-4 z-10">
+          <Badge className="bg-red-500 text-white border-0 animate-pulse">
+            ● LIVE
+          </Badge>
+        </div>
 
-            {/* Stream Info */}
-            <div className="bg-stone-900/50 rounded-2xl p-4 border border-amber-600/20">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                {user?.email === creator?.user_email && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setShowModeration(!showModeration)}
-                      variant="outline"
-                      size="sm"
-                      className="border-amber-600/30 text-amber-300 hover:bg-amber-800/20"
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Moderation Dashboard
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to end this stream?')) {
-                          endStreamMutation.mutate();
-                        }
-                      }}
-                      variant="destructive"
-                      size="sm"
-                      disabled={endStreamMutation.isPending}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      <StopCircle className="w-4 h-4 mr-2" />
-                      {endStreamMutation.isPending ? 'Ending...' : 'End Stream'}
-                    </Button>
-                  </div>
+        {/* PK Battle Overlay */}
+        {stream.stream_type === 'pk_battle' && (
+          <PKBattleOverlay
+            hostCreator={creator}
+            opponentCreator={opponentCreator}
+            hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
+            opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
+            timeRemaining={pkBattle ? 300 : 0}
+            status={pkBattle?.status || 'pending'}
+          />
+        )}
+
+        {/* Video Controls */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-red-500 text-white border-0">
+                <Eye className="w-3 h-3 mr-1" />
+                {(stream.viewer_count || 0).toLocaleString()}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/20">
+                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
+                <Maximize className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Creator Controls - Only for Stream Owner */}
+        {user?.email === creator?.user_email && (
+          <div className="absolute top-16 left-4 right-4 z-10 flex gap-2">
+            <Button
+              onClick={() => setShowModeration(!showModeration)}
+              variant="outline"
+              size="sm"
+              className="border-amber-600/30 text-amber-300 bg-stone-900/80 hover:bg-amber-800/20"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Moderation
+            </Button>
+            <Button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to end this stream?')) {
+                  endStreamMutation.mutate();
+                }
+              }}
+              variant="destructive"
+              size="sm"
+              disabled={endStreamMutation.isPending}
+              className="bg-red-600/90 hover:bg-red-700 text-white"
+            >
+              <StopCircle className="w-4 h-4 mr-2" />
+              {endStreamMutation.isPending ? 'Ending...' : 'End'}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Section - Chat & Gift Button */}
+      <div className="bg-stone-900 border-t border-amber-600/20">
+        <div className="flex gap-2 p-3">
+          <Button 
+            onClick={() => setShowGiftPanel(true)}
+            className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12"
+          >
+            <Gift className="w-5 h-5 mr-2" />
+            Send Gift
+          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="border-amber-500/30 text-amber-300 h-12 px-6">
+                <MessageCircle className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="bg-stone-900 border-amber-600/30 p-0 w-full sm:w-[400px]">
+              <div className="h-full">
+                {showModeration && user?.email === creator?.user_email ? (
+                  <ModerationDashboard 
+                    streamId={streamId}
+                    onClose={() => setShowModeration(false)}
+                  />
+                ) : (
+                  <StreamChat 
+                    streamId={streamId}
+                    messages={chatMessages}
+                    onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+                    onOpenGifts={() => setShowGiftPanel(true)}
+                    currentUser={user}
+                  />
                 )}
               </div>
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 flex-shrink-0">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-stone-800">
-                        {creator?.avatar_url ? (
-                          <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">👤</div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                  <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-amber-100 mb-1">{stream.title}</h1>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
-                        <span className="text-amber-300 font-semibold hover:underline">{creator?.display_name}</span>
-                      </Link>
-                      {creator?.is_verified && <Crown className="w-4 h-4 text-amber-400" />}
-                      <Badge variant="outline" className="border-amber-500/30 text-amber-400 capitalize">
-                        {stream.category?.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <TipButton 
-                    creatorId={creator?.id} 
-                    streamId={streamId}
-                    variant="default"
-                    size="default"
-                  />
-                  <Button
-                    onClick={() => followMutation.mutate()}
-                    variant={isFollowing ? "outline" : "default"}
-                    className={isFollowing 
-                      ? "border-amber-500 text-amber-400" 
-                      : "bg-amber-600 hover:bg-amber-700 text-white"}
-                  >
-                    <Heart className={`w-4 h-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} />
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </Button>
-                  <Button variant="outline" className="border-amber-500/30 text-amber-300">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {stream.description && (
-                <p className="text-amber-100/70 mt-4 text-sm">{stream.description}</p>
-              )}
-            </div>
-
-            {/* Mobile Gift Button */}
-            <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowGiftPanel(true)}
-                  className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-6"
-                >
-                  <Gift className="w-5 h-5 mr-2" />
-                  Send Gift
-                </Button>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="border-amber-500/30 text-amber-300 py-6">
-                      <MessageCircle className="w-5 h-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent className="bg-stone-900 border-amber-600/30 p-0 w-full sm:w-[400px]">
-                    <div className="h-full">
-                      <StreamChat 
-                        streamId={streamId}
-                        messages={chatMessages}
-                        onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-                        onOpenGifts={() => setShowGiftPanel(true)}
-                        currentUser={user}
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </div>
-          </div>
-
-          {/* Chat Overlay - Desktop (Non-intrusive) */}
-          <div className="hidden lg:block absolute bottom-24 right-4 w-80 h-96 z-20">
-            <div className="bg-stone-900/60 backdrop-blur-md rounded-xl border border-amber-600/20 h-full">
-              {showModeration && user?.email === creator?.user_email ? (
-                <ModerationDashboard 
-                  streamId={streamId}
-                  onClose={() => setShowModeration(false)}
-                />
-              ) : (
-                <StreamChat 
-                  streamId={streamId}
-                  messages={chatMessages}
-                  onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-                  onOpenGifts={() => setShowGiftPanel(true)}
-                  currentUser={user}
-                />
-              )}
-            </div>
-          </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
