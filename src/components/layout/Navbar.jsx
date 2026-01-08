@@ -33,7 +33,8 @@ import {
   Mic,
   Video,
   Briefcase,
-  Zap
+  Zap,
+  Crown
 } from 'lucide-react';
 import GamificationPanel from '@/components/engagement/GamificationPanel';
 

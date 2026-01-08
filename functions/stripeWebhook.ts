@@ -46,6 +46,85 @@ Deno.serve(async (req) => {
 
         console.log('[stripeWebhook] Checkout completed:', session.id, metadata);
 
+        // Handle Creator Monetization Subscription
+        if (metadata.purchase_type === 'creator_monetization' && metadata.creator_id) {
+          const planType = metadata.plan_type;
+          const creatorId = metadata.creator_id;
+
+          const startDate = new Date();
+          const expiryDate = new Date();
+          if (planType === 'monthly') {
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+          } else {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+          }
+
+          // Create or update creator subscription
+          const existingSubs = await base44.asServiceRole.entities.CreatorSubscription.filter(
+            { creator_id: creatorId, status: 'active' },
+            null,
+            1
+          );
+
+          if (existingSubs[0]) {
+            await base44.asServiceRole.entities.CreatorSubscription.update(existingSubs[0].id, {
+              plan_type: planType,
+              stripe_subscription_id: session.subscription || session.payment_intent,
+              stripe_customer_id: session.customer,
+              start_date: startDate.toISOString(),
+              expiry_date: expiryDate.toISOString(),
+              auto_renew: planType === 'monthly'
+            });
+          } else {
+            await base44.asServiceRole.entities.CreatorSubscription.create({
+              creator_id: creatorId,
+              plan_type: planType,
+              status: 'active',
+              stripe_subscription_id: session.subscription || session.payment_intent,
+              stripe_customer_id: session.customer,
+              start_date: startDate.toISOString(),
+              expiry_date: expiryDate.toISOString(),
+              auto_renew: planType === 'monthly'
+            });
+          }
+
+          console.log('[stripeWebhook] Creator monetization activated:', creatorId);
+        }
+
+        // Handle Tip
+        if (metadata.purchase_type === 'tip' && metadata.creator_id) {
+          const amount = parseFloat(metadata.amount_usd);
+
+          // Create tip record
+          await base44.asServiceRole.entities.Tip.create({
+            sender_email: metadata.sender_email,
+            receiver_creator_id: metadata.creator_id,
+            amount_usd: amount,
+            message: metadata.message,
+            stream_id: metadata.stream_id,
+            is_anonymous: metadata.is_anonymous === 'true',
+            stripe_payment_intent: session.payment_intent
+          });
+
+          // Update creator earnings
+          const creators = await base44.asServiceRole.entities.Creator.filter(
+            { id: metadata.creator_id },
+            null,
+            1
+          );
+          if (creators[0]) {
+            const platformFee = amount * 0.15; // 15% platform fee
+            const creatorEarning = amount - platformFee;
+            const earningInDenarii = Math.floor(creatorEarning * 100); // $1 = 100 denarii
+
+            await base44.asServiceRole.entities.Creator.update(metadata.creator_id, {
+              total_earnings_denarii: (creators[0].total_earnings_denarii || 0) + earningInDenarii
+            });
+          }
+
+          console.log('[stripeWebhook] Tip processed:', amount, 'for creator:', metadata.creator_id);
+        }
+
         // Handle Denarii Purchase
         if (metadata.purchase_type === 'denarii' && metadata.user_email) {
           const denariiAmount = parseInt(metadata.denarii_amount);
