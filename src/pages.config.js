@@ -13,6 +13,7 @@ import Following from './pages/Following';
 import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import Home from './pages/Home';
+import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
 import Leaderboard from './pages/Leaderboard';
 import MusicStudio from './pages/MusicStudio';
 import PlatformAnalytics from './pages/PlatformAnalytics';
@@ -20,13 +21,12 @@ import PodcastStudio from './pages/PodcastStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import TheAmphitheatre from './pages/TheAmphitheatre';
+import TheGamingHub from './pages/TheGamingHub';
 import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import TheGamingHub from './pages/TheGamingHub';
-import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +46,7 @@ export const PAGES = {
     "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "Home": Home,
+    "ImportYouTubeLibrary": ImportYouTubeLibrary,
     "Leaderboard": Leaderboard,
     "MusicStudio": MusicStudio,
     "PlatformAnalytics": PlatformAnalytics,
@@ -53,13 +54,12 @@ export const PAGES = {
     "Profile": Profile,
     "Settings": Settings,
     "TheAmphitheatre": TheAmphitheatre,
+    "TheGamingHub": TheGamingHub,
     "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "TheGamingHub": TheGamingHub,
-    "ImportYouTubeLibrary": ImportYouTubeLibrary,
 }
 
 export const pagesConfig = {
