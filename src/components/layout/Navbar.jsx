@@ -181,6 +181,12 @@ export default function Navbar({ user, wallet }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
+                  <Link to={createPageUrl('CreatorMonetization')}>
+                    <Crown className="w-4 h-4 mr-2" />
+                    Monetization
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
                   <Link to={createPageUrl('CustomizeTheme')}>
                     <Palette className="w-4 h-4 mr-2" />
                     Customize
