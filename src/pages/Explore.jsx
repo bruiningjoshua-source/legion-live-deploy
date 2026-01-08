@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
@@ -54,10 +54,28 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
 
-  const { data: streams = [], isLoading: streamsLoading } = useQuery({
+  const [streams, setStreams] = useState([]);
+
+  const { isLoading: streamsLoading } = useQuery({
     queryKey: ['streams-explore'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50)
+    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
+    onSuccess: (data) => setStreams(data || [])
   });
+
+  // Real-time stream updates
+  useEffect(() => {
+    const unsubscribe = base44.entities.Stream.subscribe((event) => {
+      if (event.type === 'create' && event.data.status === 'live') {
+        setStreams(prev => [event.data, ...prev]);
+      } else if (event.type === 'update') {
+        setStreams(prev => prev.map(s => s.id === event.id ? event.data : s));
+      } else if (event.type === 'delete') {
+        setStreams(prev => prev.filter(s => s.id !== event.id));
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['creators-explore'],

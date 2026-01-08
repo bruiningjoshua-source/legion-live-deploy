@@ -92,12 +92,29 @@ export default function WatchStream() {
     enabled: !!user?.email
   });
 
-  const { data: chatMessages = [] } = useQuery({
+  const [chatMessages, setChatMessages] = useState([]);
+
+  useQuery({
     queryKey: ['chat-messages', streamId],
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
     enabled: !!streamId,
-    refetchInterval: 2000
+    onSuccess: (data) => setChatMessages(data || [])
   });
+
+  // Real-time chat subscription
+  useEffect(() => {
+    if (!streamId) return;
+    
+    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
+      if (event.data.stream_id === streamId) {
+        if (event.type === 'create') {
+          setChatMessages(prev => [...prev, event.data]);
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [streamId]);
 
   const { data: isFollowing } = useQuery({
     queryKey: ['follow-status', user?.email, creator?.id],
