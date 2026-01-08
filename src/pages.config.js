@@ -7,6 +7,8 @@ import Events from './pages/Events';
 import Profile from './pages/Profile';
 import CreatorProfile from './pages/CreatorProfile';
 import Settings from './pages/Settings';
+import EventDetails from './pages/EventDetails';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -19,9 +21,11 @@ export const PAGES = {
     "Profile": Profile,
     "CreatorProfile": CreatorProfile,
     "Settings": Settings,
+    "EventDetails": EventDetails,
 }
 
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
+    Layout: __Layout,
 };
