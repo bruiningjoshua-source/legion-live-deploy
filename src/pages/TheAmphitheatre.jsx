@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -14,250 +14,306 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Music, 
-  Search, 
-  Lock,
+import {
+  Search,
   Play,
-  Heart,
+  Music,
+  Flame,
+  TrendingUp,
+  Clock,
+  Eye,
+  Volume2,
   Share2,
-  Upload
+  Plus,
+  Library,
+  ListMusic,
+  Grid,
+  LayoutList
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MusicPlayer from '@/components/music/MusicPlayer';
-import MusicCard from '@/components/music/MusicCard';
 
-const genres = [
-  { value: 'all', label: 'All Genres' },
-  { value: 'electronic', label: 'Electronic' },
-  { value: 'hip_hop', label: 'Hip Hop' },
-  { value: 'pop', label: 'Pop' },
-  { value: 'rock', label: 'Rock' },
-  { value: 'indie', label: 'Indie' },
-  { value: 'r_and_b', label: 'R&B' },
-  { value: 'jazz', label: 'Jazz' },
-  { value: 'classical', label: 'Classical' },
-  { value: 'ambient', label: 'Ambient' },
-  { value: 'other', label: 'Other' }
+const GENRES = [
+  'All',
+  'Pop',
+  'Hip-Hop',
+  'Rock',
+  'Electronic',
+  'Jazz',
+  'Classical',
+  'R&B',
+  'Country',
+  'Indie',
+  'Metal',
+  'Reggae',
+  'Soul',
+  'Folk'
 ];
 
 export default function TheAmphitheatre() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('all');
-  const [currentTrack, setCurrentTrack] = useState(null);
+  const [selectedGenre, setSelectedGenre] = useState('All');
+  const [viewMode, setViewMode] = useState('grid');
+  const [activeTab, setActiveTab] = useState('music');
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me()
   });
 
-  const { data: subscription } = useQuery({
-    queryKey: ['creator-subscription', user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      try {
-        const result = await base44.functions.invoke('checkSubscription', { userEmail: user.email });
-        return result.data;
-      } catch (error) {
-        return null;
-      }
-    },
-    enabled: !!user?.email
-  });
-
-  const { data: music = [], isLoading } = useQuery({
-    queryKey: ['published-music'],
+  const { data: musicVideos = [], isLoading: musicLoading } = useQuery({
+    queryKey: ['music-videos'],
     queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
-    enabled: !!subscription?.has_access
+    staleTime: 5 * 60 * 1000
   });
 
-  const filteredMusic = useMemo(() => {
-    return music.filter(track => {
-      const matchesSearch = !searchQuery ||
-        track.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        track.artist?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesGenre = selectedGenre === 'all' || track.genre === selectedGenre;
-      return matchesSearch && matchesGenre;
-    });
-  }, [music, searchQuery, selectedGenre]);
+  const { data: vlogs = [], isLoading: vlogsLoading } = useQuery({
+    queryKey: ['vlogs-amphitheatre'],
+    queryFn: () => base44.entities.VlogVideo.filter({ is_published: true }, '-created_date', 100),
+    staleTime: 5 * 60 * 1000
+  });
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
-        <div className="text-center">
-          <Music className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-amber-100 mb-2">The Amphitheatre</h1>
-          <p className="text-amber-400/70 mb-6">Please log in to access</p>
-          <Button onClick={() => base44.auth.redirectToLogin()} className="bg-amber-600 hover:bg-amber-700">
-            Sign In
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const { data: creators = [] } = useQuery({
+    queryKey: ['creators-amphitheatre'],
+    queryFn: () => base44.entities.Creator.list('-follower_count', 50),
+    staleTime: 5 * 60 * 1000
+  });
 
-  if (!subscription?.has_access) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
-        <div className="max-w-md text-center">
-          <Lock className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-amber-100 mb-2">The Amphitheatre</h1>
-          <p className="text-amber-400/70 mb-6">Premium music & video streaming for creators</p>
-          <p className="text-sm text-amber-300/70 mb-6">Subscribe to monetization ($5 or $12/year) to unlock</p>
-          <Button 
-            onClick={() => navigate(createPageUrl('CreatorMonetization'))}
-            className="bg-amber-600 hover:bg-amber-700 w-full"
-          >
-            Subscribe Now
-          </Button>
+  const creatorMap = useMemo(() =>
+    creators.reduce((acc, c) => {
+      acc[c.id] = c;
+      return acc;
+    }, {}), [creators]
+  );
+
+  const filteredContent = useMemo(() => {
+    let content = [];
+
+    if (activeTab === 'music' || activeTab === 'all') {
+      content = [...content, ...musicVideos.map(m => ({
+        ...m,
+        type: 'music',
+        title: m.title,
+        thumbnail: m.thumbnail_url,
+        creator: creatorMap[m.creator_id],
+        views: m.view_count || 0,
+        duration: m.duration_seconds || 0
+      }))];
+    }
+
+    if (activeTab === 'vlogs' || activeTab === 'all') {
+      content = [...content, ...vlogs.map(v => ({
+        ...v,
+        type: 'vlog',
+        title: v.title,
+        thumbnail: v.thumbnail_url,
+        creator: creatorMap[v.creator_id],
+        views: v.view_count || 0,
+        duration: v.duration_seconds || 0
+      }))];
+    }
+
+    // Filter by search
+    if (searchQuery) {
+      content = content.filter(c =>
+        c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.creator?.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by genre
+    if (selectedGenre !== 'All') {
+      content = content.filter(c => c.category === selectedGenre.toLowerCase());
+    }
+
+    // Sort by views (trending)
+    content.sort((a, b) => b.views - a.views);
+
+    return content;
+  }, [musicVideos, vlogs, searchQuery, selectedGenre, activeTab, creatorMap]);
+
+  const VideoCard = ({ content }) => (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className="group cursor-pointer"
+    >
+      <Link to={content.type === 'music' ? createPageUrl(`WatchVideo?id=${content.id}`) : '#'}>
+        <div className="relative aspect-video bg-gradient-to-br from-stone-800 to-stone-900 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all">
+          {content.thumbnail ? (
+            <img
+              src={content.thumbnail}
+              alt={content.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
+          )}
+
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-amber-500/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform">
+                <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Duration */}
+          {content.duration > 0 && (
+            <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs text-white">
+              {Math.floor(content.duration / 60)}:{String(content.duration % 60).padStart(2, '0')}
+            </div>
+          )}
+
+          {/* Type Badge */}
+          <div className="absolute top-2 left-2">
+            <Badge className={content.type === 'music' ? 'bg-purple-600' : 'bg-blue-600'}>
+              {content.type === 'music' ? '♪ Music' : '🎬 Vlog'}
+            </Badge>
+          </div>
         </div>
-      </div>
-    );
-  }
+
+        {/* Info */}
+        <div className="mt-3">
+          <h3 className="text-amber-100 font-semibold line-clamp-2 group-hover:text-amber-300 transition-colors">
+            {content.title}
+          </h3>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 overflow-hidden flex-shrink-0">
+              {content.creator?.avatar_url ? (
+                <img src={content.creator.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-amber-300 text-sm truncate">{content.creator?.display_name || 'Creator'}</p>
+              <p className="text-amber-400/60 text-xs">{content.views.toLocaleString()} views</p>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+
+  const isLoading = musicLoading || vlogsLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-              <Music className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-amber-100">The Amphitheatre</h1>
-              <p className="text-amber-400/70">Music & videos from creators</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Player */}
-            {currentTrack && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-stone-800/50 border border-amber-600/20 rounded-2xl p-4"
-              >
-                <MusicPlayer track={currentTrack} onClose={() => setCurrentTrack(null)} />
-              </motion.div>
-            )}
-
-            {/* Search & Filter */}
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
-                <Input
-                  placeholder="Search songs, artists..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 rounded-xl"
-                />
-              </div>
-
-              <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                <SelectTrigger className="bg-stone-800/50 border-amber-600/20 text-amber-100">
-                  <SelectValue placeholder="Genre" />
-                </SelectTrigger>
-                <SelectContent className="bg-stone-900 border-amber-600/30">
-                  {genres.map(genre => (
-                    <SelectItem key={genre.value} value={genre.value} className="text-amber-100 focus:bg-amber-800/30">
-                      {genre.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Music Grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="aspect-square rounded-xl bg-stone-800" />
-                ))}
-              </div>
-            ) : filteredMusic.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <AnimatePresence>
-                  {filteredMusic.map((track, i) => (
-                    <motion.div
-                      key={track.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <MusicCard 
-                        track={track} 
-                        onPlay={() => setCurrentTrack(track)}
-                        isNowPlaying={currentTrack?.id === track.id}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
-                <Music className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                <h3 className="text-amber-100 font-semibold text-lg mb-2">No music found</h3>
-                <p className="text-amber-400/60">Try adjusting your search</p>
-              </div>
-            )}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2 flex items-center gap-3">
+              <Music className="w-8 h-8 text-amber-400" />
+              The Amphitheatre
+            </h1>
+            <p className="text-amber-400/70">Discover music, vlogs, and long-form content</p>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Uploads Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-amber-600/20 to-amber-700/10 border border-amber-600/30 rounded-2xl p-4"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Upload className="w-5 h-5 text-amber-400" />
-                <h3 className="text-amber-100 font-semibold">Upload Music</h3>
-              </div>
-              <p className="text-amber-400/70 text-sm mb-4">Share your music & videos with the community</p>
-              <Button 
-                onClick={() => navigate(createPageUrl('MusicStudio'))}
-                className="w-full bg-amber-600 hover:bg-amber-700"
-              >
-                Upload Now
+          {user && (
+            <Link to={createPageUrl('MusicStudio')}>
+              <Button className="bg-amber-600 hover:bg-amber-700 hidden sm:flex">
+                <Plus className="w-4 h-4 mr-2" />
+                Upload
               </Button>
-            </motion.div>
+            </Link>
+          )}
+        </div>
 
-            {/* Stats */}
-            <div className="bg-stone-800/50 border border-amber-600/20 rounded-2xl p-4 space-y-3">
-              <div>
-                <div className="text-2xl font-bold text-amber-100">{filteredMusic.length}</div>
-                <div className="text-xs text-amber-400/70">Tracks Available</div>
-              </div>
-              <div className="h-px bg-amber-600/20" />
-              <div className="flex items-center gap-2">
-                <Badge className="bg-amber-600/20 text-amber-200 border-amber-500/30">Premium</Badge>
-              </div>
+        {/* Search & Filters */}
+        <div className="mb-8 space-y-4">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
+              <Input
+                placeholder="Search videos, creators..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 focus:border-amber-500 rounded-xl"
+              />
             </div>
+            <Button
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              variant="outline"
+              size="icon"
+              className="border-amber-600/20 text-amber-400 hover:bg-amber-800/20"
+            >
+              {viewMode === 'grid' ? <LayoutList className="w-5 h-5" /> : <Grid className="w-5 h-5" />}
+            </Button>
+          </div>
 
-            {/* Genre Distribution */}
-            <div className="bg-stone-800/50 border border-amber-600/20 rounded-2xl p-4">
-              <h4 className="text-amber-100 font-semibold text-sm mb-3">Popular Genres</h4>
-              <div className="space-y-2">
-                {genres.slice(1).map(genre => {
-                  const count = music.filter(t => t.genre === genre.value).length;
-                  return (
-                    <div key={genre.value} className="flex items-center justify-between text-xs">
-                      <span className="text-amber-400/70">{genre.label}</span>
-                      <Badge variant="outline" className="border-amber-500/30 text-amber-300">{count}</Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          {/* Tabs */}
+          <div className="flex gap-2 border-b border-amber-600/20 pb-4 overflow-x-auto">
+            {[
+              { id: 'all', label: 'All', icon: TrendingUp },
+              { id: 'music', label: 'Music Videos', icon: Music },
+              { id: 'vlogs', label: 'Vlogs', icon: Volume2 }
+            ].map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-amber-600 text-white'
+                      : 'text-amber-300 hover:bg-amber-800/20'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Genre Filter */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {GENRES.map(genre => (
+              <button
+                key={genre}
+                onClick={() => setSelectedGenre(genre)}
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                  selectedGenre === genre
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-stone-800/50 text-amber-300 hover:bg-amber-800/20'
+                }`}
+              >
+                {genre}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* Content Grid */}
+        {isLoading ? (
+          <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="aspect-video rounded-xl bg-stone-800" />
+            ))}
+          </div>
+        ) : filteredContent.length > 0 ? (
+          <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+            <AnimatePresence>
+              {filteredContent.map((content, i) => (
+                <motion.div
+                  key={content.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                >
+                  <VideoCard content={content} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
+            <Music className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
+            <h3 className="text-amber-100 font-semibold text-lg mb-2">No Content Found</h3>
+            <p className="text-amber-400/60">Try adjusting your filters or check back later</p>
+          </div>
+        )}
       </div>
     </div>
   );
