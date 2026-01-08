@@ -35,6 +35,7 @@ import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
+import AlertNotifications from '@/components/moderation/AlertNotifications';
 import MultiPanelView from '@/components/stream/MultiPanelView';
 import TipButton from '@/components/stream/TipButton';
 import AgoraService from '@/components/stream/AgoraService';
