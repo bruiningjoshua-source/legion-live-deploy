@@ -45,12 +45,14 @@ export default function CreatorProfile() {
     staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
-  const { data: streams = [] } = useQuery({
+  const { data: allStreams = [] } = useQuery({
     queryKey: ['creator-streams', creatorId],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creatorId }, '-created_date', 20),
     enabled: !!creatorId,
     staleTime: 60 * 1000 // 1 minute
   });
+
+  const streams = allStreams.filter(s => s.status !== 'scheduled');
 
   const { data: videos = [] } = useQuery({
     queryKey: ['creator-videos', creatorId],
