@@ -20,6 +20,9 @@ import {
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
+// Authorized admin emails - update these as needed
+const AUTHORIZED_ADMINS = ['admin@legionlive.io', 'support@legionlive.io'];
+
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
@@ -31,17 +34,20 @@ export default function AdminDashboard() {
 
   const { data: streams = [] } = useQuery({
     queryKey: ['admin-streams'],
-    queryFn: () => base44.asServiceRole.entities.Stream.list('-created_date', 100)
+    queryFn: () => base44.asServiceRole.entities.Stream.list('-created_date', 100),
+    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['admin-creators'],
-    queryFn: () => base44.asServiceRole.entities.Creator.list('-follower_count', 100)
+    queryFn: () => base44.asServiceRole.entities.Creator.list('-follower_count', 100),
+    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
   const { data: users = [] } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => base44.asServiceRole.entities.User.list('-created_date', 100)
+    queryFn: () => base44.asServiceRole.entities.User.list('-created_date', 100),
+    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
   const clearLiveStreamsMutation = useMutation({
@@ -53,14 +59,17 @@ export default function AdminDashboard() {
     onError: () => toast.error('Failed to clear streams')
   });
 
-  if (user?.role !== 'admin') {
+  // Check both admin role AND authorized email
+  const isAuthorized = user?.role === 'admin' && AUTHORIZED_ADMINS.includes(user?.email);
+
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-red-500/30 max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-amber-100 mb-2">Access Denied</h2>
-            <p className="text-amber-400/70">Admin privileges required</p>
+            <p className="text-amber-400/70">Authorized administrators only</p>
           </CardContent>
         </Card>
       </div>
