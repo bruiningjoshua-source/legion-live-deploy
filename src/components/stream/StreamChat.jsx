@@ -36,11 +36,19 @@ const vipBadges = {
   10: { icon: '✨', label: 'Divine' },
 };
 
-export default function StreamChat({ messages, onSendMessage, onOpenGifts, currentUser, streamId }) {
+export default function StreamChat({ messages, onSendMessage, onOpenGifts, currentUser, streamId, mutedUsers = [] }) {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef(null);
   const { moderateMessage } = useChatModeration(streamId);
   const [isCheckingMessage, setIsCheckingMessage] = useState(false);
+
+  const isMuted = (email) => {
+    return mutedUsers.some(action => 
+      action.user_email === email && 
+      action.action_type === 'mute_chat' &&
+      (!action.muted_until || new Date(action.muted_until) > new Date())
+    );
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -51,13 +59,23 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
   const handleSend = async () => {
     if (!newMessage.trim()) return;
 
+    const userEmail = currentUser?.email || 'anonymous';
+    
+    // Check if user is muted from chat
+    if (isMuted(userEmail)) {
+      toast.error('You are muted in this stream', {
+        icon: <Shield className="w-4 h-4" />
+      });
+      return;
+    }
+
     const messageText = newMessage.trim();
     setIsCheckingMessage(true);
 
     try {
       const modResult = await moderateMessage.mutateAsync({
         message: messageText,
-        senderEmail: currentUser?.email || 'anonymous',
+        senderEmail: userEmail,
         senderName: currentUser?.full_name || 'Guest'
       });
 
@@ -219,8 +237,9 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Send a message..."
-            className="bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 focus:border-amber-500"
+            placeholder={isMuted(currentUser?.email) ? "You are muted" : "Send a message..."}
+            disabled={isMuted(currentUser?.email)}
+            className="bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 focus:border-amber-500 disabled:opacity-50"
           />
           
           <Button
