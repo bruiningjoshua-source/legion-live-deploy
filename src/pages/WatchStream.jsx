@@ -364,7 +364,7 @@ export default function WatchStream() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col">
+    <div className="fixed inset-0 bg-black overflow-hidden">
       {/* Gift Animation */}
       <AnimatePresence>
         {giftAnimation && (
@@ -376,13 +376,11 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Video Feed - Optimized for Portrait/Vertical Streaming */}
-      <div className="relative flex-1 bg-black overflow-hidden flex items-center justify-center">
-        {/* HTML5 Video Player - Portrait optimized */}
+      {/* Full Screen Video */}
+      <div className="absolute inset-0">
         <video
           ref={videoRef}
           className="w-full h-full object-cover"
-          style={{ aspectRatio: '9/16' }}
           autoPlay
           playsInline
           muted={isMuted}
@@ -408,13 +406,6 @@ export default function WatchStream() {
             </div>
           </div>
         )}
-        
-        {/* Live Badge Overlay */}
-        <div className="absolute top-4 left-4 z-10">
-          <Badge className="bg-red-500 text-white border-0 animate-pulse">
-            ● LIVE
-          </Badge>
-        </div>
 
         {/* PK Battle Overlay */}
         {stream.stream_type === 'pk_battle' && (
@@ -427,94 +418,201 @@ export default function WatchStream() {
             status={pkBattle?.status || 'pending'}
           />
         )}
-
-        {/* Video Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-red-500 text-white border-0">
-                <Eye className="w-3 h-3 mr-1" />
-                {(stream.viewer_count || 0).toLocaleString()}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/20">
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
-                <Maximize className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Creator Controls - Only for Stream Owner */}
-        {user?.email === creator?.user_email && (
-          <div className="absolute top-16 left-4 right-4 z-10 flex gap-2">
-            <Button
-              onClick={() => setShowModeration(!showModeration)}
-              variant="outline"
-              size="sm"
-              className="border-amber-600/30 text-amber-300 bg-stone-900/80 hover:bg-amber-800/20"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Moderation
-            </Button>
-            <Button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to end this stream?')) {
-                  endStreamMutation.mutate();
-                }
-              }}
-              variant="destructive"
-              size="sm"
-              disabled={endStreamMutation.isPending}
-              className="bg-red-600/90 hover:bg-red-700 text-white"
-            >
-              <StopCircle className="w-4 h-4 mr-2" />
-              {endStreamMutation.isPending ? 'Ending...' : 'End'}
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Bottom Section - Chat & Gift Button */}
-      <div className="bg-stone-900 border-t border-amber-600/20">
-        <div className="flex gap-2 p-3">
-          <Button 
-            onClick={() => setShowGiftPanel(true)}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12"
-          >
-            <Gift className="w-5 h-5 mr-2" />
-            Send Gift
-          </Button>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="border-amber-500/30 text-amber-300 h-12 px-6">
-                <MessageCircle className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="bg-stone-900 border-amber-600/30 p-0 w-full sm:w-[400px]">
-              <div className="h-full">
-                {showModeration && user?.email === creator?.user_email ? (
-                  <ModerationDashboard 
-                    streamId={streamId}
-                    onClose={() => setShowModeration(false)}
-                  />
-                ) : (
-                  <StreamChat 
-                    streamId={streamId}
-                    messages={chatMessages}
-                    onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-                    onOpenGifts={() => setShowGiftPanel(true)}
-                    currentUser={user}
-                  />
-                )}
+      {/* Top Bar - Creator Info & Viewers */}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent pt-safe">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5">
+                <div className="w-full h-full rounded-full overflow-hidden bg-stone-800">
+                  {creator?.avatar_url ? (
+                    <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
+                  )}
+                </div>
               </div>
-            </SheetContent>
-          </Sheet>
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-semibold text-sm">{creator?.display_name}</span>
+                {creator?.is_verified && <Crown className="w-3 h-3 text-amber-400" />}
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-red-500 text-white border-0 text-xs h-5">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-1" />
+                  LIVE
+                </Badge>
+                <span className="text-white/80 text-xs">{(stream.viewer_count || 0).toLocaleString()} watching</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {wallet && (
+              <div className="bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-full px-3 py-1 flex items-center gap-1">
+                <span className="text-amber-300 text-lg">🪙</span>
+                <span className="text-white text-xs font-semibold">{wallet.denarii_balance || 0}</span>
+              </div>
+            )}
+            <Button
+              onClick={() => followMutation.mutate()}
+              size="sm"
+              className={isFollowing 
+                ? "bg-stone-700/80 text-white h-7 text-xs" 
+                : "bg-amber-600 hover:bg-amber-700 text-white h-7 text-xs"}
+            >
+              <Heart className={`w-3 h-3 mr-1 ${isFollowing ? 'fill-current' : ''}`} />
+              {isFollowing ? 'Following' : 'Follow'}
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Right Side - Info Card (like rank display) */}
+      <div className="absolute top-20 right-4 z-20">
+        <motion.div
+          initial={{ x: 100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-2xl p-3 text-center"
+        >
+          <div className="text-2xl mb-1">{creator?.badges?.[0] || '🏛️'}</div>
+          <div className="text-white text-xs font-semibold">Level {creator?.level || 1}</div>
+        </motion.div>
+      </div>
+
+      {/* Chat Messages Overlay - Bottom portion */}
+      <div className="absolute left-4 right-4 bottom-24 z-20 max-h-[40vh] overflow-hidden pointer-events-none">
+        <div className="flex flex-col gap-2">
+          {chatMessages.slice(-5).map((msg, idx) => (
+            <motion.div
+              key={msg.id}
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 max-w-[85%]"
+            >
+              {msg.message_type === 'gift' ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-300 font-semibold text-sm">{msg.sender_name}</span>
+                  <span className="text-white text-sm">sent</span>
+                  <span className="text-2xl">{msg.gift_data?.gift_icon}</span>
+                  {msg.gift_data?.quantity > 1 && (
+                    <span className="text-amber-300 text-sm">x{msg.gift_data.quantity}</span>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <span className="text-amber-300 font-semibold text-sm mr-2">{msg.sender_name}:</span>
+                  <span className="text-white text-sm">{msg.message}</span>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Action Bar */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-safe">
+        <div className="flex items-center justify-around px-4 py-3">
+          <button 
+            onClick={() => setShowChat(!showChat)}
+            className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors"
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="text-xs">Chat</span>
+          </button>
+          
+          <button className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors">
+            <Sparkles className="w-6 h-6" />
+            <span className="text-xs">Effects</span>
+          </button>
+          
+          <button className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors">
+            <MoreVertical className="w-6 h-6" />
+            <span className="text-xs">More</span>
+          </button>
+          
+          <TipButton 
+            creatorId={creator?.id} 
+            streamId={streamId}
+            variant="ghost"
+            size="sm"
+            className="flex flex-col items-center gap-1 text-white/90 hover:text-white"
+          />
+          
+          <button 
+            onClick={() => setShowGiftPanel(true)}
+            className="flex flex-col items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            <Gift className="w-7 h-7" />
+            <span className="text-xs font-semibold">Gift</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Input - Shows when chat button clicked */}
+      <AnimatePresence>
+        {showChat && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            className="absolute bottom-20 left-0 right-0 z-40 bg-stone-900/95 backdrop-blur-lg border-t border-amber-600/30"
+          >
+            <div className="p-4">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const input = e.currentTarget.querySelector('input');
+                  if (input.value.trim()) {
+                    sendMessageMutation.mutate(input.value);
+                    input.value = '';
+                  }
+                }}
+                className="flex gap-2"
+              >
+                <Input
+                  placeholder="Say something..."
+                  className="flex-1 bg-stone-800 border-amber-600/20 text-white placeholder:text-amber-400/40"
+                />
+                <Button type="submit" className="bg-amber-600 hover:bg-amber-700">
+                  Send
+                </Button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Creator Controls - Only for Stream Owner */}
+      {user?.email === creator?.user_email && (
+        <div className="absolute top-20 left-4 z-20 flex gap-2">
+          <Button
+            onClick={() => setShowModeration(!showModeration)}
+            size="sm"
+            className="bg-stone-900/80 border border-amber-600/30 text-amber-300 hover:bg-amber-800/20 h-8 text-xs"
+          >
+            <Shield className="w-3 h-3 mr-1" />
+            Mod
+          </Button>
+          <Button
+            onClick={() => {
+              if (window.confirm('Are you sure you want to end this stream?')) {
+                endStreamMutation.mutate();
+              }
+            }}
+            size="sm"
+            disabled={endStreamMutation.isPending}
+            className="bg-red-600/90 hover:bg-red-700 text-white h-8 text-xs"
+          >
+            <StopCircle className="w-3 h-3 mr-1" />
+            End
+          </Button>
+        </div>
+      )}
 
       {/* Gift Panel */}
       <AnimatePresence>
@@ -531,6 +629,23 @@ export default function WatchStream() {
               walletBalance={totalAsBalance}
               onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
               onClose={() => setShowGiftPanel(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Moderation Panel */}
+      <AnimatePresence>
+        {showModeration && user?.email === creator?.user_email && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            className="fixed top-0 right-0 bottom-0 w-full sm:w-96 z-50 bg-stone-900 border-l border-amber-600/30"
+          >
+            <ModerationDashboard 
+              streamId={streamId}
+              onClose={() => setShowModeration(false)}
             />
           </motion.div>
         )}
