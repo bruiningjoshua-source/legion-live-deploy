@@ -34,19 +34,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GENRES = [
   'All',
-  'Pop',
+  'Synthwave',
+  'Lo-Fi',
+  'Vaporwave',
+  'Ambient',
+  'House',
+  'Chiptune',
   'Hip-Hop',
-  'Rock',
-  'Electronic',
-  'Jazz',
-  'Classical',
-  'R&B',
-  'Country',
   'Indie',
-  'Metal',
-  'Reggae',
+  'Pop',
+  'Rock',
+  'Jazz',
   'Soul',
-  'Folk'
+  'Classical',
+  'Latin',
+  'Reggae',
+  'Trap',
+  'Electronic'
 ];
 
 export default function TheAmphitheatre() {
