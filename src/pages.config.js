@@ -22,6 +22,7 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import TheAmphitheatre from './pages/TheAmphitheatre';
 import MusicStudio from './pages/MusicStudio';
+import PlatformAnalytics from './pages/PlatformAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +51,7 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "TheAmphitheatre": TheAmphitheatre,
     "MusicStudio": MusicStudio,
+    "PlatformAnalytics": PlatformAnalytics,
 }
 
 export const pagesConfig = {
