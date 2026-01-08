@@ -136,6 +136,16 @@ export default function WatchStream() {
     enabled: !!user?.email && !!creator?.id
   });
 
+  const { data: mutedUsers = [] } = useQuery({
+    queryKey: ['muted-users', streamId],
+    queryFn: () => base44.entities.ModerationAction.filter({ 
+      stream_id: streamId, 
+      action_type: 'mute_chat' 
+    }, '-created_date', 100),
+    enabled: !!streamId,
+    staleTime: 10 * 1000
+  });
+
   const sendMessageMutation = useMutation({
     mutationFn: (message) => base44.entities.ChatMessage.create({
       stream_id: streamId,
