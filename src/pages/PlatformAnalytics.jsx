@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, DollarSign, Zap, Target, Activity, Rocket } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import DynamicBonusEngine from '@/components/monetization/DynamicBonusEngine';
+import { useCallback } from 'react';
 
 const mockData = {
   dailyRevenue: [
@@ -28,9 +31,20 @@ const mockData = {
 };
 
 export default function PlatformAnalytics() {
+  const queryClient = useQueryClient();
+
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me()
+  });
+
+  const clearLiveStreamsMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('clearLiveStreams'),
+    onSuccess: () => {
+      toast.success('Platform cleared and ready for launch!');
+      queryClient.invalidateQueries();
+    },
+    onError: () => toast.error('Failed to clear streams')
   });
 
   if (user?.role !== 'admin') {
@@ -289,7 +303,7 @@ export default function PlatformAnalytics() {
           className="mt-8 bg-gradient-to-r from-amber-900/30 to-stone-900/30 border border-amber-600/20 rounded-xl p-6"
         >
           <h3 className="text-xl font-bold text-amber-100 mb-4">Revenue Optimization Strategy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-amber-200/80">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-amber-200/80 mb-6">
             <div>
               <h4 className="font-bold text-amber-100 mb-2">Phase 1: Acquisition</h4>
               <ul className="space-y-1 text-xs">
@@ -314,6 +328,28 @@ export default function PlatformAnalytics() {
                 <li>✓ Multi-million dollar ecosystem</li>
               </ul>
             </div>
+          </div>
+
+          {/* Launch Controls */}
+          <div className="border-t border-amber-600/30 pt-6">
+            <h4 className="font-bold text-amber-100 mb-3 flex items-center gap-2">
+              <Rocket className="w-5 h-5" />
+              Launch Controls
+            </h4>
+            <Button
+              onClick={() => {
+                if (window.confirm('Clear all live streams and prepare platform for launch?')) {
+                  clearLiveStreamsMutation.mutate();
+                }
+              }}
+              disabled={clearLiveStreamsMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {clearLiveStreamsMutation.isPending ? 'Clearing...' : 'Clear Live Streams & Launch'}
+            </Button>
+            <p className="text-xs text-amber-400/70 mt-2">
+              Ends all active streams and resets creator statuses for fresh launch
+            </p>
           </div>
         </motion.div>
       </div>
