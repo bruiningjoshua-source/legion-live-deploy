@@ -145,12 +145,13 @@ async function fetchChannelVideos(channelId, apiKey, channelName) {
   return videos;
 }
 
-async function fetchPlaylistVideos(playlistId, apiKey, playlistName) {
+async function fetchPlaylistVideos(playlistId, apiKey, playlistName, genre = 'Electronic', maxVideos = 100) {
   const videos = [];
   let pageToken = null;
+  const maxPages = Math.ceil(maxVideos / 50);
 
   try {
-    for (let page = 0; page < 3; page++) {
+    for (let page = 0; page < maxPages; page++) {
       const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
       url.searchParams.append('part', 'snippet');
       url.searchParams.append('playlistId', playlistId);
@@ -163,15 +164,18 @@ async function fetchPlaylistVideos(playlistId, apiKey, playlistName) {
       if (!response.items) break;
 
       response.items.forEach(item => {
-        videos.push({
-          videoId: item.snippet.resourceId.videoId,
-          title: item.snippet.title,
-          artist: playlistName,
-          thumbnail: item.snippet.thumbnails.medium.url,
-          genre: 'Synthwave'
-        });
+        if (videos.length < maxVideos) {
+          videos.push({
+            videoId: item.snippet.resourceId.videoId,
+            title: item.snippet.title,
+            artist: playlistName,
+            thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+            genre: genre
+          });
+        }
       });
 
+      if (videos.length >= maxVideos) break;
       pageToken = response.nextPageToken;
       if (!pageToken) break;
     }
