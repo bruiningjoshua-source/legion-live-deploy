@@ -25,7 +25,8 @@ import {
   VolumeX,
   Maximize,
   Radio,
-  Shield
+  Shield,
+  StopCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamChat from '@/components/stream/StreamChat';
@@ -207,6 +208,41 @@ export default function WatchStream() {
     }
   });
 
+  const endStreamMutation = useMutation({
+    mutationFn: async () => {
+      // Update stream status to ended
+      await base44.entities.Stream.update(stream.id, {
+        status: 'ended',
+        duration_minutes: Math.floor((new Date() - new Date(stream.created_date)) / 60000)
+      });
+
+      // Update creator status
+      await base44.entities.Creator.update(creator.id, {
+        is_live: false,
+        current_stream_id: null
+      });
+
+      // End any active PK battles
+      if (stream.stream_type === 'pk_battle' && pkBattle) {
+        await base44.entities.PKBattle.update(pkBattle.id, {
+          status: 'completed',
+          ended_at: new Date().toISOString(),
+          winner_creator_id: pkBattle.host_score > pkBattle.opponent_score 
+            ? pkBattle.host_creator_id 
+            : pkBattle.opponent_creator_id
+        });
+      }
+
+      // Stop camera stream
+      if (liveStream) {
+        liveStream.getTracks().forEach(track => track.stop());
+      }
+    },
+    onSuccess: () => {
+      window.location.href = createPageUrl('Profile');
+    }
+  });
+
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
   // Simulate live stream (in production, this would connect to real stream)
@@ -380,15 +416,31 @@ export default function WatchStream() {
             <div className="bg-stone-900/50 rounded-2xl p-4 border border-amber-600/20">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 {user?.email === creator?.user_email && (
-                  <Button
-                    onClick={() => setShowModeration(!showModeration)}
-                    variant="outline"
-                    size="sm"
-                    className="border-amber-600/30 text-amber-300 hover:bg-amber-800/20"
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Moderation Dashboard
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowModeration(!showModeration)}
+                      variant="outline"
+                      size="sm"
+                      className="border-amber-600/30 text-amber-300 hover:bg-amber-800/20"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Moderation Dashboard
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to end this stream?')) {
+                          endStreamMutation.mutate();
+                        }
+                      }}
+                      variant="destructive"
+                      size="sm"
+                      disabled={endStreamMutation.isPending}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <StopCircle className="w-4 h-4 mr-2" />
+                      {endStreamMutation.isPending ? 'Ending...' : 'End Stream'}
+                    </Button>
+                  </div>
                 )}
               </div>
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">

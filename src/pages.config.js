@@ -1,27 +1,27 @@
-import Home from './pages/Home';
+import CreatorProfile from './pages/CreatorProfile';
+import EventDetails from './pages/EventDetails';
+import Events from './pages/Events';
 import Explore from './pages/Explore';
+import GoLive from './pages/GoLive';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
-import GoLive from './pages/GoLive';
-import Events from './pages/Events';
-import Profile from './pages/Profile';
-import CreatorProfile from './pages/CreatorProfile';
-import Settings from './pages/Settings';
-import EventDetails from './pages/EventDetails';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
+    "CreatorProfile": CreatorProfile,
+    "EventDetails": EventDetails,
+    "Events": Events,
     "Explore": Explore,
+    "GoLive": GoLive,
+    "Home": Home,
+    "Profile": Profile,
+    "Settings": Settings,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
-    "GoLive": GoLive,
-    "Events": Events,
-    "Profile": Profile,
-    "CreatorProfile": CreatorProfile,
-    "Settings": Settings,
-    "EventDetails": EventDetails,
 }
 
 export const pagesConfig = {
