@@ -54,8 +54,25 @@ export default function BrandCampaigns() {
   }, {});
 
   const respondMutation = useMutation({
-    mutationFn: ({ campaignId, status }) => 
-      base44.entities.BrandCampaign.update(campaignId, { status }),
+    mutationFn: async ({ campaignId, status }) => {
+      if (status === 'accepted') {
+        // Initiate Stripe checkout
+        const campaign = campaigns.find(c => c.id === campaignId);
+        const result = await base44.functions.invoke('createCampaignCheckout', {
+          campaignId,
+          amount: campaign.payment_amount,
+          campaignName: campaign.campaign_name
+        });
+        
+        // Redirect to Stripe checkout
+        if (result.data?.url) {
+          window.location.href = result.data.url;
+        }
+        return;
+      }
+      
+      return base44.entities.BrandCampaign.update(campaignId, { status });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['creator-campaigns']);
     }
