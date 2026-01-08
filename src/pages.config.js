@@ -15,6 +15,8 @@ import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import BrandDashboard from './pages/BrandDashboard';
 import BrandCampaigns from './pages/BrandCampaigns';
+import Videos from './pages/Videos';
+import WatchVideo from './pages/WatchVideo';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +38,8 @@ export const PAGES = {
     "WatchStream": WatchStream,
     "BrandDashboard": BrandDashboard,
     "BrandCampaigns": BrandCampaigns,
+    "Videos": Videos,
+    "WatchVideo": WatchVideo,
 }
 
 export const pagesConfig = {
