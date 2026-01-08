@@ -76,6 +76,12 @@ export default function Navbar({ user, wallet }) {
                 Explore
               </Button>
             </Link>
+            <Link to={createPageUrl('Leaderboard')}>
+              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Trophy className="w-4 h-4 mr-2" />
+                Leaderboard
+              </Button>
+            </Link>
             <Link to={createPageUrl('Events')}>
               <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
                 <Trophy className="w-4 h-4 mr-2" />

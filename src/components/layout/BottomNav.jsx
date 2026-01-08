@@ -15,9 +15,9 @@ export default function BottomNav() {
 
   const navItems = [
     { label: 'Live', path: createPageUrl('Home'), icon: Home },
-    { label: 'Party', path: createPageUrl('Events'), icon: Compass },
+    { label: 'Following', path: createPageUrl('Following'), icon: MessageCircle },
     { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
-    { label: 'Chats', path: createPageUrl('Explore'), icon: MessageCircle },
+    { label: 'Explore', path: createPageUrl('Explore'), icon: Compass },
     { label: 'Me', path: createPageUrl('Profile'), icon: User }
   ];
 
