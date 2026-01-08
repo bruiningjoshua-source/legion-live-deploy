@@ -152,6 +152,12 @@ export default function Navbar({ user, wallet }) {
                         Admin Panel
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('ImportYouTubeLibrary')} className="cursor-pointer">
+                        <Music className="w-4 h-4 mr-2" />
+                        Import YouTube
+                      </Link>
+                    </DropdownMenuItem>
                   </>
                 )}
 
