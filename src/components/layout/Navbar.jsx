@@ -32,8 +32,10 @@ import {
   Gamepad2,
   Mic,
   Video,
-  Briefcase
+  Briefcase,
+  Zap
 } from 'lucide-react';
+import GamificationPanel from '@/components/engagement/GamificationPanel';
 
 export default function Navbar({ user, wallet }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -122,6 +124,20 @@ export default function Navbar({ user, wallet }) {
                 <span className="hidden sm:inline">Go Live</span>
               </Button>
             </Link>
+
+            {/* Gamification Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-amber-100 hover:bg-amber-800/50">
+                  <Zap className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-stone-900 border-amber-600/30 p-0">
+                <div className="max-h-[80vh] overflow-y-auto">
+                  <GamificationPanel user={user} />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="text-amber-100 hover:bg-amber-800/50 relative">

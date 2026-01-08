@@ -6,7 +6,15 @@ export function useChatModeration(streamId) {
     mutationFn: async ({ message, senderEmail, senderName }) => {
       try {
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are a content moderator for a live streaming platform. Analyze this chat message for inappropriate content including: hate speech, harassment, explicit content, spam, threats, or violations of community guidelines.
+          prompt: `You are a content moderator for a live streaming platform. Analyze this chat message for inappropriate content including: hate speech, harassment, threats, doxxing, spam, or severe violations of community guidelines.
+
+IMPORTANT: The following are ALLOWED and should NOT be flagged:
+- References to smoking cigarettes, joints, bongs
+- Mentions of consuming alcohol or marijuana
+- Adult language and profanity (unless targeted harassment)
+- Discussion of legal substances
+
+BLOCK only: hate speech, severe harassment, threats, illegal activities, doxxing, spam.
 
 Message: "${message}"
 

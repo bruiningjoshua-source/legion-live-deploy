@@ -16,6 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
+import VideoPlayer from '@/components/video/VideoPlayer';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
@@ -106,10 +107,9 @@ export default function WatchVideo() {
               video.video_type === 'short' ? 'max-w-md mx-auto' : 'aspect-video'
             }`}>
               {video.video_url ? (
-                <video 
-                  src={video.video_url} 
-                  controls 
-                  autoPlay
+                <VideoPlayer 
+                  src={video.video_url}
+                  poster={video.thumbnail_url}
                   className="w-full h-full"
                 />
               ) : (
