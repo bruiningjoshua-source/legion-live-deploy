@@ -441,6 +441,9 @@ export default function WatchStream() {
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
+      {/* Alert Notifications for Admins */}
+      <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
+
       {/* Gift Animation */}
       <AnimatePresence>
         {giftAnimation && (
