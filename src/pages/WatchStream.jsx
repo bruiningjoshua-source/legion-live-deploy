@@ -34,6 +34,7 @@ import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
+import MultiPanelView from '@/components/stream/MultiPanelView';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -262,23 +263,33 @@ export default function WatchStream() {
 
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
-  // Simulate live stream (in production, this would connect to real stream)
+  // Optimize video performance
   React.useEffect(() => {
     const initLiveStream = async () => {
       if (stream?.status === 'live') {
         try {
-          // For demo: access local camera to simulate viewing a live stream
-          // In production, you'd connect to the creator's broadcast URL
-          const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: true 
-          });
+          const constraints = {
+            video: { 
+              width: { ideal: 1080 },
+              height: { ideal: 1920 },
+              frameRate: { ideal: 30, max: 60 }
+            },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          };
+          const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
+            // Optimize playback
+            videoRef.current.playbackRate = 1.0;
+            try { await videoRef.current.play(); } catch (e) {}
           }
         } catch (error) {
-          console.log('Live stream simulation:', error);
+          console.error('Stream error:', error);
         }
       }
     };
@@ -366,7 +377,7 @@ export default function WatchStream() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Video Player */}
-            <div className="relative aspect-video bg-black rounded-2xl overflow-hidden mb-4">
+            <div className="relative w-full bg-black rounded-2xl overflow-hidden mb-4" style={{ height: 'calc(100vh - 280px)', minHeight: '500px' }}>
               {/* HTML5 Video Player */}
               <video
                 ref={videoRef}
@@ -376,10 +387,18 @@ export default function WatchStream() {
                 muted={isMuted}
                 poster={stream.thumbnail_url}
                 controls={false}
+                preload="auto"
               >
                 Your browser does not support video playback.
               </video>
               
+              {/* Multi-Panel Layout */}
+              {stream.stream_type === 'multi_panel' && stream.panel_creators?.length > 0 && (
+                <div className="absolute inset-0">
+                  <MultiPanelView panelCreators={stream.panel_creators} maxPanels={12} />
+                </div>
+              )}
+
               {!liveStream && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
                   <div className="text-center">
@@ -542,7 +561,7 @@ export default function WatchStream() {
           </div>
 
           {/* Chat/Moderation Sidebar - Desktop */}
-          <div className="hidden lg:block w-96 h-[calc(100vh-8rem)] sticky top-20">
+          <div className="hidden lg:block w-80 h-[calc(100vh-8rem)] sticky top-20">
             {showModeration && user?.email === creator?.user_email ? (
               <ModerationDashboard 
                 streamId={streamId}

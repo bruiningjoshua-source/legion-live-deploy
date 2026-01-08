@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,9 +8,26 @@
   transform: scaleX(-1);
 }
 
-/* Smooth transitions */
+/* Performance optimizations */
 * {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+video {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smooth video rendering */
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+/* GPU acceleration for animations */
+.animate-float, .animate-glow, [class*="motion-"] {
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }

@@ -1,37 +1,37 @@
+import AffiliateDashboard from './pages/AffiliateDashboard';
 import CreatorProfile from './pages/CreatorProfile';
+import CustomizeTheme from './pages/CustomizeTheme';
 import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
 import Explore from './pages/Explore';
+import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import Home from './pages/Home';
+import PodcastStudio from './pages/PodcastStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
-import CustomizeTheme from './pages/CustomizeTheme';
-import AffiliateDashboard from './pages/AffiliateDashboard';
-import PodcastStudio from './pages/PodcastStudio';
-import VlogStudio from './pages/VlogStudio';
-import GamingSetup from './pages/GamingSetup';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AffiliateDashboard": AffiliateDashboard,
     "CreatorProfile": CreatorProfile,
+    "CustomizeTheme": CustomizeTheme,
     "EventDetails": EventDetails,
     "Events": Events,
     "Explore": Explore,
+    "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "Home": Home,
+    "PodcastStudio": PodcastStudio,
     "Profile": Profile,
     "Settings": Settings,
+    "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
-    "CustomizeTheme": CustomizeTheme,
-    "AffiliateDashboard": AffiliateDashboard,
-    "PodcastStudio": PodcastStudio,
-    "VlogStudio": VlogStudio,
-    "GamingSetup": GamingSetup,
 }
 
 export const pagesConfig = {
