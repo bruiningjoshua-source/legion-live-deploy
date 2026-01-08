@@ -7,7 +7,8 @@ import {
   Radio,
   MessageCircle,
   User,
-  Network
+  Network,
+  Music
 } from 'lucide-react';
 
 export default function BottomNav() {
@@ -18,6 +19,7 @@ export default function BottomNav() {
     { label: 'Live', path: createPageUrl('Home'), icon: Home },
     { label: 'Collab', path: createPageUrl('CollaborationHub'), icon: Network },
     { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
+    { label: 'Amphitheatre', path: createPageUrl('TheAmphitheatre'), icon: Music },
     { label: 'Explore', path: createPageUrl('Explore'), icon: Compass },
     { label: 'Me', path: createPageUrl('Profile'), icon: User }
   ];
