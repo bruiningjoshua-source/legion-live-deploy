@@ -9,73 +9,87 @@ const packages = [
   {
     id: 'starter',
     name: 'Recruit\'s Pouch',
-    denarii: 1000,
-    bonus: 0,
+    denarii: 1100,
+    bonus: 100,
+    bonusPercent: 10,
     price: 0.99,
     icon: '🪙',
     popular: false,
     color: 'from-stone-600 to-stone-700',
-    border: 'border-stone-500'
+    border: 'border-stone-500',
+    usdPerDenarii: 0.0009,
+    value: 'Best for trying'
   },
   {
     id: 'basic',
     name: 'Soldier\'s Chest',
-    denarii: 5000,
-    bonus: 0,
+    denarii: 5750,
+    bonus: 750,
+    bonusPercent: 15,
     price: 4.99,
     icon: '💰',
     popular: false,
     color: 'from-green-700 to-green-800',
-    border: 'border-green-500'
+    border: 'border-green-500',
+    usdPerDenarii: 0.000867,
+    value: 'Good value'
   },
   {
     id: 'popular',
     name: 'Centurion\'s Treasury',
-    denarii: 10000,
-    bonus: 2000,
-    bonusPercent: 20,
+    denarii: 13200,
+    bonus: 3200,
+    bonusPercent: 25,
     price: 9.99,
     icon: '⚔️',
     popular: true,
     color: 'from-amber-600 to-amber-700',
-    border: 'border-amber-400'
+    border: 'border-amber-400',
+    usdPerDenarii: 0.000758,
+    value: '25% extra value'
   },
   {
     id: 'premium',
     name: 'Praetor\'s Vault',
-    denarii: 25000,
-    bonus: 7500,
-    bonusPercent: 30,
+    denarii: 34375,
+    bonus: 9375,
+    bonusPercent: 35,
     price: 24.99,
     icon: '🏛️',
     popular: false,
     color: 'from-purple-700 to-purple-800',
-    border: 'border-purple-500'
+    border: 'border-purple-500',
+    usdPerDenarii: 0.000726,
+    value: '35% savings'
   },
   {
     id: 'elite',
     name: 'Senator\'s Fortune',
-    denarii: 50000,
-    bonus: 20000,
-    bonusPercent: 40,
+    denarii: 75000,
+    bonus: 25000,
+    bonusPercent: 50,
     price: 49.99,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-700',
-    border: 'border-rose-400'
+    border: 'border-rose-400',
+    usdPerDenarii: 0.000667,
+    value: '50% bonus'
   },
   {
     id: 'ultimate',
     name: 'Emperor\'s Legacy',
-    denarii: 100000,
-    bonus: 50000,
-    bonusPercent: 50,
+    denarii: 150000,
+    bonus: 75000,
+    bonusPercent: 60,
     price: 99.99,
     icon: '✨',
     popular: false,
     color: 'from-amber-500 via-rose-500 to-purple-600',
     border: 'border-amber-300',
-    premium: true
+    premium: true,
+    usdPerDenarii: 0.000667,
+    value: '60% mega bonus'
   }
 ];
 
@@ -104,17 +118,31 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </div>
       </div>
 
+      {/* Time-Limited Bonus */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/40 rounded-xl p-4"
+      >
+        <p className="text-red-200 font-bold text-center text-sm">
+          ⏰ LIMITED TIME: All packages include bonus Denarii (expires in 14 days)
+        </p>
+      </motion.div>
+
       {/* Currency Exchange Info */}
-      <div className="flex items-center justify-center gap-6 text-sm text-amber-300/80">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🪙</span>
-          <span>1 Denarii = 100 As</span>
+      <div className="flex flex-col items-center justify-center gap-4 text-sm text-amber-300/80">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🪙</span>
+            <span>1 Denarii = 100 As</span>
+          </div>
+          <div className="w-px h-4 bg-amber-600/30" />
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🥈</span>
+            <span>1 Sestertius = 4 As</span>
+          </div>
         </div>
-        <div className="w-px h-4 bg-amber-600/30" />
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🥈</span>
-          <span>1 Sestertius = 4 As</span>
-        </div>
+        <p className="text-amber-400/70 text-xs">Buy more, save more • Larger packages = better value per Denarii</p>
       </div>
 
       {/* Package Grid */}
@@ -163,12 +191,20 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
                   </div>
                   
                   {pkg.bonus > 0 && (
-                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30 animate-pulse">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
-                    </Badge>
+                    <div className="space-y-1">
+                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 animate-pulse w-full justify-center">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
+                      </Badge>
+                      <p className="text-xs text-green-300/80 text-center font-semibold">{pkg.value}</p>
+                    </div>
                   )}
                 </div>
+
+                {/* Value per denarii */}
+                <p className="text-white/60 text-xs text-center mb-3">
+                  ${(pkg.usdPerDenarii * 100).toFixed(3)}/100 Denarii
+                </p>
 
                 {/* Price */}
                 <Button 
