@@ -40,9 +40,10 @@ export default function WatchStream() {
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = React.useRef(null);
+  const [liveStream, setLiveStream] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -205,6 +206,35 @@ export default function WatchStream() {
 
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
+  // Simulate live stream (in production, this would connect to real stream)
+  React.useEffect(() => {
+    const initLiveStream = async () => {
+      if (stream?.status === 'live') {
+        try {
+          // For demo: access local camera to simulate viewing a live stream
+          // In production, you'd connect to the creator's broadcast URL
+          const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: true 
+          });
+          setLiveStream(mediaStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+          }
+        } catch (error) {
+          console.log('Live stream simulation:', error);
+        }
+      }
+    };
+    initLiveStream();
+    
+    return () => {
+      if (liveStream) {
+        liveStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream?.status]);
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
@@ -291,10 +321,17 @@ export default function WatchStream() {
                 poster={stream.thumbnail_url}
                 controls={false}
               >
-                {/* Demo video source - replace with actual stream URL */}
-                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
                 Your browser does not support video playback.
               </video>
+              
+              {!liveStream && (
+                <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
+                  <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-amber-100">Connecting to live stream...</p>
+                  </div>
+                </div>
+              )}
               
               {/* Live Badge Overlay */}
               <div className="absolute top-4 left-4 z-10">

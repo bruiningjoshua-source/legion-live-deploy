@@ -26,7 +26,8 @@ import {
   Sparkles,
   Plus,
   X,
-  ArrowRight
+  ArrowRight,
+  Video
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -77,6 +78,9 @@ export default function GoLive() {
   const [newTag, setNewTag] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [pkOpponent, setPkOpponent] = useState('');
+  const [cameraStream, setCameraStream] = useState(null);
+  const [hasPermissions, setHasPermissions] = useState(false);
+  const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -106,8 +110,45 @@ export default function GoLive() {
     })
   });
 
+  React.useEffect(() => {
+    return () => {
+      // Cleanup camera stream on unmount
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
+
+  const requestCameraPermissions = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 1280 }, 
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }, 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+      setCameraStream(stream);
+      setHasPermissions(true);
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      alert('Camera and microphone access is required to go live. Please allow permissions and try again.');
+      console.error('Media error:', error);
+    }
+  };
+
   const goLiveMutation = useMutation({
     mutationFn: async () => {
+      if (!hasPermissions) {
+        throw new Error('Camera permissions required');
+      }
+      
       let creatorId = creator?.id;
       
       // Create creator profile if doesn't exist
@@ -227,6 +268,45 @@ export default function GoLive() {
             })}
           </div>
         </div>
+
+        {/* Camera Preview */}
+        {!hasPermissions ? (
+          <Card className="bg-stone-800/30 border-amber-600/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-amber-100 mb-2">Camera & Microphone Required</h3>
+              <p className="text-amber-400/70 mb-6">Allow access to start broadcasting to your audience</p>
+              <Button 
+                onClick={requestCameraPermissions}
+                size="lg"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                Enable Camera & Microphone
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative aspect-video bg-black">
+                <video
+                  ref={videoPreviewRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover mirror"
+                />
+                <Badge className="absolute top-4 left-4 bg-red-500 text-white border-0 animate-pulse">
+                  <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
+                  PREVIEW
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stream Setup Form */}
         <Card className="bg-stone-800/30 border-amber-600/20">
@@ -380,8 +460,8 @@ export default function GoLive() {
             {/* Go Live Button */}
             <Button
               onClick={() => goLiveMutation.mutate()}
-              disabled={!isFormValid || goLiveMutation.isPending}
-              className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-6 text-lg font-bold"
+              disabled={!isFormValid || !hasPermissions || goLiveMutation.isPending}
+              className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-6 text-lg font-bold disabled:opacity-50"
             >
               {goLiveMutation.isPending ? (
                 <span className="flex items-center gap-2">
