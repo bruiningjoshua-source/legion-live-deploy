@@ -61,6 +61,11 @@ export default function Explore() {
     refetchInterval: 15 * 1000
   });
 
+  const { data: recordedVideos = [] } = useQuery({
+    queryKey: ['recorded-streams'],
+    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 30)
+  });
+
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['creators-explore'],
     queryFn: () => base44.entities.Creator.list('-follower_count', 50),
