@@ -8,7 +8,8 @@ import {
   MessageCircle,
   User,
   Network,
-  Music
+  Music,
+  Gamepad2
 } from 'lucide-react';
 
 export default function BottomNav() {
@@ -16,12 +17,11 @@ export default function BottomNav() {
   const currentPath = location.pathname;
 
   const navItems = [
-    { label: 'Live', path: createPageUrl('Home'), icon: Home },
-    { label: 'Collab', path: createPageUrl('CollaborationHub'), icon: Network },
-    { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
-    { label: 'Amphitheatre', path: createPageUrl('TheAmphitheatre'), icon: Music },
+    { label: 'Home', path: createPageUrl('Home'), icon: Home },
     { label: 'Explore', path: createPageUrl('Explore'), icon: Compass },
-    { label: 'Me', path: createPageUrl('Profile'), icon: User }
+    { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
+    { label: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
+    { label: 'Profile', path: createPageUrl('Profile'), icon: User }
   ];
 
   return (
