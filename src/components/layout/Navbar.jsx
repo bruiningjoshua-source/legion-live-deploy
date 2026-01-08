@@ -210,6 +210,17 @@ export default function Navbar({ user, wallet }) {
                     Settings
                   </Link>
                 </DropdownMenuItem>
+                {user?.role === 'admin' && (
+                  <>
+                    <DropdownMenuSeparator className="bg-amber-600/20" />
+                    <DropdownMenuItem asChild className="text-amber-100 focus:bg-amber-800/50 focus:text-amber-50">
+                      <Link to={createPageUrl('AdminDashboard')}>
+                        <Zap className="w-4 h-4 mr-2" />
+                        Admin Panel
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator className="bg-amber-600/20" />
                 <DropdownMenuItem 
                   onClick={() => base44.auth.logout()}
