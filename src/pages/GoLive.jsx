@@ -161,6 +161,11 @@ export default function GoLive() {
       if (!hasPermissions) {
         throw new Error('Camera permissions required');
       }
+
+      // Check if creator already has a live stream
+      if (creator?.is_live) {
+        throw new Error('You already have a live stream. End it before starting a new one.');
+      }
       
       let creatorId = creator?.id;
       
@@ -205,6 +210,9 @@ export default function GoLive() {
     },
     onSuccess: (stream) => {
       window.location.href = createPageUrl(`WatchStream?id=${stream.id}`);
+    },
+    onError: (error) => {
+      alert(error.message);
     }
   });
 

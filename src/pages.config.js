@@ -7,9 +7,11 @@ import CustomizeTheme from './pages/CustomizeTheme';
 import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
 import Explore from './pages/Explore';
+import Following from './pages/Following';
 import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import Home from './pages/Home';
+import Leaderboard from './pages/Leaderboard';
 import PodcastStudio from './pages/PodcastStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -18,8 +20,6 @@ import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import Following from './pages/Following';
-import Leaderboard from './pages/Leaderboard';
 import __Layout from './Layout.jsx';
 
 
@@ -33,9 +33,11 @@ export const PAGES = {
     "EventDetails": EventDetails,
     "Events": Events,
     "Explore": Explore,
+    "Following": Following,
     "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "Home": Home,
+    "Leaderboard": Leaderboard,
     "PodcastStudio": PodcastStudio,
     "Profile": Profile,
     "Settings": Settings,
@@ -44,8 +46,6 @@ export const PAGES = {
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "Following": Following,
-    "Leaderboard": Leaderboard,
 }
 
 export const pagesConfig = {
