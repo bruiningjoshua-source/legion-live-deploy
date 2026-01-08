@@ -31,7 +31,8 @@ import {
   Palette,
   Gamepad2,
   Mic,
-  Video
+  Video,
+  Briefcase
 } from 'lucide-react';
 
 export default function Navbar({ user, wallet }) {
@@ -88,6 +89,12 @@ export default function Navbar({ user, wallet }) {
               <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
                 <Video className="w-4 h-4 mr-2" />
                 Vlogs
+              </Button>
+            </Link>
+            <Link to={createPageUrl('BrandDashboard')}>
+              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Briefcase className="w-4 h-4 mr-2" />
+                Brands
               </Button>
             </Link>
           </div>
