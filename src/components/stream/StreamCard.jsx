@@ -21,8 +21,8 @@ export default function StreamCard({ stream, creator }) {
     >
       <Link to={createPageUrl(`WatchStream?id=${stream.id}`)}>
         <div className="relative group cursor-pointer">
-          {/* Thumbnail Container */}
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-stone-800 to-stone-900 border border-amber-600/20 group-hover:border-amber-500/50 transition-all shadow-xl">
+          {/* Thumbnail Container - Portrait optimized */}
+          <div className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-gradient-to-br from-stone-800 to-stone-900 border border-amber-600/20 group-hover:border-amber-500/50 transition-all shadow-xl">
             {stream.thumbnail_url ? (
               <img 
                 src={stream.thumbnail_url} 
