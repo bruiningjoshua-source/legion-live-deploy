@@ -46,6 +46,48 @@ Deno.serve(async (req) => {
 
         console.log('[stripeWebhook] Checkout completed:', session.id, metadata);
 
+        // Handle Denarii Purchase
+        if (metadata.purchase_type === 'denarii' && metadata.user_email) {
+          const denariiAmount = parseInt(metadata.denarii_amount);
+          const bonusDenarii = parseInt(metadata.bonus_denarii || 0);
+          const totalDenarii = denariiAmount + bonusDenarii;
+
+          // Update wallet
+          const wallets = await base44.asServiceRole.entities.Wallet.filter(
+            { user_email: metadata.user_email },
+            null,
+            1
+          );
+
+          if (wallets[0]) {
+            await base44.asServiceRole.entities.Wallet.update(wallets[0].id, {
+              denarii_balance: (wallets[0].denarii_balance || 0) + totalDenarii,
+              total_spent: (wallets[0].total_spent || 0) + (session.amount_total / 100)
+            });
+          } else {
+            await base44.asServiceRole.entities.Wallet.create({
+              user_email: metadata.user_email,
+              denarii_balance: totalDenarii,
+              total_spent: session.amount_total / 100
+            });
+          }
+
+          // Create purchase record
+          await base44.asServiceRole.entities.CurrencyPurchase.create({
+            user_email: metadata.user_email,
+            package_name: metadata.package_id,
+            denarii_amount: denariiAmount,
+            bonus_denarii: bonusDenarii,
+            price_usd: session.amount_total / 100,
+            payment_method: 'stripe',
+            transaction_id: session.payment_intent,
+            status: 'completed'
+          });
+
+          console.log('[stripeWebhook] Denarii purchase completed:', totalDenarii, 'for', metadata.user_email);
+        }
+
+        // Handle Brand Campaign
         if (metadata.campaign_id) {
           // Update campaign status and payment info
           await base44.asServiceRole.entities.BrandCampaign.update(metadata.campaign_id, {
