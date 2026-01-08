@@ -10,15 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Radio, 
   TrendingUp, 
-  Swords, 
-  Star, 
-  Users, 
-  ChevronRight,
+  Heart,
   Sparkles,
-  Trophy,
-  Crown
+  Trophy
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
 import CreatorCard from '@/components/creator/CreatorCard';
 import EventCard from '@/components/events/EventCard';

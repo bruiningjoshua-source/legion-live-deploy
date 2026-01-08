@@ -63,47 +63,29 @@ export default function Navbar({ user, wallet }) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Home className="w-4 h-4 mr-2" />
+              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Home className="w-4 h-4 mr-1" />
                 Home
               </Button>
             </Link>
             <Link to={createPageUrl('Explore')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Compass className="w-4 h-4 mr-2" />
+              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Compass className="w-4 h-4 mr-1" />
                 Explore
               </Button>
             </Link>
-            <Link to={createPageUrl('Leaderboard')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Trophy className="w-4 h-4 mr-2" />
-                Leaderboard
-              </Button>
-            </Link>
             <Link to={createPageUrl('Events')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Trophy className="w-4 h-4 mr-2" />
+              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Trophy className="w-4 h-4 mr-1" />
                 Events
               </Button>
             </Link>
-            <Link to={createPageUrl('PodcastStudio')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Mic className="w-4 h-4 mr-2" />
-                Podcasts
-              </Button>
-            </Link>
-            <Link to={createPageUrl('VlogStudio')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Video className="w-4 h-4 mr-2" />
-                Vlogs
-              </Button>
-            </Link>
-            <Link to={createPageUrl('BrandDashboard')}>
-              <Button variant="ghost" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
-                <Briefcase className="w-4 h-4 mr-2" />
-                Brands
+            <Link to={createPageUrl('Leaderboard')}>
+              <Button variant="ghost" size="sm" className="text-amber-100 hover:bg-amber-800/50 hover:text-amber-50">
+                <Trophy className="w-4 h-4 mr-1" />
+                Ranks
               </Button>
             </Link>
           </div>
@@ -246,28 +228,28 @@ export default function Navbar({ user, wallet }) {
 
         {/* Mobile Navigation */}
         {mobileOpen && (
-          <div className="md:hidden py-4 border-t border-amber-600/20">
-            <div className="flex flex-col gap-2">
+          <div className="lg:hidden py-4 border-t border-amber-600/20">
+            <div className="flex flex-col gap-1">
               <Link to={createPageUrl('Home')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50">
+                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
                   <Home className="w-4 h-4 mr-2" />
                   Home
                 </Button>
               </Link>
               <Link to={createPageUrl('Explore')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50">
+                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
                   <Compass className="w-4 h-4 mr-2" />
                   Explore
                 </Button>
               </Link>
               <Link to={createPageUrl('Events')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50">
+                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
                   <Trophy className="w-4 h-4 mr-2" />
                   Events
                 </Button>
               </Link>
               <Link to={createPageUrl('Wallet')} onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50">
+                <Button variant="ghost" className="w-full justify-start text-amber-100 hover:bg-amber-800/50 text-sm">
                   <Wallet className="w-4 h-4 mr-2" />
                   Treasury
                 </Button>
