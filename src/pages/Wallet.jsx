@@ -55,30 +55,34 @@ export default function Wallet() {
 
   const purchaseMutation = useMutation({
     mutationFn: async (pkg) => {
-      // Create purchase record (in real app, this would go through payment processor)
-      const purchase = await base44.entities.CurrencyPurchase.create({
-        user_email: user.email,
-        package_name: pkg.name,
-        denarii_amount: pkg.denarii,
-        bonus_denarii: pkg.bonus,
-        price_usd: pkg.price,
-        payment_method: 'card',
-        transaction_id: `TXN-${Date.now()}`,
-        status: 'completed'
+      // Check if running in iframe
+      if (window.self !== window.top) {
+        throw new Error('IFRAME_BLOCKED');
+      }
+
+      // Create Stripe checkout session
+      const response = await base44.functions.invoke('createDenariiCheckout', {
+        packageId: pkg.id,
+        denarii: pkg.denarii,
+        bonus: pkg.bonus || 0,
+        price: pkg.price,
+        packageName: pkg.name
       });
 
-      // Update wallet balance
-      const totalDenarii = pkg.denarii + (pkg.bonus || 0);
-      await base44.entities.Wallet.update(wallet.id, {
-        denarii_balance: (wallet.denarii_balance || 0) + totalDenarii,
-        total_spent: (wallet.total_spent || 0) + pkg.price
-      });
-
-      return purchase;
+      // Redirect to Stripe checkout
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['wallet']);
-      queryClient.invalidateQueries(['currency-purchases']);
+    onError: (error) => {
+      if (error.message === 'IFRAME_BLOCKED') {
+        alert('⚠️ Checkout is only available in the published app.\n\nPlease open the app directly (not in preview mode) to complete your purchase.');
+      } else {
+        console.error('Purchase error:', error);
+        alert('Purchase failed. Please try again.');
+      }
     }
   });
 
