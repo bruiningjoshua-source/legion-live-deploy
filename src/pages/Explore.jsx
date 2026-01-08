@@ -21,7 +21,10 @@ import {
   Grid, 
   LayoutGrid,
   Filter,
-  Sparkles
+  Sparkles,
+  TrendingUp,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
@@ -53,6 +56,8 @@ export default function Explore() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [sortBy, setSortBy] = useState('viewers');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams-explore'],
@@ -81,7 +86,7 @@ export default function Explore() {
   );
 
   const filteredStreams = useMemo(() => {
-    return streams.filter(stream => {
+    let result = streams.filter(stream => {
       const matchesSearch = !searchQuery || 
         stream.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         creatorMap[stream.creator_id]?.display_name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -91,7 +96,24 @@ export default function Explore() {
 
       return matchesSearch && matchesCategory && matchesType;
     });
-  }, [streams, searchQuery, selectedCategory, selectedType, creatorMap]);
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'viewers':
+        result.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
+        break;
+      case 'trending':
+        result.sort((a, b) => (b.total_gifts_received || 0) - (a.total_gifts_received || 0));
+        break;
+      case 'newest':
+        result.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        break;
+      default:
+        break;
+    }
+
+    return result;
+  }, [streams, searchQuery, selectedCategory, selectedType, sortBy, creatorMap]);
 
   const filteredCreators = useMemo(() => {
     return creators.filter(creator => {
@@ -127,42 +149,57 @@ export default function Explore() {
             />
           </div>
 
-          {/* Filter Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] bg-stone-800/50 border-amber-600/20 text-amber-100">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className="bg-stone-900 border-amber-600/30">
-                {categories.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value} className="text-amber-100 focus:bg-amber-800/30">
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Filters & Sorting */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="bg-stone-900 border-amber-600/30">
+                  {categories.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value} className="text-amber-100 focus:bg-amber-800/30">
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            {activeTab === 'streams' && (
-              <div className="flex items-center gap-2 bg-stone-800/50 rounded-xl p-1 border border-amber-600/20">
-                {streamTypes.map(type => {
-                  const Icon = type.icon;
-                  return (
-                    <Button
-                      key={type.value}
-                      variant={selectedType === type.value ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setSelectedType(type.value)}
-                      className={selectedType === type.value 
-                        ? "bg-amber-600 text-white" 
-                        : "text-amber-300 hover:bg-amber-800/30"}
-                    >
-                      <Icon className="w-4 h-4 mr-1.5" />
-                      {type.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            )}
+              {activeTab === 'streams' && (
+                <>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-stone-900 border-amber-600/30">
+                      <SelectItem value="viewers" className="text-amber-100">Most Viewers</SelectItem>
+                      <SelectItem value="trending" className="text-amber-100">Most Trending</SelectItem>
+                      <SelectItem value="newest" className="text-amber-100">Newest</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg border border-amber-600/20 p-0.5">
+                    {streamTypes.map(type => {
+                      const Icon = type.icon;
+                      return (
+                        <Button
+                          key={type.value}
+                          variant={selectedType === type.value ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSelectedType(type.value)}
+                          className={`${selectedType === type.value 
+                            ? "bg-amber-600 text-white" 
+                            : "text-amber-300 hover:bg-amber-800/20"} text-xs`}
+                        >
+                          <Icon className="w-3 h-3 mr-1" />
+                          <span className="hidden sm:inline">{type.label}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
