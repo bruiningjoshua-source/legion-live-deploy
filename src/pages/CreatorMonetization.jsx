@@ -22,6 +22,7 @@ import {
 import { motion } from 'framer-motion';
 import MonetizationShowcase from '@/components/monetization/MonetizationShowcase';
 import ViewerSpendingIncentives from '@/components/monetization/ViewerSpendingIncentives';
+import ReferralDashboard from '@/components/monetization/ReferralDashboard';
 
 export default function CreatorMonetization() {
   const queryClient = useQueryClient();
@@ -294,6 +295,16 @@ export default function CreatorMonetization() {
               </CardHeader>
               <CardContent>
                 <ViewerSpendingIncentives userSpending={totalTipRevenue} />
+              </CardContent>
+            </Card>
+
+            {/* Referral Section */}
+            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+              <CardHeader>
+                <CardTitle className="text-amber-100">Referral Program</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ReferralDashboard creatorId={creator?.id} />
               </CardContent>
             </Card>
 
