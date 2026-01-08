@@ -26,7 +26,8 @@ import {
   Maximize,
   Radio,
   Shield,
-  StopCircle
+  StopCircle,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamChat from '@/components/stream/StreamChat';
@@ -36,6 +37,8 @@ import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
 import MultiPanelView from '@/components/stream/MultiPanelView';
 import TipButton from '@/components/stream/TipButton';
+import AgoraService from '@/components/stream/AgoraService';
+import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -47,6 +50,8 @@ export default function WatchStream() {
   const [giftAnimation, setGiftAnimation] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [streamStats, setStreamStats] = useState(null);
+  const [remoteUsers, setRemoteUsers] = useState([]);
   const videoRef = React.useRef(null);
   const [liveStream, setLiveStream] = useState(null);
   const [showModeration, setShowModeration] = useState(false);
@@ -274,7 +279,55 @@ export default function WatchStream() {
 
   const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
 
-  // Optimize video performance for portrait streaming
+  // Initialize Agora for viewers
+  React.useEffect(() => {
+    const initAgoraViewer = async () => {
+      if (stream?.status === 'live' && user?.email !== creator?.user_email) {
+        try {
+          const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42'; // Public App ID
+          await AgoraService.initialize(AGORA_APP_ID);
+
+          // Get Agora token for viewer
+          const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
+            channelName: streamId,
+            uid: Math.floor(Math.random() * 1000000),
+            role: 'audience'
+          });
+
+          // Join channel as viewer
+          await AgoraService.joinChannel(
+            tokenResponse.data.token,
+            streamId,
+            tokenResponse.data.uid
+          );
+
+          // Monitor stream quality
+          AgoraService.onQualityChange((stats) => {
+            setStreamStats(stats);
+          });
+
+          // Get remote users
+          setRemoteUsers(AgoraService.getRemoteUsers());
+          setLiveStream(true);
+
+          console.log('Joined stream as viewer');
+        } catch (error) {
+          console.error('Failed to join Agora stream:', error);
+          setLiveStream(true); // Fallback to basic viewing
+        }
+      }
+    };
+
+    initAgoraViewer();
+
+    return () => {
+      if (stream?.status === 'ended') {
+        AgoraService.leave().catch(e => console.error('Leave error:', e));
+      }
+    };
+  }, [stream?.status, streamId, user?.email, creator?.user_email]);
+
+  // Optimize video performance for portrait streaming (creator view)
   React.useEffect(() => {
     const initLiveStream = async () => {
       if (stream?.status === 'live' && user?.email === creator?.user_email) {
@@ -306,13 +359,10 @@ export default function WatchStream() {
           console.error('Camera access error:', error);
           alert('Unable to access camera. Please ensure permissions are granted.');
         }
-      } else if (stream?.status === 'live') {
-        // Viewers see the stream URL (when available from streaming service)
-        setLiveStream(true); // Mark as connected for viewers
       }
     };
     initLiveStream();
-    
+
     return () => {
       if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
@@ -410,6 +460,7 @@ export default function WatchStream() {
           <div className="absolute inset-0">
             <MultiPanelView 
               panelCreators={stream.panel_creators || [creator]}
+              remoteUsers={remoteUsers}
               maxPanels={9}
               hostCreatorId={stream.creator_id}
               currentUserId={creator?.id}
@@ -417,15 +468,13 @@ export default function WatchStream() {
               allowFreeJoin={true}
               onRequestJoin={(position) => {
                 console.log('Request to join panel position:', position);
-                // TODO: Implement join logic
               }}
               onKickUser={(userId) => {
                 console.log('Kick user:', userId);
-                // TODO: Implement kick logic
               }}
             />
           </div>
-        )}
+          )}
 
         {!liveStream && (
           <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
@@ -543,6 +592,18 @@ export default function WatchStream() {
         </div>
       </div>
 
+      {/* Quality Monitor - Viewer View */}
+      {streamStats && user?.email !== creator?.user_email && (
+        <div className="absolute bottom-24 left-4 z-20 w-64">
+          <StreamQualityMonitor 
+            stats={streamStats}
+            onQualityChange={(quality) => {
+              // Quality display for viewers (read-only)
+            }}
+          />
+        </div>
+      )}
+
       {/* Bottom Action Bar */}
       <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-safe">
         <div className="flex items-center justify-around px-4 py-3">
@@ -553,12 +614,12 @@ export default function WatchStream() {
             <MessageCircle className="w-6 h-6" />
             <span className="text-xs">Chat</span>
           </button>
-          
+
           <button className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors">
             <Sparkles className="w-6 h-6" />
             <span className="text-xs">Effects</span>
           </button>
-          
+
           <button className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors">
             <MoreVertical className="w-6 h-6" />
             <span className="text-xs">More</span>
