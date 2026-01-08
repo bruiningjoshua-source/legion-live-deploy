@@ -25,17 +25,21 @@ import EventCard from '@/components/events/EventCard';
 export default function Home() {
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 20)
+    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 20),
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000 // Refetch every minute
   });
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['creators'],
-    queryFn: () => base44.entities.Creator.list('-follower_count', 12)
+    queryFn: () => base44.entities.Creator.list('-follower_count', 12),
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: () => base44.entities.Event.filter({ is_active: true }, '-start_date', 4)
+    queryFn: () => base44.entities.Event.filter({ is_active: true }, '-start_date', 4),
+    staleTime: 10 * 60 * 1000 // 10 minutes
   });
 
   const featuredStreams = streams.filter(s => s.is_featured);
