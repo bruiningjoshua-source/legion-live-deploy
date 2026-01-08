@@ -48,7 +48,10 @@ export default function LoadingScreen({ onComplete }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 3, repeat: Infinity }}
-          className="absolute inset-0 bg-radial-gradient from-amber-500/10 via-transparent to-transparent"
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle, rgba(217, 119, 6, 0.1) 0%, transparent 70%)'
+          }}
         />
       </div>
 
