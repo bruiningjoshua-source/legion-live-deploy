@@ -20,6 +20,8 @@ import {
   Shield
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import MonetizationShowcase from '@/components/monetization/MonetizationShowcase';
+import ViewerSpendingIncentives from '@/components/monetization/ViewerSpendingIncentives';
 
 export default function CreatorMonetization() {
   const queryClient = useQueryClient();
@@ -129,14 +131,20 @@ export default function CreatorMonetization() {
 
         {/* Subscription Status */}
         {!isMonetizationActive ? (
-          <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 mb-8">
+          <>
+            {/* Monetization Showcase */}
+            <div className="mb-12">
+              <MonetizationShowcase />
+            </div>
+
+            <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 mb-8">
             <CardContent className="p-8">
               <div className="flex items-start gap-4">
                 <Lock className="w-12 h-12 text-amber-400 flex-shrink-0" />
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-amber-100 mb-2">Unlock Monetization Features</h2>
+                  <h2 className="text-2xl font-bold text-amber-100 mb-2">Unlock Your Earning Potential</h2>
                   <p className="text-amber-300/70 mb-6">
-                    Subscribe to start earning real money from subscriptions, tips, and brand deals.
+                    Join thousands of creators earning $1k-$10k+/month. Subscribe now to activate all revenue streams.
                   </p>
 
                   <div className="grid md:grid-cols-2 gap-4">
@@ -200,6 +208,7 @@ export default function CreatorMonetization() {
               </div>
             </CardContent>
           </Card>
+          </>
         ) : (
           <>
             {/* Active Subscription Banner */}
@@ -273,6 +282,20 @@ export default function CreatorMonetization() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Viewer Incentives Section */}
+            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+              <CardHeader>
+                <CardTitle className="text-amber-100 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-amber-400" />
+                  Viewer Spending Incentives
+                </CardTitle>
+                <p className="text-amber-400/70 text-sm mt-2">Drive viewership growth with attractive rewards program</p>
+              </CardHeader>
+              <CardContent>
+                <ViewerSpendingIncentives userSpending={totalTipRevenue} />
+              </CardContent>
+            </Card>
 
             {/* Tabs */}
             <Tabs defaultValue="tiers" className="space-y-6">
