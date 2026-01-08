@@ -12,6 +12,7 @@ import CustomizeTheme from './pages/CustomizeTheme';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import PodcastStudio from './pages/PodcastStudio';
 import VlogStudio from './pages/VlogStudio';
+import GamingSetup from './pages/GamingSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "AffiliateDashboard": AffiliateDashboard,
     "PodcastStudio": PodcastStudio,
     "VlogStudio": VlogStudio,
+    "GamingSetup": GamingSetup,
 }
 
 export const pagesConfig = {
