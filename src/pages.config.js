@@ -13,6 +13,8 @@ import Settings from './pages/Settings';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
+import BrandDashboard from './pages/BrandDashboard';
+import BrandCampaigns from './pages/BrandCampaigns';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +34,8 @@ export const PAGES = {
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
+    "BrandDashboard": BrandDashboard,
+    "BrandCampaigns": BrandCampaigns,
 }
 
 export const pagesConfig = {
