@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,10 @@ import {
   Eye,
   Zap,
   Trash2,
-  Power
+  Power,
+  Shield,
+  BarChart3,
+  Briefcase
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -138,6 +143,46 @@ export default function AdminDashboard() {
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Link to={createPageUrl('PlatformAdminAnalytics')}>
+            <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30 hover:border-blue-500/50 transition-all cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <BarChart3 className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                <p className="text-amber-100 font-semibold">Platform Analytics</p>
+                <p className="text-amber-400/60 text-xs">Revenue & metrics</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('ContentModerationAdmin')}>
+            <Card className="bg-gradient-to-br from-red-900/30 to-stone-900 border-red-600/30 hover:border-red-500/50 transition-all cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Shield className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                <p className="text-amber-100 font-semibold">Content Moderation</p>
+                <p className="text-amber-400/60 text-xs">Review violations</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('AmbassadorProgram')}>
+            <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 hover:border-amber-500/50 transition-all cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Briefcase className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                <p className="text-amber-100 font-semibold">Ambassador Program</p>
+                <p className="text-amber-400/60 text-xs">Manage campaigns</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('BrandCampaigns')}>
+            <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30 hover:border-green-500/50 transition-all cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <DollarSign className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                <p className="text-amber-100 font-semibold">Brand Campaigns</p>
+                <p className="text-amber-400/60 text-xs">Affiliate marketing</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Tabs */}
