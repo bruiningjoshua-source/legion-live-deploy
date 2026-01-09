@@ -154,9 +154,9 @@ export default function Navbar({ user, wallet }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('AmbassadorProgram')} className="cursor-pointer">
+                  <Link to={createPageUrl('AffiliateHub')} className="cursor-pointer">
                     <Users className="w-4 h-4 mr-2" />
-                    Ambassador Program
+                    Affiliate Hub
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
