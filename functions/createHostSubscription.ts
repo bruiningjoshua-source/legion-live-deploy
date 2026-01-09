@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
 
     console.log('[createHostSubscription] Creating subscription for:', user.email, 'Plan:', plan);
 
-    // Price configuration
+    // Price configuration - $5/mo or $12/year (80% savings)
     const prices = {
       monthly: {
         amount: 500, // $5.00
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         name: 'Legion Host - Monthly'
       },
       yearly: {
-        amount: 4800, // $48.00
+        amount: 1200, // $12.00 - massive savings
         interval: 'year',
         name: 'Legion Host - Yearly'
       }
