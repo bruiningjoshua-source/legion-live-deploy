@@ -4,22 +4,22 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { 
   Home, 
-  Compass, 
   Radio,
-  User,
-  Play,
-  Coins
+  Film,
+  ShoppingBag,
+  User
 } from 'lucide-react';
 
 export default function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  // 4 Main Platforms + Profile
   const navItems = [
     { label: 'Home', path: createPageUrl('Home'), icon: Home },
-    { label: 'Vault', path: createPageUrl('Wallet'), icon: Coins },
+    { label: 'Live', path: createPageUrl('Explore'), icon: Radio },
     { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
-    { label: 'Explore', path: createPageUrl('Explore'), icon: Compass },
+    { label: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film },
     { label: 'Profile', path: createPageUrl('Profile'), icon: User }
   ];
 
@@ -28,7 +28,7 @@ export default function BottomNav() {
       <div className="flex items-center justify-around min-h-[64px] max-w-md mx-auto px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPath.includes(item.path);
+          const isActive = currentPath.includes(item.path.split('?')[0]);
           
           return (
             <Link key={item.path} to={item.path} className="flex-1 flex flex-col items-center justify-center gap-1 group">
