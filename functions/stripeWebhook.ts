@@ -230,6 +230,52 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        console.log('[stripeWebhook] Subscription updated:', subscription.id, subscription.status);
+        
+        // Find and update the subscription record
+        const subs = await base44.asServiceRole.entities.CreatorSubscription.filter(
+          { stripe_subscription_id: subscription.id },
+          null,
+          1
+        );
+        
+        if (subs[0]) {
+          const status = subscription.status === 'active' ? 'active' : 
+                        subscription.status === 'past_due' ? 'past_due' : 
+                        subscription.status === 'canceled' ? 'cancelled' : subs[0].status;
+          
+          await base44.asServiceRole.entities.CreatorSubscription.update(subs[0].id, {
+            status,
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+          });
+          console.log('[stripeWebhook] Subscription status updated:', subs[0].id, status);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        console.log('[stripeWebhook] Subscription deleted:', subscription.id);
+        
+        const subs = await base44.asServiceRole.entities.CreatorSubscription.filter(
+          { stripe_subscription_id: subscription.id },
+          null,
+          1
+        );
+        
+        if (subs[0]) {
+          await base44.asServiceRole.entities.CreatorSubscription.update(subs[0].id, {
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString()
+          });
+          console.log('[stripeWebhook] Subscription cancelled:', subs[0].id);
+        }
+        break;
+      }
+
       default:
         console.log('[stripeWebhook] Unhandled event type:', event.type);
     }
