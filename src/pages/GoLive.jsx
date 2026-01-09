@@ -383,26 +383,7 @@ export default function GoLive() {
         </div>
 
         {/* Camera Preview & Quality Monitor */}
-        {!hasPermissions ? (
-          <Card className="bg-stone-800/30 border-amber-600/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-amber-100 mb-2">Camera & Microphone Required</h3>
-              <p className="text-amber-400/70 mb-6">Allow access to start broadcasting to your audience</p>
-              <Button 
-                onClick={requestCameraPermissions}
-                size="lg"
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-              >
-                <Camera className="w-5 h-5 mr-2" />
-                Enable Camera & Microphone
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
+        {hasPermissions && (
           <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-40 bg-black" style={{ width: '100vw', height: '100vh' }}>
             <div className="relative w-full h-full bg-black overflow-hidden">
               <video
@@ -428,37 +409,55 @@ export default function GoLive() {
                   initialMirror={isMirrored}
                 />
               </div>
-              </div>
 
               {/* Stream Quality Monitor */}
               {streamStats && (
-              <div className="absolute bottom-32 left-4 right-4 z-10 w-80 mx-auto">
-                <StreamQualityMonitor 
-                  stats={streamStats}
-                  onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
-                />
-              </div>
+                <div className="absolute bottom-32 left-4 right-4 z-10 w-80 mx-auto">
+                  <StreamQualityMonitor 
+                    stats={streamStats}
+                    onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
+                  />
+                </div>
               )}
 
               {/* Back Button */}
               <Button
-              onClick={() => {
-                if (cameraStream) {
-                  cameraStream.getTracks().forEach(track => track.stop());
-                  setCameraStream(null);
-                  setHasPermissions(false);
-                }
-              }}
-              className="absolute bottom-8 left-4 z-10 bg-stone-900/80 hover:bg-stone-800 text-white"
-              size="sm"
+                onClick={() => {
+                  if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    setCameraStream(null);
+                    setHasPermissions(false);
+                  }
+                }}
+                className="absolute bottom-8 left-4 z-10 bg-stone-900/80 hover:bg-stone-800 text-white"
+                size="sm"
               >
-              ← Back
+                ← Back
               </Button>
-              </div>
-              )}
+            </div>
+          </div>
+        )}
 
         {!hasPermissions && (
           <>
+          <Card className="bg-stone-800/30 border-amber-600/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-amber-100 mb-2">Camera & Microphone Required</h3>
+              <p className="text-amber-400/70 mb-6">Allow access to start broadcasting to your audience</p>
+              <Button 
+                onClick={requestCameraPermissions}
+                size="lg"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                Enable Camera & Microphone
+              </Button>
+            </CardContent>
+          </Card>
+
         {/* Stream Setup Form */}
         <Card className="bg-stone-800/30 border-amber-600/20">
           <CardHeader>
