@@ -84,7 +84,7 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
 
   React.useEffect(() => {
     applySettings();
-  }, [mirrorEnabled, selectedFilter, selectedBackground, brightness, contrast, saturation]);
+  }, [mirrorEnabled, selectedFilter, selectedBackground, brightness, contrast, saturation, zoom]);
 
   return (
     <Sheet>
