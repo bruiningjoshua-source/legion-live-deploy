@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -22,70 +23,90 @@ import {
   TrendingUp,
   Clock,
   Eye,
-  Volume2,
-  Share2,
   Plus,
-  Library,
-  ListMusic,
   Grid,
-  LayoutList
+  LayoutList,
+  Upload,
+  Film,
+  Sparkles,
+  ThumbsUp,
+  Users,
+  Video,
+  Filter,
+  History,
+  Heart,
+  Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
+import InterestSelector from '@/components/amphitheatre/InterestSelector';
 
-const GENRES = [
-  'All',
-  'Rock',
-  'Metal',
-  'Synthwave',
-  'Lo-Fi',
-  'Vaporwave',
-  'Ambient',
-  'House',
-  'Chiptune',
-  'Hip-Hop',
-  'Indie',
-  'Pop',
-  'Jazz',
-  'Soul',
-  'Classical',
-  'Latin',
-  'Reggae',
-  'Trap',
-  'Electronic'
+const CATEGORIES = [
+  { value: 'all', label: 'All', icon: '🎬' },
+  { value: 'gaming', label: 'Gaming', icon: '🎮' },
+  { value: 'music', label: 'Music', icon: '🎵' },
+  { value: 'entertainment', label: 'Entertainment', icon: '🎬' },
+  { value: 'education', label: 'Education', icon: '📚' },
+  { value: 'howto', label: 'How-to', icon: '✨' },
+  { value: 'sports', label: 'Sports', icon: '⚽' },
+  { value: 'comedy', label: 'Comedy', icon: '😂' },
+  { value: 'tech', label: 'Tech', icon: '💻' },
+  { value: 'travel', label: 'Travel', icon: '✈️' },
+  { value: 'food', label: 'Food', icon: '🍳' },
+  { value: 'fitness', label: 'Fitness', icon: '💪' },
+  { value: 'vlogs', label: 'Vlogs', icon: '📹' },
+  { value: 'other', label: 'Other', icon: '📦' }
 ];
 
-const FEATURED_ARTISTS = [
-  { name: 'Ozzy Osbourne', icon: '🦇', genre: 'rock' },
-  { name: 'Rob Zombie', icon: '🧟', genre: 'rock' },
-  { name: 'White Zombie', icon: '💀', genre: 'rock' },
+const SORT_OPTIONS = [
+  { value: 'trending', label: 'Trending', icon: TrendingUp },
+  { value: 'newest', label: 'Newest', icon: Clock },
+  { value: 'popular', label: 'Most Viewed', icon: Eye },
+  { value: 'liked', label: 'Most Liked', icon: ThumbsUp }
 ];
 
 export default function TheAmphitheatre() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('trending');
   const [viewMode, setViewMode] = useState('grid');
-  const [activeTab, setActiveTab] = useState('music');
+  const [activeSection, setActiveSection] = useState('discover');
+  const [showInterestPicker, setShowInterestPicker] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me()
   });
 
-  const { data: musicVideos = [], isLoading: musicLoading } = useQuery({
-    queryKey: ['music-videos'],
-    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
-    staleTime: 5 * 60 * 1000
+  const { data: userInterests } = useQuery({
+    queryKey: ['user-interests', user?.email],
+    queryFn: async () => {
+      const interests = await base44.entities.UserInterest.filter({ user_email: user.email }, null, 1);
+      return interests[0] || null;
+    },
+    enabled: !!user?.email
   });
 
-  const { data: vlogs = [], isLoading: vlogsLoading } = useQuery({
-    queryKey: ['vlogs-amphitheatre'],
-    queryFn: () => base44.entities.VlogVideo.filter({ is_published: true }, '-created_date', 100),
-    staleTime: 5 * 60 * 1000
+  const { data: videos = [], isLoading: videosLoading } = useQuery({
+    queryKey: ['amphitheatre-videos'],
+    queryFn: () => base44.entities.VlogVideo.filter({ 
+      is_published: true, 
+      review_status: 'approved',
+      visibility: 'public'
+    }, '-created_date', 200),
+    staleTime: 2 * 60 * 1000
   });
 
   const { data: creators = [] } = useQuery({
-    queryKey: ['creators-amphitheatre'],
-    queryFn: () => base44.entities.Creator.list('-follower_count', 50),
+    queryKey: ['amphitheatre-creators'],
+    queryFn: () => base44.entities.Creator.list('-follower_count', 100),
+    staleTime: 5 * 60 * 1000
+  });
+
+  const { data: musicVideos = [] } = useQuery({
+    queryKey: ['amphitheatre-music'],
+    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
     staleTime: 5 * 60 * 1000
   });
 
@@ -96,232 +117,283 @@ export default function TheAmphitheatre() {
     }, {}), [creators]
   );
 
+  // Combine videos and music
+  const allContent = useMemo(() => {
+    const videoContent = videos.map(v => ({
+      ...v,
+      type: 'video',
+      creator: creatorMap[v.creator_id]
+    }));
+    
+    const musicContent = musicVideos.map(m => ({
+      ...m,
+      type: 'music',
+      category: 'music',
+      creator: creatorMap[m.creator_id]
+    }));
+
+    return [...videoContent, ...musicContent];
+  }, [videos, musicVideos, creatorMap]);
+
+  // Filter and sort content
   const filteredContent = useMemo(() => {
-    let content = [];
+    let content = [...allContent];
 
-    if (activeTab === 'music' || activeTab === 'all') {
-      content = [...content, ...musicVideos.map(m => ({
-        ...m,
-        type: 'music',
-        title: m.title,
-        thumbnail: m.thumbnail_url,
-        creator: creatorMap[m.creator_id],
-        views: m.view_count || 0,
-        duration: m.duration_seconds || 0
-      }))];
-    }
-
-    if (activeTab === 'vlogs' || activeTab === 'all') {
-      content = [...content, ...vlogs.map(v => ({
-        ...v,
-        type: 'vlog',
-        title: v.title,
-        thumbnail: v.thumbnail_url,
-        creator: creatorMap[v.creator_id],
-        views: v.view_count || 0,
-        duration: v.duration_seconds || 0
-      }))];
-    }
-
-    // Filter by search
+    // Search filter
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       content = content.filter(c =>
-        c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.creator?.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        c.title?.toLowerCase().includes(query) ||
+        c.description?.toLowerCase().includes(query) ||
+        c.creator?.display_name?.toLowerCase().includes(query) ||
+        c.tags?.some(t => t.toLowerCase().includes(query))
       );
     }
 
-    // Filter by genre
-    if (selectedGenre !== 'All') {
-      content = content.filter(c => c.category === selectedGenre.toLowerCase());
+    // Category filter
+    if (selectedCategory !== 'all') {
+      content = content.filter(c => c.category === selectedCategory);
     }
 
-    // Sort by views (trending)
-    content.sort((a, b) => b.views - a.views);
+    // Sort
+    switch (sortBy) {
+      case 'trending':
+        content.sort((a, b) => {
+          const scoreA = (a.view_count || 0) + (a.like_count || 0) * 5;
+          const scoreB = (b.view_count || 0) + (b.like_count || 0) * 5;
+          return scoreB - scoreA;
+        });
+        break;
+      case 'newest':
+        content.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        break;
+      case 'popular':
+        content.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+        break;
+      case 'liked':
+        content.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
+        break;
+    }
 
     return content;
-  }, [musicVideos, vlogs, searchQuery, selectedGenre, activeTab, creatorMap]);
+  }, [allContent, searchQuery, selectedCategory, sortBy]);
 
-  const VideoCard = ({ content }) => (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="group cursor-pointer"
-    >
-      <Link to={content.type === 'music' ? createPageUrl(`WatchVideo?id=${content.id}`) : '#'}>
-        <div className="relative aspect-video bg-gradient-to-br from-stone-800 to-stone-900 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all">
-          {content.thumbnail ? (
-            <img
-              src={content.thumbnail}
-              alt={content.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
-          )}
+  // Personalized recommendations based on interests
+  const recommendedContent = useMemo(() => {
+    if (!userInterests?.interests?.length) return [];
+    
+    return allContent
+      .filter(c => 
+        c.interests?.some(i => userInterests.interests.includes(i)) ||
+        userInterests.preferred_categories?.includes(c.category)
+      )
+      .slice(0, 12);
+  }, [allContent, userInterests]);
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-amber-500/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform">
-                <Play className="w-7 h-7 text-white fill-white ml-0.5" />
-              </div>
-            </div>
-          </div>
+  // Trending creators
+  const trendingCreators = useMemo(() => {
+    return creators
+      .filter(c => c.is_live || (c.follower_count || 0) > 10)
+      .slice(0, 8);
+  }, [creators]);
 
-          {/* Duration */}
-          {content.duration > 0 && (
-            <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs text-white">
-              {Math.floor(content.duration / 60)}:{String(content.duration % 60).padStart(2, '0')}
-            </div>
-          )}
-
-          {/* Type Badge */}
-          <div className="absolute top-2 left-2">
-            <Badge className={content.type === 'music' ? 'bg-purple-600' : 'bg-blue-600'}>
-              {content.type === 'music' ? '♪ Music' : '🎬 Vlog'}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="mt-3">
-          <h3 className="text-amber-100 font-semibold line-clamp-2 group-hover:text-amber-300 transition-colors">
-            {content.title}
-          </h3>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 overflow-hidden flex-shrink-0">
-              {content.creator?.avatar_url ? (
-                <img src={content.creator.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-amber-300 text-sm truncate">{content.creator?.display_name || 'Creator'}</p>
-              <p className="text-amber-400/60 text-xs">{content.views.toLocaleString()} views</p>
-            </div>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-
-  const isLoading = musicLoading || vlogsLoading;
+  const isLoading = videosLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2 flex items-center gap-3">
-              <Music className="w-8 h-8 text-amber-400" />
+            <h1 className="text-3xl md:text-4xl font-bold text-amber-100 flex items-center gap-3">
+              <Film className="w-8 h-8 text-red-500" />
               The Amphitheatre
             </h1>
-            <p className="text-amber-400/70">Discover music, vlogs, and long-form content</p>
+            <p className="text-amber-400/70">Discover videos, music, and creators</p>
           </div>
-
-          {user && (
-            <Link to={createPageUrl('MusicStudio')}>
-              <Button className="bg-amber-600 hover:bg-amber-700 hidden sm:flex">
-                <Plus className="w-4 h-4 mr-2" />
-                Upload
-              </Button>
-            </Link>
-          )}
+          
+          <div className="flex gap-3">
+            {user && (
+              <>
+                <Button 
+                  onClick={() => setShowInterestPicker(true)}
+                  variant="outline" 
+                  className="border-amber-600/30 text-amber-300"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Interests
+                </Button>
+                <Link to={createPageUrl('CreatorStudio')}>
+                  <Button variant="outline" className="border-amber-600/30 text-amber-300">
+                    <Video className="w-4 h-4 mr-2" />
+                    Studio
+                  </Button>
+                </Link>
+                <Link to={createPageUrl('VideoUpload')}>
+                  <Button className="bg-red-600 hover:bg-red-700">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Featured Artists Banner */}
-        <div className="mb-8 bg-gradient-to-r from-purple-900/40 via-stone-900 to-red-900/40 rounded-2xl p-6 border border-amber-600/20">
-          <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
-            <Flame className="w-5 h-5 text-orange-400" />
-            Featured Artist Libraries
-          </h2>
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {FEATURED_ARTISTS.map(artist => (
-              <motion.button
-                key={artist.name}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSearchQuery(artist.name)}
-                className="flex-shrink-0 bg-stone-800/50 hover:bg-amber-800/30 border border-amber-600/30 rounded-xl px-6 py-4 text-center transition-colors"
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[
+            { id: 'discover', label: 'Discover', icon: Compass },
+            { id: 'trending', label: 'Trending', icon: TrendingUp },
+            { id: 'foryou', label: 'For You', icon: Sparkles },
+            { id: 'subscriptions', label: 'Subscriptions', icon: Users },
+            { id: 'history', label: 'History', icon: History }
+          ].map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSection(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+                  activeSection === tab.id
+                    ? 'bg-red-600 text-white'
+                    : 'bg-stone-800/50 text-amber-300 hover:bg-stone-700/50'
+                }`}
               >
-                <span className="text-4xl mb-2 block">{artist.icon}</span>
-                <span className="text-amber-100 font-semibold text-sm">{artist.name}</span>
-              </motion.button>
-            ))}
-          </div>
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search & Filters */}
-        <div className="mb-8 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
+            <Input
+              placeholder="Search videos, creators, topics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 rounded-xl"
+            />
+          </div>
+          
           <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
-              <Input
-                placeholder="Search videos, creators..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 focus:border-amber-500 rounded-xl"
-              />
-            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-stone-900 border-amber-600/30">
+                {CATEGORIES.map(cat => (
+                  <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
+                    {cat.icon} {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-36 bg-stone-800/50 border-amber-600/20 text-amber-100">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-stone-900 border-amber-600/30">
+                {SORT_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value} className="text-amber-100">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             <Button
               onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
               variant="outline"
               size="icon"
-              className="border-amber-600/20 text-amber-400 hover:bg-amber-800/20"
+              className="border-amber-600/20 text-amber-400"
             >
               {viewMode === 'grid' ? <LayoutList className="w-5 h-5" /> : <Grid className="w-5 h-5" />}
             </Button>
           </div>
-
-          {/* Tabs */}
-          <div className="flex gap-2 border-b border-amber-600/20 pb-4 overflow-x-auto">
-            {[
-              { id: 'all', label: 'All', icon: TrendingUp },
-              { id: 'music', label: 'Music Videos', icon: Music },
-              { id: 'vlogs', label: 'Vlogs', icon: Volume2 }
-            ].map(tab => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'bg-amber-600 text-white'
-                      : 'text-amber-300 hover:bg-amber-800/20'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Genre Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {GENRES.map(genre => (
-              <button
-                key={genre}
-                onClick={() => setSelectedGenre(genre)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                  selectedGenre === genre
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-stone-800/50 text-amber-300 hover:bg-amber-800/20'
-                }`}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Content Grid */}
+        {/* For You - Personalized Recommendations */}
+        {activeSection === 'foryou' && (
+          <>
+            {recommendedContent.length > 0 ? (
+              <div className="mb-12">
+                <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-400" />
+                  Recommended For You
+                </h2>
+                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                  {recommendedContent.map((content, i) => (
+                    <motion.div
+                      key={content.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                    >
+                      <AmphitheatreVideoCard content={content} viewMode={viewMode} />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-stone-800/30 rounded-2xl border border-amber-600/20 mb-12">
+                <Heart className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">Personalize Your Feed</h3>
+                <p className="text-amber-400/60 mb-4">Select your interests to get personalized recommendations</p>
+                <Button onClick={() => setShowInterestPicker(true)} className="bg-amber-600 hover:bg-amber-700">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Choose Interests
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Trending Creators Section */}
+        {activeSection === 'discover' && trendingCreators.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-purple-400" />
+              Popular Creators
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {trendingCreators.map(creator => (
+                <Link
+                  key={creator.id}
+                  to={createPageUrl(`CreatorProfile?id=${creator.id}`)}
+                  className="flex-shrink-0"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="w-36 bg-stone-800/50 rounded-xl p-4 border border-amber-600/20 hover:border-amber-500/50 transition-all text-center"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 mx-auto mb-3 overflow-hidden">
+                      {creator.avatar_url ? (
+                        <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">👤</div>
+                      )}
+                    </div>
+                    <p className="text-amber-100 font-semibold text-sm truncate">{creator.display_name}</p>
+                    <p className="text-amber-400/60 text-xs">{(creator.follower_count || 0).toLocaleString()} followers</p>
+                    {creator.is_live && (
+                      <Badge className="mt-2 bg-red-500 text-white text-xs">LIVE</Badge>
+                    )}
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Grid */}
         {isLoading ? (
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-            {[...Array(8)].map((_, i) => (
+            {[...Array(12)].map((_, i) => (
               <Skeleton key={i} className="aspect-video rounded-xl bg-stone-800" />
             ))}
           </div>
@@ -333,19 +405,34 @@ export default function TheAmphitheatre() {
                   key={content.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
+                  transition={{ delay: i * 0.02 }}
                 >
-                  <VideoCard content={content} />
+                  <AmphitheatreVideoCard content={content} viewMode={viewMode} />
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
         ) : (
           <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
-            <Music className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-            <h3 className="text-amber-100 font-semibold text-lg mb-2">No Content Found</h3>
-            <p className="text-amber-400/60">Try adjusting your filters or check back later</p>
+            <Film className="w-16 h-16 text-amber-400/30 mx-auto mb-4" />
+            <h3 className="text-amber-100 font-semibold text-xl mb-2">No Content Found</h3>
+            <p className="text-amber-400/60 mb-6">Try adjusting your filters or search query</p>
+            <Button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }} variant="outline" className="border-amber-600/30 text-amber-300">
+              Clear Filters
+            </Button>
           </div>
+        )}
+
+        {/* Interest Picker Modal */}
+        {showInterestPicker && (
+          <InterestSelector 
+            userInterests={userInterests}
+            onClose={() => setShowInterestPicker(false)}
+            onSave={() => {
+              queryClient.invalidateQueries(['user-interests']);
+              setShowInterestPicker(false);
+            }}
+          />
         )}
       </div>
     </div>
