@@ -33,6 +33,9 @@ export default function FreeTierWalletTip({ creator, isOwnProfile }) {
   const [walletAddress, setWalletAddress] = useState(creator?.tip_wallet_address || '');
   const [copied, setCopied] = useState(false);
 
+  // Don't render if no creator
+  if (!creator) return null;
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       return base44.entities.Creator.update(creator.id, {
