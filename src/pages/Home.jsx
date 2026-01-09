@@ -12,8 +12,14 @@ import {
   TrendingUp, 
   Heart,
   Sparkles,
-  Trophy
+  Trophy,
+  Film,
+  Gamepad2,
+  ShoppingBag,
+  Compass,
+  Play
 } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
 import TrendingSection from '@/components/shared/TrendingSection';
@@ -68,8 +74,64 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Legion Live</h1>
-          <p className="text-amber-400/70">Stream, command, and conquer</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">🏛️ Legion Live</h1>
+          <p className="text-amber-400/70">Stream, command, and conquer • 21+ Adult Platform</p>
+        </div>
+
+        {/* Platform Quick Access */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Link to={createPageUrl('Explore')}>
+            <Card className="bg-gradient-to-br from-red-900/30 to-stone-900 border-red-600/30 hover:border-red-500/50 transition-all cursor-pointer group">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-red-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Radio className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-amber-100 font-semibold">Live Streams</p>
+                  <p className="text-amber-400/60 text-xs">Solo • PK • Group</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('TheAmphitheatre')}>
+            <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30 hover:border-blue-500/50 transition-all cursor-pointer group">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Film className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-amber-100 font-semibold">Videos</p>
+                  <p className="text-amber-400/60 text-xs">Shorts • Long Form</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('TheGamingHub')}>
+            <Card className="bg-gradient-to-br from-purple-900/30 to-stone-900 border-purple-600/30 hover:border-purple-500/50 transition-all cursor-pointer group">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Gamepad2 className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-amber-100 font-semibold">Gaming Hub</p>
+                  <p className="text-amber-400/60 text-xs">OBS • Streamlabs</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl('AffiliateHub')}>
+            <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30 hover:border-green-500/50 transition-all cursor-pointer group">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ShoppingBag className="w-6 h-6 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-amber-100 font-semibold">Affiliate Hub</p>
+                  <p className="text-amber-400/60 text-xs">Products • Brands</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
