@@ -37,7 +37,8 @@ import {
   Music,
   Upload,
   DollarSign,
-  Heart
+  Heart,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -220,6 +221,22 @@ export default function Navbar({ user, wallet }) {
                       <Link to={createPageUrl('ChannelAnalytics')} className="cursor-pointer">
                         <BarChart3 className="w-4 h-4 mr-2" />
                         Analytics
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
+                {/* Community */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="cursor-pointer">
+                    <Users className="w-4 h-4 mr-2 text-cyan-400" />
+                    Community
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('CommunityForums')} className="cursor-pointer">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Forums
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
