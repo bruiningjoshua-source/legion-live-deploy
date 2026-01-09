@@ -349,20 +349,10 @@ export default function WatchStream() {
       if (stream?.status === 'live' && user?.email === creator?.user_email) {
         // Only get camera stream if you're the creator
         try {
-          const constraints = {
-            video: { 
-              facingMode: 'user',
-              width: { ideal: 1080 },
-              height: { ideal: 1920 }
-            },
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-              sampleRate: 48000
-            }
-          };
-          const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+          const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' },
+            audio: true
+          });
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;

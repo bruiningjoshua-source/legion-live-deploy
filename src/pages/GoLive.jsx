@@ -143,16 +143,8 @@ export default function GoLive() {
   const requestCameraPermissions = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'user',
-          width: { ideal: 1080 },
-          height: { ideal: 1920 }
-        }, 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        video: { facingMode: 'user' }, 
+        audio: true
       });
       setCameraStream(stream);
       setHasPermissions(true);
