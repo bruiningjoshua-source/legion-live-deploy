@@ -47,7 +47,7 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.5); // Default to max distance (zoomed out)
 
   const applySettings = () => {
     if (!videoRef?.current) return;
