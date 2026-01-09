@@ -27,7 +27,9 @@ import {
   MessageSquare,
   Bell,
   Shield,
-  MoreHorizontal
+  MoreHorizontal,
+  Video,
+  Film
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -38,8 +40,8 @@ export default function Navbar({ user, wallet }) {
   const navLinks = [
     { name: 'Home', path: createPageUrl('Home'), icon: Home },
     { name: 'Explore', path: createPageUrl('Explore'), icon: Compass },
-    { name: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
-    { name: 'Amphitheatre', path: createPageUrl('TheAmphitheatre'), icon: Music },
+    { name: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Video },
+    { name: 'Studio', path: createPageUrl('CreatorStudio'), icon: Film },
     { name: 'Leaderboard', path: createPageUrl('Leaderboard'), icon: Trophy },
   ];
 
