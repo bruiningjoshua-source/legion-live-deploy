@@ -39,11 +39,13 @@ import {
   ShoppingBag,
   Tag,
   ExternalLink,
-  Gift
+  Gift,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
 import InterestSelector from '@/components/amphitheatre/InterestSelector';
+import DirectMessaging from '@/components/community/DirectMessaging';
 
 const CATEGORIES = [
   { value: 'all', label: 'All', icon: '🎬' },
@@ -76,6 +78,7 @@ export default function TheAmphitheatre() {
   const [viewMode, setViewMode] = useState('grid');
   const [activeSection, setActiveSection] = useState('discover');
   const [showInterestPicker, setShowInterestPicker] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -253,6 +256,14 @@ export default function TheAmphitheatre() {
             {user && (
               <>
                 <Button 
+                  onClick={() => setShowMessages(true)}
+                  variant="outline" 
+                  className="border-cyan-600/30 text-cyan-300"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Messages
+                </Button>
+                <Button 
                   onClick={() => setShowInterestPicker(true)}
                   variant="outline" 
                   className="border-amber-600/30 text-amber-300"
@@ -286,7 +297,8 @@ export default function TheAmphitheatre() {
             { id: 'trending', label: 'Trending', icon: TrendingUp },
             { id: 'foryou', label: 'For You', icon: Sparkles },
             { id: 'recommended', label: 'Products & Services', icon: ShoppingBag },
-            { id: 'history', label: 'History', icon: History }
+            { id: 'history', label: 'History', icon: History },
+            { id: 'community', label: 'Community', icon: Users }
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -684,6 +696,12 @@ export default function TheAmphitheatre() {
             }}
           />
         )}
+
+        {/* Direct Messaging Modal */}
+        <DirectMessaging 
+          isOpen={showMessages} 
+          onClose={() => setShowMessages(false)} 
+        />
       </div>
     </div>
   );
