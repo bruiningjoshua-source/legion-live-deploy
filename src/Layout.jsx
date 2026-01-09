@@ -6,6 +6,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
+import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,6 +67,16 @@ export default function Layout({ children, currentPageName }) {
   return (
     <ErrorBoundary>
       <NetworkStatus />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: '#1c1917',
+            border: '1px solid rgba(217, 119, 6, 0.3)',
+            color: '#fef3c7'
+          }
+        }}
+      />
       <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
         <head>
