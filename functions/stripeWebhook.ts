@@ -164,6 +164,34 @@ Deno.serve(async (req) => {
           console.log('[stripeWebhook] Denarii purchase completed:', totalDenarii, 'for', metadata.user_email);
         }
 
+        // Handle Host Subscription
+        if (metadata.subscription_type === 'host_subscription' && metadata.user_email) {
+          const planType = metadata.plan_type;
+          const creatorId = metadata.creator_id;
+
+          const startDate = new Date();
+          const expiryDate = new Date();
+          if (planType === 'yearly') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+          } else {
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+          }
+
+          // Create host subscription record
+          await base44.asServiceRole.entities.CreatorSubscription.create({
+            user_email: metadata.user_email,
+            creator_id: creatorId || '',
+            plan_type: planType,
+            status: 'active',
+            stripe_subscription_id: session.subscription,
+            stripe_customer_id: session.customer,
+            current_period_start: startDate.toISOString(),
+            current_period_end: expiryDate.toISOString()
+          });
+
+          console.log('[stripeWebhook] Host subscription created:', metadata.user_email, planType);
+        }
+
         // Handle Brand Campaign
         if (metadata.campaign_id) {
           // Update campaign status and payment info
