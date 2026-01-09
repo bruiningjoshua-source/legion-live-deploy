@@ -402,6 +402,7 @@ export default function GoLive() {
             </CardContent>
           </Card>
         ) : (
+          <>
           <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-40 bg-black" style={{ width: '100vw', height: '100vh' }}>
             <div className="relative w-full h-full bg-black overflow-hidden">
               <video
@@ -625,8 +626,11 @@ export default function GoLive() {
               )}
             </Button>
           </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+          </Card>
+          </>
+          )}
+          </div>
+          </div>
+          </>
+          );
+          }
