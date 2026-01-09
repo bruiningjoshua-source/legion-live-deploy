@@ -21,10 +21,15 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
-  Wallet
+  Wallet,
+  Video,
+  Eye,
+  Gift,
+  Play
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import AffiliateVideoUpload from '@/components/affiliate/AffiliateVideoUpload';
 
 const TIER_BENEFITS = {
   bronze: { color: 'amber', minSales: 0, bonus: 0 },
@@ -37,6 +42,7 @@ const TIER_BENEFITS = {
 export default function AffiliateHub() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showVideoUpload, setShowVideoUpload] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -77,6 +83,12 @@ export default function AffiliateHub() {
   const { data: mySales = [] } = useQuery({
     queryKey: ['my-affiliate-sales', partner?.id],
     queryFn: () => base44.entities.AffiliateSale.filter({ partner_id: partner.id }, '-created_date', 100),
+    enabled: !!partner?.id
+  });
+
+  const { data: myVideos = [] } = useQuery({
+    queryKey: ['affiliate-videos', partner?.id],
+    queryFn: () => base44.entities.AffiliateVideo.filter({ partner_id: partner.id }, '-created_date', 50),
     enabled: !!partner?.id
   });
 
@@ -232,6 +244,10 @@ export default function AffiliateHub() {
               <Star className="w-4 h-4 mr-2" />
               {partner.tier.toUpperCase()} Partner
             </Badge>
+            <Button onClick={() => setShowVideoUpload(true)} variant="outline" className="border-green-600/30 text-green-300">
+              <Video className="w-4 h-4 mr-2" />
+              Upload Video
+            </Button>
             <Link to={createPageUrl('AffiliateGoLive')}>
               <Button className="bg-red-600 hover:bg-red-700">
                 <Radio className="w-4 h-4 mr-2" />
@@ -303,6 +319,9 @@ export default function AffiliateHub() {
             </TabsTrigger>
             <TabsTrigger value="my-campaigns" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               My Campaigns ({myCampaigns.length})
+            </TabsTrigger>
+            <TabsTrigger value="videos" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+              My Videos ({myVideos.length})
             </TabsTrigger>
             <TabsTrigger value="streams" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               My Streams
@@ -497,6 +516,73 @@ export default function AffiliateHub() {
             )}
           </TabsContent>
 
+          <TabsContent value="videos">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-amber-100 font-semibold">My Product/Service Videos</h2>
+              <Button onClick={() => setShowVideoUpload(true)} className="bg-green-600 hover:bg-green-700">
+                <Video className="w-4 h-4 mr-2" />
+                Upload New
+              </Button>
+            </div>
+            {myVideos.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {myVideos.map((video, i) => (
+                  <motion.div
+                    key={video.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                    <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
+                      <div className={`relative bg-stone-900 ${video.video_type === 'short' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                        {video.thumbnail_url ? (
+                          <img src={video.thumbnail_url} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Video className="w-8 h-8 text-amber-400/30" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Play className="w-12 h-12 text-white" />
+                        </div>
+                        <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs">
+                          {video.brand_name}
+                        </Badge>
+                      </div>
+                      <CardContent className="p-3">
+                        <h3 className="text-amber-100 font-semibold text-sm line-clamp-2 mb-2">{video.title}</h3>
+                        <div className="flex items-center gap-3 text-xs text-amber-400/70">
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {video.view_count || 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Gift className="w-3 h-3" />
+                            {video.gift_count || 0}
+                          </span>
+                          <span className="text-green-400">
+                            {video.total_gifts_denarii || 0} 🪙
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <Card className="bg-stone-800/30 border-amber-600/20">
+                <CardContent className="py-12 text-center">
+                  <Video className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
+                  <h3 className="text-amber-100 font-semibold mb-2">No Videos Yet</h3>
+                  <p className="text-amber-400/70 mb-4">Upload product reviews and demos to the Amphitheatre</p>
+                  <Button onClick={() => setShowVideoUpload(true)} className="bg-green-600 hover:bg-green-700">
+                    Upload First Video
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
           <TabsContent value="streams">
             {myStreams.length > 0 ? (
               <div className="space-y-4">
@@ -572,6 +658,14 @@ export default function AffiliateHub() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Video Upload Modal */}
+      <AffiliateVideoUpload
+        isOpen={showVideoUpload}
+        onClose={() => setShowVideoUpload(false)}
+        partnerId={partner?.id}
+        onSuccess={() => queryClient.invalidateQueries(['affiliate-videos'])}
+      />
     </div>
   );
 }
