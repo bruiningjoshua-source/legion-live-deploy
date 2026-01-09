@@ -237,10 +237,11 @@ export default function WatchStream() {
       queryClient.invalidateQueries(['chat-messages', streamId]);
       setShowGiftPanel(false);
       
-      // Trigger animation
+      // Single animation per gift batch (even for bundles)
       setGiftAnimation({ 
         gift, 
-        sender: user.full_name || 'Anonymous' 
+        sender: user.full_name || 'Anonymous',
+        quantity
       });
     },
     onError: (error) => {
@@ -513,12 +514,13 @@ export default function WatchStream() {
       {/* Alert Notifications for Admins */}
       <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
 
-      {/* Gift Animation */}
+      {/* Gift Animation - Single animation per gift batch */}
       <AnimatePresence>
         {giftAnimation && (
           <GiftAnimation 
             gift={giftAnimation.gift}
             sender={giftAnimation.sender}
+            quantity={giftAnimation.quantity}
             onComplete={() => setGiftAnimation(null)}
           />
         )}
@@ -737,6 +739,11 @@ export default function WatchStream() {
             size="sm"
             className="flex flex-col items-center gap-1 text-white/90 hover:text-white"
           />
+          
+          {/* Direct Tip (to linked wallets) */}
+          {creator && (
+            <DirectTipButton creator={creator} variant="ghost" size="sm" />
+          )}
           
           <button 
             onClick={() => setShowGiftPanel(true)}
