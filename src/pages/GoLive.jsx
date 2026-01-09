@@ -334,55 +334,59 @@ export default function GoLive() {
       )}
       <div className={hasPermissions ? "fixed inset-0 w-screen h-screen z-50 bg-black" : "min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12"}>
         <div className={hasPermissions ? "w-full h-full" : "max-w-3xl mx-auto px-4"}>
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 rounded-full px-4 py-2 mb-4">
-            <Radio className="w-4 h-4 text-red-400 animate-pulse" />
-            <span className="text-red-200 text-sm font-medium">Go Live</span>
+        {/* Header - Only show when not in camera preview */}
+        {!hasPermissions && (
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 rounded-full px-4 py-2 mb-4">
+              <Radio className="w-4 h-4 text-red-400 animate-pulse" />
+              <span className="text-red-200 text-sm font-medium">Go Live</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Start Your Stream</h1>
+            <p className="text-amber-400/70">Set up your stream and go live to your audience</p>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Start Your Stream</h1>
-          <p className="text-amber-400/70">Set up your stream and go live to your audience</p>
-        </div>
+        )}
 
-        {/* Stream Type Selection */}
-        <div className="mb-8">
-          <Label className="text-amber-100 text-lg mb-4 block">Choose Stream Type</Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {streamTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <motion.div
-                  key={type.value}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Card
-                    className={`cursor-pointer transition-all ${
-                      streamType === type.value
-                        ? `bg-gradient-to-br ${type.color} border-0 ring-2 ring-amber-400`
-                        : 'bg-stone-800/50 border-amber-600/20 hover:border-amber-500/50'
-                    }`}
-                    onClick={() => setStreamType(type.value)}
+        {/* Stream Type Selection - Only show when not in camera preview */}
+        {!hasPermissions && (
+          <div className="mb-8">
+            <Label className="text-amber-100 text-lg mb-4 block">Choose Stream Type</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {streamTypes.map((type) => {
+                const Icon = type.icon;
+                return (
+                  <motion.div
+                    key={type.value}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <CardContent className="p-4 text-center">
-                      <div className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${
-                        streamType === type.value ? 'bg-white/20' : `bg-gradient-to-br ${type.color}`
-                      }`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className={`font-bold mb-1 ${streamType === type.value ? 'text-white' : 'text-amber-100'}`}>
-                        {type.label}
-                      </h3>
-                      <p className={`text-xs ${streamType === type.value ? 'text-white/70' : 'text-amber-400/60'}`}>
-                        {type.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+                    <Card
+                      className={`cursor-pointer transition-all ${
+                        streamType === type.value
+                          ? `bg-gradient-to-br ${type.color} border-0 ring-2 ring-amber-400`
+                          : 'bg-stone-800/50 border-amber-600/20 hover:border-amber-500/50'
+                      }`}
+                      onClick={() => setStreamType(type.value)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${
+                          streamType === type.value ? 'bg-white/20' : `bg-gradient-to-br ${type.color}`
+                        }`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className={`font-bold mb-1 ${streamType === type.value ? 'text-white' : 'text-amber-100'}`}>
+                          {type.label}
+                        </h3>
+                        <p className={`text-xs ${streamType === type.value ? 'text-white/70' : 'text-amber-400/60'}`}>
+                          {type.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Camera Preview & Quality Monitor */}
         {hasPermissions && (
@@ -437,6 +441,26 @@ export default function GoLive() {
                   size="sm"
                 >
                   ← Back
+                </Button>
+
+                {/* Go Live Button - in camera preview */}
+                <Button
+                  onClick={() => goLiveMutation.mutate()}
+                  disabled={!isFormValid || goLiveMutation.isPending}
+                  className="absolute bottom-4 right-3 z-10 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6"
+                  size="sm"
+                >
+                  {goLiveMutation.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Starting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Radio className="w-4 h-4" />
+                      GO LIVE
+                    </span>
+                  )}
                 </Button>
               </div>
               
