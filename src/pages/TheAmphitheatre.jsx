@@ -652,6 +652,51 @@ export default function TheAmphitheatre() {
           </div>
         )}
 
+        {/* Community Section */}
+        {activeSection === 'community' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-amber-100 flex items-center gap-2">
+                <Users className="w-5 h-5 text-cyan-400" />
+                Community Hub
+              </h2>
+              <Link to={createPageUrl('CommunityForums')}>
+                <Button className="bg-cyan-600 hover:bg-cyan-700">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Visit Forums
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Link to={createPageUrl('CommunityForums')}>
+                <div className="bg-stone-800/30 rounded-xl p-6 border border-cyan-600/20 hover:border-cyan-500/50 transition-all cursor-pointer group">
+                  <MessageSquare className="w-10 h-10 text-cyan-400 mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-amber-100 font-semibold text-lg mb-2">Discussion Forums</h3>
+                  <p className="text-amber-400/60 text-sm">Join conversations about gaming, music, tech, and more</p>
+                </div>
+              </Link>
+              
+              <div 
+                onClick={() => user && setShowMessages(true)}
+                className="bg-stone-800/30 rounded-xl p-6 border border-purple-600/20 hover:border-purple-500/50 transition-all cursor-pointer group"
+              >
+                <MessageSquare className="w-10 h-10 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">Direct Messages</h3>
+                <p className="text-amber-400/60 text-sm">Message creators and other community members</p>
+              </div>
+              
+              <Link to={createPageUrl('Following')}>
+                <div className="bg-stone-800/30 rounded-xl p-6 border border-pink-600/20 hover:border-pink-500/50 transition-all cursor-pointer group">
+                  <Heart className="w-10 h-10 text-pink-400 mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-amber-100 font-semibold text-lg mb-2">Following</h3>
+                  <p className="text-amber-400/60 text-sm">See updates from creators you follow</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Main Content Grid */}
         {isLoading ? (
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
