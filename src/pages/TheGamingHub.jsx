@@ -185,20 +185,30 @@ export default function TheGamingHub() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2 flex items-center gap-3">
-              <Gamepad2 className="w-8 h-8 text-amber-400" />
+              <Gamepad2 className="w-8 h-8 text-purple-400" />
               Gaming Hub
             </h1>
-            <p className="text-amber-400/70">Multi-platform gaming streams with console & VR support</p>
+            <p className="text-amber-400/70">Streamlabs & OBS integration • Multi-platform gaming • Console & VR support</p>
           </div>
 
-          {user && (
-            <Link to={createPageUrl('GoLive')}>
-              <Button className="bg-amber-600 hover:bg-amber-700 hidden sm:flex">
-                <Radio className="w-4 h-4 mr-2" />
-                Go Live
-              </Button>
-            </Link>
-          )}
+          <div className="flex gap-2">
+            {user && (
+              <>
+                <Link to={createPageUrl('GamingSetup')}>
+                  <Button variant="outline" className="border-purple-600/30 text-purple-300 hidden sm:flex">
+                    <Cpu className="w-4 h-4 mr-2" />
+                    Stream Setup
+                  </Button>
+                </Link>
+                <Link to={createPageUrl('GoLive')}>
+                  <Button className="bg-purple-600 hover:bg-purple-700 hidden sm:flex">
+                    <Radio className="w-4 h-4 mr-2" />
+                    Go Live
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Search & Filters */}
