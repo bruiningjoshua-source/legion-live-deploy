@@ -2,9 +2,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
+import ChannelAnalytics from './pages/ChannelAnalytics';
 import CollaborationHub from './pages/CollaborationHub';
 import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorProfile from './pages/CreatorProfile';
+import CreatorStudio from './pages/CreatorStudio';
 import CustomizeTheme from './pages/CustomizeTheme';
 import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
@@ -22,15 +24,16 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import TheAmphitheatre from './pages/TheAmphitheatre';
 import TheGamingHub from './pages/TheGamingHub';
+import VideoEditor from './pages/VideoEditor';
+import VideoUpload from './pages/VideoUpload';
 import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CreatorStudio from './pages/CreatorStudio';
-import VideoUpload from './pages/VideoUpload';
-import VideoEditor from './pages/VideoEditor';
-import ChannelAnalytics from './pages/ChannelAnalytics';
+import AmbassadorProgram from './pages/AmbassadorProgram';
+import ExclusiveContentManager from './pages/ExclusiveContentManager';
+import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -39,9 +42,11 @@ export const PAGES = {
     "AffiliateDashboard": AffiliateDashboard,
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
+    "ChannelAnalytics": ChannelAnalytics,
     "CollaborationHub": CollaborationHub,
     "CreatorMonetization": CreatorMonetization,
     "CreatorProfile": CreatorProfile,
+    "CreatorStudio": CreatorStudio,
     "CustomizeTheme": CustomizeTheme,
     "EventDetails": EventDetails,
     "Events": Events,
@@ -59,15 +64,16 @@ export const PAGES = {
     "Settings": Settings,
     "TheAmphitheatre": TheAmphitheatre,
     "TheGamingHub": TheGamingHub,
+    "VideoEditor": VideoEditor,
+    "VideoUpload": VideoUpload,
     "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CreatorStudio": CreatorStudio,
-    "VideoUpload": VideoUpload,
-    "VideoEditor": VideoEditor,
-    "ChannelAnalytics": ChannelAnalytics,
+    "AmbassadorProgram": AmbassadorProgram,
+    "ExclusiveContentManager": ExclusiveContentManager,
+    "PlatformAdminAnalytics": PlatformAdminAnalytics,
 }
 
 export const pagesConfig = {
