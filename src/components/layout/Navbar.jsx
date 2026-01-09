@@ -146,6 +146,18 @@ export default function Navbar({ user, wallet }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('ExclusiveContentManager')} className="cursor-pointer">
+                    <Film className="w-4 h-4 mr-2" />
+                    Exclusive Content
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('AmbassadorProgram')} className="cursor-pointer">
+                    <Users className="w-4 h-4 mr-2" />
+                    Ambassador Program
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to={createPageUrl('Settings')} className="cursor-pointer">
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
