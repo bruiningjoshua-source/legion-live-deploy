@@ -507,7 +507,7 @@ export default function WatchStream() {
           style={{ 
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            objectFit: 'contain',
             backgroundColor: '#000',
             position: 'absolute',
             top: 0,
