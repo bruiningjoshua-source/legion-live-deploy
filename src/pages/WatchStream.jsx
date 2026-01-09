@@ -362,8 +362,8 @@ export default function WatchStream() {
           const mediaStream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
               facingMode: 'user',
-              width: { ideal: 1080 },
-              height: { ideal: 1920 },
+              width: { ideal: 720, max: 1080 },
+              height: { ideal: 1280, max: 1920 },
               frameRate: { ideal: 30, max: 30 }
             },
             audio: {
