@@ -201,14 +201,18 @@ export default function GoLive() {
       const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42';
       await AgoraService.initialize(AGORA_APP_ID);
 
-      // Get Agora token from backend
-      const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
-        channelName: stream.id,
-        uid: Math.floor(Math.random() * 1000000),
-        role: 'host'
-      });
-
-      setAgoraToken(tokenResponse.data.token);
+      // Get Agora token from backend (optional for testing)
+      try {
+        const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
+          channelName: stream.id,
+          uid: Math.floor(Math.random() * 1000000),
+          role: 'host'
+        });
+        setAgoraToken(tokenResponse.data.token);
+      } catch (error) {
+        console.log('Token generation skipped:', error.message);
+        setAgoraToken('');
+      }
 
       // Update creator to live status
       await base44.entities.Creator.update(creatorId, {
