@@ -338,16 +338,13 @@ export default function GoLive() {
         ) : (
           <div className="space-y-4 mb-8">
             <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio: '9/16', maxWidth: '500px', margin: '0 auto' }}>
-              <div className="absolute inset-0 flex items-center justify-center bg-black">
-                <video
-                  ref={videoPreviewRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="h-full w-auto max-w-full mirror"
-                  style={{ aspectRatio: '9/16', objectFit: 'cover' }}
-                />
-              </div>
+              <video
+                ref={videoPreviewRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover mirror"
+              />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
                   <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
