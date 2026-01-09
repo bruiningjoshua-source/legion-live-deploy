@@ -19,8 +19,22 @@ import {
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import CurrencyPackages from '@/components/wallet/CurrencyPackages';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function Wallet() {
+  // Handle successful purchase redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      toast.success('🎉 Purchase successful! Your Denarii have been added to your wallet.');
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (urlParams.get('cancelled') === 'true') {
+      toast.info('Purchase cancelled');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('buy');
 
