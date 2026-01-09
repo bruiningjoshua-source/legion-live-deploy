@@ -473,7 +473,18 @@ export default function WatchStream() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
+    <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
+      <style>{`
+        body, html { 
+          overflow: hidden !important; 
+          position: fixed !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+      `}</style>
+
       {/* Alert Notifications for Admins */}
       <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
 
@@ -488,12 +499,20 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Fullscreen 9:16 Portrait Video */}
-      <div className="absolute inset-0 bg-black overflow-hidden">
+      {/* Fullscreen Mobile-Optimized Video */}
+      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%' }}>
         <video
           ref={videoRef}
           className="w-full h-full"
-          style={{ objectFit: 'cover', backgroundColor: '#000' }}
+          style={{ 
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            backgroundColor: '#000',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }}
           autoPlay
           playsInline
           muted={isMuted}
@@ -501,6 +520,9 @@ export default function WatchStream() {
           controls={false}
           preload="auto"
           webkit-playsinline="true"
+          x5-playsinline="true"
+          x5-video-player-type="h5"
+          x5-video-player-fullscreen="true"
         >
           Your browser does not support video playback.
         </video>
