@@ -198,7 +198,8 @@ export default function GoLive() {
       });
 
       // Initialize Agora
-      await AgoraService.initialize(Deno.env.get('AGORA_APP_ID'));
+      const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42';
+      await AgoraService.initialize(AGORA_APP_ID);
 
       // Get Agora token from backend
       const tokenResponse = await base44.functions.invoke('generateAgoraToken', {

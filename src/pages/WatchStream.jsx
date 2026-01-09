@@ -451,21 +451,20 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Full Screen Video - 9:16 Portrait */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black">
-        <div className="relative w-full h-full max-w-[56.25vh]" style={{ aspectRatio: '9/16' }}>
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            autoPlay
-            playsInline
-            muted={isMuted}
-            poster={stream.thumbnail_url}
-            controls={false}
-            preload="auto"
-          >
-            Your browser does not support video playback.
-          </video>
+      {/* Full Screen Video - 9:16 Portrait Fullscreen */}
+      <div className="absolute inset-0 bg-black">
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          autoPlay
+          playsInline
+          muted={isMuted}
+          poster={stream.thumbnail_url}
+          controls={false}
+          preload="auto"
+        >
+          Your browser does not support video playback.
+        </video>
         
           {/* Multi-Panel Layout */}
           {stream.stream_type === 'multi_panel' && (
