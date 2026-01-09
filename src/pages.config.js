@@ -34,6 +34,7 @@ import WatchVideo from './pages/WatchVideo';
 import AmbassadorProgram from './pages/AmbassadorProgram';
 import ExclusiveContentManager from './pages/ExclusiveContentManager';
 import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
+import ContentModerationAdmin from './pages/ContentModerationAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -74,6 +75,7 @@ export const PAGES = {
     "AmbassadorProgram": AmbassadorProgram,
     "ExclusiveContentManager": ExclusiveContentManager,
     "PlatformAdminAnalytics": PlatformAdminAnalytics,
+    "ContentModerationAdmin": ContentModerationAdmin,
 }
 
 export const pagesConfig = {
