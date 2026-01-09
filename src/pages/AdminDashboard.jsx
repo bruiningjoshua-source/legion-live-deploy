@@ -46,7 +46,7 @@ export default function AdminDashboard() {
 
   const { data: streams = [] } = useQuery({
     queryKey: ['admin-streams'],
-    queryFn: () => base44.asServiceRole.entities.Stream.list('-created_date', 100),
+    queryFn: () => base44.entities.Stream.list('-created_date', 100),
     enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
