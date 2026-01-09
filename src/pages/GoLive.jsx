@@ -33,6 +33,7 @@ import { motion } from 'framer-motion';
 import HostControls from '@/components/stream/HostControls';
 import AgoraService from '@/components/stream/AgoraService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
+import BroadcasterChat from '@/components/stream/BroadcasterChat';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
