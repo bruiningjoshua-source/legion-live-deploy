@@ -147,13 +147,13 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       
-      <Navbar user={user} wallet={wallet} />
+      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} />
       
-      <main className="pb-20 min-h-screen">
+      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
         {children}
       </main>
 
-      <BottomNav />
+      {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
       </div>
       </ErrorBoundary>
   );
