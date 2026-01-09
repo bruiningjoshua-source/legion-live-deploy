@@ -42,6 +42,7 @@ export default function Navbar({ user, wallet }) {
     { name: 'Home', path: createPageUrl('Home'), icon: Home },
     { name: 'Explore', path: createPageUrl('Explore'), icon: Compass },
     { name: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Video },
+    { name: 'Vault', path: createPageUrl('Wallet'), icon: Wallet },
     { name: 'Studio', path: createPageUrl('CreatorStudio'), icon: Film },
     { name: 'Leaderboard', path: createPageUrl('Leaderboard'), icon: Trophy },
   ];

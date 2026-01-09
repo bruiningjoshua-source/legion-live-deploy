@@ -7,7 +7,8 @@ import {
   Compass, 
   Radio,
   User,
-  Play
+  Play,
+  Coins
 } from 'lucide-react';
 
 export default function BottomNav() {
@@ -16,7 +17,7 @@ export default function BottomNav() {
 
   const navItems = [
     { label: 'Home', path: createPageUrl('Home'), icon: Home },
-    { label: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Play },
+    { label: 'Vault', path: createPageUrl('Wallet'), icon: Coins },
     { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true },
     { label: 'Explore', path: createPageUrl('Explore'), icon: Compass },
     { label: 'Profile', path: createPageUrl('Profile'), icon: User }
