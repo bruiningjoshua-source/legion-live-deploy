@@ -84,20 +84,27 @@ export default function Navbar({ user, wallet }) {
           {/* Wallet Display */}
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
-              <div className="hidden sm:flex items-center gap-2 bg-stone-800/50 border border-amber-600/20 rounded-full px-3 py-1.5 hover:border-amber-500/50 transition-colors">
-                <span className="text-amber-300 text-sm font-semibold">{wallet.denarii_balance || 0}</span>
-                <span className="text-lg">🪙</span>
-              </div>
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-amber-800/30 to-stone-800/50 border border-amber-600/30 rounded-full px-4 py-2 hover:border-amber-500/50 transition-all shadow-lg shadow-amber-900/20"
+              >
+                <span className="text-xl">🪙</span>
+                <span className="text-amber-100 font-bold">{(wallet.denarii_balance || 0).toLocaleString()}</span>
+                <span className="text-amber-400/70 text-xs">+</span>
+              </motion.div>
             </Link>
           )}
 
           {/* Go Live Button */}
           {user && (
             <Link to={createPageUrl('GoLive')}>
-              <Button className="hidden sm:flex bg-red-600 hover:bg-red-700 text-white gap-2">
-                <Radio className="w-4 h-4" />
-                Go Live
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button className="hidden sm:flex bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white gap-2 shadow-lg shadow-red-900/30 font-semibold">
+                  <Radio className="w-4 h-4 animate-pulse" />
+                  Go Live
+                </Button>
+              </motion.div>
             </Link>
           )}
 
