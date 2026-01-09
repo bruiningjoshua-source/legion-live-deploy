@@ -65,6 +65,9 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
     
     videoRef.current.style.filter = filterStr;
     
+    // Apply zoom using scale transform
+    videoRef.current.style.transform = `scaleX(${mirrorEnabled ? -1 : 1}) scale(${zoom})`;
+    
     // Notify parent of mirror change
     onMirrorChange?.(mirrorEnabled);
     
@@ -74,7 +77,8 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
       background: selectedBackground,
       brightness,
       contrast,
-      saturation
+      saturation,
+      zoom
     });
   };
 
