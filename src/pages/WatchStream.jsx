@@ -453,10 +453,11 @@ export default function WatchStream() {
       </AnimatePresence>
 
       {/* Full Screen Video - 9:16 Portrait Fullscreen */}
-      <div className="absolute inset-0 bg-black">
+      <div className="absolute inset-0 bg-black flex items-center justify-center">
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
+          className="h-full w-auto max-w-full"
+          style={{ aspectRatio: '9/16', objectFit: 'cover' }}
           autoPlay
           playsInline
           muted={isMuted}
