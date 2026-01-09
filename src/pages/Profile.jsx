@@ -264,7 +264,12 @@ export default function Profile() {
                 <CardContent className="py-12 text-center">
                   <BarChart3 className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
                   <h3 className="text-amber-100 font-semibold mb-2">No Streams Yet</h3>
-                  <p className="text-amber-400/60">Start streaming to build your legacy!</p>
+                  <p className="text-amber-400/60 mb-4">Start streaming to build your legacy!</p>
+                  <Link to={createPageUrl('GoLive')}>
+                    <Button className="bg-red-600 hover:bg-red-700">
+                      Go Live Now
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}
