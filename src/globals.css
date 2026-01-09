@@ -11,9 +11,32 @@ video.mirror {
 
 /* Performance optimizations */
 * {
+  -webkit-tap-highlight-color: transparent;
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Mobile-first touch targets */
+button, a, input, select, textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent text size adjustment on iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Safe area support for notched devices */
+/* Prevent pull-to-refresh on mobile */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  overscroll-behavior-y: none;
 }
 
 video {
@@ -31,4 +54,10 @@ video::-webkit-media-controls {
 .animate-float, .animate-glow, [class*="motion-"] {
   will-change: transform, opacity;
   transform: translateZ(0);
+}
+
+/* Optimize scrolling performance */
+.overflow-scroll, .overflow-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
