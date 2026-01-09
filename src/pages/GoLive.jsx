@@ -231,15 +231,22 @@ export default function GoLive() {
       }
 
       // Create stream
+      if (!title.trim()) {
+        throw new Error('Stream title is required');
+      }
+      if (!category) {
+        throw new Error('Please select a category');
+      }
+
       const stream = await base44.entities.Stream.create({
         creator_id: creatorId,
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         category,
-        thumbnail_url: thumbnailUrl,
+        thumbnail_url: thumbnailUrl || null,
         stream_type: streamType,
         status: 'live',
-        tags,
+        tags: tags.slice(0, 5),
         guests: guestEmail ? [guestEmail] : [],
         pk_opponent_id: pkOpponent || null
       });

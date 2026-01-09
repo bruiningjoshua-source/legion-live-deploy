@@ -63,7 +63,8 @@ export default function Explore() {
     queryKey: ['streams-explore'],
     queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
     staleTime: 10 * 1000,
-    refetchInterval: 15 * 1000
+    refetchInterval: 15 * 1000,
+    retry: 1
   });
 
   const { data: recordedVideos = [] } = useQuery({

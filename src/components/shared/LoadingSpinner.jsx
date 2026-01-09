@@ -1,23 +1,16 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
-export default function LoadingSpinner({ size = 'md', text = '' }) {
-  const sizes = {
-    sm: 'w-6 h-6',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16'
+export default function LoadingSpinner({ size = 'md', message = 'Loading...' }) {
+  const sizeClasses = {
+    sm: 'w-6 h-6 border-2',
+    md: 'w-10 h-10 border-3',
+    lg: 'w-16 h-16 border-4'
   };
 
   return (
     <div className="flex flex-col items-center justify-center gap-3">
-      <motion.div
-        className={`${sizes[size]} border-4 border-amber-600/30 border-t-amber-400 rounded-full`}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-      />
-      {text && (
-        <p className="text-amber-400/70 text-sm animate-pulse">{text}</p>
-      )}
+      <div className={`${sizeClasses[size]} border-amber-400 border-t-transparent rounded-full animate-spin`} />
+      {message && <p className="text-amber-100 text-sm">{message}</p>}
     </div>
   );
 }
