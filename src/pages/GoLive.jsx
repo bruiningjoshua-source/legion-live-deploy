@@ -387,7 +387,7 @@ export default function GoLive() {
                 muted
                 preload="auto"
                 webkit-playsinline="true"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 style={{ backgroundColor: '#000' }}
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">

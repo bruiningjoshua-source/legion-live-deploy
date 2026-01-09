@@ -492,7 +492,7 @@ export default function WatchStream() {
       <div className="absolute inset-0 bg-black">
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           autoPlay
           playsInline
           muted={isMuted}
