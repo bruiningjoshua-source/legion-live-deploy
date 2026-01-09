@@ -48,7 +48,7 @@ import DirectTipButton from '@/components/stream/DirectTipButton';
 import HostControls from '@/components/stream/HostControls';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
-import BroadcasterDashboard from '@/components/stream/BroadcasterDashboard';
+
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
