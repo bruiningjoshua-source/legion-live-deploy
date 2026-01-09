@@ -360,14 +360,34 @@ export default function WatchStream() {
         // Only get camera stream if you're the creator
         try {
           const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'user' },
-            audio: true
+            video: { 
+              facingMode: 'user',
+              width: { ideal: 1080 },
+              height: { ideal: 1920 },
+              frameRate: { ideal: 30, max: 30 }
+            },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
           });
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
             videoRef.current.muted = false;
-            await videoRef.current.play().catch(e => console.error('Play error:', e));
+            videoRef.current.playsInline = true;
+
+            // Force play for mobile
+            const playAttempt = async () => {
+              try {
+                await videoRef.current.play();
+              } catch (e) {
+                console.log('Play blocked, retrying...', e);
+                setTimeout(() => playAttempt(), 500);
+              }
+            };
+            playAttempt();
           }
         } catch (error) {
           console.error('Camera access error:', error);
@@ -479,6 +499,8 @@ export default function WatchStream() {
           poster={stream.thumbnail_url}
           controls={false}
           preload="auto"
+          webkit-playsinline="true"
+          style={{ backgroundColor: '#000' }}
         >
           Your browser does not support video playback.
         </video>

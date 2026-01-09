@@ -120,7 +120,19 @@ export default function GoLive() {
     // Attach stream to video element when it becomes available
     if (cameraStream && videoPreviewRef.current) {
       videoPreviewRef.current.srcObject = cameraStream;
-      videoPreviewRef.current.play().catch(e => console.error('Play error:', e));
+      videoPreviewRef.current.muted = true;
+      videoPreviewRef.current.playsInline = true;
+      
+      // Ensure video plays on mobile
+      const playVideo = async () => {
+        try {
+          await videoPreviewRef.current.play();
+        } catch (e) {
+          console.log('Play blocked, retrying...', e);
+          setTimeout(() => playVideo(), 500);
+        }
+      };
+      playVideo();
     }
   }, [cameraStream]);
 
@@ -162,13 +174,32 @@ export default function GoLive() {
   const requestCameraPermissions = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
-        audio: true
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 1080 },
+          height: { ideal: 1920 },
+          frameRate: { ideal: 30, max: 30 }
+        }, 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       });
       setCameraStream(stream);
       setHasPermissions(true);
+      
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
+        videoPreviewRef.current.muted = true;
+        videoPreviewRef.current.playsInline = true;
+        
+        // Force play for mobile
+        try {
+          await videoPreviewRef.current.play();
+        } catch (playError) {
+          console.log('Autoplay prevented, waiting for user interaction');
+        }
       }
     } catch (error) {
       alert('Camera and microphone access is required to go live. Please allow permissions and try again.');
@@ -354,7 +385,10 @@ export default function GoLive() {
                 autoPlay
                 playsInline
                 muted
+                preload="auto"
+                webkit-playsinline="true"
                 className="w-full h-full object-cover"
+                style={{ backgroundColor: '#000' }}
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
