@@ -38,6 +38,8 @@ import WatchVideo from './pages/WatchVideo';
 import AffiliateHub from './pages/AffiliateHub';
 import AffiliateGoLive from './pages/AffiliateGoLive';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
+import CommunityForums from './pages/CommunityForums';
+import ForumPost from './pages/ForumPost';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +84,8 @@ export const PAGES = {
     "AffiliateHub": AffiliateHub,
     "AffiliateGoLive": AffiliateGoLive,
     "WatchAffiliateVideo": WatchAffiliateVideo,
+    "CommunityForums": CommunityForums,
+    "ForumPost": ForumPost,
 }
 
 export const pagesConfig = {
