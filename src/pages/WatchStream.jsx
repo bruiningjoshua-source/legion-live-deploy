@@ -43,6 +43,7 @@ import AgoraService from '@/components/stream/AgoraService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
+import DirectTipButton from '@/components/stream/DirectTipButton';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
