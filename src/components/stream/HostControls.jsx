@@ -63,13 +63,7 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
     
     videoRef.current.style.filter = filterStr;
     
-    // Apply mirror effect
-    if (mirrorEnabled) {
-      videoRef.current.classList.add('mirror');
-    } else {
-      videoRef.current.classList.remove('mirror');
-    }
-
+    // Notify parent of mirror change
     onMirrorChange?.(mirrorEnabled);
     
     onSettingsChange?.({

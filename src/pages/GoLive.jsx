@@ -125,15 +125,22 @@ export default function GoLive() {
   }, [cameraStream]);
 
   React.useEffect(() => {
-    // Apply mirror effect
+    // Apply mirror effect immediately
     if (videoPreviewRef.current) {
       if (isMirrored) {
-        videoPreviewRef.current.classList.add('mirror');
+        videoPreviewRef.current.style.transform = 'scaleX(-1)';
       } else {
-        videoPreviewRef.current.classList.remove('mirror');
+        videoPreviewRef.current.style.transform = 'scaleX(1)';
       }
     }
   }, [isMirrored]);
+
+  React.useEffect(() => {
+    // Apply initial mirror on mount
+    if (videoPreviewRef.current && isMirrored) {
+      videoPreviewRef.current.style.transform = 'scaleX(-1)';
+    }
+  }, [cameraStream]);
 
   // Monitor stream quality
   React.useEffect(() => {

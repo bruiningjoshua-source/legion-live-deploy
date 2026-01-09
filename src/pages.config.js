@@ -25,8 +25,8 @@ import TheGamingHub from './pages/TheGamingHub';
 import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
-import WatchVideo from './pages/WatchVideo';
 import WatchStream from './pages/WatchStream';
+import WatchVideo from './pages/WatchVideo';
 import __Layout from './Layout.jsx';
 
 
@@ -58,8 +58,8 @@ export const PAGES = {
     "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
-    "WatchVideo": WatchVideo,
     "WatchStream": WatchStream,
+    "WatchVideo": WatchVideo,
 }
 
 export const pagesConfig = {

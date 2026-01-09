@@ -379,9 +379,9 @@ export default function WatchStream() {
     React.useEffect(() => {
     if (videoRef.current && user?.email === creator?.user_email) {
       if (isMirrored) {
-        videoRef.current.classList.add('mirror');
+        videoRef.current.style.transform = 'scaleX(-1)';
       } else {
-        videoRef.current.classList.remove('mirror');
+        videoRef.current.style.transform = 'scaleX(1)';
       }
     }
     }, [isMirrored, user?.email, creator?.user_email]);
