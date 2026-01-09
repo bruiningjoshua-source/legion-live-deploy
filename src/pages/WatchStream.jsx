@@ -635,56 +635,68 @@ export default function WatchStream() {
                 )}
       </div>
 
-      {/* Top Bar - Creator Info & Viewers */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent pt-safe">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5">
-                <div className="w-full h-full rounded-full overflow-hidden bg-stone-800">
-                  {creator?.avatar_url ? (
-                    <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
-                  )}
+      {/* Broadcaster Top Bar - Editable title & room icon (Creator Only) */}
+      {user?.email === creator?.user_email ? (
+        <BroadcasterTopBar
+          stream={stream}
+          viewerCount={stream.viewer_count || 0}
+          onUpdateStream={async (updates) => {
+            await base44.entities.Stream.update(stream.id, updates);
+            queryClient.invalidateQueries(['stream', streamId]);
+          }}
+        />
+      ) : (
+        /* Viewer Top Bar - Creator Info & Viewers */
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent pt-safe">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-stone-800">
+                    {creator?.avatar_url ? (
+                      <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-semibold text-sm">{creator?.display_name}</span>
+                  {creator?.is_verified && <Crown className="w-3 h-3 text-amber-400" />}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-red-500 text-white border-0 text-xs h-5">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full mr-1" />
+                    LIVE
+                  </Badge>
+                  <span className="text-white/80 text-xs">{(stream.viewer_count || 0).toLocaleString()} watching</span>
                 </div>
               </div>
-            </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-white font-semibold text-sm">{creator?.display_name}</span>
-                {creator?.is_verified && <Crown className="w-3 h-3 text-amber-400" />}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-red-500 text-white border-0 text-xs h-5">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-1" />
-                  LIVE
-                </Badge>
-                <span className="text-white/80 text-xs">{(stream.viewer_count || 0).toLocaleString()} watching</span>
-              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {wallet && (
+                <ViewerWallet 
+                  denariiBalance={wallet.denarii_balance || 0}
+                  asBalance={wallet.as_balance || 0}
+                />
+              )}
+              <Button
+                onClick={() => followMutation.mutate()}
+                size="sm"
+                className={isFollowing 
+                  ? "bg-stone-700/80 text-white h-7 text-xs" 
+                  : "bg-amber-600 hover:bg-amber-700 text-white h-7 text-xs"}
+              >
+                <Heart className={`w-3 h-3 mr-1 ${isFollowing ? 'fill-current' : ''}`} />
+                {isFollowing ? 'Following' : 'Follow'}
+              </Button>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            {wallet && (
-                            <ViewerWallet 
-                              denariiBalance={wallet.denarii_balance || 0}
-                              asBalance={wallet.as_balance || 0}
-                            />
-                          )}
-            <Button
-              onClick={() => followMutation.mutate()}
-              size="sm"
-              className={isFollowing 
-                ? "bg-stone-700/80 text-white h-7 text-xs" 
-                : "bg-amber-600 hover:bg-amber-700 text-white h-7 text-xs"}
-            >
-              <Heart className={`w-3 h-3 mr-1 ${isFollowing ? 'fill-current' : ''}`} />
-              {isFollowing ? 'Following' : 'Follow'}
-            </Button>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Right Side - Info Card (like rank display) */}
       <div className="absolute top-20 right-4 z-20">
