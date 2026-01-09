@@ -71,8 +71,7 @@ export default function WatchStream() {
   const [isMirrored, setIsMirrored] = useState(true);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [customBackground, setCustomBackground] = useState(null);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
+
   const [showModerationPanel, setShowModerationPanel] = useState(false);
   const [moderators, setModerators] = useState([]);
   const [kickedUsers, setKickedUsers] = useState([]);
