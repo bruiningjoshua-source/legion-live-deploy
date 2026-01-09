@@ -388,7 +388,7 @@ export default function GoLive() {
                 preload="auto"
                 webkit-playsinline="true"
                 className="w-full h-full"
-                style={{ objectFit: 'contain', backgroundColor: '#000' }}
+                style={{ objectFit: 'cover', backgroundColor: '#000' }}
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">

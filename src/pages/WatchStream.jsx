@@ -500,14 +500,14 @@ export default function WatchStream() {
       </AnimatePresence>
 
       {/* Fullscreen Mobile-Optimized Video */}
-      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%', zIndex: -1 }}>
+      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 0 }}>
         <video
           ref={videoRef}
           className="w-full h-full"
           style={{ 
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
             backgroundColor: '#000',
             position: 'absolute',
             top: 0,
