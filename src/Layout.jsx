@@ -17,14 +17,19 @@ export default function Layout({ children, currentPageName }) {
       try {
         const authenticated = await base44.auth.isAuthenticated();
         setIsAuthenticated(authenticated);
-        // Show loading screen only if this is the first load in this session
-        if (authenticated && !sessionStorage.getItem('loadingScreenShown')) {
+        // Show loading screen on every app load/reload
+        if (!sessionStorage.getItem('loadingScreenShown_' + window.location.pathname)) {
           setShowLoadingScreen(true);
-          sessionStorage.setItem('loadingScreenShown', 'true');
+          sessionStorage.setItem('loadingScreenShown_' + window.location.pathname, 'true');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
+        // Still show loading for non-auth users on first visit
+        if (!sessionStorage.getItem('loadingScreenShown_' + window.location.pathname)) {
+          setShowLoadingScreen(true);
+          sessionStorage.setItem('loadingScreenShown_' + window.location.pathname, 'true');
+        }
       }
     };
     checkAuth();
