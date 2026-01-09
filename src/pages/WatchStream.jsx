@@ -346,11 +346,8 @@ export default function WatchStream() {
         try {
           const constraints = {
             video: { 
-              width: { ideal: 1080 },
-              height: { ideal: 1920 },
-              aspectRatio: { ideal: 9/16 },
-              frameRate: { ideal: 30, max: 60 },
-              facingMode: 'user'
+              facingMode: 'user',
+              aspectRatio: { ideal: 9/16 }
             },
             audio: {
               echoCancellation: true,
@@ -454,62 +451,64 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Full Screen Video */}
-      <div className="absolute inset-0">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          autoPlay
-          playsInline
-          muted={isMuted}
-          poster={stream.thumbnail_url}
-          controls={false}
-          preload="auto"
-        >
-          Your browser does not support video playback.
-        </video>
+      {/* Full Screen Video - 9:16 Portrait */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black">
+        <div className="relative w-full h-full max-w-[56.25vh]" style={{ aspectRatio: '9/16' }}>
+          <video
+            ref={videoRef}
+            className="w-full h-full object-contain"
+            autoPlay
+            playsInline
+            muted={isMuted}
+            poster={stream.thumbnail_url}
+            controls={false}
+            preload="auto"
+          >
+            Your browser does not support video playback.
+          </video>
         
-        {/* Multi-Panel Layout */}
-        {stream.stream_type === 'multi_panel' && (
-          <div className="absolute inset-0">
-            <MultiPanelView 
-              panelCreators={stream.panel_creators || [creator]}
-              remoteUsers={remoteUsers}
-              maxPanels={9}
-              hostCreatorId={stream.creator_id}
-              currentUserId={creator?.id}
-              isHost={user?.email === creator?.user_email}
-              allowFreeJoin={true}
-              onRequestJoin={(position) => {
-                console.log('Request to join panel position:', position);
-              }}
-              onKickUser={(userId) => {
-                console.log('Kick user:', userId);
-              }}
-            />
-          </div>
+          {/* Multi-Panel Layout */}
+          {stream.stream_type === 'multi_panel' && (
+            <div className="absolute inset-0">
+              <MultiPanelView 
+                panelCreators={stream.panel_creators || [creator]}
+                remoteUsers={remoteUsers}
+                maxPanels={9}
+                hostCreatorId={stream.creator_id}
+                currentUserId={creator?.id}
+                isHost={user?.email === creator?.user_email}
+                allowFreeJoin={true}
+                onRequestJoin={(position) => {
+                  console.log('Request to join panel position:', position);
+                }}
+                onKickUser={(userId) => {
+                  console.log('Kick user:', userId);
+                }}
+              />
+            </div>
           )}
 
-        {!liveStream && (
-          <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-amber-100">Connecting to live stream...</p>
+          {!liveStream && (
+            <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-amber-100">Connecting to live stream...</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* PK Battle Overlay */}
-        {stream.stream_type === 'pk_battle' && (
-          <PKBattleOverlay
-            hostCreator={creator}
-            opponentCreator={opponentCreator}
-            hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
-            opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
-            timeRemaining={pkBattle ? 300 : 0}
-            status={pkBattle?.status || 'pending'}
-          />
-        )}
+          {/* PK Battle Overlay */}
+          {stream.stream_type === 'pk_battle' && (
+            <PKBattleOverlay
+              hostCreator={creator}
+              opponentCreator={opponentCreator}
+              hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
+              opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
+              timeRemaining={pkBattle ? 300 : 0}
+              status={pkBattle?.status || 'pending'}
+            />
+          )}
+        </div>
       </div>
 
       {/* Top Bar - Creator Info & Viewers */}
@@ -575,30 +574,31 @@ export default function WatchStream() {
         </motion.div>
       </div>
 
-      {/* Chat Messages Overlay - Bottom portion */}
-      <div className="absolute left-4 right-4 bottom-24 z-20 max-h-[40vh] overflow-hidden pointer-events-none">
-        <div className="flex flex-col gap-2">
-          {chatMessages.slice(-5).map((msg, idx) => (
+      {/* Chat Messages Overlay - Floating transparent UI */}
+      <div className="absolute left-2 right-2 bottom-28 z-20 max-h-[45vh] overflow-hidden pointer-events-none">
+        <div className="flex flex-col gap-1.5">
+          {chatMessages.slice(-6).map((msg, idx) => (
             <motion.div
               key={msg.id}
-              initial={{ x: -100, opacity: 0 }}
+              initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 max-w-[85%]"
+              exit={{ opacity: 0 }}
+              transition={{ delay: idx * 0.03 }}
+              className="bg-black/30 backdrop-blur-[2px] rounded-full px-3 py-1.5 max-w-[80%] shadow-sm"
             >
               {msg.message_type === 'gift' ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-amber-300 font-semibold text-sm">{msg.sender_name}</span>
-                  <span className="text-white text-sm">sent</span>
-                  <span className="text-2xl">{msg.gift_data?.gift_icon}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
+                  <span className="text-white/90 text-xs">sent</span>
+                  <span className="text-xl">{msg.gift_data?.gift_icon}</span>
                   {msg.gift_data?.quantity > 1 && (
-                    <span className="text-amber-300 text-sm">x{msg.gift_data.quantity}</span>
+                    <span className="text-amber-300 text-xs font-semibold">x{msg.gift_data.quantity}</span>
                   )}
                 </div>
               ) : (
-                <div>
-                  <span className="text-amber-300 font-semibold text-sm mr-2">{msg.sender_name}:</span>
-                  <span className="text-white text-sm">{msg.message}</span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
+                  <span className="text-white/95 text-xs">{msg.message}</span>
                 </div>
               )}
             </motion.div>
