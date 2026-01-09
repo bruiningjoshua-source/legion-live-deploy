@@ -511,29 +511,6 @@ export default function GoLive() {
             </div>
           )}
 
-          <Card className="bg-stone-800/30 border-amber-600/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-amber-100 mb-2">Camera & Microphone Required</h3>
-              <p className="text-amber-400/70 mb-6">Allow access to start broadcasting to your audience</p>
-              <Button 
-                onClick={requestCameraPermissions}
-                size="lg"
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-              >
-                <Camera className="w-5 h-5 mr-2" />
-                Enable Camera & Microphone
-              </Button>
-              {!isSubscribed && (
-                <p className="text-amber-400/60 text-sm mt-4">
-                  ⚠️ You can stream for free, but subscribe to receive gifts and cash out earnings
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
         {/* Stream Setup Form */}
         <Card className="bg-stone-800/30 border-amber-600/20">
           <CardHeader>
