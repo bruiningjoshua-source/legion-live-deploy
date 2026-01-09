@@ -12,12 +12,14 @@ import {
   Share2,
   Flag,
   ThumbsUp,
+  ThumbsDown,
   ShoppingBag,
   ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import TipButton from '@/components/stream/TipButton';
+import VideoComments from '@/components/video/VideoComments';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
@@ -76,15 +78,100 @@ export default function WatchVideo() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: userInterest } = useQuery({
+    queryKey: ['user-interest', user?.email],
+    queryFn: async () => {
+      const interests = await base44.entities.UserInterest.filter({ user_email: user.email }, null, 1);
+      return interests[0] || null;
+    },
+    enabled: !!user?.email
+  });
+
+  const hasLiked = userInterest?.liked_videos?.includes(videoId);
+  const hasDisliked = userInterest?.disliked_videos?.includes(videoId);
+
   const likeMutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.VlogVideo.update(videoId, {
-        like_count: (video.like_count || 0) + 1
-      });
+      const currentLikes = video.like_count || 0;
+      const currentDislikes = video.dislike_count || 0;
+      
+      if (hasLiked) {
+        // Remove like
+        await base44.entities.VlogVideo.update(videoId, {
+          like_count: Math.max(currentLikes - 1, 0)
+        });
+        if (userInterest) {
+          await base44.entities.UserInterest.update(userInterest.id, {
+            liked_videos: (userInterest.liked_videos || []).filter(id => id !== videoId)
+          });
+        }
+      } else {
+        // Add like, remove dislike if exists
+        const updates = { like_count: currentLikes + 1 };
+        if (hasDisliked) {
+          updates.dislike_count = Math.max(currentDislikes - 1, 0);
+        }
+        await base44.entities.VlogVideo.update(videoId, updates);
+        
+        if (userInterest) {
+          await base44.entities.UserInterest.update(userInterest.id, {
+            liked_videos: [...(userInterest.liked_videos || []), videoId],
+            disliked_videos: (userInterest.disliked_videos || []).filter(id => id !== videoId)
+          });
+        } else {
+          await base44.entities.UserInterest.create({
+            user_email: user.email,
+            liked_videos: [videoId]
+          });
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['video', videoId]);
-      toast.success('Liked!');
+      queryClient.invalidateQueries(['user-interest']);
+      toast.success(hasLiked ? 'Removed like' : 'Liked!');
+    }
+  });
+
+  const dislikeMutation = useMutation({
+    mutationFn: async () => {
+      const currentLikes = video.like_count || 0;
+      const currentDislikes = video.dislike_count || 0;
+      
+      if (hasDisliked) {
+        // Remove dislike
+        await base44.entities.VlogVideo.update(videoId, {
+          dislike_count: Math.max(currentDislikes - 1, 0)
+        });
+        if (userInterest) {
+          await base44.entities.UserInterest.update(userInterest.id, {
+            disliked_videos: (userInterest.disliked_videos || []).filter(id => id !== videoId)
+          });
+        }
+      } else {
+        // Add dislike, remove like if exists
+        const updates = { dislike_count: currentDislikes + 1 };
+        if (hasLiked) {
+          updates.like_count = Math.max(currentLikes - 1, 0);
+        }
+        await base44.entities.VlogVideo.update(videoId, updates);
+        
+        if (userInterest) {
+          await base44.entities.UserInterest.update(userInterest.id, {
+            disliked_videos: [...(userInterest.disliked_videos || []), videoId],
+            liked_videos: (userInterest.liked_videos || []).filter(id => id !== videoId)
+          });
+        } else {
+          await base44.entities.UserInterest.create({
+            user_email: user.email,
+            disliked_videos: [videoId]
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['video', videoId]);
+      queryClient.invalidateQueries(['user-interest']);
     }
   });
 
@@ -147,14 +234,26 @@ export default function WatchVideo() {
                       variant="outline"
                       size="default"
                     />
-                    <Button
-                      onClick={() => likeMutation.mutate()}
-                      variant="outline"
-                      className="border-amber-600/30 text-amber-200"
-                    >
-                      <Heart className="w-4 h-4 mr-2" />
-                      {video.like_count?.toLocaleString() || 0}
-                    </Button>
+                    <div className="flex items-center bg-stone-800 rounded-lg overflow-hidden">
+                      <Button
+                        onClick={() => user && likeMutation.mutate()}
+                        variant="ghost"
+                        className={`rounded-none border-r border-stone-700 ${hasLiked ? 'text-blue-400' : 'text-amber-200'}`}
+                      >
+                        <ThumbsUp className={`w-4 h-4 mr-2 ${hasLiked ? 'fill-current' : ''}`} />
+                        {video.like_count?.toLocaleString() || 0}
+                      </Button>
+                      <Button
+                        onClick={() => user && dislikeMutation.mutate()}
+                        variant="ghost"
+                        className={`rounded-none ${hasDisliked ? 'text-red-400' : 'text-amber-200'}`}
+                      >
+                        <ThumbsDown className={`w-4 h-4 ${hasDisliked ? 'fill-current' : ''}`} />
+                        {video.dislike_count > 0 && (
+                          <span className="ml-1">{video.dislike_count?.toLocaleString()}</span>
+                        )}
+                      </Button>
+                    </div>
                     <Button variant="outline" className="border-amber-600/30 text-amber-200">
                       <Share2 className="w-4 h-4" />
                     </Button>
@@ -177,6 +276,13 @@ export default function WatchVideo() {
                 {video.description && (
                   <p className="text-amber-100/80 text-sm">{video.description}</p>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Comments Section */}
+            <Card className="bg-stone-800/30 border-amber-600/20">
+              <CardContent className="p-6">
+                <VideoComments videoId={videoId} creatorId={creator?.user_email} />
               </CardContent>
             </Card>
           </div>
