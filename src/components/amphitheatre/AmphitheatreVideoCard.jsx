@@ -6,7 +6,7 @@ import { Play, Eye, ThumbsUp, Clock, Music, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function AmphitheatreVideoCard({ content, viewMode = 'grid' }) {
+export default function AmphitheatreVideoCard({ content, viewMode = 'grid', isShort = false }) {
   const formatDuration = (seconds) => {
     if (!seconds) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -115,6 +115,64 @@ export default function AmphitheatreVideoCard({ content, viewMode = 'grid' }) {
               <span className="text-amber-400/60 text-sm">
                 {content.created_date && formatDistanceToNow(new Date(content.created_date), { addSuffix: true })}
               </span>
+            </div>
+          </div>
+        </motion.div>
+      </Link>
+    );
+  }
+
+  // Shorts display (vertical)
+  if (isShort || content.video_type === 'short') {
+    return (
+      <Link to={videoUrl}>
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          className="group cursor-pointer"
+        >
+          <div className="relative aspect-[9/16] bg-stone-900 rounded-xl overflow-hidden border border-pink-600/30 group-hover:border-pink-500/60 transition-all">
+            {content.thumbnail_url ? (
+              <img
+                src={content.thumbnail_url}
+                alt={content.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-900/30 to-stone-900">
+                <Play className="w-10 h-10 text-pink-400/40" />
+              </div>
+            )}
+
+            {/* Play overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 bg-pink-500/90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform">
+                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Short badge */}
+            <div className="absolute top-2 left-2">
+              <Badge className="bg-pink-600 border-0 text-xs">📱</Badge>
+            </div>
+
+            {/* Duration */}
+            {content.duration_seconds && (
+              <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-xs text-white font-medium">
+                {formatDuration(content.duration_seconds)}
+              </div>
+            )}
+
+            {/* Bottom info */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
+              <h3 className="text-white font-semibold text-sm line-clamp-2">{content.title}</h3>
+              <div className="flex items-center gap-2 mt-1 text-white/70 text-xs">
+                <span>{formatViews(content.view_count)}</span>
+                <span>•</span>
+                <ThumbsUp className="w-3 h-3" />
+                <span>{formatViews(content.like_count)}</span>
+              </div>
             </div>
           </div>
         </motion.div>
