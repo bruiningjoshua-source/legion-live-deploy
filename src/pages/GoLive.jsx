@@ -144,9 +144,9 @@ export default function GoLive() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          width: { ideal: 720 },
-          height: { ideal: 1280 },
-          aspectRatio: { ideal: 9/16 },
+          width: { ideal: 1280 },
+          height: { ideal: 960 },
+          aspectRatio: { ideal: 4/3 },
           facingMode: 'user'
         }, 
         audio: {
@@ -335,13 +335,13 @@ export default function GoLive() {
           <div className="space-y-4">
             <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
               <CardContent className="p-0">
-                <div className="relative w-full bg-black" style={{ height: '70vh', maxHeight: '800px' }}>
+                <div className="relative w-full max-w-3xl mx-auto bg-black" style={{ aspectRatio: '4/3' }}>
                   <video
                     ref={videoPreviewRef}
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-full object-cover mirror"
+                    className="w-full h-full object-contain mirror"
                   />
                   <div className="absolute top-4 left-4 flex items-center gap-2">
                     <Badge className="bg-red-500 text-white border-0 animate-pulse">
