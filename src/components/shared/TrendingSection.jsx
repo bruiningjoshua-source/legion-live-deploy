@@ -10,8 +10,15 @@ import CreatorCard from '@/components/creator/CreatorCard';
 export default function TrendingSection() {
   const { data: trendingData = {}, isLoading } = useQuery({
     queryKey: ['trending-content'],
-    queryFn: () =>
-      base44.functions.invoke('getTrendingContent', { limit: 8 }).then(res => res.data || { streams: [], creators: [], collaborations: [] }),
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('getTrendingContent', { limit: 8 });
+        return res.data || { streams: [], creators: [], collaborations: [] };
+      } catch (error) {
+        console.log('Trending content unavailable:', error.message);
+        return { streams: [], creators: [], collaborations: [] };
+      }
+    },
     staleTime: 10 * 60 * 1000,
     refetchInterval: 30 * 1000
   });
