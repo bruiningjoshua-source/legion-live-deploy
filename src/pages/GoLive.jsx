@@ -387,17 +387,19 @@ export default function GoLive() {
         {/* Camera Preview & Quality Monitor */}
         {hasPermissions && (
           <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-40 bg-black" style={{ width: '100vw', height: '100vh' }}>
-            <div className="relative w-full h-full bg-black overflow-hidden">
-              <video
-                ref={videoPreviewRef}
-                autoPlay
-                playsInline
-                muted
-                preload="auto"
-                webkit-playsinline="true"
-                className="w-full h-full"
-                style={{ objectFit: 'contain', backgroundColor: '#000' }}
-              />
+            <div className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center">
+              {/* Portrait 9:13 Container */}
+              <div style={{ aspectRatio: '9/13', maxHeight: '100vh', width: 'auto' }} className="relative bg-black">
+                <video
+                  ref={videoPreviewRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  preload="auto"
+                  webkit-playsinline="true"
+                  className="w-full h-full"
+                  style={{ objectFit: 'cover', backgroundColor: '#000' }}
+                />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10 pt-safe">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
                   <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
