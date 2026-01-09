@@ -37,6 +37,7 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import AffiliateHub from './pages/AffiliateHub';
 import AffiliateGoLive from './pages/AffiliateGoLive';
+import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import __Layout from './Layout.jsx';
 
 
@@ -80,6 +81,7 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "AffiliateHub": AffiliateHub,
     "AffiliateGoLive": AffiliateGoLive,
+    "WatchAffiliateVideo": WatchAffiliateVideo,
 }
 
 export const pagesConfig = {
