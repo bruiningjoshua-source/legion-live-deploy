@@ -34,6 +34,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GENRES = [
   'All',
+  'Rock',
+  'Metal',
   'Synthwave',
   'Lo-Fi',
   'Vaporwave',
@@ -43,7 +45,6 @@ const GENRES = [
   'Hip-Hop',
   'Indie',
   'Pop',
-  'Rock',
   'Jazz',
   'Soul',
   'Classical',
@@ -51,6 +52,12 @@ const GENRES = [
   'Reggae',
   'Trap',
   'Electronic'
+];
+
+const FEATURED_ARTISTS = [
+  { name: 'Ozzy Osbourne', icon: '🦇', genre: 'rock' },
+  { name: 'Rob Zombie', icon: '🧟', genre: 'rock' },
+  { name: 'White Zombie', icon: '💀', genre: 'rock' },
 ];
 
 export default function TheAmphitheatre() {
@@ -222,6 +229,28 @@ export default function TheAmphitheatre() {
               </Button>
             </Link>
           )}
+        </div>
+
+        {/* Featured Artists Banner */}
+        <div className="mb-8 bg-gradient-to-r from-purple-900/40 via-stone-900 to-red-900/40 rounded-2xl p-6 border border-amber-600/20">
+          <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+            <Flame className="w-5 h-5 text-orange-400" />
+            Featured Artist Libraries
+          </h2>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {FEATURED_ARTISTS.map(artist => (
+              <motion.button
+                key={artist.name}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSearchQuery(artist.name)}
+                className="flex-shrink-0 bg-stone-800/50 hover:bg-amber-800/30 border border-amber-600/30 rounded-xl px-6 py-4 text-center transition-colors"
+              >
+                <span className="text-4xl mb-2 block">{artist.icon}</span>
+                <span className="text-amber-100 font-semibold text-sm">{artist.name}</span>
+              </motion.button>
+            ))}
+          </div>
         </div>
 
         {/* Search & Filters */}

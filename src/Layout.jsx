@@ -17,20 +17,20 @@ export default function Layout({ children, currentPageName }) {
       try {
         const authenticated = await base44.auth.isAuthenticated();
         setIsAuthenticated(authenticated);
-        // Show loading screen on every app load/reload
-        if (!sessionStorage.getItem('loadingScreenShown_' + window.location.pathname)) {
-          setShowLoadingScreen(true);
-          sessionStorage.setItem('loadingScreenShown_' + window.location.pathname, 'true');
-        }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
-        // Still show loading for non-auth users on first visit
-        if (!sessionStorage.getItem('loadingScreenShown_' + window.location.pathname)) {
-          setShowLoadingScreen(true);
-          sessionStorage.setItem('loadingScreenShown_' + window.location.pathname, 'true');
-        }
       }
+      
+      // Always show loading screen on app load (not stored in session)
+      // This ensures it shows on every browser refresh/close-reopen
+      const lastLoadTime = localStorage.getItem('lastAppLoadTime');
+      const now = Date.now();
+      // Show loading screen if more than 5 seconds since last load (covers refresh/reopen)
+      if (!lastLoadTime || (now - parseInt(lastLoadTime)) > 5000) {
+        setShowLoadingScreen(true);
+      }
+      localStorage.setItem('lastAppLoadTime', now.toString());
     };
     checkAuth();
   }, []);
