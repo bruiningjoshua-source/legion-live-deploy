@@ -85,6 +85,7 @@ export default function GoLive() {
   const [hasPermissions, setHasPermissions] = useState(false);
   const [streamStats, setStreamStats] = useState(null);
   const [agoraToken, setAgoraToken] = useState(null);
+  const [isMirrored, setIsMirrored] = useState(true);
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
@@ -122,6 +123,17 @@ export default function GoLive() {
       videoPreviewRef.current.play().catch(e => console.error('Play error:', e));
     }
   }, [cameraStream]);
+
+  React.useEffect(() => {
+    // Apply mirror effect
+    if (videoPreviewRef.current) {
+      if (isMirrored) {
+        videoPreviewRef.current.classList.add('mirror');
+      } else {
+        videoPreviewRef.current.classList.remove('mirror');
+      }
+    }
+  }, [isMirrored]);
 
   // Monitor stream quality
   React.useEffect(() => {
@@ -344,7 +356,11 @@ export default function GoLive() {
                 </Badge>
               </div>
               <div className="absolute top-4 right-4 z-10">
-                <HostControls videoRef={videoPreviewRef} />
+                <HostControls 
+                  videoRef={videoPreviewRef}
+                  onMirrorChange={setIsMirrored}
+                  initialMirror={isMirrored}
+                />
               </div>
             </div>
 

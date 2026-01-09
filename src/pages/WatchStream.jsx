@@ -57,6 +57,7 @@ export default function WatchStream() {
   const videoRef = React.useRef(null);
   const [liveStream, setLiveStream] = useState(null);
   const [showModeration, setShowModeration] = useState(false);
+  const [isMirrored, setIsMirrored] = useState(true);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -372,7 +373,18 @@ export default function WatchStream() {
         liveStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [stream?.status, user?.email, creator?.user_email]);
+    }, [stream?.status, user?.email, creator?.user_email]);
+
+    // Apply mirror effect for creator's own video
+    React.useEffect(() => {
+    if (videoRef.current && user?.email === creator?.user_email) {
+      if (isMirrored) {
+        videoRef.current.classList.add('mirror');
+      } else {
+        videoRef.current.classList.remove('mirror');
+      }
+    }
+    }, [isMirrored, user?.email, creator?.user_email]);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -687,6 +699,11 @@ export default function WatchStream() {
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
         <div className="absolute top-20 left-4 z-20 flex gap-2">
+          <HostControls 
+            videoRef={videoRef}
+            onMirrorChange={setIsMirrored}
+            initialMirror={isMirrored}
+          />
           <Button
             onClick={() => setShowModeration(!showModeration)}
             size="sm"

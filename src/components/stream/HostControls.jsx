@@ -39,8 +39,8 @@ const backgrounds = [
   { id: 'mosaic', name: 'Roman Mosaic', url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800' },
 ];
 
-export default function HostControls({ videoRef, onSettingsChange }) {
-  const [mirrorEnabled, setMirrorEnabled] = useState(true);
+export default function HostControls({ videoRef, onSettingsChange, onMirrorChange, initialMirror = true }) {
+  const [mirrorEnabled, setMirrorEnabled] = useState(initialMirror);
   const [selectedFilter, setSelectedFilter] = useState('none');
   const [selectedBackground, setSelectedBackground] = useState('none');
   const [brightness, setBrightness] = useState(100);
@@ -70,6 +70,8 @@ export default function HostControls({ videoRef, onSettingsChange }) {
       videoRef.current.classList.remove('mirror');
     }
 
+    onMirrorChange?.(mirrorEnabled);
+    
     onSettingsChange?.({
       mirror: mirrorEnabled,
       filter: selectedFilter,
