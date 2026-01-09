@@ -29,6 +29,8 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import CreatorStudio from './pages/CreatorStudio';
 import VideoUpload from './pages/VideoUpload';
+import VideoEditor from './pages/VideoEditor';
+import ChannelAnalytics from './pages/ChannelAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +66,8 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "CreatorStudio": CreatorStudio,
     "VideoUpload": VideoUpload,
+    "VideoEditor": VideoEditor,
+    "ChannelAnalytics": ChannelAnalytics,
 }
 
 export const pagesConfig = {
