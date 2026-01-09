@@ -4,9 +4,9 @@ css
 @tailwind utilities;
 
 /* Mirror effect for camera preview - horizontal flip like a real mirror */
-.mirror {
-  transform: scaleX(-1);
-  -webkit-transform: scaleX(-1);
+video.mirror {
+  transform: scaleX(-1) !important;
+  -webkit-transform: scaleX(-1) !important;
 }
 
 /* Performance optimizations */
