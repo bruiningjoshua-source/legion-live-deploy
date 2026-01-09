@@ -145,7 +145,8 @@ export default function GoLive() {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'user',
-          aspectRatio: { ideal: 9/16 }
+          width: { ideal: 1080 },
+          height: { ideal: 1920 }
         }, 
         audio: {
           echoCancellation: true,
