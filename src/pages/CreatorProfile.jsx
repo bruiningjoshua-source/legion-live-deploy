@@ -27,6 +27,7 @@ import StreamCard from '@/components/stream/StreamCard';
 import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
 import TipButton from '@/components/stream/TipButton';
 import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
+import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
 
 export default function CreatorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -303,6 +304,11 @@ export default function CreatorProfile() {
         {/* Free Tier Wallet Tip */}
         <div className="mb-6">
           <FreeTierWalletTip creator={creator} isOwnProfile={false} />
+        </div>
+
+        {/* Creator Info Section - Affiliate Links, Promo Codes, Brand Partners */}
+        <div className="mb-6">
+          <CreatorInfoSection creator={creator} isOwnProfile={false} />
         </div>
 
         {/* Subscription Tiers */}
