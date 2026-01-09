@@ -772,20 +772,8 @@ export default function WatchStream() {
             <X className="w-5 h-5" />
           </button>
 
-          {/* Broadcaster Dashboard - Top Left */}
-          <BroadcasterDashboard
-            stream={stream}
-            onUpdateStream={async (updates) => {
-              await base44.entities.Stream.update(stream.id, updates);
-              queryClient.invalidateQueries(['stream', streamId]);
-            }}
-            isExpanded={isDashboardExpanded}
-            onToggleExpand={() => setIsDashboardExpanded(!isDashboardExpanded)}
-            onClose={() => setShowDashboard(false)}
-          />
-
-          {/* Host Controls - Below dashboard */}
-          <div className="absolute top-36 left-4 z-20 flex gap-2">
+          {/* Host Controls - Below top bar */}
+          <div className="absolute top-20 left-4 z-20 flex gap-2">
             <HostControls 
               videoRef={videoRef}
               onMirrorChange={setIsMirrored}
