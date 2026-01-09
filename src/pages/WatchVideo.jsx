@@ -19,7 +19,7 @@ import {
 import { toast } from 'sonner';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import TipButton from '@/components/stream/TipButton';
-import VideoComments from '@/components/video/VideoComments';
+import VideoCommentSystem from '@/components/community/VideoCommentSystem';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
@@ -280,11 +280,7 @@ export default function WatchVideo() {
             </Card>
 
             {/* Comments Section */}
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardContent className="p-6">
-                <VideoComments videoId={videoId} creatorId={creator?.user_email} />
-              </CardContent>
-            </Card>
+            <VideoCommentSystem videoId={videoId} creatorId={creator?.id} />
           </div>
 
           {/* Sidebar - Affiliate Products */}
