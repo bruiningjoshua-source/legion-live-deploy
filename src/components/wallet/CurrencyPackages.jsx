@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { motion } from 'framer-motion';
-import { Sparkles, Crown, Star, Zap, Shield, Check } from 'lucide-react';
+import { Sparkles, Crown, Star, Zap, Shield, Check, Gift, TrendingUp, Lock } from 'lucide-react';
 
 const packages = [
   {
@@ -234,17 +234,33 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-green-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Support your favorite creators with amazing animated gifts</p>
+            <Gift className="w-4 h-4 text-pink-400 mt-0.5" />
+            <p className="text-amber-200/80 text-sm">Send stunning animated gifts to your favorite creators</p>
           </div>
           <div className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-green-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Unlock VIP badges and exclusive chat privileges</p>
+            <TrendingUp className="w-4 h-4 text-green-400 mt-0.5" />
+            <p className="text-amber-200/80 text-sm">Climb VIP ranks for exclusive badges and perks</p>
           </div>
           <div className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-green-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Influence PK battles and make your presence known</p>
+            <Star className="w-4 h-4 text-amber-400 mt-0.5" />
+            <p className="text-amber-200/80 text-sm">Influence PK battles and stand out in chat</p>
           </div>
+        </div>
+      </div>
+
+      {/* Trust Badges */}
+      <div className="flex items-center justify-center gap-6 pt-4 border-t border-amber-600/20">
+        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
+          <Lock className="w-4 h-4" />
+          <span>Secure Payment</span>
+        </div>
+        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
+          <Shield className="w-4 h-4" />
+          <span>Stripe Protected</span>
+        </div>
+        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
+          <Check className="w-4 h-4" />
+          <span>Instant Delivery</span>
         </div>
       </div>
     </div>
