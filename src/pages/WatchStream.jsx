@@ -781,9 +781,18 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
+      {/* Broadcaster Wallet - Only for Stream Owner */}
+      {user?.email === creator?.user_email && (
+        <BroadcasterWallet 
+          totalEarnings={creator?.total_earnings_denarii || 0}
+          sessionEarnings={stream?.total_denarii_earned || 0}
+          giftsReceived={stream?.total_gifts_received || 0}
+        />
+      )}
+
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
-        <div className="absolute top-20 left-4 z-20 flex gap-2">
+        <div className="absolute top-44 left-4 z-20 flex gap-2">
           <HostControls 
             videoRef={videoRef}
             onMirrorChange={setIsMirrored}
