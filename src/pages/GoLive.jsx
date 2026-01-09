@@ -331,33 +331,32 @@ export default function GoLive() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative w-full max-w-md mx-auto bg-black" style={{ aspectRatio: '9/16' }}>
-                  <video
-                    ref={videoPreviewRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-contain mirror"
-                  />
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <Badge className="bg-red-500 text-white border-0 animate-pulse">
-                      <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-                      PREVIEW
-                    </Badge>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <HostControls videoRef={videoPreviewRef} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-4 mb-8">
+            <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio: '9/16', maxWidth: '500px', margin: '0 auto' }}>
+              <div className="absolute inset-0 flex items-center justify-center bg-black">
+                <video
+                  ref={videoPreviewRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-auto max-w-full mirror"
+                  style={{ aspectRatio: '9/16', objectFit: 'cover' }}
+                />
+              </div>
+              <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                <Badge className="bg-red-500 text-white border-0 animate-pulse">
+                  <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
+                  PREVIEW
+                </Badge>
+              </div>
+              <div className="absolute top-4 right-4 z-10">
+                <HostControls videoRef={videoPreviewRef} />
+              </div>
+            </div>
 
             {/* Stream Quality Monitor */}
             {streamStats && (
-              <div className="max-w-md mx-auto">
+              <div style={{ maxWidth: '500px', margin: '0 auto' }}>
                 <StreamQualityMonitor 
                   stats={streamStats}
                   onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
