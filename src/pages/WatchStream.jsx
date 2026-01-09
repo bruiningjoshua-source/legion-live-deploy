@@ -466,48 +466,47 @@ export default function WatchStream() {
           Your browser does not support video playback.
         </video>
         
-          {/* Multi-Panel Layout */}
-          {stream.stream_type === 'multi_panel' && (
-            <div className="absolute inset-0">
-              <MultiPanelView 
-                panelCreators={stream.panel_creators || [creator]}
-                remoteUsers={remoteUsers}
-                maxPanels={9}
-                hostCreatorId={stream.creator_id}
-                currentUserId={creator?.id}
-                isHost={user?.email === creator?.user_email}
-                allowFreeJoin={true}
-                onRequestJoin={(position) => {
-                  console.log('Request to join panel position:', position);
-                }}
-                onKickUser={(userId) => {
-                  console.log('Kick user:', userId);
-                }}
-              />
-            </div>
-          )}
-
-          {!liveStream && (
-            <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-amber-100">Connecting to live stream...</p>
-              </div>
-            </div>
-          )}
-
-          {/* PK Battle Overlay */}
-          {stream.stream_type === 'pk_battle' && (
-            <PKBattleOverlay
-              hostCreator={creator}
-              opponentCreator={opponentCreator}
-              hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
-              opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
-              timeRemaining={pkBattle ? 300 : 0}
-              status={pkBattle?.status || 'pending'}
+        {/* Multi-Panel Layout */}
+        {stream.stream_type === 'multi_panel' && (
+          <div className="absolute inset-0">
+            <MultiPanelView 
+              panelCreators={stream.panel_creators || [creator]}
+              remoteUsers={remoteUsers}
+              maxPanels={9}
+              hostCreatorId={stream.creator_id}
+              currentUserId={creator?.id}
+              isHost={user?.email === creator?.user_email}
+              allowFreeJoin={true}
+              onRequestJoin={(position) => {
+                console.log('Request to join panel position:', position);
+              }}
+              onKickUser={(userId) => {
+                console.log('Kick user:', userId);
+              }}
             />
-          )}
-        </div>
+          </div>
+        )}
+
+        {!liveStream && (
+          <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-amber-100">Connecting to live stream...</p>
+            </div>
+          </div>
+        )}
+
+        {/* PK Battle Overlay */}
+        {stream.stream_type === 'pk_battle' && (
+          <PKBattleOverlay
+            hostCreator={creator}
+            opponentCreator={opponentCreator}
+            hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
+            opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
+            timeRemaining={pkBattle ? 300 : 0}
+            status={pkBattle?.status || 'pending'}
+          />
+        )}
       </div>
 
       {/* Top Bar - Creator Info & Viewers */}
