@@ -396,8 +396,8 @@ export default function GoLive() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4 mb-8">
-            <div className="relative w-full bg-black overflow-hidden mx-auto" style={{ aspectRatio: '9/16', height: '100vh', maxHeight: '90vh' }}>
+          <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-40 bg-black" style={{ width: '100vw', height: '100vh' }}>
+            <div className="relative w-full h-full bg-black overflow-hidden">
               <video
                 ref={videoPreviewRef}
                 autoPlay
@@ -408,32 +408,47 @@ export default function GoLive() {
                 className="w-full h-full"
                 style={{ objectFit: 'contain', backgroundColor: '#000' }}
               />
-              <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+              <div className="absolute top-4 left-4 flex items-center gap-2 z-10 pt-safe">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
                   <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
                   PREVIEW
                 </Badge>
               </div>
-              <div className="absolute top-4 right-4 z-10">
+              <div className="absolute top-4 right-4 z-10 pt-safe">
                 <HostControls 
                   videoRef={videoPreviewRef}
                   onMirrorChange={setIsMirrored}
                   initialMirror={isMirrored}
                 />
               </div>
-            </div>
+              </div>
 
-            {/* Stream Quality Monitor */}
-            {streamStats && (
-              <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+              {/* Stream Quality Monitor */}
+              {streamStats && (
+              <div className="absolute bottom-32 left-4 right-4 z-10 w-80 mx-auto">
                 <StreamQualityMonitor 
                   stats={streamStats}
                   onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
                 />
               </div>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Back Button */}
+              <Button
+              onClick={() => {
+                if (cameraStream) {
+                  cameraStream.getTracks().forEach(track => track.stop());
+                  setCameraStream(null);
+                  setHasPermissions(false);
+                }
+              }}
+              className="absolute bottom-8 left-4 z-10 bg-stone-900/80 hover:bg-stone-800 text-white"
+              size="sm"
+              >
+              ← Back
+              </Button>
+              </div>
+              )}
 
         {/* Stream Setup Form */}
         <Card className="bg-stone-800/30 border-amber-600/20">
