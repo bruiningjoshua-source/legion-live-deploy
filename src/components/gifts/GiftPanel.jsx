@@ -48,12 +48,23 @@ export default function GiftPanel({ gifts, walletBalance, onSendGift, onClose })
   const updateGiftQuantity = (giftId, change) => {
     setGiftCart(prev => {
       const current = prev[giftId] || 0;
-      const newQty = Math.max(0, current + change);
+      const newQty = Math.max(0, Math.min(100, current + change)); // Max 100 per gift type
       if (newQty === 0) {
         const { [giftId]: _, ...rest } = prev;
         return rest;
       }
       return { ...prev, [giftId]: newQty };
+    });
+  };
+
+  const setGiftQuantity = (giftId, qty) => {
+    const numQty = Math.max(0, Math.min(100, parseInt(qty) || 0));
+    setGiftCart(prev => {
+      if (numQty === 0) {
+        const { [giftId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [giftId]: numQty };
     });
   };
 
@@ -138,7 +149,16 @@ export default function GiftPanel({ gifts, walletBalance, onSendGift, onClose })
                     </div>
                     
                     {inCart > 0 && (
-                      <div className="flex items-center justify-center gap-1 bg-amber-600 rounded-full py-1">
+                      <div className="flex items-center justify-center gap-1 bg-amber-600 rounded-full py-1 px-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateGiftQuantity(gift.id, -10);
+                          }}
+                          className="hover:bg-amber-700 rounded-full p-0.5 text-white text-xs"
+                        >
+                          -10
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -148,7 +168,15 @@ export default function GiftPanel({ gifts, walletBalance, onSendGift, onClose })
                         >
                           <Minus className="w-3 h-3 text-white" />
                         </button>
-                        <span className="text-white font-bold text-sm min-w-[20px] text-center">{inCart}</span>
+                        <input
+                          type="number"
+                          value={inCart}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => setGiftQuantity(gift.id, e.target.value)}
+                          className="w-10 text-center bg-transparent text-white font-bold text-sm border-0 focus:outline-none"
+                          min="1"
+                          max="100"
+                        />
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -157,6 +185,15 @@ export default function GiftPanel({ gifts, walletBalance, onSendGift, onClose })
                           className="hover:bg-amber-700 rounded-full p-0.5"
                         >
                           <Plus className="w-3 h-3 text-white" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateGiftQuantity(gift.id, 10);
+                          }}
+                          className="hover:bg-amber-700 rounded-full p-0.5 text-white text-xs"
+                        >
+                          +10
                         </button>
                       </div>
                     )}

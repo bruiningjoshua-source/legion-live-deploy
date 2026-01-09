@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-export default function GiftAnimation({ gift, sender, onComplete }) {
+export default function GiftAnimation({ gift, sender, quantity = 1, onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const duration = gift.animation_type === 'prestige' ? 5000 : 
-                     gift.animation_type === 'fullscreen' ? 3500 : 
-                     gift.animation_type === 'burst' ? 2000 : 1500;
+    // Single animation regardless of quantity, but shorter duration
+    const duration = gift.animation_type === 'prestige' ? 3000 : 
+                     gift.animation_type === 'fullscreen' ? 2500 : 
+                     gift.animation_type === 'burst' ? 1500 : 1000;
 
     // Trigger confetti for higher tier gifts
     if (gift.tier === 'legendary' || gift.tier === 'prestige') {
@@ -48,7 +49,9 @@ export default function GiftAnimation({ gift, sender, onComplete }) {
           >
             <div className="bg-stone-900/90 backdrop-blur-lg border-2 border-amber-500 rounded-2xl p-6 text-center shadow-2xl shadow-amber-500/50">
               <div className="text-6xl mb-2">{gift.icon}</div>
-              <p className="text-amber-100 font-bold text-xl mb-1">{gift.name}</p>
+              <p className="text-amber-100 font-bold text-xl mb-1">
+                {gift.name} {quantity > 1 && <span className="text-amber-400">x{quantity}</span>}
+              </p>
               <p className="text-amber-400/70 text-sm">from {sender}</p>
             </div>
           </motion.div>
