@@ -143,6 +143,29 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
             </div>
           </div>
 
+          {/* Camera Zoom */}
+          <div className="space-y-3">
+            <Label className="text-amber-200 flex items-center gap-2">
+              <ZoomIn className="w-4 h-4" />
+              Camera Distance
+            </Label>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-amber-300">Zoom</span>
+                <span className="text-sm text-amber-400">{(zoom * 100).toFixed(0)}%</span>
+              </div>
+              <Slider
+                value={[zoom]}
+                onValueChange={([v]) => setZoom(v)}
+                min={0.5}
+                max={2}
+                step={0.1}
+                className="[&_[role=slider]]:bg-amber-500"
+              />
+              <p className="text-xs text-amber-400/60">Lower = further back, Higher = closer in</p>
+            </div>
+          </div>
+
           {/* Custom Adjustments */}
           <div className="space-y-4">
             <Label className="text-amber-200 flex items-center gap-2">
