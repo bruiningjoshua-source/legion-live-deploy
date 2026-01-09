@@ -5,91 +5,101 @@ import { Card } from "@/components/ui/card";
 import { motion } from 'framer-motion';
 import { Sparkles, Crown, Star, Zap, Shield, Check, Gift, TrendingUp, Lock } from 'lucide-react';
 
+// Denarii Crypto Trajectory: Current baseline $0.001/Denarii, targeting $0.01 in 6 months
+// Early adopters get maximum value before crypto launch
+const CURRENT_DENARII_VALUE_USD = 0.001; // Will increase to $0.01 at crypto launch
+
 const packages = [
   {
     id: 'starter',
     name: 'Recruit\'s Pouch',
-    denarii: 1500,
-    bonus: 300,
-    bonusPercent: 20,
+    denarii: 2000,
+    bonus: 500,
+    bonusPercent: 25,
     price: 0.99,
     icon: '🪙',
     popular: false,
     color: 'from-stone-600 to-stone-700',
     border: 'border-stone-500',
-    usdPerDenarii: 0.00066,
-    value: 'Best for trying'
+    usdPerDenarii: 0.000396,
+    value: 'Early adopter rate',
+    futureValue: '$25 at crypto launch'
   },
   {
     id: 'basic',
     name: 'Soldier\'s Chest',
-    denarii: 8500,
-    bonus: 1500,
-    bonusPercent: 20,
+    denarii: 12000,
+    bonus: 3000,
+    bonusPercent: 25,
     price: 4.99,
     icon: '💰',
     popular: false,
     color: 'from-green-700 to-green-800',
     border: 'border-green-500',
-    usdPerDenarii: 0.000587,
-    value: 'Great starter'
+    usdPerDenarii: 0.000333,
+    value: 'Great starter',
+    futureValue: '$150 at crypto launch'
   },
   {
     id: 'popular',
     name: 'Centurion\'s Treasury',
-    denarii: 20000,
-    bonus: 6000,
-    bonusPercent: 30,
+    denarii: 30000,
+    bonus: 10000,
+    bonusPercent: 33,
     price: 9.99,
     icon: '⚔️',
     popular: true,
     color: 'from-amber-600 to-amber-700',
     border: 'border-amber-400',
-    usdPerDenarii: 0.0005,
-    value: '30% bonus value'
+    usdPerDenarii: 0.00025,
+    value: '33% bonus + best value',
+    futureValue: '$400 at crypto launch'
   },
   {
     id: 'premium',
     name: 'Praetor\'s Vault',
-    denarii: 55000,
-    bonus: 20000,
-    bonusPercent: 40,
+    denarii: 80000,
+    bonus: 30000,
+    bonusPercent: 37,
     price: 24.99,
     icon: '🏛️',
     popular: false,
     color: 'from-purple-700 to-purple-800',
     border: 'border-purple-500',
-    usdPerDenarii: 0.000454,
-    value: '40% mega savings'
+    usdPerDenarii: 0.000227,
+    value: '37% bonus savings',
+    futureValue: '$1,100 at crypto launch'
   },
   {
     id: 'elite',
     name: 'Senator\'s Fortune',
-    denarii: 125000,
-    bonus: 50000,
-    bonusPercent: 50,
+    denarii: 200000,
+    bonus: 80000,
+    bonusPercent: 40,
     price: 49.99,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-700',
     border: 'border-rose-400',
-    usdPerDenarii: 0.0004,
-    value: '50% bonus + VIP'
+    usdPerDenarii: 0.000178,
+    value: '40% bonus + VIP status',
+    futureValue: '$2,800 at crypto launch'
   },
   {
     id: 'ultimate',
     name: 'Emperor\'s Legacy',
-    denarii: 300000,
-    bonus: 150000,
-    bonusPercent: 75,
+    denarii: 500000,
+    bonus: 250000,
+    bonusPercent: 50,
     price: 99.99,
     icon: '✨',
     popular: false,
     color: 'from-amber-500 via-rose-500 to-purple-600',
     border: 'border-amber-300',
     premium: true,
-    usdPerDenarii: 0.000333,
-    value: '75% LEGENDARY bonus'
+    usdPerDenarii: 0.000133,
+    value: '50% LEGENDARY bonus',
+    futureValue: '$7,500 at crypto launch'
   }
 ];
 
@@ -118,14 +128,17 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </div>
       </div>
 
-      {/* Time-Limited Bonus */}
+      {/* Crypto Launch Notice */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/40 rounded-xl p-4"
+        className="bg-gradient-to-r from-amber-500/20 to-purple-500/20 border border-amber-500/40 rounded-xl p-4"
       >
-        <p className="text-red-200 font-bold text-center text-sm">
-          ⏰ LIMITED TIME: All packages include bonus Denarii (expires in 14 days)
+        <p className="text-amber-200 font-bold text-center text-sm">
+          🚀 CRYPTO LAUNCH IN 6 MONTHS: Denarii converting to blockchain token at 10x current value!
+        </p>
+        <p className="text-amber-300/70 text-center text-xs mt-1">
+          Early adopters lock in the best rates. Current: $0.001/Denarii → Launch: $0.01/Denarii
         </p>
       </motion.div>
 
@@ -197,6 +210,9 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
                         +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
                       </Badge>
                       <p className="text-xs text-green-300/80 text-center font-semibold">{pkg.value}</p>
+                      {pkg.futureValue && (
+                        <p className="text-xs text-purple-300/80 text-center">📈 {pkg.futureValue}</p>
+                      )}
                     </div>
                   )}
                 </div>
