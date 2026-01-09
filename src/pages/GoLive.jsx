@@ -126,6 +126,13 @@ export default function GoLive() {
 
   const isSubscribed = hostSubscription?.status === 'active';
 
+  // Auto-request camera permissions on page load
+  React.useEffect(() => {
+    if (user && !hasPermissions && !cameraStream) {
+      requestCameraPermissions();
+    }
+  }, [user]);
+
   const createCreatorMutation = useMutation({
     mutationFn: () => base44.entities.Creator.create({
       user_email: user.email,
