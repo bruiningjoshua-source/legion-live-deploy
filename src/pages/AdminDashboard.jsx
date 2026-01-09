@@ -21,7 +21,16 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 // Authorized admin emails - update these as needed
-const AUTHORIZED_ADMINS = ['admin@legionlive.io', 'support@legionlive.io', 'inthestixproductions@gmail.com', 'muggabuckerpro@gmail.com', 'rankincadence@gmail.com', 'invictaoperations@gmail.com', 'bruiningjoshua@gmail.com'];
+// Authorized admin emails - add your admin emails here
+const AUTHORIZED_ADMINS = [
+  'admin@legionlive.io', 
+  'support@legionlive.io', 
+  'inthestixproductions@gmail.com', 
+  'muggabuckerpro@gmail.com', 
+  'rankincadence@gmail.com', 
+  'invictaoperations@gmail.com', 
+  'bruiningjoshua@gmail.com'
+];
 
 // CEO-level affiliates who get special earnings structure
 const CEO_AFFILIATES = ['rankincadence@gmail.com'];
