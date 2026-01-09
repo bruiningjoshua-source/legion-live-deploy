@@ -72,6 +72,10 @@ export default function VideoUpload() {
   const videoInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
 
+  // Check URL params for preset video type
+  const urlParams = new URLSearchParams(window.location.search);
+  const presetType = urlParams.get('type');
+
   const [step, setStep] = useState(1);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -83,7 +87,7 @@ export default function VideoUpload() {
   const [videoData, setVideoData] = useState({
     title: '',
     description: '',
-    video_type: 'long_form',
+    video_type: presetType === 'short' ? 'short' : 'long_form',
     category: '',
     subcategory: '',
     tags: [],
