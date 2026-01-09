@@ -34,6 +34,7 @@ import HostControls from '@/components/stream/HostControls';
 import AgoraService from '@/components/stream/AgoraService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
+import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -462,6 +463,13 @@ export default function GoLive() {
                 </Button>
               </div>
               
+              {/* Broadcaster Wallet */}
+              <BroadcasterWallet 
+                totalEarnings={creator?.total_earnings_denarii || 0}
+                sessionEarnings={0}
+                giftsReceived={0}
+              />
+
               {/* Broadcaster Chat */}
               <BroadcasterChat messages={chatMessages} />
             </div>
