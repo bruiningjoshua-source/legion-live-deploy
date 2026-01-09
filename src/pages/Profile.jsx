@@ -36,7 +36,8 @@ import {
   Check,
   Share2,
   BarChart3,
-  DollarSign
+  DollarSign,
+  Video
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -45,6 +46,7 @@ import StreamCard from '@/components/stream/StreamCard';
 import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import DirectDonationSettings from '@/components/creator/DirectDonationSettings';
+import VideoUploadSection from '@/components/creator/VideoUploadSection';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -97,6 +99,12 @@ export default function Profile() {
   const { data: pastStreams = [] } = useQuery({
     queryKey: ['my-past-streams', creator?.id],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creator.id, status: 'ended' }, '-created_date', 20),
+    enabled: !!creator?.id
+  });
+
+  const { data: myVideos = [] } = useQuery({
+    queryKey: ['my-videos', creator?.id],
+    queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creator.id }, '-created_date', 50),
     enabled: !!creator?.id
   });
 
@@ -263,8 +271,12 @@ export default function Profile() {
         </Card>
 
         {/* Tabs */}
-        <Tabs defaultValue="streams" className="space-y-6">
+        <Tabs defaultValue="videos" className="space-y-6">
           <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl flex-wrap">
+            <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+              <Video className="w-4 h-4 mr-1" />
+              Videos
+            </TabsTrigger>
             <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               Past Streams
             </TabsTrigger>
@@ -279,6 +291,10 @@ export default function Profile() {
               Affiliate
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="videos" className="mt-0">
+            <VideoUploadSection creator={creator} videos={myVideos} />
+          </TabsContent>
 
           <TabsContent value="streams" className="mt-0">
             {pastStreams.length > 0 ? (
