@@ -48,6 +48,9 @@ import DirectTipButton from '@/components/stream/DirectTipButton';
 import HostControls from '@/components/stream/HostControls';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
+import BroadcasterDashboard from '@/components/stream/BroadcasterDashboard';
+import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
+import ModerationPanel from '@/components/stream/ModerationPanel';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -67,6 +70,13 @@ export default function WatchStream() {
   const [isMirrored, setIsMirrored] = useState(true);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [customBackground, setCustomBackground] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
+  const [showModerationPanel, setShowModerationPanel] = useState(false);
+  const [moderators, setModerators] = useState([]);
+  const [kickedUsers, setKickedUsers] = useState([]);
+  const [chatMuted, setChatMuted] = useState(false);
+  const [panelParticipants, setPanelParticipants] = useState([]);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -575,26 +585,30 @@ export default function WatchStream() {
           Your browser does not support video playback.
         </video>
         
-        {/* Multi-Panel Layout */}
+        {/* Multi-Panel Layout - 4 Square Grid */}
         {stream.stream_type === 'multi_panel' && (
           <div className="absolute inset-0">
-            <MultiPanelView 
-                panelCreators={stream.panel_creators || [creator]}
-                remoteUsers={remoteUsers}
-                maxPanels={9}
-                hostCreatorId={stream.creator_id}
-                currentUserId={creator?.id}
-                isHost={user?.email === creator?.user_email}
-                allowFreeJoin={true}
-                onRequestJoin={(position) => {
-                  console.log('Request to join panel position:', position);
-                }}
-                onKickUser={(userId) => {
-                  console.log('Kick user:', userId);
-                }}
-                />
-                </div>
-                )}
+            <MultiPanelGrid 
+              hostStream={stream}
+              hostCreator={creator}
+              currentUser={user}
+              panelParticipants={panelParticipants}
+              onInviteToPanel={(seatId, participant) => {
+                setPanelParticipants(prev => [...prev, participant]);
+              }}
+              onRemoveFromPanel={(seatId) => {
+                // Handle removal
+              }}
+              onMuteAudio={(seatId, participant) => {
+                console.log('Mute audio for seat:', seatId);
+              }}
+              onEndCamera={(seatId, participant) => {
+                console.log('End camera for seat:', seatId);
+              }}
+              isHost={user?.email === creator?.user_email}
+            />
+          </div>
+        )}
 
                 {!liveStream && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
@@ -745,8 +759,20 @@ export default function WatchStream() {
             <X className="w-5 h-5" />
           </button>
 
-          {/* Host Controls - Below top bar */}
-          <div className="absolute top-20 left-4 z-20 flex gap-2">
+          {/* Broadcaster Dashboard - Top Left */}
+          <BroadcasterDashboard
+            stream={stream}
+            onUpdateStream={async (updates) => {
+              await base44.entities.Stream.update(stream.id, updates);
+              queryClient.invalidateQueries(['stream', streamId]);
+            }}
+            isExpanded={isDashboardExpanded}
+            onToggleExpand={() => setIsDashboardExpanded(!isDashboardExpanded)}
+            onClose={() => setShowDashboard(false)}
+          />
+
+          {/* Host Controls - Below dashboard */}
+          <div className="absolute top-36 left-4 z-20 flex gap-2">
             <HostControls 
               videoRef={videoRef}
               onMirrorChange={setIsMirrored}
@@ -754,7 +780,7 @@ export default function WatchStream() {
               onBackgroundChange={setCustomBackground}
             />
             <Button
-              onClick={() => setShowModeration(!showModeration)}
+              onClick={() => setShowModerationPanel(true)}
               size="sm"
               className="bg-stone-900/80 border border-amber-600/30 text-amber-300 hover:bg-amber-800/20 h-8 text-xs"
             >
@@ -769,6 +795,25 @@ export default function WatchStream() {
             onConfirm={() => endStreamMutation.mutate()}
             onCancel={() => setShowEndDialog(false)}
             isPending={endStreamMutation.isPending}
+          />
+
+          {/* Moderation Panel */}
+          <ModerationPanel
+            isOpen={showModerationPanel}
+            onClose={() => setShowModerationPanel(false)}
+            streamId={streamId}
+            viewers={[]} // Would be populated from Agora/stream data
+            moderators={moderators}
+            kickedUsers={kickedUsers}
+            chatMuted={chatMuted}
+            onToggleChatMute={() => setChatMuted(!chatMuted)}
+            onAppointModerator={(viewer) => setModerators([...moderators, viewer])}
+            onRemoveModerator={(mod) => setModerators(moderators.filter(m => m.email !== mod.email))}
+            onKickViewer={(viewer) => setKickedUsers([...kickedUsers, viewer])}
+            onResetKicks={() => setKickedUsers([])}
+            onMuteViewerAudio={(viewer) => console.log('Mute audio:', viewer)}
+            onEndViewerCamera={(viewer) => console.log('End camera:', viewer)}
+            isHost={true}
           />
         </>
       )}
@@ -793,24 +838,6 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Moderation Panel */}
-      <AnimatePresence>
-        {showModeration && user?.email === creator?.user_email && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            className="fixed top-0 right-0 bottom-0 w-full sm:w-96 z-50 bg-stone-900 border-l border-amber-600/30"
-          >
-            <ModerationDashboard 
-              streamId={streamId}
-              chatMessages={chatMessages}
-              onClose={() => setShowModeration(false)}
-              onClearStream={() => endStreamMutation.mutate()}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
