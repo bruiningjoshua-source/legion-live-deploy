@@ -400,44 +400,48 @@ export default function GoLive() {
                   className="w-full h-full"
                   style={{ objectFit: 'cover', backgroundColor: '#000' }}
                 />
-              <div className="absolute top-4 left-4 flex items-center gap-2 z-10 pt-safe">
-                <Badge className="bg-red-500 text-white border-0 animate-pulse">
-                  <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-                  PREVIEW
-                </Badge>
-              </div>
-              <div className="absolute top-4 right-4 z-10 pt-safe">
-                <HostControls 
-                  videoRef={videoPreviewRef}
-                  onMirrorChange={setIsMirrored}
-                  initialMirror={isMirrored}
-                />
-              </div>
-
-              {/* Stream Quality Monitor */}
-              {streamStats && (
-                <div className="absolute bottom-32 left-4 right-4 z-10 w-80 mx-auto">
-                  <StreamQualityMonitor 
-                    stats={streamStats}
-                    onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
+                <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
+                  <Badge className="bg-red-500 text-white border-0 animate-pulse text-xs">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-ping" />
+                    LIVE
+                  </Badge>
+                </div>
+                <div className="absolute top-3 right-3 z-10">
+                  <HostControls 
+                    videoRef={videoPreviewRef}
+                    onMirrorChange={setIsMirrored}
+                    initialMirror={isMirrored}
                   />
                 </div>
-              )}
 
-              {/* Back Button */}
-              <Button
-                onClick={() => {
-                  if (cameraStream) {
-                    cameraStream.getTracks().forEach(track => track.stop());
-                    setCameraStream(null);
-                    setHasPermissions(false);
-                  }
-                }}
-                className="absolute bottom-8 left-4 z-10 bg-stone-900/80 hover:bg-stone-800 text-white"
-                size="sm"
-              >
-                ← Back
-              </Button>
+                {/* Stream Quality Monitor */}
+                {streamStats && (
+                  <div className="absolute bottom-24 left-2 right-2 z-10">
+                    <StreamQualityMonitor 
+                      stats={streamStats}
+                      onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
+                    />
+                  </div>
+                )}
+
+                {/* Back Button */}
+                <Button
+                  onClick={() => {
+                    if (cameraStream) {
+                      cameraStream.getTracks().forEach(track => track.stop());
+                      setCameraStream(null);
+                      setHasPermissions(false);
+                    }
+                  }}
+                  className="absolute bottom-4 left-3 z-10 bg-stone-900/80 hover:bg-stone-800 text-white text-xs py-1"
+                  size="sm"
+                >
+                  ← Back
+                </Button>
+              </div>
+              
+              {/* Broadcaster Chat */}
+              <BroadcasterChat messages={chatMessages} />
             </div>
           </div>
         )}
