@@ -488,26 +488,30 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Full Screen Video - 9:16 Portrait Fullscreen */}
-      <div className="absolute inset-0 bg-black">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          autoPlay
-          playsInline
-          muted={isMuted}
-          poster={stream.thumbnail_url}
-          controls={false}
-          preload="auto"
-          webkit-playsinline="true"
-          style={{ backgroundColor: '#000' }}
-        >
-          Your browser does not support video playback.
-        </video>
+      {/* Portrait Full Screen Video - 9:16 */}
+      <div className="absolute inset-0 bg-black flex items-center justify-center">
+        <div className="relative w-full h-full max-w-[56.25vh] bg-black">
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            autoPlay
+            playsInline
+            muted={isMuted}
+            poster={stream.thumbnail_url}
+            controls={false}
+            preload="auto"
+            webkit-playsinline="true"
+            style={{ backgroundColor: '#000' }}
+          >
+            Your browser does not support video playback.
+          </video>
+        </div>
+        </div>
         
         {/* Multi-Panel Layout */}
         {stream.stream_type === 'multi_panel' && (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-full h-full max-w-[56.25vh]">
             <MultiPanelView 
               panelCreators={stream.panel_creators || [creator]}
               remoteUsers={remoteUsers}
@@ -523,20 +527,25 @@ export default function WatchStream() {
                 console.log('Kick user:', userId);
               }}
             />
+            </div>
           </div>
         )}
 
         {!liveStream && (
-          <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-full h-full max-w-[56.25vh] flex items-center justify-center bg-stone-900/80">
             <div className="text-center">
               <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
               <p className="text-amber-100">Connecting to live stream...</p>
+            </div>
             </div>
           </div>
         )}
 
         {/* PK Battle Overlay */}
         {stream.stream_type === 'pk_battle' && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative w-full h-full max-w-[56.25vh] pointer-events-auto">
           <PKBattleOverlay
             hostCreator={creator}
             opponentCreator={opponentCreator}
@@ -545,6 +554,8 @@ export default function WatchStream() {
             timeRemaining={pkBattle ? 300 : 0}
             status={pkBattle?.status || 'pending'}
           />
+            </div>
+          </div>
         )}
       </div>
 
