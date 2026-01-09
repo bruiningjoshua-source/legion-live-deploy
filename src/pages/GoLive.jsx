@@ -330,6 +330,7 @@ export default function GoLive() {
       {hasPermissions && (
         <style>{`
           body, html { overflow: hidden !important; }
+          nav, .bottom-nav { display: none !important; }
         `}</style>
       )}
       <div className={hasPermissions ? "fixed inset-0 w-screen h-screen z-50 bg-black" : "min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12"}>
