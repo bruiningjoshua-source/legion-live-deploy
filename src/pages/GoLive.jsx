@@ -209,8 +209,12 @@ export default function GoLive() {
 
   const goLiveMutation = useMutation({
     mutationFn: async () => {
+      if (!user) {
+        throw new Error('Please sign in to go live');
+      }
+      
       if (!hasPermissions) {
-        throw new Error('Camera permissions required');
+        throw new Error('Camera and microphone permissions are required to go live');
       }
 
       // Check if creator already has a live stream
@@ -280,7 +284,14 @@ export default function GoLive() {
       window.location.href = createPageUrl(`WatchStream?id=${stream.id}`);
     },
     onError: (error) => {
-      alert(error.message);
+      console.error('Go live failed:', error);
+      if (error.message.includes('sign in')) {
+        if (window.confirm('You need to sign in to go live. Sign in now?')) {
+          base44.auth.redirectToLogin(window.location.href);
+        }
+      } else {
+        alert(error.message);
+      }
     }
   });
 

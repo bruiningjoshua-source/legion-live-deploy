@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import NetworkStatus from '@/components/shared/NetworkStatus';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -62,9 +64,11 @@ export default function Layout({ children, currentPageName }) {
   // Removed authentication gate - app is publicly accessible
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
-      {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
-      <head>
+    <ErrorBoundary>
+      <NetworkStatus />
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
+        {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+        <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -150,6 +154,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       <BottomNav />
-    </div>
+      </div>
+      </ErrorBoundary>
   );
 }

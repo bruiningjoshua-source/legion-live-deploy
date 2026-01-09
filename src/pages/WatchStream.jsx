@@ -158,11 +158,19 @@ export default function WatchStream() {
       message_type: 'text',
       vip_level: wallet?.vip_level || 0
     }),
-    onSuccess: () => queryClient.invalidateQueries(['chat-messages', streamId])
+    onSuccess: () => queryClient.invalidateQueries(['chat-messages', streamId]),
+    onError: (error) => {
+      console.error('Failed to send message:', error);
+      alert('Unable to send message. Please try again.');
+    }
   });
 
   const sendGiftMutation = useMutation({
     mutationFn: async ({ gift, quantity }) => {
+      if (!user || !wallet) {
+        throw new Error('Please sign in to send gifts');
+      }
+      
       const totalCost = gift.cost_as * quantity;
       
       // Create transaction
@@ -231,11 +239,19 @@ export default function WatchStream() {
         gift, 
         sender: user.full_name || 'Anonymous' 
       });
+    },
+    onError: (error) => {
+      console.error('Gift send failed:', error);
+      alert(error.message || 'Unable to send gift. Please try again.');
     }
   });
 
   const followMutation = useMutation({
     mutationFn: async () => {
+      if (!user) {
+        throw new Error('Please sign in to follow creators');
+      }
+      
       if (isFollowing) {
         const follows = await base44.entities.Follow.filter({
           follower_email: user.email,
@@ -252,6 +268,14 @@ export default function WatchStream() {
     onSuccess: () => {
       queryClient.invalidateQueries(['follow-status']);
       queryClient.invalidateQueries(['creator', creator.id]);
+    },
+    onError: (error) => {
+      console.error('Follow action failed:', error);
+      if (error.message.includes('sign in')) {
+        base44.auth.redirectToLogin();
+      } else {
+        alert('Unable to update follow status. Please try again.');
+      }
     }
   });
 
