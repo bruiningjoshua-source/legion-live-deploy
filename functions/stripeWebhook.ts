@@ -158,9 +158,7 @@ Deno.serve(async (req) => {
             denarii_amount: denariiAmount,
             bonus_denarii: bonusDenarii,
             price_usd: session.amount_total / 100,
-            payment_method: 'stripe',
-            transaction_id: session.payment_intent,
-            status: 'completed'
+            stripe_payment_intent: session.payment_intent
           });
 
           console.log('[stripeWebhook] Denarii purchase completed:', totalDenarii, 'for', metadata.user_email);
