@@ -28,8 +28,15 @@ export default function Home() {
 
   const { data: personalizedRecs = [], isLoading: recsLoading } = useQuery({
     queryKey: ['recommendations', user?.email],
-    queryFn: () =>
-      base44.functions.invoke('getPersonalizedRecommendations', { limit: 16 }).then(res => res.data.recommendations || []),
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('getPersonalizedRecommendations', { limit: 16 });
+        return res.data?.recommendations || [];
+      } catch (error) {
+        console.log('Recommendations unavailable:', error.message);
+        return [];
+      }
+    },
     enabled: !!user?.email,
     staleTime: 5 * 60 * 1000,
     retry: 1
