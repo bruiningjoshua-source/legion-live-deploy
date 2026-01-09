@@ -35,7 +35,11 @@ import {
   Filter,
   History,
   Heart,
-  Compass
+  Compass,
+  ShoppingBag,
+  Tag,
+  ExternalLink,
+  Gift
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
@@ -109,6 +113,26 @@ export default function TheAmphitheatre() {
     queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
     staleTime: 5 * 60 * 1000
   });
+
+  // Affiliate/Recommended Products Videos
+  const { data: affiliateVideos = [] } = useQuery({
+    queryKey: ['amphitheatre-affiliate-videos'],
+    queryFn: () => base44.entities.AffiliateVideo.filter({ is_published: true }, '-created_date', 100),
+    staleTime: 2 * 60 * 1000
+  });
+
+  const { data: affiliatePartners = [] } = useQuery({
+    queryKey: ['affiliate-partners-map'],
+    queryFn: () => base44.entities.AffiliatePartner.filter({ status: 'approved' }, null, 200),
+    staleTime: 5 * 60 * 1000
+  });
+
+  const partnerMap = useMemo(() =>
+    affiliatePartners.reduce((acc, p) => {
+      acc[p.id] = p;
+      return acc;
+    }, {}), [affiliatePartners]
+  );
 
   const creatorMap = useMemo(() =>
     creators.reduce((acc, c) => {
@@ -261,6 +285,7 @@ export default function TheAmphitheatre() {
             { id: 'longform', label: 'Long Form', icon: Film },
             { id: 'trending', label: 'Trending', icon: TrendingUp },
             { id: 'foryou', label: 'For You', icon: Sparkles },
+            { id: 'recommended', label: 'Products & Services', icon: ShoppingBag },
             { id: 'history', label: 'History', icon: History }
           ].map(tab => {
             const Icon = tab.icon;
@@ -428,6 +453,115 @@ export default function TheAmphitheatre() {
                     </Button>
                   </Link>
                 )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Recommended Products & Services Section */}
+        {activeSection === 'recommended' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-amber-100 flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-green-400" />
+                🛒 App Recommended Products & Services
+                <Badge className="bg-green-600/20 text-green-300 border-green-500/30 ml-2">
+                  {affiliateVideos.length}
+                </Badge>
+              </h2>
+            </div>
+            
+            {/* Category Filters for Affiliate Content */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              {['all', 'tech', 'fashion', 'beauty', 'fitness', 'gaming', 'food', 'lifestyle', 'finance', 'education', 'health'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                    selectedCategory === cat
+                      ? 'bg-green-600 text-white'
+                      : 'bg-stone-800/50 text-amber-300 hover:bg-stone-700/50'
+                  }`}
+                >
+                  {cat === 'all' ? '🏛️ All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {affiliateVideos.length > 0 ? (
+              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {affiliateVideos
+                  .filter(v => selectedCategory === 'all' || v.category === selectedCategory)
+                  .map((video, i) => {
+                    const partner = partnerMap[video.partner_id];
+                    return (
+                      <motion.div
+                        key={video.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                      >
+                        <Link to={createPageUrl(`WatchAffiliateVideo?id=${video.id}`)}>
+                          <div className="bg-stone-800/30 rounded-xl overflow-hidden border border-green-600/20 hover:border-green-500/50 transition-all cursor-pointer group">
+                            <div className={`relative bg-stone-900 ${video.video_type === 'short' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                              {video.thumbnail_url ? (
+                                <img src={video.thumbnail_url} className="w-full h-full object-cover" alt={video.title} />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ShoppingBag className="w-10 h-10 text-green-400/30" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Play className="w-12 h-12 text-white" />
+                              </div>
+                              <Badge className="absolute top-2 left-2 bg-green-600 text-white text-xs">
+                                {video.brand_name}
+                              </Badge>
+                              {video.promo_code && (
+                                <Badge className="absolute top-2 right-2 bg-amber-600 text-white text-xs">
+                                  <Tag className="w-3 h-3 mr-1" />
+                                  {video.promo_code}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <h3 className="text-amber-100 font-semibold text-sm line-clamp-2 mb-2">{video.title}</h3>
+                              <div className="flex items-center gap-2 mb-2">
+                                {video.category && (
+                                  <Badge className="bg-stone-700/50 text-amber-300 text-xs">{video.category}</Badge>
+                                )}
+                                {video.product_type && (
+                                  <Badge className="bg-blue-600/20 text-blue-300 text-xs">{video.product_type.replace('_', ' ')}</Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between text-xs text-amber-400/70">
+                                <span className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
+                                  {video.view_count || 0}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Gift className="w-3 h-3" />
+                                  {video.gift_count || 0}
+                                </span>
+                                {video.price_usd > 0 && (
+                                  <span className="text-green-400 font-semibold">${video.price_usd}</span>
+                                )}
+                              </div>
+                              {partner && (
+                                <p className="text-amber-400/60 text-xs mt-2">by {partner.display_name}</p>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-stone-800/30 rounded-2xl border border-green-600/20">
+                <ShoppingBag className="w-12 h-12 text-green-400/50 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">No Product Videos Yet</h3>
+                <p className="text-amber-400/60 mb-4">Affiliate partners will showcase products here</p>
               </div>
             )}
           </div>
