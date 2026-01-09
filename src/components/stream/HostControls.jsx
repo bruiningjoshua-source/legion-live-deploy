@@ -18,7 +18,8 @@ import {
   Palette,
   Contrast,
   Sun,
-  Droplets
+  Droplets,
+  ZoomIn
 } from 'lucide-react';
 
 const filters = [
