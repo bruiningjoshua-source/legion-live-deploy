@@ -148,15 +148,15 @@ export default function HostSubscriptionGate({ user, creator, subscription, onSu
             <Card className="bg-gradient-to-br from-amber-800/30 to-stone-800/50 border-amber-500/50 hover:border-amber-400/70 transition-all cursor-pointer relative"
                   onClick={() => subscribeMutation.mutate('yearly')}>
               <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500 text-white border-0">
-                Save $12
+                Save 80%
               </Badge>
               <CardContent className="p-6">
                 <p className="text-amber-300 font-semibold mb-2">Yearly</p>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-3xl font-bold text-white">$48</span>
+                  <span className="text-3xl font-bold text-white">$12</span>
                   <span className="text-amber-400/70">/year</span>
                 </div>
-                <p className="text-green-400 text-xs mb-4">= $4/month</p>
+                <p className="text-green-400 text-xs mb-4">= $1/month</p>
                 <Button 
                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
                   disabled={subscribeMutation.isPending}
