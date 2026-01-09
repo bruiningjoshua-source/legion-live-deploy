@@ -41,6 +41,8 @@ import MultiPanelView from '@/components/stream/MultiPanelView';
 import TipButton from '@/components/stream/TipButton';
 import AgoraService from '@/components/stream/AgoraService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
+import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
+import ViewerWallet from '@/components/stream/ViewerWallet';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -629,11 +631,11 @@ export default function WatchStream() {
 
           <div className="flex items-center gap-2">
             {wallet && (
-              <div className="bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-full px-3 py-1 flex items-center gap-1">
-                <span className="text-amber-300 text-lg">🪙</span>
-                <span className="text-white text-xs font-semibold">{wallet.denarii_balance || 0}</span>
-              </div>
-            )}
+                            <ViewerWallet 
+                              denariiBalance={wallet.denarii_balance || 0}
+                              asBalance={wallet.as_balance || 0}
+                            />
+                          )}
             <Button
               onClick={() => followMutation.mutate()}
               size="sm"
