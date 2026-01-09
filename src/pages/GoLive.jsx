@@ -335,7 +335,7 @@ export default function GoLive() {
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover mirror"
+                className="w-full h-full object-cover"
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
