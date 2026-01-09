@@ -87,6 +87,7 @@ export default function GoLive() {
   const [streamStats, setStreamStats] = useState(null);
   const [agoraToken, setAgoraToken] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
+  const [chatMessages, setChatMessages] = useState([]);
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
