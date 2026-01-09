@@ -14,7 +14,9 @@ import {
   Crown,
   Sparkles,
   Gift,
-  CreditCard
+  CreditCard,
+  Coins,
+  Shield
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
@@ -129,7 +131,10 @@ export default function Wallet() {
           <CardContent className="relative p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <p className="text-amber-300/70 text-sm mb-1">Total Balance</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <Coins className="w-5 h-5 text-amber-400" />
+                  <p className="text-amber-300/70 text-sm">Total Balance</p>
+                </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl">🪙</span>
                   <span className="text-4xl md:text-5xl font-bold text-amber-100">
@@ -140,37 +145,45 @@ export default function Wallet() {
 
                 {/* Secondary currencies */}
                 <div className="flex items-center gap-4 mt-4 text-sm">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg px-3 py-1">
                     <span>🥈</span>
                     <span className="text-amber-200">{wallet?.sestertii_balance || 0} Sestertii</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg px-3 py-1">
                     <span>🥉</span>
                     <span className="text-amber-200/70">{wallet?.as_balance || 0} As</span>
                   </div>
                 </div>
+
+                {/* Conversion info */}
+                <p className="text-amber-400/50 text-xs mt-3">
+                  Total value: {((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0)).toLocaleString()} As
+                </p>
               </div>
 
               {/* VIP Level */}
-              <div className="bg-stone-800/50 rounded-2xl p-4 border border-amber-600/20">
+              <div className="bg-stone-800/50 rounded-2xl p-4 border border-amber-600/20 min-w-[200px]">
                 <div className="flex items-center gap-3 mb-2">
-                  <Crown className={`w-8 h-8 text-${vipColors[vipLevel]}-400`} />
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
                   <div>
                     <p className="text-amber-100 font-bold text-lg">{vipNames[vipLevel]}</p>
                     <p className="text-amber-400/60 text-xs">VIP Level {vipLevel}</p>
                   </div>
                 </div>
                 <div className="w-full bg-stone-700 rounded-full h-2 mt-3">
-                  <div 
-                    className="bg-gradient-to-r from-amber-500 to-amber-400 h-2 rounded-full transition-all"
-                    style={{ 
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ 
                       width: `${Math.min(((wallet?.total_spent || 0) - vipLevelThresholds[vipLevel]) / 
                         (vipLevelThresholds[vipLevel + 1] - vipLevelThresholds[vipLevel]) * 100, 100)}%` 
                     }}
+                    className="bg-gradient-to-r from-amber-500 to-amber-400 h-2 rounded-full"
                   />
                 </div>
                 <p className="text-amber-400/60 text-xs mt-2">
-                  ${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to next level
+                  ${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to {vipNames[vipLevel + 1] || 'max'}
                 </p>
               </div>
             </div>
