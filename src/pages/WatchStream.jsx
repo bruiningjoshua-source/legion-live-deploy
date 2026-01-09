@@ -456,7 +456,7 @@ export default function WatchStream() {
         <div className="relative w-full h-full max-w-[56.25vh]" style={{ aspectRatio: '9/16' }}>
           <video
             ref={videoRef}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             autoPlay
             playsInline
             muted={isMuted}
