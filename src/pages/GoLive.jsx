@@ -449,7 +449,7 @@ export default function GoLive() {
                   </div>
                 )}
 
-                {/* Back Button */}
+                        {/* Back Button */}
                 <Button
                   onClick={() => {
                     if (cameraStream) {
@@ -463,6 +463,34 @@ export default function GoLive() {
                 >
                   ← Back
                 </Button>
+
+                {/* Stream Setup Overlay - Title & Category Input */}
+                {(!title.trim() || !category) && (
+                  <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 z-10 bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter stream title..."
+                      className="bg-stone-900/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40"
+                      maxLength={100}
+                    />
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger className="bg-stone-900/50 border-amber-600/20 text-amber-100">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-stone-900 border-amber-600/30">
+                        {categories.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
+                            <span className="flex items-center gap-2">
+                              <span>{cat.icon}</span>
+                              {cat.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Go Live Button - in camera preview */}
                 <Button
