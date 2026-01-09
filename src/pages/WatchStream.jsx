@@ -362,8 +362,8 @@ export default function WatchStream() {
           const mediaStream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
               facingMode: 'user',
-              width: { ideal: 720, max: 1080 },
-              height: { ideal: 1280, max: 1920 },
+              width: { ideal: 1080 },
+              height: { ideal: 1920 },
               frameRate: { ideal: 30, max: 30 }
             },
             audio: {
@@ -500,7 +500,7 @@ export default function WatchStream() {
       </AnimatePresence>
 
       {/* Fullscreen Mobile-Optimized Video */}
-      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%' }}>
+      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%', zIndex: -1 }}>
         <video
           ref={videoRef}
           className="w-full h-full"
@@ -511,7 +511,8 @@ export default function WatchStream() {
             backgroundColor: '#000',
             position: 'absolute',
             top: 0,
-            left: 0
+            left: 0,
+            zIndex: 1
           }}
           autoPlay
           playsInline
