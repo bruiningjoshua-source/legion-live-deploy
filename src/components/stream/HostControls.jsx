@@ -260,6 +260,7 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
               setBrightness(100);
               setContrast(100);
               setSaturation(100);
+              setZoom(0.5);
             }}
             className="w-full border-amber-600/30 text-amber-300 hover:bg-amber-800/20"
           >
