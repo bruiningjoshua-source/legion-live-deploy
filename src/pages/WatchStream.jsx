@@ -257,6 +257,11 @@ export default function WatchStream() {
 
   const endStreamMutation = useMutation({
     mutationFn: async () => {
+      // Security check: Only creator can end their own stream
+      if (user?.email !== creator?.user_email) {
+        throw new Error('Unauthorized: Only the stream creator can end the broadcast');
+      }
+
       // Update stream status to ended
       await base44.entities.Stream.update(stream.id, {
         status: 'ended',
@@ -280,13 +285,17 @@ export default function WatchStream() {
         });
       }
 
-      // Stop camera stream
-      if (liveStream) {
+      // Stop camera stream and leave Agora
+      if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
       }
+      await AgoraService.leave();
     },
     onSuccess: () => {
       window.location.href = createPageUrl('Profile');
+    },
+    onError: (error) => {
+      alert(error.message);
     }
   });
 
