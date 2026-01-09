@@ -324,8 +324,14 @@ export default function GoLive() {
   const isFormValid = title.trim() && category;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-3xl mx-auto px-4">
+    <>
+      {hasPermissions && (
+        <style>{`
+          body, html { overflow: hidden !important; }
+        `}</style>
+      )}
+      <div className={hasPermissions ? "fixed inset-0 w-screen h-screen z-50 bg-black" : "min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12"}>
+        <div className={hasPermissions ? "w-full h-full" : "max-w-3xl mx-auto px-4"}>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 rounded-full px-4 py-2 mb-4">
