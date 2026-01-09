@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
@@ -35,11 +35,15 @@ import {
   Copy,
   Check,
   Share2,
-  BarChart3
+  BarChart3,
+  DollarSign
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import StreamCard from '@/components/stream/StreamCard';
+import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
+import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -61,6 +65,18 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editData, setEditData] = useState({});
+
+  // Handle subscription redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subscription') === 'success') {
+      toast.success('🎉 Host subscription activated! You can now monetize your streams.');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (urlParams.get('subscription') === 'cancelled') {
+      toast.info('Subscription cancelled');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -88,6 +104,20 @@ export default function Profile() {
     queryFn: () => base44.entities.Follow.filter({ following_creator_id: creator.id }, '-created_date', 100),
     enabled: !!creator?.id
   });
+
+  const { data: hostSubscription } = useQuery({
+    queryKey: ['host-subscription', user?.email],
+    queryFn: async () => {
+      const subs = await base44.entities.CreatorSubscription.filter({ 
+        user_email: user.email, 
+        status: 'active' 
+      }, '-created_date', 1);
+      return subs[0] || null;
+    },
+    enabled: !!user?.email
+  });
+
+  const isSubscribed = hostSubscription?.status === 'active';
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
@@ -233,12 +263,16 @@ export default function Profile() {
 
         {/* Tabs */}
         <Tabs defaultValue="streams" className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl">
+          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl flex-wrap">
             <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               Past Streams
             </TabsTrigger>
             <TabsTrigger value="stats" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               Statistics
+            </TabsTrigger>
+            <TabsTrigger value="earnings" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+              <DollarSign className="w-4 h-4 mr-1" />
+              Earnings
             </TabsTrigger>
             <TabsTrigger value="affiliate" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               Affiliate
@@ -324,6 +358,19 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="earnings" className="mt-0">
+            {isSubscribed ? (
+              <CreatorPayoutSettings creator={creator} user={user} />
+            ) : (
+              <HostSubscriptionGate 
+                user={user} 
+                creator={creator} 
+                subscription={hostSubscription}
+                onSubscribed={() => queryClient.invalidateQueries(['host-subscription'])}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="affiliate" className="mt-0">
