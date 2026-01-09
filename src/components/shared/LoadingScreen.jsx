@@ -8,7 +8,7 @@ export default function LoadingScreen({ onComplete }) {
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => onComplete?.(), 300);
-    }, 4000);
+    }, 2500); // Faster loading
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -94,7 +94,7 @@ export default function LoadingScreen({ onComplete }) {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
           className="text-center"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-amber-100 mb-2 tracking-wider">
