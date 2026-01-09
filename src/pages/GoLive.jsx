@@ -397,7 +397,7 @@ export default function GoLive() {
           </Card>
         ) : (
           <div className="space-y-4 mb-8">
-            <div className="relative w-full bg-black rounded-2xl overflow-hidden" style={{ aspectRatio: '9/16', maxWidth: '500px', margin: '0 auto' }}>
+            <div className="relative w-full bg-black overflow-hidden mx-auto" style={{ aspectRatio: '9/16', height: '100vh', maxHeight: '90vh' }}>
               <video
                 ref={videoPreviewRef}
                 autoPlay
@@ -406,7 +406,7 @@ export default function GoLive() {
                 preload="auto"
                 webkit-playsinline="true"
                 className="w-full h-full"
-                style={{ objectFit: 'contain', backgroundColor: '#000' }}
+                style={{ objectFit: 'cover', backgroundColor: '#000' }}
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                 <Badge className="bg-red-500 text-white border-0 animate-pulse">
