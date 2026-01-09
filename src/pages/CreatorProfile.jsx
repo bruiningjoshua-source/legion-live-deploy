@@ -20,7 +20,8 @@ import {
   Share2,
   Video,
   Play,
-  Eye
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
@@ -28,11 +29,13 @@ import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
 import TipButton from '@/components/stream/TipButton';
 import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
 import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
+import DirectMessaging from '@/components/community/DirectMessaging';
 
 export default function CreatorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const creatorId = urlParams.get('id');
   const queryClient = useQueryClient();
+  const [showMessages, setShowMessages] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -254,6 +257,17 @@ export default function CreatorProfile() {
                     variant="default"
                     size="lg"
                   />
+                  {user && creator?.user_email && user.email !== creator.user_email && (
+                    <Button
+                      onClick={() => setShowMessages(true)}
+                      variant="outline"
+                      size="lg"
+                      className="border-cyan-500/30 text-cyan-300"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Message
+                    </Button>
+                  )}
                   <Button
                     onClick={() => followMutation.mutate()}
                     variant={isFollowing ? "outline" : "default"}
@@ -434,6 +448,13 @@ export default function CreatorProfile() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Direct Messaging Modal */}
+        <DirectMessaging 
+          isOpen={showMessages} 
+          onClose={() => setShowMessages(false)}
+          initialRecipient={creator?.user_email}
+        />
       </div>
     </div>
   );
