@@ -384,18 +384,15 @@ export default function WatchStream() {
         // Only get camera stream if you're the creator
         try {
           const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-              facingMode: 'user',
-              width: { ideal: 1080 },
-              height: { ideal: 1920 },
-              frameRate: { ideal: 30, max: 30 }
-            },
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true
-            }
-          });
+                          video: { 
+                            facingMode: 'user'
+                          },
+                          audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                          }
+                        });
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
