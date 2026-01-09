@@ -335,14 +335,13 @@ export default function GoLive() {
           <div className="space-y-4">
             <Card className="bg-stone-800/30 border-amber-600/20 overflow-hidden">
               <CardContent className="p-0">
-                <div className="relative aspect-[9/16] bg-black max-w-md mx-auto">
+                <div className="relative w-full bg-black" style={{ height: '70vh', maxHeight: '800px' }}>
                   <video
                     ref={videoPreviewRef}
                     autoPlay
                     playsInline
                     muted
                     className="w-full h-full object-cover mirror"
-                    style={{ aspectRatio: '9/16' }}
                   />
                   <div className="absolute top-4 left-4 flex items-center gap-2">
                     <Badge className="bg-red-500 text-white border-0 animate-pulse">
