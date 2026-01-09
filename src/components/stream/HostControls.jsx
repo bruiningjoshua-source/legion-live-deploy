@@ -47,6 +47,7 @@ export default function HostControls({ videoRef, onSettingsChange, onMirrorChang
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
+  const [zoom, setZoom] = useState(1);
 
   const applySettings = () => {
     if (!videoRef?.current) return;
