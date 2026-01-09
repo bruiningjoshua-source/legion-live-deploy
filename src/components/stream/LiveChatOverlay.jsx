@@ -41,22 +41,16 @@ export default function LiveChatOverlay({
     <div className="absolute bottom-0 left-0 z-30 pointer-events-none" style={{ maxWidth: '320px' }}>
       {/* Chat Container - Bottom Left */}
       <div className="flex flex-col pb-4 pl-3">
-        {/* Expand/Collapse Toggle */}
+        {/* Expand/Collapse Toggle - minimal */}
         {visibleMessages.length > 5 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="pointer-events-auto self-start mb-1 flex items-center gap-1 text-white/60 hover:text-white/90 text-xs bg-black/30 backdrop-blur-sm rounded-full px-2 py-1 transition-colors"
+            className="pointer-events-auto self-start mb-1 flex items-center gap-1 text-white/40 hover:text-white/70 text-xs transition-colors"
           >
             {isExpanded ? (
-              <>
-                <ChevronDown className="w-3 h-3" />
-                Show less
-              </>
+              <ChevronDown className="w-3 h-3" />
             ) : (
-              <>
-                <ChevronUp className="w-3 h-3" />
-                Show more ({Math.min(visibleMessages.length, 30)})
-              </>
+              <ChevronUp className="w-3 h-3" />
             )}
           </button>
         )}
@@ -75,21 +69,21 @@ export default function LiveChatOverlay({
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
-                className="backdrop-blur-sm bg-black/50 rounded-2xl px-3 py-1.5 max-w-full"
+                className="px-1 py-0.5 max-w-full"
               >
                 {msg.message_type === 'gift' ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-amber-300 font-bold text-xs drop-shadow-lg">{msg.sender_name}</span>
-                    <span className="text-white/90 font-medium text-xs drop-shadow-lg">sent</span>
+                    <span className="text-amber-300 font-bold text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{msg.sender_name}</span>
+                    <span className="text-white/90 font-medium text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">sent</span>
                     <span className="text-base drop-shadow-lg">{msg.gift_data?.gift_icon}</span>
                     {msg.gift_data?.quantity > 1 && (
-                      <span className="text-amber-300 font-bold text-xs drop-shadow-lg">×{msg.gift_data.quantity}</span>
+                      <span className="text-amber-300 font-bold text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">×{msg.gift_data.quantity}</span>
                     )}
                   </div>
                 ) : (
                   <div className="flex items-start gap-1.5 flex-wrap break-words">
-                    <span className="text-amber-300 font-bold text-xs drop-shadow-lg shrink-0">{msg.sender_name}:</span>
-                    <span className="text-white font-medium text-xs drop-shadow-lg break-words">{msg.message}</span>
+                    <span className="text-amber-300 font-bold text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] shrink-0">{msg.sender_name}:</span>
+                    <span className="text-white font-medium text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] break-words">{msg.message}</span>
                   </div>
                 )}
               </motion.div>
@@ -97,22 +91,22 @@ export default function LiveChatOverlay({
           </AnimatePresence>
         </div>
 
-        {/* Chat Input - Bottom */}
+        {/* Chat Input - Bottom, minimal/invisible */}
         <div className="pointer-events-auto mt-2">
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="flex gap-1.5">
             <Input
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={isAuthenticated ? "Say something..." : "Sign in to chat"}
+              placeholder={isAuthenticated ? "Say something..." : "Sign in"}
               disabled={disabled || !isAuthenticated}
-              className="flex-1 bg-black/50 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 h-9 rounded-full px-4 text-sm"
+              className="flex-1 bg-transparent border-0 border-b border-white/20 focus:border-white/40 text-white placeholder:text-white/30 h-8 rounded-none px-1 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <Button 
               type="submit" 
               size="icon"
               disabled={disabled || !isAuthenticated || !inputValue.trim()}
-              className="bg-amber-600 hover:bg-amber-700 rounded-full h-9 w-9 shrink-0"
+              className="bg-transparent hover:bg-white/10 text-white/60 hover:text-white rounded-full h-8 w-8 shrink-0"
             >
               <Send className="w-4 h-4" />
             </Button>
