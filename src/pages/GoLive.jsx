@@ -144,17 +144,12 @@ export default function GoLive() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          width: { ideal: 1080 }, 
-          height: { ideal: 1920 },
-          aspectRatio: { ideal: 9/16 },
-          frameRate: { ideal: 30, max: 60 },
           facingMode: 'user'
         }, 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000
+          autoGainControl: true
         }
       });
       setCameraStream(stream);
