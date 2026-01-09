@@ -29,7 +29,8 @@ import {
   Shield,
   MoreHorizontal,
   Video,
-  Film
+  Film,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
