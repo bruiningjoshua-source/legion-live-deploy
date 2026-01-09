@@ -35,6 +35,7 @@ import AgoraService from '@/components/stream/AgoraService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
+import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -110,6 +111,20 @@ export default function GoLive() {
     queryKey: ['all-creators'],
     queryFn: () => base44.entities.Creator.list('-follower_count', 50)
   });
+
+  const { data: hostSubscription } = useQuery({
+    queryKey: ['host-subscription', user?.email],
+    queryFn: async () => {
+      const subs = await base44.entities.CreatorSubscription.filter({ 
+        user_email: user.email, 
+        status: 'active' 
+      }, '-created_date', 1);
+      return subs[0] || null;
+    },
+    enabled: !!user?.email
+  });
+
+  const isSubscribed = hostSubscription?.status === 'active';
 
   const createCreatorMutation = useMutation({
     mutationFn: () => base44.entities.Creator.create({
@@ -478,6 +493,17 @@ export default function GoLive() {
 
         {!hasPermissions && (
           <>
+          {/* Subscription Gate - Non-subscribers can't monetize */}
+          {!isSubscribed && (
+            <div className="mb-8">
+              <HostSubscriptionGate 
+                user={user} 
+                creator={creator} 
+                subscription={hostSubscription}
+              />
+            </div>
+          )}
+
           <Card className="bg-stone-800/30 border-amber-600/20">
             <CardContent className="p-8 text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -493,6 +519,11 @@ export default function GoLive() {
                 <Camera className="w-5 h-5 mr-2" />
                 Enable Camera & Microphone
               </Button>
+              {!isSubscribed && (
+                <p className="text-amber-400/60 text-sm mt-4">
+                  ⚠️ You can stream for free, but subscribe to receive gifts and cash out earnings
+                </p>
+              )}
             </CardContent>
           </Card>
 
