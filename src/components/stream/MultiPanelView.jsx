@@ -39,6 +39,7 @@ export default function MultiPanelView({
           onMouseEnter={() => setHoveredSlot(idx)}
           onMouseLeave={() => setHoveredSlot(null)}
           className="relative bg-gradient-to-br from-stone-900 to-stone-950 rounded-lg overflow-hidden border border-amber-600/20"
+          style={{ aspectRatio: '9/16' }}
         >
           {slot.isEmpty ? (
             // Empty Slot
@@ -59,7 +60,7 @@ export default function MultiPanelView({
             // Occupied Slot
             <>
               <video
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 autoPlay
                 playsInline
                 muted={idx !== 0}
