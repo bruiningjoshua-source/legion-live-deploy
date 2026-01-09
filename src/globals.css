@@ -3,14 +3,10 @@ css
 @tailwind components;
 @tailwind utilities;
 
-/* Mirror effect for camera preview */
+/* Mirror effect for camera preview - horizontal flip like a real mirror */
 .mirror {
   transform: scaleX(-1);
-}
-
-/* Mirror effect for camera preview */
-.mirror {
-  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
 }
 
 /* Performance optimizations */
