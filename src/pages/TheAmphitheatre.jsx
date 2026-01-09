@@ -117,6 +117,19 @@ export default function TheAmphitheatre() {
     }, {}), [creators]
   );
 
+  // Separate shorts and long-form videos
+  const shortsContent = useMemo(() => {
+    return videos
+      .filter(v => v.video_type === 'short')
+      .map(v => ({ ...v, type: 'video', creator: creatorMap[v.creator_id] }));
+  }, [videos, creatorMap]);
+
+  const longFormContent = useMemo(() => {
+    return videos
+      .filter(v => v.video_type === 'long_form' || !v.video_type)
+      .map(v => ({ ...v, type: 'video', creator: creatorMap[v.creator_id] }));
+  }, [videos, creatorMap]);
+
   // Combine videos and music
   const allContent = useMemo(() => {
     const videoContent = videos.map(v => ({
@@ -244,9 +257,10 @@ export default function TheAmphitheatre() {
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
             { id: 'discover', label: 'Discover', icon: Compass },
+            { id: 'shorts', label: 'Shorts', icon: Play },
+            { id: 'longform', label: 'Long Form', icon: Film },
             { id: 'trending', label: 'Trending', icon: TrendingUp },
             { id: 'foryou', label: 'For You', icon: Sparkles },
-            { id: 'subscriptions', label: 'Subscriptions', icon: Users },
             { id: 'history', label: 'History', icon: History }
           ].map(tab => {
             const Icon = tab.icon;
@@ -316,6 +330,108 @@ export default function TheAmphitheatre() {
             </Button>
           </div>
         </div>
+
+        {/* Shorts Section */}
+        {activeSection === 'shorts' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-amber-100 flex items-center gap-2">
+                <Play className="w-5 h-5 text-pink-400" />
+                📱 Shorts
+                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 ml-2">
+                  {shortsContent.length}
+                </Badge>
+              </h2>
+              {user && (
+                <Link to={createPageUrl('VideoUpload?type=short')}>
+                  <Button className="bg-pink-600 hover:bg-pink-700">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Short
+                  </Button>
+                </Link>
+              )}
+            </div>
+            {shortsContent.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                {shortsContent.map((content, i) => (
+                  <motion.div
+                    key={content.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <AmphitheatreVideoCard content={content} viewMode="grid" isShort />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-stone-800/30 rounded-2xl border border-pink-600/20">
+                <Play className="w-12 h-12 text-pink-400/50 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">No Shorts Yet</h3>
+                <p className="text-amber-400/60 mb-4">Be the first to upload a short video!</p>
+                {user && (
+                  <Link to={createPageUrl('VideoUpload?type=short')}>
+                    <Button className="bg-pink-600 hover:bg-pink-700">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Short
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Long Form Section */}
+        {activeSection === 'longform' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-amber-100 flex items-center gap-2">
+                <Film className="w-5 h-5 text-blue-400" />
+                🎬 Long Form Videos
+                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 ml-2">
+                  {longFormContent.length}
+                </Badge>
+              </h2>
+              {user && (
+                <Link to={createPageUrl('VideoUpload?type=long_form')}>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Video
+                  </Button>
+                </Link>
+              )}
+            </div>
+            {longFormContent.length > 0 ? (
+              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {longFormContent.map((content, i) => (
+                  <motion.div
+                    key={content.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <AmphitheatreVideoCard content={content} viewMode={viewMode} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-stone-800/30 rounded-2xl border border-blue-600/20">
+                <Film className="w-12 h-12 text-blue-400/50 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">No Long Form Videos Yet</h3>
+                <p className="text-amber-400/60 mb-4">Share your full-length content with the community!</p>
+                {user && (
+                  <Link to={createPageUrl('VideoUpload?type=long_form')}>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Video
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* For You - Personalized Recommendations */}
         {activeSection === 'foryou' && (
