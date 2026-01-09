@@ -44,6 +44,7 @@ import { toast } from 'sonner';
 import StreamCard from '@/components/stream/StreamCard';
 import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
+import DirectDonationSettings from '@/components/creator/DirectDonationSettings';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -362,7 +363,10 @@ export default function Profile() {
 
           <TabsContent value="earnings" className="mt-0">
             {isSubscribed ? (
-              <CreatorPayoutSettings creator={creator} user={user} />
+              <div className="space-y-8">
+                <CreatorPayoutSettings creator={creator} user={user} />
+                <DirectDonationSettings creator={creator} subscription={hostSubscription} />
+              </div>
             ) : (
               <HostSubscriptionGate 
                 user={user} 
