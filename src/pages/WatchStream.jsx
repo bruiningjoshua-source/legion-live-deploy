@@ -452,12 +452,11 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Full Screen Video - Portrait Fullscreen */}
+      {/* Full Screen Video - 9:16 Portrait Fullscreen */}
       <div className="absolute inset-0 bg-black">
         <video
           ref={videoRef}
           className="w-full h-full object-cover"
-          style={{ objectFit: 'cover' }}
           autoPlay
           playsInline
           muted={isMuted}
@@ -574,32 +573,31 @@ export default function WatchStream() {
         </motion.div>
       </div>
 
-      {/* Chat Messages Overlay - Bottom Left Transparent Text */}
-      <div className="absolute left-3 bottom-24 z-20 max-h-[40vh] overflow-hidden pointer-events-none max-w-[70%]">
-        <div className="flex flex-col gap-1">
+      {/* Chat Messages Overlay - Floating transparent UI */}
+      <div className="absolute left-2 right-2 bottom-28 z-20 max-h-[45vh] overflow-hidden pointer-events-none">
+        <div className="flex flex-col gap-1.5">
           {chatMessages.slice(-6).map((msg, idx) => (
             <motion.div
               key={msg.id}
-              initial={{ x: -30, opacity: 0 }}
+              initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ delay: idx * 0.02 }}
-              className="text-left"
-              style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8), -1px -1px 3px rgba(0,0,0,0.8)' }}
+              transition={{ delay: idx * 0.03 }}
+              className="bg-black/30 backdrop-blur-[2px] rounded-full px-3 py-1.5 max-w-[80%] shadow-sm"
             >
               {msg.message_type === 'gift' ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-amber-300 font-bold text-sm drop-shadow-lg">{msg.sender_name}</span>
-                  <span className="text-white font-medium text-sm">sent</span>
-                  <span className="text-xl drop-shadow-lg">{msg.gift_data?.gift_icon}</span>
+                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
+                  <span className="text-white/90 text-xs">sent</span>
+                  <span className="text-xl">{msg.gift_data?.gift_icon}</span>
                   {msg.gift_data?.quantity > 1 && (
-                    <span className="text-amber-300 font-bold text-sm">x{msg.gift_data.quantity}</span>
+                    <span className="text-amber-300 text-xs font-semibold">x{msg.gift_data.quantity}</span>
                   )}
                 </div>
               ) : (
-                <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-amber-300 font-bold text-sm drop-shadow-lg">{msg.sender_name}:</span>
-                  <span className="text-white font-medium text-sm">{msg.message}</span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
+                  <span className="text-white/95 text-xs">{msg.message}</span>
                 </div>
               )}
             </motion.div>
