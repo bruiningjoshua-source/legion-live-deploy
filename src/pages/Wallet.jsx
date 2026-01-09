@@ -19,7 +19,6 @@ import {
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import CurrencyPackages from '@/components/wallet/CurrencyPackages';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 export default function Wallet() {
