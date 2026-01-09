@@ -6,11 +6,13 @@ import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
+import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -35,13 +37,22 @@ export default function Layout({ children, currentPageName }) {
     checkAuth();
   }, []);
 
-  const { data: user } = useQuery({
+  const { data: user, refetch: refetchUser } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1
   });
+
+  // Check age verification for non-admin users
+  useEffect(() => {
+    if (user && user.role !== 'admin' && !user.age_verified) {
+      setShowAgeVerification(true);
+    } else {
+      setShowAgeVerification(false);
+    }
+  }, [user]);
 
   const { data: wallet } = useQuery({
     queryKey: ['user-wallet', user?.email],
@@ -84,6 +95,17 @@ export default function Layout({ children, currentPageName }) {
       />
       <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      
+      {/* Age Verification Gate - Admin users are excluded */}
+      {showAgeVerification && user && user.role !== 'admin' && (
+        <AgeVerificationGate 
+          user={user} 
+          onVerified={() => {
+            setShowAgeVerification(false);
+            refetchUser();
+          }} 
+        />
+      )}
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
