@@ -51,6 +51,7 @@ import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
 import BroadcasterDashboard from '@/components/stream/BroadcasterDashboard';
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import ModerationPanel from '@/components/stream/ModerationPanel';
+import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
