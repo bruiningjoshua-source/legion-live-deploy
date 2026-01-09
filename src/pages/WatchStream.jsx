@@ -537,7 +537,9 @@ export default function WatchStream() {
             position: 'absolute',
             top: 0,
             left: 0,
-            zIndex: 1
+            zIndex: 1,
+            maxWidth: '100%',
+            maxHeight: '100%'
           }}
           autoPlay
           playsInline
