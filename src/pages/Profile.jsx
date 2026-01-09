@@ -48,6 +48,7 @@ import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import DirectDonationSettings from '@/components/creator/DirectDonationSettings';
 import VideoUploadSection from '@/components/creator/VideoUploadSection';
 import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
+import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -278,6 +279,9 @@ export default function Profile() {
               <Video className="w-4 h-4 mr-1" />
               Videos
             </TabsTrigger>
+            <TabsTrigger value="info" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+              Info Section
+            </TabsTrigger>
             <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
               Past Streams
             </TabsTrigger>
@@ -295,6 +299,10 @@ export default function Profile() {
 
           <TabsContent value="videos" className="mt-0">
             <VideoUploadSection creator={creator} videos={myVideos} />
+          </TabsContent>
+
+          <TabsContent value="info" className="mt-0">
+            <CreatorInfoSection creator={creator} isOwnProfile={true} />
           </TabsContent>
 
           <TabsContent value="streams" className="mt-0">
