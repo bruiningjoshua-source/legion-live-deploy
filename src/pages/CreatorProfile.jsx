@@ -26,6 +26,7 @@ import { motion } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
 import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
 import TipButton from '@/components/stream/TipButton';
+import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
 
 export default function CreatorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -299,6 +300,11 @@ export default function CreatorProfile() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 mt-8">
+        {/* Free Tier Wallet Tip */}
+        <div className="mb-6">
+          <FreeTierWalletTip creator={creator} isOwnProfile={false} />
+        </div>
+
         {/* Subscription Tiers */}
         {subscriptionTiers.length > 0 && (
           <div className="mb-8">

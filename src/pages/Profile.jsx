@@ -47,6 +47,7 @@ import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import DirectDonationSettings from '@/components/creator/DirectDonationSettings';
 import VideoUploadSection from '@/components/creator/VideoUploadSection';
+import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -378,6 +379,11 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="earnings" className="mt-0">
+            {/* Free Tier Wallet - Available to ALL creators */}
+            <div className="mb-8">
+              <FreeTierWalletTip creator={creator} isOwnProfile={true} />
+            </div>
+
             {isSubscribed ? (
               <div className="space-y-8">
                 <CreatorPayoutSettings creator={creator} user={user} />
