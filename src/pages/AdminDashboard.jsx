@@ -52,13 +52,17 @@ export default function AdminDashboard() {
 
   const { data: creators = [] } = useQuery({
     queryKey: ['admin-creators'],
-    queryFn: () => base44.asServiceRole.entities.Creator.list('-follower_count', 100),
+    queryFn: () => base44.entities.Creator.list('-follower_count', 100),
     enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
   const { data: users = [] } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => base44.asServiceRole.entities.User.list('-created_date', 100),
+    queryFn: async () => {
+      // Only admins can list users via the service role function
+      const response = await base44.functions.invoke('adminListUsers');
+      return response.data?.users || [];
+    },
     enabled: user && AUTHORIZED_ADMINS.includes(user.email)
   });
 
