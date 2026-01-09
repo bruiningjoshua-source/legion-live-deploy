@@ -40,6 +40,8 @@ import {
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import StreamCard from '@/components/stream/StreamCard';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 const categories = [
   { value: 'gaming', label: 'Gaming' },
