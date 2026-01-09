@@ -457,6 +457,8 @@ export default function GoLive() {
               </div>
               )}
 
+        {!hasPermissions && (
+          <>
         {/* Stream Setup Form */}
         <Card className="bg-stone-800/30 border-amber-600/20">
           <CardHeader>
