@@ -12,8 +12,13 @@ export default function BroadcasterChat({ messages = [] }) {
 
   const displayMessages = isExpanded ? messages.slice(-10) : messages.slice(-5);
 
+  // Don't render if no messages
+  if (messages.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="absolute bottom-6 right-4 z-30 w-80">
+    <div className="absolute bottom-20 right-4 z-30 w-72 md:w-80">
       <motion.div
         animate={{ height: isExpanded ? 'auto' : '140px' }}
         className="bg-black/70 backdrop-blur-md border border-amber-500/30 rounded-xl overflow-hidden"
