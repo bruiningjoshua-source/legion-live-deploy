@@ -573,31 +573,30 @@ export default function WatchStream() {
         </motion.div>
       </div>
 
-      {/* Chat Messages Overlay - Floating transparent UI */}
-      <div className="absolute left-2 right-2 bottom-28 z-20 max-h-[45vh] overflow-hidden pointer-events-none">
-        <div className="flex flex-col gap-1.5">
+      {/* Chat Messages Overlay - Bottom Left Transparent */}
+      <div className="absolute left-3 bottom-24 z-20 max-h-[40vh] overflow-hidden pointer-events-none max-w-[75%]">
+        <div className="flex flex-col gap-1">
           {chatMessages.slice(-6).map((msg, idx) => (
             <motion.div
               key={msg.id}
-              initial={{ x: -50, opacity: 0 }}
+              initial={{ x: -30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ delay: idx * 0.03 }}
-              className="bg-black/30 backdrop-blur-[2px] rounded-full px-3 py-1.5 max-w-[80%] shadow-sm"
+              transition={{ delay: idx * 0.02 }}
             >
               {msg.message_type === 'gift' ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
-                  <span className="text-white/90 text-xs">sent</span>
+                <div className="flex items-center gap-1.5" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }}>
+                  <span className="text-amber-300 font-bold text-sm">{msg.sender_name}</span>
+                  <span className="text-white font-medium text-sm">sent</span>
                   <span className="text-xl">{msg.gift_data?.gift_icon}</span>
                   {msg.gift_data?.quantity > 1 && (
-                    <span className="text-amber-300 text-xs font-semibold">x{msg.gift_data.quantity}</span>
+                    <span className="text-amber-300 font-bold text-sm">x{msg.gift_data.quantity}</span>
                   )}
                 </div>
               ) : (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-amber-300 font-semibold text-xs">{msg.sender_name}</span>
-                  <span className="text-white/95 text-xs">{msg.message}</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }}>
+                  <span className="text-amber-300 font-bold text-sm">{msg.sender_name}:</span>
+                  <span className="text-white font-medium text-sm">{msg.message}</span>
                 </div>
               )}
             </motion.div>
