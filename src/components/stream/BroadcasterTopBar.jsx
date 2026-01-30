@@ -112,13 +112,13 @@ export default function BroadcasterTopBar({
 
   return (
     <motion.div
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="absolute top-0 left-0 right-0 z-40 flex justify-center pt-safe"
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      className="absolute top-4 left-4 z-40 pt-safe"
     >
-      {/* Styled title bar */}
+      {/* Styled title bar - Top Left */}
       <motion.div 
-        className={`flex items-center gap-3 px-4 py-2 mt-3 rounded-2xl border ${currentTheme.bg} ${currentTheme.border}`}
+        className={`flex items-center gap-3 px-3 py-2 rounded-xl border ${currentTheme.bg} ${currentTheme.border}`}
         style={currentPattern.style}
         layout
       >
@@ -253,30 +253,20 @@ export default function BroadcasterTopBar({
           </PopoverContent>
         </Popover>
 
-        {/* Title - inline editable */}
-        {isEditingTitle ? (
+        {/* Title - Always visible input for easy editing */}
+        <div className="flex items-center gap-1.5">
           <Input
             ref={inputRef}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSaveTitle}
-            autoFocus
-            className={`bg-black/20 border-white/20 ${currentTheme.text} text-sm h-7 w-44 text-center rounded-full px-3`}
+            className={`bg-black/30 border-white/20 focus:border-amber-500/50 ${currentTheme.text} text-sm h-8 w-40 rounded-lg px-2`}
             maxLength={60}
             placeholder="Stream title..."
           />
-        ) : (
-          <button
-            onClick={() => setIsEditingTitle(true)}
-            className="flex items-center gap-1.5 group"
-          >
-            <span className={`${currentTheme.text} font-semibold text-sm drop-shadow-lg max-w-[160px] truncate`}>
-              {stream?.title || 'Tap to add title'}
-            </span>
-            <Edit2 className="w-3 h-3 text-white/40 group-hover:text-white/80 transition-colors" />
-          </button>
-        )}
+          <Edit2 className="w-3 h-3 text-white/50" />
+        </div>
 
         {/* Live indicator + viewers */}
         <div className="flex items-center gap-2">

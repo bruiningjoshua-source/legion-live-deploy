@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, ChevronUp, ChevronDown } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 export default function LiveChatOverlay({ 
   messages = [], 
@@ -11,23 +11,19 @@ export default function LiveChatOverlay({
   disabled = false 
 }) {
   const [inputValue, setInputValue] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
 
-  // Keep last 30 messages only
-  const visibleMessages = messages.slice(-30);
-  
-  // Show 5 lines by default, 10 when expanded
-  const displayCount = isExpanded ? 10 : 5;
-  const displayMessages = visibleMessages.slice(-displayCount);
+  // Keep last 10 messages only - compact view
+  const displayMessages = messages.slice(-10);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isExpanded]);
+  }, [messages]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,27 +34,13 @@ export default function LiveChatOverlay({
   };
 
   return (
-    <div className="absolute bottom-0 left-0 z-30 pointer-events-none" style={{ maxWidth: '320px' }}>
-      {/* Chat Container - Bottom Left */}
-      <div className="flex flex-col pb-4 pl-3">
-        {/* Expand/Collapse Toggle - minimal */}
-        {visibleMessages.length > 5 && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="pointer-events-auto self-start mb-1 flex items-center gap-1 text-white/40 hover:text-white/70 text-xs transition-colors"
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-3 h-3" />
-            ) : (
-              <ChevronUp className="w-3 h-3" />
-            )}
-          </button>
-        )}
-
-        {/* Messages Area - Scrolls upward */}
+    <div className="absolute bottom-20 left-0 z-30 pointer-events-none" style={{ maxWidth: '280px' }}>
+      {/* Chat Container - Bottom Left, above bottom nav */}
+      <div className="flex flex-col pb-2 pl-3">
+        {/* Messages Area - Last 10 messages */}
         <div 
           ref={scrollRef}
-          className={`flex flex-col gap-1.5 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[280px]' : 'max-h-[140px]'}`}
+          className="flex flex-col gap-1 overflow-hidden max-h-[200px]"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <AnimatePresence mode="popLayout">
