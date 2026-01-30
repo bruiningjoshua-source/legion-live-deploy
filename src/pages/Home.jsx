@@ -139,54 +139,48 @@ export default function Home() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <div className="flex justify-center">
-            <TabsList className="bg-white/5 backdrop-blur-sm border border-white/10 p-1 rounded-full">
-              <TabsTrigger value="personalized" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
-                <Heart className="w-4 h-4 mr-2" />
-                For You
-              </TabsTrigger>
-              <TabsTrigger value="trending" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Trending
-              </TabsTrigger>
-              <TabsTrigger value="featured" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
-                <Trophy className="w-4 h-4 mr-2" />
-                Featured
-              </TabsTrigger>
-            </TabsList>
+            <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl">
+              {[
+                { value: 'personalized', icon: Heart, label: 'For You' },
+                { value: 'trending', icon: TrendingUp, label: 'Trending' },
+                { value: 'featured', icon: Trophy, label: 'Featured' }
+              ].map((tab) => (
+                <TabsList key={tab.value} className="bg-transparent p-0">
+                  <TabsTrigger 
+                    value={tab.value}
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+                  >
+                    <tab.icon className="w-4 h-4 mr-2" />
+                    {tab.label}
+                  </TabsTrigger>
+                </TabsList>
+              ))}
+            </div>
           </div>
 
           {/* Personalized For You */}
           <TabsContent value="personalized" className="mt-0">
             {recsLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {[...Array(10)].map((_, i) => (
                   <Skeleton key={i} className="aspect-[9/16] w-full rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : personalizedRecs.length > 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-              >
-                <AnimatePresence>
-                  {personalizedRecs.map((stream, i) => (
-                    <motion.div
-                      key={stream.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            ) : (
-              <div className="text-center py-16 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
-                <Sparkles className="w-12 h-12 text-white/30 mx-auto mb-3" />
-                <p className="text-white/50">Watch more streams to get personalized recommendations!</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {personalizedRecs.map((stream, i) => (
+                  <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
+                ))}
               </div>
+            ) : (
+              <GlassCard className="text-center py-16">
+                <Sparkles className="w-16 h-16 text-amber-500/30 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">Discover Your Feed</h3>
+                <p className="text-white/50 mb-6">Watch streams to get personalized recommendations!</p>
+                <Link to={createPageUrl('Explore')}>
+                  <PremiumButton icon={Radio}>Browse Live Streams</PremiumButton>
+                </Link>
+              </GlassCard>
             )}
           </TabsContent>
 
@@ -198,31 +192,23 @@ export default function Home() {
           {/* Featured */}
           <TabsContent value="featured" className="mt-0">
             {streamsLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {[...Array(10)].map((_, i) => (
                   <Skeleton key={i} className="aspect-[9/16] rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : featuredStreams.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <AnimatePresence>
-                  {featuredStreams.map((stream, i) => (
-                    <motion.div
-                      key={stream.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {featuredStreams.map((stream, i) => (
+                  <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
+                ))}
               </div>
             ) : (
-              <div className="text-center py-16 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
-                <Trophy className="w-12 h-12 text-white/30 mx-auto mb-3" />
-                <p className="text-white/50">No featured streams right now</p>
-              </div>
+              <GlassCard className="text-center py-16">
+                <Trophy className="w-16 h-16 text-amber-500/30 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">No Featured Streams</h3>
+                <p className="text-white/50">Check back soon for featured content!</p>
+              </GlassCard>
             )}
           </TabsContent>
         </Tabs>
