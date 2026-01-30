@@ -666,6 +666,30 @@ export default function TheAmphitheatre() {
           </div>
         )}
 
+        {/* Auto Playlists Section - Discover Tab */}
+        {activeSection === 'discover' && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              Auto-Generated Mixes
+            </h2>
+            <AutoPlaylist 
+              category={selectedCategory} 
+              userInterests={userInterests} 
+            />
+          </div>
+        )}
+
+        {/* Trending Tab - Show Playlist */}
+        {activeSection === 'trending' && (
+          <div className="mb-8">
+            <AutoPlaylist 
+              category={selectedCategory} 
+              userInterests={userInterests} 
+            />
+          </div>
+        )}
+
         {/* Community Section */}
         {activeSection === 'community' && (
           <div className="mb-8">
