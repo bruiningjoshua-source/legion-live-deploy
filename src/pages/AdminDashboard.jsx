@@ -20,7 +20,10 @@ import {
   Power,
   Shield,
   BarChart3,
-  Briefcase
+  Briefcase,
+  Bot,
+  CreditCard,
+  Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -145,60 +148,66 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        {/* Quick Links - Compact 2x2 grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* Quick Links - 3x2 grid */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
           <Link to={createPageUrl('PlatformAdminAnalytics')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-blue-400" />
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-blue-400" />
                 </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Analytics</p>
-                  <p className="text-white/40 text-xs">Revenue & metrics</p>
-                </div>
+                <p className="text-white font-medium text-xs">Analytics</p>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('ContentModerationAdmin')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-red-400" />
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-red-400" />
                 </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Moderation</p>
-                  <p className="text-white/40 text-xs">Review content</p>
-                </div>
+                <p className="text-white font-medium text-xs">Moderation</p>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('AmbassadorProgram')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-amber-400" />
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Briefcase className="w-4 h-4 text-amber-400" />
                 </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Ambassadors</p>
-                  <p className="text-white/40 text-xs">Campaigns</p>
-                </div>
+                <p className="text-white font-medium text-xs">Ambassadors</p>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('BrandCampaigns')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-green-400" />
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-green-400" />
                 </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Brands</p>
-                  <p className="text-white/40 text-xs">Affiliate</p>
-                </div>
+                <p className="text-white font-medium text-xs">Brands</p>
               </CardContent>
             </Card>
           </Link>
+          <Link to={createPageUrl('CreatorMonetization')}>
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
+              <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-purple-400" />
+                </div>
+                <p className="text-white font-medium text-xs">Monetization</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Card className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-500/30 h-full">
+            <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/30 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-cyan-400" />
+              </div>
+              <p className="text-cyan-300 font-medium text-xs">AI Mod</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Tabs - Scrollable on mobile */}
