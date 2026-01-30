@@ -1,351 +1,333 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Comic-style Roman assets
+const ASSETS = {
+  centurion: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/54f8124d8_AI_Generated_Image_2026-01-16_506237618000201.png',
+  columns: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/576c630c3_AI_Generated_Image_2026-01-16_506237614012201.png',
+  soldiersRow: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/288cec758_AI_Generated_Sticker_2026-01-16_c4f2960c-1731-4397-96f9-57e32eaddbde.png',
+  treasure: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/82ed18382_AI_Generated_Sticker_2026-01-16_bd106f64-574f-49aa-ba53-c0081623475e.png',
+  soldiersGroup: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/96acf64a3_AI_Generated_Sticker_2026-01-16_1752b39c-8acd-4d97-82c7-6341dc4ba7bf3.png',
+  soldiersFormation: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/e38ccfbe2_AI_Generated_Sticker_2026-01-16_0d71c335-d5e0-447f-888c-cd18c1a16442.png',
+};
 
 export default function LoadingScreen({ onComplete }) {
   const [phase, setPhase] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [cameraPosition, setCameraPosition] = useState({ z: 100, y: 0 });
 
   useEffect(() => {
-    const phases = [
-      setTimeout(() => setPhase(1), 800),   // Camera starts moving
-      setTimeout(() => setPhase(2), 1600),  // Gates begin opening
-      setTimeout(() => setPhase(3), 2400),  // Soldiers revealed
-      setTimeout(() => setPhase(4), 3200),  // Camera settles on shield
-      setTimeout(() => setPhase(5), 4000),  // Shield menu ready
+    const timers = [
+      setTimeout(() => setPhase(1), 400),   // Background fades in
+      setTimeout(() => setPhase(2), 1200),  // Soldiers march in from sides
+      setTimeout(() => setPhase(3), 2200),  // Centurion hero appears
+      setTimeout(() => setPhase(4), 3500),  // Logo slam
+      setTimeout(() => setPhase(5), 4800),  // Ready state
       setTimeout(() => {
         setIsVisible(false);
         setTimeout(() => onComplete?.(), 500);
-      }, 5000)
+      }, 6500)
     ];
-
-    return () => phases.forEach(clearTimeout);
+    return () => timers.forEach(clearTimeout);
   }, [onComplete]);
-
-  // Camera zoom animation
-  useEffect(() => {
-    if (phase >= 1) {
-      const interval = setInterval(() => {
-        setCameraPosition(prev => ({
-          z: Math.max(prev.z - 2, 0),
-          y: Math.min(prev.y + 0.5, 10)
-        }));
-      }, 50);
-      return () => clearInterval(interval);
-    }
-  }, [phase]);
 
   if (!isVisible) return null;
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       animate={{ opacity: isVisible ? 1 : 0 }}
-      className="fixed inset-0 bg-stone-950 z-[100] overflow-hidden"
+      className="fixed inset-0 z-[100] overflow-hidden bg-black"
     >
-      {/* Sky gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-900/40 via-stone-950 to-stone-950" />
-      
-      {/* Distant mountains */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: phase >= 1 ? 0.3 : 0 }}
-        className="absolute inset-x-0 top-[20%] h-32"
-      >
-        <svg viewBox="0 0 1200 200" className="w-full h-full" preserveAspectRatio="none">
-          <path d="M0 200 L100 120 L200 160 L350 80 L500 140 L650 60 L800 130 L950 90 L1100 150 L1200 100 L1200 200 Z" fill="#44403c" />
-          <path d="M0 200 L150 140 L300 170 L450 110 L600 160 L750 100 L900 150 L1050 120 L1200 170 L1200 200 Z" fill="#57534e" />
-        </svg>
-      </motion.div>
-
-      {/* Roman City Gate - Sweeping Camera View */}
+      {/* Background - Columns with dark overlay */}
       <motion.div 
-        className="absolute inset-0 flex items-center justify-center"
-        style={{
-          perspective: '1000px',
-          transformStyle: 'preserve-3d'
+        className="absolute inset-0"
+        initial={{ scale: 1.3, opacity: 0 }}
+        animate={{ 
+          scale: phase >= 1 ? 1 : 1.3, 
+          opacity: phase >= 1 ? 1 : 0 
         }}
-        animate={{
-          scale: phase >= 1 ? 1 + (cameraPosition.z / 100) * 0.5 : 1.5,
-        }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 1.5, ease: 'easeOut' }}
       >
-        {/* Gate Structure */}
-        <div className="relative w-full max-w-4xl mx-auto">
-          {/* Gate Towers */}
-          <div className="absolute -left-8 md:-left-16 top-0 bottom-0 flex flex-col items-center">
-            <motion.div 
-              initial={{ y: -100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="w-16 md:w-24 h-80 bg-gradient-to-b from-stone-600 to-stone-800 rounded-t-lg border-2 border-stone-500 relative"
-            >
-              {/* Tower details */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-6 bg-stone-900 rounded-t-full" />
-              <div className="absolute top-14 inset-x-2 h-2 bg-amber-700/50" />
-              <div className="absolute bottom-20 inset-x-2 flex justify-around">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="w-2 h-8 bg-stone-900/50 rounded-t" />
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="absolute -right-8 md:-right-16 top-0 bottom-0 flex flex-col items-center">
-            <motion.div 
-              initial={{ y: -100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="w-16 md:w-24 h-80 bg-gradient-to-b from-stone-600 to-stone-800 rounded-t-lg border-2 border-stone-500 relative"
-            >
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-6 bg-stone-900 rounded-t-full" />
-              <div className="absolute top-14 inset-x-2 h-2 bg-amber-700/50" />
-              <div className="absolute bottom-20 inset-x-2 flex justify-around">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="w-2 h-8 bg-stone-900/50 rounded-t" />
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Gate Arch */}
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="relative mx-auto w-64 md:w-80 h-72 origin-bottom"
-          >
-            {/* Arch frame */}
-            <div className="absolute inset-0 bg-gradient-to-b from-stone-600 to-stone-700 rounded-t-full border-4 border-stone-500">
-              {/* SPQR inscription */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: phase >= 2 ? 1 : 0 }}
-                className="absolute top-4 left-1/2 -translate-x-1/2 text-amber-400 font-bold text-xl md:text-2xl tracking-[0.3em]"
-                style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
-              >
-                SPQR
-              </motion.div>
-            </div>
-
-            {/* Gate Interior (dark) */}
-            <div className="absolute inset-4 top-8 bg-stone-950 rounded-t-full overflow-hidden">
-              {/* Opening Gates */}
-              <motion.div
-                initial={{ x: '0%' }}
-                animate={{ x: phase >= 2 ? '-100%' : '0%' }}
-                transition={{ duration: 1.2, ease: 'easeInOut' }}
-                className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-amber-900 to-amber-800 border-r-4 border-amber-600"
-              >
-                {/* Gate decorations */}
-                <div className="absolute inset-4 border-2 border-amber-600/50 rounded-tl-full" />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-500" />
-              </motion.div>
-              
-              <motion.div
-                initial={{ x: '0%' }}
-                animate={{ x: phase >= 2 ? '100%' : '0%' }}
-                transition={{ duration: 1.2, ease: 'easeInOut' }}
-                className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-amber-900 to-amber-800 border-l-4 border-amber-600"
-              >
-                <div className="absolute inset-4 border-2 border-amber-600/50 rounded-tr-full" />
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-500" />
-              </motion.div>
-
-              {/* Soldiers Behind Gates - Revealed when gates open */}
-              <AnimatePresence>
-                {phase >= 3 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="absolute inset-0 flex items-end justify-center pb-4"
-                  >
-                    {/* Soldier Formation - Cartoon Style */}
-                    <div className="flex gap-1 md:gap-2">
-                      {[...Array(5)].map((_, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ y: 50, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: i * 0.1 }}
-                          className="relative"
-                        >
-                          {/* Soldier body */}
-                          <div className="w-6 md:w-8 h-12 md:h-16 bg-gradient-to-b from-red-700 to-red-900 rounded-t-lg relative">
-                            {/* Helmet */}
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 md:w-7 h-4 bg-amber-600 rounded-t-full border border-amber-400">
-                              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-3 bg-red-500 rounded-t" />
-                            </div>
-                            {/* Shield */}
-                            <div className="absolute -left-1 top-2 w-3 md:w-4 h-6 md:h-8 bg-red-800 rounded border border-amber-500" />
-                            {/* Spear */}
-                            <div className="absolute -right-1 top-0 w-0.5 h-14 md:h-18 bg-amber-700">
-                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-2 h-3 bg-stone-400 rounded-t" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Ground/Road */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute bottom-0 inset-x-0 h-8 bg-gradient-to-t from-stone-700 to-stone-600"
-          />
-        </div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ 
+            backgroundImage: `url(${ASSETS.columns})`,
+            filter: 'brightness(0.35) saturate(1.3) contrast(1.1)'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
       </motion.div>
 
-      {/* Shield Menu - Fades in after camera settles */}
+      {/* Comic-style speed lines / energy streaks */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-0.5 md:h-1"
+            style={{
+              background: `linear-gradient(90deg, transparent, rgba(217, 119, 6, ${0.4 + i * 0.05}), transparent)`,
+              top: `${10 + i * 10}%`,
+              left: '-100%',
+              width: '200%',
+              transform: `rotate(${-8 + i * 2}deg)`,
+            }}
+            animate={{ x: ['-50%', '100%'] }}
+            transition={{
+              duration: 2,
+              delay: i * 0.2,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Soldiers Formation - Left side */}
+      <motion.div
+        className="absolute bottom-0 left-0 w-[50%] md:w-[40%] max-w-[450px]"
+        initial={{ x: '-100%', opacity: 0 }}
+        animate={{ 
+          x: phase >= 2 ? '0%' : '-100%', 
+          opacity: phase >= 2 ? 1 : 0 
+        }}
+        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <img 
+          src={ASSETS.soldiersFormation} 
+          alt="" 
+          className="w-full h-auto"
+          style={{ 
+            filter: 'drop-shadow(0 0 30px rgba(217, 119, 6, 0.4)) drop-shadow(5px 5px 10px rgba(0,0,0,0.8))'
+          }}
+        />
+      </motion.div>
+
+      {/* Soldiers Row - Right side */}
+      <motion.div
+        className="absolute bottom-0 right-0 w-[45%] md:w-[38%] max-w-[400px]"
+        initial={{ x: '100%', opacity: 0 }}
+        animate={{ 
+          x: phase >= 2 ? '0%' : '100%', 
+          opacity: phase >= 2 ? 1 : 0 
+        }}
+        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+      >
+        <img 
+          src={ASSETS.soldiersRow} 
+          alt="" 
+          className="w-full h-auto"
+          style={{ 
+            filter: 'drop-shadow(0 0 30px rgba(217, 119, 6, 0.4)) drop-shadow(-5px 5px 10px rgba(0,0,0,0.8))'
+          }}
+        />
+      </motion.div>
+
+      {/* Treasure pile - Center bottom */}
+      <motion.div
+        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 w-24 md:w-36 z-10"
+        initial={{ y: 100, opacity: 0, scale: 0.5 }}
+        animate={{ 
+          y: phase >= 2 ? 0 : 100, 
+          opacity: phase >= 2 ? 1 : 0,
+          scale: phase >= 2 ? 1 : 0.5
+        }}
+        transition={{ duration: 0.6, ease: 'backOut', delay: 0.5 }}
+      >
+        <motion.img 
+          src={ASSETS.treasure} 
+          alt="" 
+          className="w-full h-auto"
+          animate={phase >= 2 ? { y: [0, -8, 0] } : {}}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ 
+            filter: 'drop-shadow(0 15px 40px rgba(217, 119, 6, 0.6)) drop-shadow(0 5px 15px rgba(0,0,0,0.8))'
+          }}
+        />
+      </motion.div>
+
+      {/* Centurion Hero - Center */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center"
+        initial={{ scale: 0.3, opacity: 0, y: 200 }}
+        animate={{ 
+          scale: phase >= 3 ? 1 : 0.3, 
+          opacity: phase >= 3 ? 1 : 0,
+          y: phase >= 3 ? 0 : 200
+        }}
+        transition={{ 
+          duration: 0.7, 
+          type: 'spring', 
+          stiffness: 120, 
+          damping: 12 
+        }}
+      >
+        <motion.div
+          className="relative w-[85%] md:w-[60%] max-w-[600px]"
+          animate={phase >= 3 ? { 
+            filter: [
+              'drop-shadow(0 0 30px rgba(217, 119, 6, 0.5))',
+              'drop-shadow(0 0 60px rgba(217, 119, 6, 0.8))',
+              'drop-shadow(0 0 30px rgba(217, 119, 6, 0.5))'
+            ]
+          } : {}}
+          transition={{ duration: 2.5, repeat: Infinity }}
+        >
+          <img 
+            src={ASSETS.centurion} 
+            alt="Legion Live" 
+            className="w-full h-auto"
+          />
+        </motion.div>
+      </motion.div>
+
+      {/* LEGION LIVE Logo - Slams in on top */}
       <AnimatePresence>
         {phase >= 4 && (
           <motion.div
-            initial={{ scale: 0.5, opacity: 0, y: 100 }}
+            className="absolute top-[15%] md:top-[18%] left-1/2 -translate-x-1/2 text-center z-20"
+            initial={{ scale: 3, opacity: 0, y: -100 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 1.5, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-            className="absolute inset-0 flex items-center justify-center z-20"
+            transition={{ 
+              duration: 0.4, 
+              type: 'spring', 
+              stiffness: 200, 
+              damping: 15 
+            }}
           >
-            {/* Glowing backdrop */}
+            {/* Impact flash */}
             <motion.div
-              animate={{ 
-                boxShadow: [
-                  '0 0 60px rgba(217,119,6,0.3)',
-                  '0 0 100px rgba(217,119,6,0.5)',
-                  '0 0 60px rgba(217,119,6,0.3)'
+              className="absolute inset-0 -inset-x-20 -inset-y-10"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                background: 'radial-gradient(ellipse, rgba(217, 119, 6, 0.8) 0%, transparent 70%)'
+              }}
+            />
+            
+            <motion.h1 
+              className="text-6xl md:text-8xl font-black tracking-tight relative"
+              style={{
+                fontFamily: 'serif',
+                background: 'linear-gradient(180deg, #fef3c7 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 0 60px rgba(217, 119, 6, 0.8)',
+              }}
+              animate={{
+                textShadow: [
+                  '0 0 30px rgba(217, 119, 6, 0.5)',
+                  '0 0 60px rgba(217, 119, 6, 0.8)',
+                  '0 0 30px rgba(217, 119, 6, 0.5)'
                 ]
               }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="absolute w-80 h-96 rounded-full bg-gradient-to-b from-amber-900/20 to-transparent blur-3xl"
-            />
-
-            {/* Interactive Shield Menu */}
-            <motion.div
-              animate={phase >= 5 ? { 
-                rotateY: [0, 5, 0, -5, 0],
-              } : {}}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative"
             >
-              <svg viewBox="0 0 200 240" className="w-64 h-80 md:w-80 md:h-96 drop-shadow-2xl">
-                <defs>
-                  <linearGradient id="menuShieldGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fcd34d" />
-                    <stop offset="50%" stopColor="#fbbf24" />
-                    <stop offset="100%" stopColor="#b45309" />
-                  </linearGradient>
-                  <linearGradient id="menuShieldRed" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#dc2626" />
-                    <stop offset="50%" stopColor="#991b1b" />
-                    <stop offset="100%" stopColor="#7f1d1d" />
-                  </linearGradient>
-                  <filter id="menuGlow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                
-                {/* Shield shape */}
-                <path
-                  d="M100 10 L180 40 L180 120 Q180 200 100 230 Q20 200 20 120 L20 40 Z"
-                  fill="url(#menuShieldRed)"
-                  stroke="url(#menuShieldGold)"
-                  strokeWidth="6"
-                  filter="url(#menuGlow)"
-                />
-                
-                {/* Inner border */}
-                <path
-                  d="M100 25 L165 50 L165 115 Q165 185 100 210 Q35 185 35 115 L35 50 Z"
-                  fill="none"
-                  stroke="#fbbf24"
-                  strokeWidth="2"
-                  opacity="0.5"
-                />
-
-                {/* Center emblem */}
-                <circle cx="100" cy="90" r="35" fill="url(#menuShieldGold)" stroke="#78350f" strokeWidth="3"/>
-                <circle cx="100" cy="90" r="27" fill="#991b1b" stroke="#fbbf24" strokeWidth="2"/>
-                
-                {/* Eagle symbol */}
-                <g transform="translate(100, 90)">
-                  <path d="M-12 -5 Q-20 -15 -15 -5 Q-10 -10 -8 -3 Z" fill="#fbbf24"/>
-                  <path d="M12 -5 Q20 -15 15 -5 Q10 -10 8 -3 Z" fill="#fbbf24"/>
-                  <circle cx="0" cy="0" r="8" fill="#fbbf24"/>
-                  <text y="4" textAnchor="middle" fill="#991b1b" fontSize="8" fontWeight="bold">LL</text>
-                </g>
-
-                {/* LEGION LIVE text */}
-                <text x="100" y="150" textAnchor="middle" fill="#fcd34d" fontSize="14" fontWeight="bold" letterSpacing="2">
-                  LEGION
-                </text>
-                <text x="100" y="168" textAnchor="middle" fill="#fcd34d" fontSize="11" fontWeight="bold" letterSpacing="4">
-                  LIVE
-                </text>
-
-                {/* Decorative elements */}
-                <path d="M50 185 L60 195 L55 192 L48 205 L55 198 L50 200 Z" fill="#fbbf24" opacity="0.8"/>
-                <path d="M150 185 L140 195 L145 192 L152 205 L145 198 L150 200 Z" fill="#fbbf24" opacity="0.8"/>
-              </svg>
-            </motion.div>
+              LEGION
+            </motion.h1>
+            <motion.p 
+              className="text-3xl md:text-4xl font-black tracking-[0.4em] -mt-2 md:-mt-3"
+              style={{
+                background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              LIVE
+            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Loading Text */}
+      {/* Enter Button */}
+      <AnimatePresence>
+        {phase >= 5 && (
+          <motion.div
+            className="absolute bottom-28 md:bottom-36 left-1/2 -translate-x-1/2 z-30"
+            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, type: 'spring' }}
+          >
+            <motion.button
+              onClick={() => {
+                setIsVisible(false);
+                setTimeout(() => onComplete?.(), 300);
+              }}
+              className="relative px-10 md:px-14 py-4 md:py-5 bg-gradient-to-b from-red-700 via-red-800 to-red-900 text-amber-100 text-lg md:text-xl font-black tracking-wider rounded-lg border-2 border-amber-500/60 overflow-hidden"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              animate={{
+                boxShadow: [
+                  '0 0 20px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+                  '0 0 50px rgba(217, 119, 6, 0.7), inset 0 1px 0 rgba(255,255,255,0.1)',
+                  '0 0 20px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+                ]
+              }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              {/* Button shine effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+              />
+              <span className="relative flex items-center gap-3">
+                ⚔️ ENTER THE ARENA ⚔️
+              </span>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Loading Progress */}
       <motion.div
-        className="absolute bottom-20 left-0 right-0 text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        className="absolute bottom-10 md:bottom-14 left-1/2 -translate-x-1/2 text-center"
+        animate={{ opacity: phase < 5 ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
       >
         <motion.p
-          className="text-amber-400/80 text-sm md:text-base tracking-wide"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="text-amber-400/90 text-base md:text-lg tracking-widest font-semibold mb-3"
+          animate={{ opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
         >
-          {phase === 0 && "Approaching the Gates..."}
-          {phase === 1 && "The City Awaits..."}
-          {phase === 2 && "Gates Opening..."}
-          {phase === 3 && "Hail, Warrior!"}
-          {phase === 4 && "Preparing Your Shield..."}
-          {phase >= 5 && "Enter the Arena!"}
+          {phase < 2 ? 'SUMMONING THE LEGION...' : 
+           phase < 3 ? 'ASSEMBLING FORCES...' : 
+           phase < 4 ? 'THE CENTURION ARRIVES...' :
+           'GLORY AWAITS...'}
         </motion.p>
-
-        {/* Progress Bar */}
-        <div className="mt-4 w-48 md:w-64 mx-auto h-1.5 bg-stone-800 rounded-full overflow-hidden">
+        
+        <div className="w-52 md:w-64 h-2 bg-stone-900/80 rounded-full overflow-hidden mx-auto border border-amber-900/30">
           <motion.div
+            className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 relative"
             initial={{ width: '0%' }}
-            animate={{ width: '100%' }}
-            transition={{ duration: 4.5, ease: 'easeInOut' }}
-            className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 relative"
+            animate={{ width: `${Math.min(phase * 20, 100)}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"
               animate={{ x: ['-100%', '200%'] }}
               transition={{ duration: 1, repeat: Infinity }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
             />
           </motion.div>
         </div>
 
-        {/* Motto */}
         <motion.p
+          className="mt-3 text-amber-600/60 text-xs tracking-[0.5em] uppercase"
           initial={{ opacity: 0 }}
-          animate={{ opacity: phase >= 3 ? 0.6 : 0 }}
-          className="mt-4 text-amber-500/50 text-xs tracking-[0.4em] uppercase"
+          animate={{ opacity: phase >= 3 ? 1 : 0 }}
         >
           Veni • Vidi • Streami
         </motion.p>
       </motion.div>
+
+      {/* Vignette edges */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        boxShadow: 'inset 0 0 150px 50px rgba(0,0,0,0.8)'
+      }} />
     </motion.div>
   );
 }
