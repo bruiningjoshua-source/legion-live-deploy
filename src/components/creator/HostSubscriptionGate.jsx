@@ -19,9 +19,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SUBSCRIPTION_FEATURES = [
-  { icon: Radio, text: 'Go live and broadcast to your audience' },
-  { icon: Gift, text: 'Receive gifts from viewers' },
-  { icon: DollarSign, text: 'Cash out your earnings (40% revenue share)' },
+  { icon: Gift, text: 'Receive gifts and tips from viewers' },
+  { icon: DollarSign, text: 'Cash out your earnings (50% revenue share)' },
   { icon: TrendingUp, text: 'Access analytics and growth tools' },
   { icon: Star, text: 'Priority support and verification eligibility' },
 ];
@@ -96,10 +95,10 @@ export default function HostSubscriptionGate({ user, creator, subscription, onSu
           </div>
           
           <h2 className="text-3xl font-bold text-amber-100 mb-2">
-            Become a Legion Host
+            Unlock Monetization
           </h2>
           <p className="text-amber-300/80 max-w-md mx-auto mb-6">
-            Subscribe to unlock monetization features and start earning from your live streams
+            You can broadcast for free! Subscribe to receive gifts, tips, and start earning from your streams.
           </p>
 
           {/* Features */}
@@ -183,8 +182,12 @@ export default function HostSubscriptionGate({ user, creator, subscription, onSu
       {/* What you can do without subscription */}
       <Card className="bg-stone-800/30 border-amber-600/20">
         <CardContent className="p-6">
-          <h4 className="text-amber-100 font-semibold mb-3">Free Features</h4>
+          <h4 className="text-amber-100 font-semibold mb-3">Free for Everyone</h4>
           <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2 text-amber-300/80">
+              <Check className="w-4 h-4 text-green-400" />
+              Go live & broadcast
+            </div>
             <div className="flex items-center gap-2 text-amber-300/80">
               <Check className="w-4 h-4 text-green-400" />
               Watch live streams
@@ -199,7 +202,11 @@ export default function HostSubscriptionGate({ user, creator, subscription, onSu
             </div>
             <div className="flex items-center gap-2 text-amber-300/80">
               <Check className="w-4 h-4 text-green-400" />
-              Send gifts (buy Denarii)
+              Send gifts to others
+            </div>
+            <div className="flex items-center gap-2 text-amber-300/80">
+              <Check className="w-4 h-4 text-green-400" />
+              Build your audience
             </div>
           </div>
         </CardContent>

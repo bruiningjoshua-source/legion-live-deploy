@@ -27,7 +27,8 @@ import {
   Plus,
   X,
   ArrowRight,
-  Video
+  Video,
+  Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AgoraService from '@/components/stream/AgoraService';
@@ -371,30 +372,8 @@ export default function GoLive() {
 
   const isFormValid = title.trim() && category;
   const isAdmin = user?.role === 'admin';
-  const canBroadcast = isAdmin || isSubscribed;
-
-  // Only admins and subscribers can broadcast
-  if (user && !canBroadcast) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <div className="w-20 h-20 rounded-full bg-amber-600/20 flex items-center justify-center mx-auto mb-6">
-            <Radio className="w-10 h-10 text-amber-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-amber-100 mb-3">Become a Creator</h1>
-          <p className="text-amber-400/70 mb-6">
-            Subscribe to unlock broadcasting and monetization features. Start streaming and earning today!
-          </p>
-          <Button 
-            onClick={() => window.location.href = createPageUrl('CreatorMonetization')}
-            className="bg-amber-600 hover:bg-amber-700"
-          >
-            Subscribe Now
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const canMonetize = isAdmin || isSubscribed;
+  // Everyone can broadcast for free - monetization requires subscription
 
   return (
     <>
@@ -607,14 +586,29 @@ export default function GoLive() {
 
         {!hasPermissions && (
           <>
-          {/* Subscription Gate - Non-subscribers can't monetize */}
-          {!isSubscribed && (
+          {/* Monetization Upsell - Non-subscribers see this but can still broadcast */}
+          {!canMonetize && (
             <div className="mb-8">
-              <HostSubscriptionGate 
-                user={user} 
-                creator={creator} 
-                subscription={hostSubscription}
-              />
+              <Card className="bg-gradient-to-r from-amber-900/30 to-stone-900 border-amber-500/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-600/20 flex items-center justify-center">
+                      <Gift className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-amber-100 font-medium text-sm">Want to earn from your streams?</p>
+                      <p className="text-amber-400/70 text-xs">Subscribe to receive gifts and cash out earnings</p>
+                    </div>
+                    <Button 
+                      size="sm"
+                      onClick={() => window.location.href = createPageUrl('CreatorMonetization')}
+                      className="bg-amber-600 hover:bg-amber-700 text-xs"
+                    >
+                      Unlock $5/mo
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 

@@ -29,12 +29,12 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
   // Calculate creator's actual earnings based on payout structure
   const getCreatorShare = (denarii, isGift = false) => {
     if (!payoutConfig) {
-      // Default: 40% gifts, 80% other, 90% affiliates
+      // Default: 50% for all, 90% affiliates
       if (isAffiliate) return denarii * 0.9;
-      return isGift ? denarii * 0.4 : denarii * 0.8;
+      return denarii * 0.5;
     }
     if (isAffiliate) return denarii * (payoutConfig.affiliate_partner_share || 0.9);
-    return isGift ? denarii * (1 - (payoutConfig.gift_platform_fee || 0.6)) : denarii * (1 - (payoutConfig.tip_platform_fee || 0.2));
+    return denarii * (1 - (payoutConfig.gift_platform_fee || 0.5));
   };
 
   // Real-time subscription to earnings updates
@@ -151,7 +151,7 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
             <div className="flex items-center justify-between mb-2 p-1.5 bg-green-500/10 rounded">
               <span className="text-green-400/80 text-xs">Your Share</span>
               <span className="text-green-400 text-xs font-bold">
-                {isAffiliate ? '90%' : '40% gifts / 80% tips'}
+                {isAffiliate ? '90%' : '50%'}
               </span>
             </div>
             
