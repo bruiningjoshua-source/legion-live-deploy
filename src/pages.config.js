@@ -81,6 +81,8 @@ import Leaderboard from './pages/Leaderboard';
 import MusicStudio from './pages/MusicStudio';
 import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
 import PlatformAnalytics from './pages/PlatformAnalytics';
+import PlaylistView from './pages/PlaylistView';
+import Playlists from './pages/Playlists';
 import PodcastStudio from './pages/PodcastStudio';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
@@ -99,8 +101,6 @@ import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import Playlists from './pages/Playlists';
-import PlaylistView from './pages/PlaylistView';
 import __Layout from './Layout.jsx';
 
 
@@ -139,6 +139,8 @@ export const PAGES = {
     "MusicStudio": MusicStudio,
     "PlatformAdminAnalytics": PlatformAdminAnalytics,
     "PlatformAnalytics": PlatformAnalytics,
+    "PlaylistView": PlaylistView,
+    "Playlists": Playlists,
     "PodcastStudio": PodcastStudio,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
@@ -157,8 +159,6 @@ export const PAGES = {
     "WatchLater": WatchLater,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "Playlists": Playlists,
-    "PlaylistView": PlaylistView,
 }
 
 export const pagesConfig = {

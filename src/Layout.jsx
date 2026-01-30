@@ -72,9 +72,10 @@ export default function Layout({ children, currentPageName }) {
       try {
         const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
         if (wallets.length > 0) return wallets[0];
+        // Seed new users with 500 free Denarii to boost economy
         return base44.entities.Wallet.create({ 
           user_email: user.email, 
-          denarii_balance: 100,
+          denarii_balance: 500,
           sestertii_balance: 0,
           as_balance: 0
         });

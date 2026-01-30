@@ -264,8 +264,8 @@ export default function WatchStream() {
         denarii_balance: (wallet.denarii_balance || 0) - totalCost
       });
 
-      // Creator earnings: 40% (60% platform fee)
-      const creatorEarning = totalCost * 0.40;
+      // Creator earnings: 50% (50% platform fee)
+      const creatorEarning = totalCost * 0.50;
       const earningInDenarii = Math.floor(creatorEarning);
 
       // Update creator earnings
