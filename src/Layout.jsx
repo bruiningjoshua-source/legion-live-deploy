@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
+import ShieldMenu from '@/components/shared/ShieldMenu';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
@@ -13,6 +14,7 @@ export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
+  const [showShieldMenu, setShowShieldMenu] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -96,6 +98,12 @@ export default function Layout({ children, currentPageName }) {
       <div className="min-h-screen bg-[#0f0f12]">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
       
+      {/* Shield Menu - Accessible from any page */}
+      <ShieldMenu 
+        isOpen={showShieldMenu} 
+        onClose={() => setShowShieldMenu(false)} 
+      />
+      
       {/* Age Verification Gate - Admin users are excluded */}
       {showAgeVerification && user && user.role !== 'admin' && (
         <AgeVerificationGate 
@@ -174,7 +182,7 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       
-      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} />
+      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       
       <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
         {children}
