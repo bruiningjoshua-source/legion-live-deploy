@@ -108,200 +108,160 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="bg-gradient-to-b from-stone-900 via-stone-950 to-black rounded-t-3xl border-t border-amber-500/30 overflow-hidden max-h-[70vh]"
+      transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+      className="bg-black/95 backdrop-blur-xl rounded-t-3xl border-t border-white/10 overflow-hidden"
+      style={{ maxHeight: '65vh' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-900/30 via-stone-900/80 to-amber-900/30 backdrop-blur-sm border-b border-amber-500/20">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-white font-bold text-lg">Send Gifts</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🪙</span>
-              <span className="text-amber-400 text-sm font-bold">{walletBalance.toLocaleString()} Denarii</span>
+            <h2 className="text-white font-bold">Send Gifts</h2>
+            <div className="flex items-center gap-1">
+              <span className="text-sm">🪙</span>
+              <span className="text-amber-400 text-sm font-semibold">{walletBalance.toLocaleString()}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('Wallet')}>
-            <Button variant="ghost" size="sm" className="text-amber-400 hover:bg-amber-500/20 gap-1.5 h-9 px-4 border border-amber-500/30">
-              <Wallet className="w-4 h-4" />
-              <span className="text-sm font-medium">Top Up</span>
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white h-8 px-3 text-xs">
+              <Plus className="w-3 h-3 mr-1" />
+              Top Up
             </Button>
           </Link>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white/60 hover:text-white hover:bg-white/10 h-9 w-9">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-white/60 hover:text-white h-8 w-8">
             <X className="w-5 h-5" />
           </Button>
         </div>
       </div>
 
       {/* Category Filters */}
-      <div className="flex gap-2 p-3 overflow-x-auto scrollbar-hide bg-black/30">
+      <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
         {categories.map(cat => (
           <button
             key={cat.value}
             onClick={() => setSelectedCategory(cat.value)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
               selectedCategory === cat.value 
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30' 
-                : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+                ? 'bg-amber-500 text-white' 
+                : 'bg-white/10 text-white/70 hover:bg-white/20'
             }`}
           >
-            <span className="text-base">{cat.icon}</span>
+            <span>{cat.icon}</span>
             {cat.label}
           </button>
         ))}
       </div>
 
-      {/* Gifts Grid by Tier */}
-      <ScrollArea className="h-[40vh] px-3 pb-3">
-        {tierOrder.map(tier => {
-          const tierGifts = groupedByTier[tier];
-          if (!tierGifts?.length) return null;
-          const config = tierConfig[tier];
-          
-          return (
-            <div key={tier} className="mb-4">
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <div className={`h-px flex-1 bg-gradient-to-r from-transparent via-${tier === 'divine' ? 'yellow' : tier === 'legendary' ? 'amber' : 'white'}-500/30 to-transparent`} />
-                <span className={`text-xs font-bold uppercase tracking-wider bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}>
-                  {config.label}
-                </span>
-                <div className={`h-px flex-1 bg-gradient-to-r from-transparent via-${tier === 'divine' ? 'yellow' : tier === 'legendary' ? 'amber' : 'white'}-500/30 to-transparent`} />
-              </div>
-              
-              <div className="grid grid-cols-4 gap-2">
-                {tierGifts.map(gift => {
-                  const inCart = giftCart[gift.id] || 0;
-                  const isHighTier = ['legendary', 'prestige', 'divine'].includes(gift.tier);
-                  
-                  return (
-                    <motion.button
-                      key={gift.id}
-                      whileTap={{ scale: 0.92 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => updateGiftQuantity(gift.id, 1)}
-                      className={`relative p-2 rounded-xl bg-gradient-to-br ${config.gradient} shadow-lg ${config.glow} border-2 ${
-                        inCart > 0 ? 'border-white ring-2 ring-white/50' : config.border
-                      } transition-all overflow-hidden group`}
-                    >
-                      {/* Animated shine effect for high tier */}
-                      {isHighTier && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                      )}
-                      
-                      <div className="relative text-center">
-                        <div className={`text-3xl mb-1 ${isHighTier ? 'animate-pulse' : ''}`}>
-                          {gift.icon}
-                        </div>
-                        <p className="text-white font-semibold text-[10px] leading-tight mb-1 line-clamp-1 drop-shadow-lg">
-                          {gift.name}
-                        </p>
-                        <div className="flex items-center justify-center gap-0.5 bg-black/30 rounded-full px-2 py-0.5">
-                          <span className="text-xs">🪙</span>
-                          <span className="text-white font-bold text-xs">{formatPrice(gift.cost_denarii)}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Screen takeover badge */}
-                      {gift.screen_takeover && (
-                        <div className="absolute -top-1 -left-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-br-lg rounded-tl-lg">
-                          FULL
-                        </div>
-                      )}
-                      
-                      {/* Quantity Badge */}
-                      {inCart > 0 && (
-                        <motion.div 
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute -top-2 -right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-amber-500"
-                        >
-                          <span className="text-amber-600 text-sm font-black">{inCart}</span>
-                        </motion.div>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+      {/* Gifts Grid */}
+      <ScrollArea className="px-3 pb-2" style={{ height: '35vh' }}>
+        <div className="grid grid-cols-4 gap-2">
+          {filteredGifts.map(gift => {
+            const inCart = giftCart[gift.id] || 0;
+            const config = tierConfig[gift.tier] || tierConfig.common;
+            
+            return (
+              <motion.button
+                key={gift.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => updateGiftQuantity(gift.id, 1)}
+                className={`relative p-2 rounded-xl bg-gradient-to-br ${config.gradient} ${
+                  inCart > 0 ? 'ring-2 ring-white' : ''
+                } transition-all`}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">{gift.icon}</div>
+                  <p className="text-white font-medium text-[10px] leading-tight mb-1 line-clamp-1">
+                    {gift.name}
+                  </p>
+                  <div className="flex items-center justify-center gap-0.5">
+                    <span className="text-[10px]">🪙</span>
+                    <span className="text-white font-bold text-[10px]">{formatPrice(gift.cost_denarii)}</span>
+                  </div>
+                </div>
+                
+                {inCart > 0 && (
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-amber-600 text-xs font-bold">{inCart}</span>
+                  </motion.div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
         
         {filteredGifts.length === 0 && (
-          <div className="text-center py-12 text-white/40">
-            <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-base">No gifts in this category</p>
+          <div className="text-center py-8 text-white/40">
+            <Sparkles className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No gifts in this category</p>
           </div>
         )}
       </ScrollArea>
 
-      {/* Cart Summary */}
+      {/* Cart Summary & Send */}
       <AnimatePresence>
         {hasGifts && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-amber-500/20 bg-gradient-to-r from-amber-900/20 via-black/60 to-amber-900/20 backdrop-blur-sm"
+            className="border-t border-white/10 bg-black/80"
           >
             {/* Selected Gifts */}
-            <div className="px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide">
-              {cartItems.map(({ gift, quantity }) => {
-                const config = tierConfig[gift.tier] || tierConfig.common;
-                return (
-                  <div 
-                    key={gift.id} 
-                    className={`flex items-center gap-2 bg-gradient-to-r ${config.gradient} rounded-xl px-3 py-2 flex-shrink-0 shadow-lg`}
-                  >
-                    <span className="text-2xl">{gift.icon}</span>
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={() => updateGiftQuantity(gift.id, -1)}
-                        className="w-6 h-6 rounded-full bg-black/30 flex items-center justify-center hover:bg-black/50 transition-colors"
-                      >
-                        <Minus className="w-3 h-3 text-white" />
-                      </button>
-                      <span className="text-white font-black text-base w-6 text-center">{quantity}</span>
-                      <button 
-                        onClick={() => updateGiftQuantity(gift.id, 1)}
-                        className="w-6 h-6 rounded-full bg-black/30 flex items-center justify-center hover:bg-black/50 transition-colors"
-                      >
-                        <Plus className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
+            <div className="px-3 py-2 flex gap-2 overflow-x-auto scrollbar-hide">
+              {cartItems.map(({ gift, quantity }) => (
+                <div 
+                  key={gift.id} 
+                  className="flex items-center gap-1.5 bg-white/10 rounded-full px-2 py-1 flex-shrink-0"
+                >
+                  <span className="text-lg">{gift.icon}</span>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => updateGiftQuantity(gift.id, -1)}
+                      className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"
+                    >
+                      <Minus className="w-3 h-3 text-white" />
+                    </button>
+                    <span className="text-white font-bold text-sm w-4 text-center">{quantity}</span>
+                    <button 
+                      onClick={() => updateGiftQuantity(gift.id, 1)}
+                      className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"
+                    >
+                      <Plus className="w-3 h-3 text-white" />
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             {/* Send Button */}
-            <div className="p-3 pt-2">
+            <div className="p-3 pt-1">
               <Button
                 onClick={handleSendAll}
                 disabled={!canAfford || isSending}
-                className={`w-full h-14 rounded-2xl font-bold text-lg transition-all ${
+                className={`w-full h-12 rounded-xl font-bold text-base ${
                   canAfford 
-                    ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 shadow-xl shadow-amber-500/40 text-white' 
-                    : 'bg-red-900/50 text-red-300 border border-red-500/30'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white' 
+                    : 'bg-red-900/50 text-red-300'
                 }`}
               >
                 {isSending ? (
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8 }}>
-                    <Sparkles className="w-6 h-6" />
-                  </motion.div>
+                  <Sparkles className="w-5 h-5 animate-spin" />
                 ) : canAfford ? (
                   <span className="flex items-center gap-2">
-                    <Send className="w-5 h-5" />
-                    Send {totalCost.toLocaleString()} 
-                    <span className="text-xl">🪙</span>
+                    <Send className="w-4 h-4" />
+                    Send {totalCost.toLocaleString()} 🪙
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <Wallet className="w-5 h-5" />
                     Need {(totalCost - walletBalance).toLocaleString()} more
                   </span>
                 )}

@@ -895,23 +895,28 @@ export default function WatchStream() {
         </>
       )}
 
-      {/* Gift Panel */}
+      {/* Gift Panel Overlay */}
       <AnimatePresence>
         {showGiftPanel && (
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25 }}
-            className="fixed bottom-0 left-0 right-0 z-50"
-          >
-            <GiftPanel 
-              gifts={gifts}
-              walletBalance={walletBalance}
-              onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
-              onClose={() => setShowGiftPanel(false)}
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-40"
+              onClick={() => setShowGiftPanel(false)}
             />
-          </motion.div>
+            {/* Gift Panel */}
+            <div className="fixed bottom-0 left-0 right-0 z-50">
+              <GiftPanel 
+                gifts={gifts}
+                walletBalance={walletBalance}
+                onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
+                onClose={() => setShowGiftPanel(false)}
+              />
+            </div>
+          </>
         )}
       </AnimatePresence>
 
