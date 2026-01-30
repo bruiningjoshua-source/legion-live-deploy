@@ -25,21 +25,35 @@ export default function WatchVideo() {
   const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
   const videoId = urlParams.get('id');
+  const contentType = urlParams.get('type'); // 'music' or null for video
+
+  const isMusic = contentType === 'music';
 
   const { data: video } = useQuery({
-    queryKey: ['video', videoId],
+    queryKey: ['video', videoId, contentType],
     queryFn: async () => {
-      const videos = await base44.entities.VlogVideo.filter({ id: videoId }, null, 1);
-      if (videos[0]) {
-        // Increment view count asynchronously (don't block)
-        base44.entities.VlogVideo.update(videoId, {
-          view_count: (videos[0].view_count || 0) + 1
-        }).catch(err => console.error('View count update failed:', err));
+      if (isMusic) {
+        // Fetch from Music entity
+        const items = await base44.entities.Music.filter({ id: videoId }, null, 1);
+        if (items[0]) {
+          base44.entities.Music.update(videoId, {
+            play_count: (items[0].play_count || 0) + 1
+          }).catch(err => console.error('Play count update failed:', err));
+        }
+        return items[0];
+      } else {
+        // Fetch from VlogVideo entity
+        const videos = await base44.entities.VlogVideo.filter({ id: videoId }, null, 1);
+        if (videos[0]) {
+          base44.entities.VlogVideo.update(videoId, {
+            view_count: (videos[0].view_count || 0) + 1
+          }).catch(err => console.error('View count update failed:', err));
+        }
+        return videos[0];
       }
-      return videos[0];
     },
     enabled: !!videoId,
-    staleTime: 30 * 1000 // 30 seconds
+    staleTime: 30 * 1000
   });
 
   const { data: creator } = useQuery({
@@ -190,20 +204,36 @@ export default function WatchVideo() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Video Area */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Video Player */}
+            {/* Video/Music Player */}
             <div className={`bg-black rounded-xl overflow-hidden ${
               video.video_type === 'short' ? 'max-w-md mx-auto' : 'aspect-video'
             }`}>
-              {video.video_url ? (
-                <VideoPlayer 
-                  src={video.video_url}
-                  poster={video.thumbnail_url}
-                  className="w-full h-full"
-                />
+              {isMusic ? (
+                // Music content - prefer video_url (music video) or show cover with audio
+                video.video_url || video.audio_url ? (
+                  <VideoPlayer 
+                    src={video.video_url || video.audio_url}
+                    poster={video.cover_url || video.thumbnail_url}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-amber-400/50">
+                    Audio not available
+                  </div>
+                )
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-amber-400/50">
-                  Video not available
-                </div>
+                // Regular video content
+                video.video_url ? (
+                  <VideoPlayer 
+                    src={video.video_url}
+                    poster={video.thumbnail_url}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-amber-400/50">
+                    Video not available
+                  </div>
+                )
               )}
             </div>
 
@@ -262,15 +292,26 @@ export default function WatchVideo() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <Badge className="bg-amber-600/20 text-amber-300 capitalize">
-                    {video.category?.replace('_', ' ')}
+                    {(video.category || video.genre)?.replace('_', ' ')}
                   </Badge>
                   <Badge className="bg-stone-700/50 text-amber-300">
                     <Eye className="w-3 h-3 mr-1" />
-                    {video.view_count?.toLocaleString() || 0} views
+                    {(video.view_count || video.play_count)?.toLocaleString() || 0} {isMusic ? 'plays' : 'views'}
                   </Badge>
-                  <Badge className="bg-purple-600/20 text-purple-300 capitalize">
-                    {video.video_type?.replace('_', ' ')}
-                  </Badge>
+                  {isMusic ? (
+                    <Badge className="bg-purple-600/20 text-purple-300">
+                      ♪ Music
+                    </Badge>
+                  ) : video.video_type && (
+                    <Badge className="bg-purple-600/20 text-purple-300 capitalize">
+                      {video.video_type.replace('_', ' ')}
+                    </Badge>
+                  )}
+                  {isMusic && video.artist && (
+                    <Badge className="bg-cyan-600/20 text-cyan-300">
+                      {video.artist}
+                    </Badge>
+                  )}
                 </div>
 
                 {video.description && (
