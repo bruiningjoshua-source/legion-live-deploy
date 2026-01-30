@@ -106,6 +106,21 @@ Deno.serve(async (req) => {
             stripe_payment_intent: session.payment_intent
           });
 
+          // Get payout config for dynamic fee structure
+          let tipPlatformFee = 0.15; // Default 15%
+          try {
+            const payoutConfigs = await base44.asServiceRole.entities.PayoutConfig.filter(
+              { config_name: 'default', is_active: true },
+              null,
+              1
+            );
+            if (payoutConfigs[0]?.tip_platform_fee) {
+              tipPlatformFee = payoutConfigs[0].tip_platform_fee;
+            }
+          } catch (configErr) {
+            console.warn('[stripeWebhook] Could not fetch payout config, using default:', configErr.message);
+          }
+
           // Update creator earnings
           const creators = await base44.asServiceRole.entities.Creator.filter(
             { id: metadata.creator_id },
@@ -113,13 +128,15 @@ Deno.serve(async (req) => {
             1
           );
           if (creators[0]) {
-            const platformFee = amount * 0.15; // 15% platform fee
+            const platformFee = amount * tipPlatformFee;
             const creatorEarning = amount - platformFee;
             const earningInDenarii = Math.floor(creatorEarning * 100); // $1 = 100 denarii
 
             await base44.asServiceRole.entities.Creator.update(metadata.creator_id, {
               total_earnings_denarii: (creators[0].total_earnings_denarii || 0) + earningInDenarii
             });
+            
+            console.log('[stripeWebhook] Tip processed with fee:', tipPlatformFee, 'Creator earning:', creatorEarning);
           }
 
           console.log('[stripeWebhook] Tip processed:', amount, 'for creator:', metadata.creator_id);

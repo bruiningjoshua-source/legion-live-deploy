@@ -1,25 +1,47 @@
 import React, { useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, Zap, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const DEFAULT_THRESHOLDS = { bronze: 1000, silver: 2500, gold: 5000, platinum: 10000 };
+const DEFAULT_SHARES = { starter: 0.50, bronze: 0.55, silver: 0.60, gold: 0.65, platinum: 0.70 };
+
 export default function CreatorPayoutOptimizer({ creatorEarningsUsd = 0 }) {
+  // Fetch dynamic payout config
+  const { data: payoutConfig } = useQuery({
+    queryKey: ['payout-config-public'],
+    queryFn: async () => {
+      try {
+        const response = await base44.functions.invoke('getPayoutConfig');
+        return response.data?.config || null;
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 5 * 60 * 1000 // Cache for 5 mins
+  });
+
+  const thresholds = payoutConfig?.tier_thresholds || DEFAULT_THRESHOLDS;
+  const shares = payoutConfig?.tier_shares || DEFAULT_SHARES;
+
   const payoutTier = useMemo(() => {
-    if (creatorEarningsUsd >= 10000) return { name: 'Premium', share: 0.70, color: 'from-yellow-500', icon: '👑' };
-    if (creatorEarningsUsd >= 5000) return { name: 'Gold', share: 0.65, color: 'from-amber-500', icon: '⭐' };
-    if (creatorEarningsUsd >= 2500) return { name: 'Silver', share: 0.60, color: 'from-gray-400', icon: '🥈' };
-    if (creatorEarningsUsd >= 1000) return { name: 'Bronze', share: 0.55, color: 'from-orange-600', icon: '🥉' };
-    return { name: 'Starter', share: 0.50, color: 'from-stone-500', icon: '🪙' };
-  }, [creatorEarningsUsd]);
+    if (creatorEarningsUsd >= thresholds.platinum) return { name: 'Platinum', share: shares.platinum, color: 'from-cyan-400', icon: '👑' };
+    if (creatorEarningsUsd >= thresholds.gold) return { name: 'Gold', share: shares.gold, color: 'from-amber-500', icon: '⭐' };
+    if (creatorEarningsUsd >= thresholds.silver) return { name: 'Silver', share: shares.silver, color: 'from-gray-400', icon: '🥈' };
+    if (creatorEarningsUsd >= thresholds.bronze) return { name: 'Bronze', share: shares.bronze, color: 'from-orange-600', icon: '🥉' };
+    return { name: 'Starter', share: shares.starter, color: 'from-stone-500', icon: '🪙' };
+  }, [creatorEarningsUsd, thresholds, shares]);
 
   const nextTierThreshold = useMemo(() => {
-    if (creatorEarningsUsd >= 10000) return null;
-    if (creatorEarningsUsd >= 5000) return { amount: 10000, share: 0.70 };
-    if (creatorEarningsUsd >= 2500) return { amount: 5000, share: 0.65 };
-    if (creatorEarningsUsd >= 1000) return { amount: 2500, share: 0.60 };
-    return { amount: 1000, share: 0.55 };
-  }, [creatorEarningsUsd]);
+    if (creatorEarningsUsd >= thresholds.platinum) return null;
+    if (creatorEarningsUsd >= thresholds.gold) return { amount: thresholds.platinum, share: shares.platinum };
+    if (creatorEarningsUsd >= thresholds.silver) return { amount: thresholds.gold, share: shares.gold };
+    if (creatorEarningsUsd >= thresholds.bronze) return { amount: thresholds.silver, share: shares.silver };
+    return { amount: thresholds.bronze, share: shares.bronze };
+  }, [creatorEarningsUsd, thresholds, shares]);
 
   return (
     <div className="space-y-4">
