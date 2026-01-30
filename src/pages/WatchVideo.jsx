@@ -29,32 +29,39 @@ export default function WatchVideo() {
 
   const isMusic = contentType === 'music';
 
+  const viewTrackedRef = React.useRef(false);
+
   const { data: video } = useQuery({
     queryKey: ['video', videoId, contentType],
     queryFn: async () => {
       if (isMusic) {
-        // Fetch from Music entity
         const items = await base44.entities.Music.filter({ id: videoId }, null, 1);
-        if (items[0]) {
-          base44.entities.Music.update(videoId, {
-            play_count: (items[0].play_count || 0) + 1
-          }).catch(err => console.error('Play count update failed:', err));
-        }
         return items[0];
       } else {
-        // Fetch from VlogVideo entity
         const videos = await base44.entities.VlogVideo.filter({ id: videoId }, null, 1);
-        if (videos[0]) {
-          base44.entities.VlogVideo.update(videoId, {
-            view_count: (videos[0].view_count || 0) + 1
-          }).catch(err => console.error('View count update failed:', err));
-        }
         return videos[0];
       }
     },
     enabled: !!videoId,
-    staleTime: 30 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
+
+  // Track view count once on mount
+  React.useEffect(() => {
+    if (!video || viewTrackedRef.current) return;
+    viewTrackedRef.current = true;
+    
+    if (isMusic) {
+      base44.entities.Music.update(videoId, {
+        play_count: (video.play_count || 0) + 1
+      }).catch(err => console.error('Play count update failed:', err));
+    } else {
+      base44.entities.VlogVideo.update(videoId, {
+        view_count: (video.view_count || 0) + 1
+      }).catch(err => console.error('View count update failed:', err));
+    }
+  }, [video, videoId, isMusic]);
 
   const { data: creator } = useQuery({
     queryKey: ['video-creator', video?.creator_id],
@@ -89,7 +96,9 @@ export default function WatchVideo() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: userInterest } = useQuery({
@@ -98,7 +107,9 @@ export default function WatchVideo() {
       const interests = await base44.entities.UserInterest.filter({ user_email: user.email }, null, 1);
       return interests[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const hasLiked = userInterest?.liked_videos?.includes(videoId);
@@ -141,8 +152,9 @@ export default function WatchVideo() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video', videoId]);
-      queryClient.invalidateQueries(['user-interest']);
+      queryClient.invalidateQueries({ queryKey: ['video', videoId], refetchType: 'none' });
+      queryClient.invalidateQueries({ queryKey: ['user-interest'], refetchType: 'none' });
+      queryClient.setQueryData(['video', videoId, contentType], (old) => old ? { ...old, like_count: hasLiked ? Math.max((old.like_count || 0) - 1, 0) : (old.like_count || 0) + 1 } : old);
       toast.success(hasLiked ? 'Removed like' : 'Liked!');
     }
   });
@@ -184,8 +196,9 @@ export default function WatchVideo() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video', videoId]);
-      queryClient.invalidateQueries(['user-interest']);
+      queryClient.invalidateQueries({ queryKey: ['video', videoId], refetchType: 'none' });
+      queryClient.invalidateQueries({ queryKey: ['user-interest'], refetchType: 'none' });
+      queryClient.setQueryData(['video', videoId, contentType], (old) => old ? { ...old, dislike_count: hasDisliked ? Math.max((old.dislike_count || 0) - 1, 0) : (old.dislike_count || 0) + 1 } : old);
     }
   });
 
