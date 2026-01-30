@@ -72,7 +72,6 @@ import ExclusiveContentManager from './pages/ExclusiveContentManager';
 import Explore from './pages/Explore';
 import Following from './pages/Following';
 import ForumPost from './pages/ForumPost';
-import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import Home from './pages/Home';
 import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
@@ -124,7 +123,6 @@ export const PAGES = {
     "Explore": Explore,
     "Following": Following,
     "ForumPost": ForumPost,
-    "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "Home": Home,
     "ImportYouTubeLibrary": ImportYouTubeLibrary,
