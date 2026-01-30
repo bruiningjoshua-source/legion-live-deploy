@@ -70,99 +70,101 @@ export default function Home() {
   const featuredStreams = streams.filter(s => s.is_featured);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">🏛️ Legion Live</h1>
-          <p className="text-amber-400/70">Stream, command, and conquer • 21+ Adult Platform</p>
+    <div className="min-h-screen pt-20 pb-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Header - Centered */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">🏛️ Legion Live</h1>
+          <p className="text-white/60">Stream, command, and conquer • 21+ Adult Platform</p>
         </div>
 
-        {/* Platform Quick Access */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* Platform Quick Access - Centered grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 max-w-4xl mx-auto">
           <Link to={createPageUrl('Explore')}>
-            <Card className="bg-gradient-to-br from-red-900/30 to-stone-900 border-red-600/30 hover:border-red-500/50 transition-all cursor-pointer group">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-red-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Radio className="w-6 h-6 text-red-400" />
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-red-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/20">
+                  <Radio className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-amber-100 font-semibold">Live Streams</p>
-                  <p className="text-amber-400/60 text-xs">Solo • PK • Group</p>
+                  <p className="text-white font-semibold text-sm">Live Streams</p>
+                  <p className="text-white/50 text-xs">Solo • PK • Group</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('TheAmphitheatre')}>
-            <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30 hover:border-blue-500/50 transition-all cursor-pointer group">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Film className="w-6 h-6 text-blue-400" />
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/20">
+                  <Film className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-amber-100 font-semibold">Videos</p>
-                  <p className="text-amber-400/60 text-xs">Shorts • Long Form</p>
+                  <p className="text-white font-semibold text-sm">Videos</p>
+                  <p className="text-white/50 text-xs">Shorts • Long Form</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('TheGamingHub')}>
-            <Card className="bg-gradient-to-br from-purple-900/30 to-stone-900 border-purple-600/30 hover:border-purple-500/50 transition-all cursor-pointer group">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Gamepad2 className="w-6 h-6 text-purple-400" />
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-purple-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/20">
+                  <Gamepad2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-amber-100 font-semibold">Gaming Hub</p>
-                  <p className="text-amber-400/60 text-xs">OBS • Streamlabs</p>
+                  <p className="text-white font-semibold text-sm">Gaming Hub</p>
+                  <p className="text-white/50 text-xs">OBS • Streamlabs</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('AffiliateHub')}>
-            <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30 hover:border-green-500/50 transition-all cursor-pointer group">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="w-6 h-6 text-green-400" />
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-green-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-green-500/20">
+                  <ShoppingBag className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-amber-100 font-semibold">Affiliate Hub</p>
-                  <p className="text-amber-400/60 text-xs">Products • Brands</p>
+                  <p className="text-white font-semibold text-sm">Affiliate Hub</p>
+                  <p className="text-white/50 text-xs">Products • Brands</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-3">
-            <TabsTrigger value="personalized" className="data-[state=active]:bg-amber-600">
-              <Heart className="w-4 h-4 mr-2" />
-              For You
-            </TabsTrigger>
-            <TabsTrigger value="trending" className="data-[state=active]:bg-amber-600">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Trending
-            </TabsTrigger>
-            <TabsTrigger value="featured" className="data-[state=active]:bg-amber-600">
-              <Trophy className="w-4 h-4 mr-2" />
-              Featured
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="flex justify-center">
+            <TabsList className="bg-white/5 backdrop-blur-sm border border-white/10 p-1 rounded-full">
+              <TabsTrigger value="personalized" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
+                <Heart className="w-4 h-4 mr-2" />
+                For You
+              </TabsTrigger>
+              <TabsTrigger value="trending" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Trending
+              </TabsTrigger>
+              <TabsTrigger value="featured" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-6 text-white/70">
+                <Trophy className="w-4 h-4 mr-2" />
+                Featured
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Personalized For You */}
-          <TabsContent value="personalized" className="mt-0 space-y-6">
+          <TabsContent value="personalized" className="mt-0">
             {recsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="aspect-video w-full rounded-2xl bg-stone-800" />
+                  <Skeleton key={i} className="aspect-[9/16] w-full rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : personalizedRecs.length > 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
               >
                 <AnimatePresence>
                   {personalizedRecs.map((stream, i) => (
@@ -178,9 +180,9 @@ export default function Home() {
                 </AnimatePresence>
               </motion.div>
             ) : (
-              <div className="text-center py-12 bg-stone-800/30 rounded-xl">
-                <Sparkles className="w-12 h-12 text-amber-400/50 mx-auto mb-2" />
-                <p className="text-amber-300/70">Watch more streams to get personalized recommendations!</p>
+              <div className="text-center py-16 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                <Sparkles className="w-12 h-12 text-white/30 mx-auto mb-3" />
+                <p className="text-white/50">Watch more streams to get personalized recommendations!</p>
               </div>
             )}
           </TabsContent>
@@ -193,13 +195,13 @@ export default function Home() {
           {/* Featured */}
           <TabsContent value="featured" className="mt-0">
             {streamsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="aspect-video rounded-2xl bg-stone-800" />
+                  <Skeleton key={i} className="aspect-[9/16] rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : featuredStreams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <AnimatePresence>
                   {featuredStreams.map((stream, i) => (
                     <motion.div
@@ -214,9 +216,9 @@ export default function Home() {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="text-center py-12 bg-stone-800/30 rounded-xl">
-                <Trophy className="w-12 h-12 text-amber-400/50 mx-auto mb-2" />
-                <p className="text-amber-300/70">No featured streams right now</p>
+              <div className="text-center py-16 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                <Trophy className="w-12 h-12 text-white/30 mx-auto mb-3" />
+                <p className="text-white/50">No featured streams right now</p>
               </div>
             )}
           </TabsContent>

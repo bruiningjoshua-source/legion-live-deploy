@@ -61,8 +61,8 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-stone-950 via-stone-900/95 to-transparent border-b border-amber-600/20 backdrop-blur-lg">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo + Shield Menu Toggle */}
         <div className="flex items-center gap-2">
           <button 
@@ -78,21 +78,21 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
         </div>
 
         {/* Desktop Nav - Main Platforms */}
-        <div className="hidden lg:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-1 bg-white/5 rounded-full p-1">
           {mainNavLinks.map(link => {
             const Icon = link.icon;
             return (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                   isActive(link.path)
-                    ? 'bg-amber-600 text-white'
-                    : 'text-amber-300 hover:bg-amber-800/20'
+                    ? 'bg-white text-black'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                <span className="text-sm">{link.name}</span>
+                <span className="text-sm font-medium">{link.name}</span>
               </Link>
             );
           })}
@@ -104,13 +104,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
               <motion.div 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-amber-800/30 to-stone-800/50 border border-amber-600/30 rounded-full px-4 py-2 hover:border-amber-500/50 transition-all shadow-lg shadow-amber-900/20"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 hover:bg-white/15 transition-all"
               >
-                <span className="text-xl">🪙</span>
-                <span className="text-amber-100 font-bold">{(wallet.denarii_balance || 0).toLocaleString()}</span>
-                <span className="text-amber-400/70 text-xs">+</span>
+                <span className="text-lg">🪙</span>
+                <span className="text-white font-semibold text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
               </motion.div>
             </Link>
           )}
@@ -118,9 +117,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Go Live Button */}
           {user && (
             <Link to={createPageUrl('GoLive')}>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="hidden sm:flex bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white gap-2 shadow-lg shadow-red-900/30 font-semibold">
-                  <Radio className="w-4 h-4 animate-pulse" />
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button className="hidden sm:flex bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white gap-2 rounded-full px-5 font-medium shadow-lg shadow-red-500/20">
+                  <Radio className="w-4 h-4" />
                   Go Live
                 </Button>
               </motion.div>
@@ -129,7 +128,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
           {/* Notifications */}
           {user && (
-            <Button variant="ghost" size="icon" className="text-amber-300 hover:bg-amber-800/20">
+            <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 rounded-full">
               <Bell className="w-5 h-5" />
             </Button>
           )}
@@ -361,7 +360,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           ) : (
             <Button
               onClick={() => base44.auth.redirectToLogin()}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-white text-black hover:bg-white/90 rounded-full px-5 font-medium"
             >
               Sign In
             </Button>
