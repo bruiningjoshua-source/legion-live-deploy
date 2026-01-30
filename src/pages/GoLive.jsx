@@ -369,24 +369,25 @@ export default function GoLive() {
 
   const isFormValid = title.trim() && category;
   const isAdmin = user?.role === 'admin';
+  const canBroadcast = isAdmin || isSubscribed;
 
-  // Only admins can broadcast
-  if (user && !isAdmin) {
+  // Only admins and subscribers can broadcast
+  if (user && !canBroadcast) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <div className="w-20 h-20 rounded-full bg-amber-600/20 flex items-center justify-center mx-auto mb-6">
             <Radio className="w-10 h-10 text-amber-400" />
           </div>
-          <h1 className="text-2xl font-bold text-amber-100 mb-3">Broadcasting Coming Soon</h1>
+          <h1 className="text-2xl font-bold text-amber-100 mb-3">Become a Creator</h1>
           <p className="text-amber-400/70 mb-6">
-            Broadcasting is currently only available to approved creators. Check back soon for updates!
+            Subscribe to unlock broadcasting and monetization features. Start streaming and earning today!
           </p>
           <Button 
-            onClick={() => window.location.href = createPageUrl('Home')}
+            onClick={() => window.location.href = createPageUrl('CreatorMonetization')}
             className="bg-amber-600 hover:bg-amber-700"
           >
-            Back to Home
+            Subscribe Now
           </Button>
         </div>
       </div>
