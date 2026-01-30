@@ -361,9 +361,26 @@ export default function WatchVideo() {
             <VideoCommentSystem videoId={videoId} creatorId={creator?.id} />
           </div>
 
-          {/* Sidebar - Affiliate Products */}
-          {affiliateProducts.length > 0 && (
-            <div className="space-y-4">
+          {/* Sidebar - Recommendations and Affiliate Products */}
+          <div className="space-y-4">
+            {/* Recommended Videos */}
+            <RecommendedVideos
+              currentVideoId={videoId}
+              currentVideo={video}
+              autoplay={autoplay}
+              onAutoplayChange={setAutoplay}
+              onVideoSelect={(nextVideo) => {
+                if (autoplay && videoEnded) {
+                  const url = nextVideo.contentType === 'music' 
+                    ? `WatchVideo?id=${nextVideo.id}&type=music`
+                    : `WatchVideo?id=${nextVideo.id}`;
+                  navigate(createPageUrl(url));
+                }
+              }}
+            />
+
+            {/* Affiliate Products */}
+            {affiliateProducts.length > 0 && (
               <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900/30 border-amber-600/30">
                 <CardContent className="p-6">
                   <h3 className="text-amber-100 font-semibold mb-4 flex items-center gap-2">
@@ -402,8 +419,8 @@ export default function WatchVideo() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
