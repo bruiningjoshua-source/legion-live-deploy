@@ -374,13 +374,47 @@ export default function CreatorSuccessProgram() {
 
           {/* Earnings Calculator Tab */}
           <TabsContent value="earnings">
+            {/* Industry Context Card */}
+            <Card className="bg-gradient-to-r from-blue-900/30 to-stone-900 border-blue-500/30 mb-6">
+              <CardContent className="p-5">
+                <h4 className="text-blue-200 font-medium mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Industry Data: What Loyal Supporters Spend
+                </h4>
+                <p className="text-blue-100/80 text-sm mb-4">
+                  Based on research across TikTok Live, Twitch, and YouTube, here's what supporters typically spend on their favorite creators:
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-stone-800/50 rounded-lg p-3 text-center">
+                    <p className="text-stone-400 text-xs">Casual</p>
+                    <p className="text-amber-200 font-bold">$5-15/mo</p>
+                  </div>
+                  <div className="bg-amber-900/30 rounded-lg p-3 text-center border border-amber-500/30">
+                    <p className="text-amber-400 text-xs">Loyal (Average)</p>
+                    <p className="text-amber-100 font-bold text-lg">$25-35/mo</p>
+                  </div>
+                  <div className="bg-stone-800/50 rounded-lg p-3 text-center">
+                    <p className="text-stone-400 text-xs">Super Fan</p>
+                    <p className="text-amber-200 font-bold">$50-100/mo</p>
+                  </div>
+                  <div className="bg-stone-800/50 rounded-lg p-3 text-center">
+                    <p className="text-stone-400 text-xs">"Whale"</p>
+                    <p className="text-amber-200 font-bold">$200+/mo</p>
+                  </div>
+                </div>
+                <p className="text-blue-200/60 text-xs mt-3">
+                  Our calculator uses $30/month — the middle of the loyal supporter range — for realistic projections.
+                </p>
+              </CardContent>
+            </Card>
+
             <Card className="bg-stone-800/30 border-amber-600/20">
               <CardHeader>
                 <CardTitle className="text-amber-100 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-amber-400" />
                   Earnings Potential Calculator
                 </CardTitle>
-                <p className="text-amber-400/70 text-sm">Based on 50% creator share (increases with tier)</p>
+                <p className="text-amber-400/70 text-sm">Based on 50% creator share (increases with tier) • Using $30/mo loyal supporter average</p>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
