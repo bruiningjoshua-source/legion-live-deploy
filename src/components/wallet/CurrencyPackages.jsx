@@ -269,41 +269,39 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
       </div>
 
       {/* Benefits */}
-      <div className="bg-gradient-to-r from-amber-900/30 to-stone-900/30 rounded-xl p-5 border border-amber-600/20">
-        <h4 className="text-amber-100 font-semibold mb-3 flex items-center gap-2">
+      <GlassCard padding="p-6" animate={false} glowColor="amber">
+        <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
           <Crown className="w-5 h-5 text-amber-400" />
           Why Purchase Denarii?
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-start gap-2">
-            <Gift className="w-4 h-4 text-pink-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Send stunning animated gifts to your favorite creators</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <TrendingUp className="w-4 h-4 text-green-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Climb VIP ranks for exclusive badges and perks</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Star className="w-4 h-4 text-amber-400 mt-0.5" />
-            <p className="text-amber-200/80 text-sm">Influence PK battles and stand out in chat</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { icon: Gift, color: 'pink', text: 'Send stunning animated gifts to your favorite creators' },
+            { icon: TrendingUp, color: 'green', text: 'Climb VIP ranks for exclusive badges and perks' },
+            { icon: Star, color: 'amber', text: 'Influence PK battles and stand out in chat' }
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className={`p-2 rounded-lg bg-${item.color}-500/20`}>
+                <item.icon className={`w-4 h-4 text-${item.color}-400`} />
+              </div>
+              <p className="text-white/70 text-sm">{item.text}</p>
+            </div>
+          ))}
         </div>
-      </div>
+      </GlassCard>
 
       {/* Trust Badges */}
-      <div className="flex items-center justify-center gap-6 pt-4 border-t border-amber-600/20">
-        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
-          <Lock className="w-4 h-4" />
-          <span>Secure Payment</span>
-        </div>
-        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
-          <Shield className="w-4 h-4" />
-          <span>Stripe Protected</span>
-        </div>
-        <div className="flex items-center gap-2 text-amber-400/60 text-xs">
-          <Check className="w-4 h-4" />
-          <span>Instant Delivery</span>
-        </div>
+      <div className="flex items-center justify-center gap-8 pt-4">
+        {[
+          { icon: Lock, text: 'Secure Payment' },
+          { icon: Shield, text: 'Stripe Protected' },
+          { icon: Sparkles, text: 'Instant Delivery' }
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-2 text-white/40 text-xs">
+            <item.icon className="w-4 h-4" />
+            <span>{item.text}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
