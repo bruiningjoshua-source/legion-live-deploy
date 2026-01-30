@@ -784,6 +784,7 @@ export default function WatchStream() {
           totalEarnings={creator?.total_earnings_denarii || 0}
           sessionEarnings={stream?.total_denarii_earned || 0}
           giftsReceived={stream?.total_gifts_received || 0}
+          creatorId={creator?.id}
         />
       )}
 

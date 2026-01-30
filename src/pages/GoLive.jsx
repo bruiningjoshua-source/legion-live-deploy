@@ -513,6 +513,7 @@ export default function GoLive() {
                 totalEarnings={creator?.total_earnings_denarii || 0}
                 sessionEarnings={0}
                 giftsReceived={0}
+                creatorId={creator?.id}
               />
 
               {/* Broadcaster Chat */}
