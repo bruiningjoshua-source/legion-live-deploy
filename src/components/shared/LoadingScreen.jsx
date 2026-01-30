@@ -123,66 +123,52 @@ export default function LoadingScreen({ onComplete }) {
         </motion.div>
       </div>
 
-      {/* Centurion Hero Image */}
+      {/* Centurion Hero Image - Mobile optimized */}
       <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        initial={{ scale: 1.2, opacity: 0 }}
+        className="absolute inset-0 flex items-end justify-center pb-0"
+        initial={{ scale: 1.1, opacity: 0 }}
         animate={{ 
-          scale: phase >= 1 ? 1 : 1.2, 
+          scale: phase >= 1 ? 1 : 1.1, 
           opacity: phase >= 1 ? 1 : 0 
         }}
         transition={{ duration: 1.5, ease: 'easeOut' }}
       >
-        <div className="relative w-full h-full max-w-4xl mx-auto">
+        <div className="relative w-full h-[70vh] sm:h-[75vh] max-w-md mx-auto">
           <img 
             src={CENTURION_IMAGE} 
             alt="Legion Live"
             className="absolute inset-0 w-full h-full object-contain object-bottom"
             style={{
-              filter: phase >= 4 ? 'brightness(0.6)' : 'brightness(1)',
+              filter: phase >= 4 ? 'brightness(0.5)' : 'brightness(1)',
               transition: 'filter 0.8s ease'
             }}
-          />
-          
-          {/* Glow effect around centurion */}
-          <motion.div
-            className="absolute inset-0"
-            animate={phase >= 2 ? {
-              boxShadow: [
-                'inset 0 0 100px rgba(217, 119, 6, 0)',
-                'inset 0 0 150px rgba(217, 119, 6, 0.3)',
-                'inset 0 0 100px rgba(217, 119, 6, 0)',
-              ]
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity }}
           />
         </div>
       </motion.div>
 
-      {/* LEGION LIVE Logo */}
+      {/* LEGION LIVE Logo - Mobile optimized */}
       <AnimatePresence>
         {phase >= 3 && phase < 4 && (
           <motion.div
-            className="absolute top-[15%] left-1/2 -translate-x-1/2 text-center z-20"
-            initial={{ scale: 2.5, opacity: 0, y: -50 }}
+            className="absolute top-[12%] sm:top-[15%] left-1/2 -translate-x-1/2 text-center z-20"
+            initial={{ scale: 2, opacity: 0, y: -30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: -30 }}
+            exit={{ scale: 0.8, opacity: 0, y: -20 }}
             transition={{ duration: 0.6, type: 'spring', stiffness: 150 }}
           >
             <h1 
-              className="text-6xl md:text-8xl font-black tracking-tight"
+              className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight"
               style={{
                 fontFamily: 'Georgia, serif',
                 background: 'linear-gradient(180deg, #fef3c7 0%, #f59e0b 40%, #b45309 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                textShadow: '0 4px 60px rgba(217, 119, 6, 0.5)',
               }}
             >
               LEGION
             </h1>
             <p 
-              className="text-2xl md:text-4xl font-bold tracking-[0.5em] -mt-1"
+              className="text-xl sm:text-2xl md:text-3xl font-bold tracking-[0.4em] -mt-1"
               style={{
                 background: 'linear-gradient(180deg, #fcd34d 0%, #d97706 100%)',
                 WebkitBackgroundClip: 'text',
@@ -195,29 +181,29 @@ export default function LoadingScreen({ onComplete }) {
         )}
       </AnimatePresence>
 
-      {/* Shield Wheel Menu */}
+      {/* Shield Menu - Mobile first */}
       <AnimatePresence>
         {phase >= 4 && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center z-30"
+            className="absolute inset-0 flex items-center justify-center z-30 px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
             {/* Darkening overlay */}
             <motion.div 
-              className="absolute inset-0 bg-black/60"
+              className="absolute inset-0 bg-black/70"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
             />
 
-            {/* Shield Container */}
+            {/* Shield Container - Centered */}
             <motion.div
-              className="relative"
-              initial={{ scale: 0.3, rotateY: 90 }}
-              animate={{ scale: 1, rotateY: 0 }}
-              transition={{ duration: 0.8, type: 'spring', stiffness: 80 }}
+              className="relative flex flex-col items-center"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
             >
               {/* Shield SVG - Mobile optimized */}
               <svg viewBox="0 0 400 480" className="w-64 h-80 sm:w-72 sm:h-[22rem] md:w-80 md:h-[24rem]">
