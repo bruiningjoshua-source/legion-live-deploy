@@ -89,6 +89,7 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import CreatorOnboarding from './pages/CreatorOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -135,6 +136,7 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "CreatorOnboarding": CreatorOnboarding,
 }
 
 export const pagesConfig = {
