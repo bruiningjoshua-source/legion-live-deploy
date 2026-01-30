@@ -41,10 +41,10 @@ const PAYOUT_METHODS = [
   { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' }
 ];
 
-// Platform takes 60%, creator gets 40%
-const CREATOR_SHARE = 0.40;
+// Platform takes 50%, creator gets 50%
+const CREATOR_SHARE = 0.50;
 const DENARII_TO_USD = 0.01; // 1 Denarii = $0.01 base value
-const MIN_PAYOUT_DENARII = 1000; // Minimum 1000 Denarii ($4 payout)
+const MIN_PAYOUT_DENARII = 1000; // Minimum 1000 Denarii ($5 payout)
 
 export default function CreatorPayoutSettings({ creator, user }) {
   const queryClient = useQueryClient();
@@ -217,7 +217,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <span className="text-green-300/70">Denarii</span>
               </div>
               <p className="text-green-400/60 text-sm mt-2">
-                ≈ ${(availableBalance * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)} USD (40% creator share)
+                ≈ ${(availableBalance * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)} USD (50% creator share)
               </p>
             </div>
             
@@ -236,8 +236,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-400 mt-0.5" />
               <div className="text-xs text-amber-300/80">
-                <p className="font-semibold mb-1">Revenue Split: 60% Platform / 40% Creator</p>
-                <p>For every $1.00 of gift value received, you earn $0.40. Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (${(MIN_PAYOUT_DENARII * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)})</p>
+                <p className="font-semibold mb-1">Revenue Split: 50% Platform / 50% Creator</p>
+                <p>For every $1.00 of gift value received, you earn $0.50. Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (${(MIN_PAYOUT_DENARII * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)})</p>
               </div>
             </div>
           </div>
@@ -495,7 +495,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <p className="text-green-300/70 text-sm mb-1">You'll receive</p>
                 <p className="text-3xl font-bold text-green-100">${estimatedPayout.toFixed(2)}</p>
                 <p className="text-green-400/60 text-xs mt-1">
-                  ({cashoutNum.toLocaleString()} × $0.01 × 40%)
+                  ({cashoutNum.toLocaleString()} × $0.01 × 50%)
                 </p>
               </div>
             )}
