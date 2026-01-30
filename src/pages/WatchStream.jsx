@@ -49,6 +49,8 @@ import HostControls from '@/components/stream/HostControls';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
 import BigoStyleChat from '@/components/stream/BigoStyleChat';
+import EnhancedChat from '@/components/chat/EnhancedChat';
+import AIModerationBadge from '@/components/moderation/AIModerationBadge';
 import BigoActionBar from '@/components/stream/BigoActionBar';
 import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
 import CameraFilters from '@/components/stream/CameraFilters';
@@ -181,18 +183,47 @@ export default function WatchStream() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (message) => base44.entities.ChatMessage.create({
-      stream_id: streamId,
-      sender_email: user.email,
-      sender_name: user.full_name || 'Anonymous',
-      message,
-      message_type: 'text',
-      vip_level: wallet?.vip_level || 0
-    }),
+    mutationFn: async (messageData) => {
+      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
+      
+      // AI moderation check
+      try {
+        const modResult = await base44.functions.invoke('aiModerateContent', {
+          content_type: 'chat_message',
+          content: messageContent,
+          stream_id: streamId,
+          user_email: user.email,
+          user_name: user.full_name || 'Anonymous'
+        });
+
+        if (!modResult.data?.approved) {
+          throw new Error(modResult.data?.reason || 'Message blocked by moderation');
+        }
+      } catch (modError) {
+        if (modError.message?.includes('blocked') || modError.message?.includes('banned')) {
+          throw modError;
+        }
+        // Continue if moderation fails (fail open)
+        console.warn('Moderation check failed, continuing:', modError);
+      }
+
+      return base44.entities.ChatMessage.create({
+        stream_id: streamId,
+        sender_email: user.email,
+        sender_name: user.full_name || 'Anonymous',
+        message: messageContent,
+        message_type: messageData.message_type || 'text',
+        vip_level: wallet?.vip_level || 0,
+        mentions: messageData.mentions || [],
+        reply_to_id: messageData.reply_to_id || null,
+        reply_to_content: messageData.reply_to_content || null,
+        reply_to_sender: messageData.reply_to_sender || null
+      });
+    },
     onSuccess: () => queryClient.invalidateQueries(['chat-messages', streamId]),
     onError: (error) => {
       console.error('Failed to send message:', error);
-      alert('Unable to send message. Please try again.');
+      alert(error.message || 'Unable to send message. Please try again.');
     }
   });
 
@@ -719,13 +750,27 @@ export default function WatchStream() {
         </div>
       )}
 
-      {/* Bigo-Style Chat - Bottom Left with floating bubbles */}
-      <BigoStyleChat
+      {/* Enhanced Chat - Bottom Left with reactions, replies, mentions */}
+      <EnhancedChat
+        streamId={streamId}
         messages={chatMessages}
         onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+        currentUser={user}
         isAuthenticated={!!user}
         disabled={sendMessageMutation.isPending}
+        isHost={user?.email === creator?.user_email}
+        recentChatters={chatMessages.reduce((acc, msg) => {
+          if (!acc.find(u => u.sender_email === msg.sender_email)) {
+            acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
+          }
+          return acc;
+        }, [])}
       />
+
+      {/* AI Moderation Badge - Shows moderation status */}
+      <div className="absolute top-20 right-4 z-20">
+        <AIModerationBadge status="active" />
+      </div>
 
       {/* Quality Monitor - Viewer View */}
       {streamStats && user?.email !== creator?.user_email && (
