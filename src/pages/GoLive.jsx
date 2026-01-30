@@ -471,6 +471,21 @@ export default function GoLive() {
                 />
               )}
 
+              {/* Top Left - Exit Button */}
+              <button
+                onClick={() => {
+                  if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    setCameraStream(null);
+                    setHasPermissions(false);
+                  }
+                  window.location.href = createPageUrl('Home');
+                }}
+                className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
               {/* Top Right - Settings */}
               <div className="absolute top-4 right-4 z-20">
                 <CameraFilters 
@@ -482,8 +497,8 @@ export default function GoLive() {
                 />
               </div>
 
-              {/* Top Left - Earnings Widget */}
-              <div className="absolute top-4 left-4 z-20">
+              {/* Top Left - Earnings Widget (below exit button) */}
+              <div className="absolute top-16 left-4 z-20">
                 <BroadcasterWallet 
                   totalEarnings={creator?.total_earnings_denarii || 0}
                   sessionEarnings={0}
@@ -531,22 +546,7 @@ export default function GoLive() {
               )}
 
               {/* Bottom Bar */}
-              <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between">
-                {/* Back Button */}
-                <Button
-                  onClick={() => {
-                    if (cameraStream) {
-                      cameraStream.getTracks().forEach(track => track.stop());
-                      setCameraStream(null);
-                      setHasPermissions(false);
-                    }
-                  }}
-                  className="bg-stone-900/80 hover:bg-stone-800 text-white text-xs py-1"
-                  size="sm"
-                >
-                  ← Back
-                </Button>
-
+              <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center">
                 {/* Go Live Button */}
                 <Button
                   onClick={() => goLiveMutation.mutate()}

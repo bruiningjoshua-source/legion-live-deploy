@@ -720,24 +720,42 @@ export default function WatchStream() {
                 )}
       </div>
 
-      {/* Bigo-Style Creator Info - Top Left */}
+      {/* Exit Button - Top Left (for all users) */}
+      <button
+        onClick={() => {
+          if (user?.email === creator?.user_email) {
+            setShowEndDialog(true);
+          } else {
+            window.location.href = createPageUrl('Home');
+          }
+        }}
+        className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      {/* Bigo-Style Creator Info - Top Left (shifted) */}
       {user?.email === creator?.user_email ? (
-        <BroadcasterTopBar
-          stream={stream}
-          viewerCount={stream.viewer_count || 0}
-          onUpdateStream={async (updates) => {
-            await base44.entities.Stream.update(stream.id, updates);
-            queryClient.invalidateQueries(['stream', streamId]);
-          }}
-        />
+        <div className="absolute top-4 left-16 z-20">
+          <BroadcasterTopBar
+            stream={stream}
+            viewerCount={stream.viewer_count || 0}
+            onUpdateStream={async (updates) => {
+              await base44.entities.Stream.update(stream.id, updates);
+              queryClient.invalidateQueries(['stream', streamId]);
+            }}
+          />
+        </div>
       ) : (
-        <BigoCreatorInfo
-          creator={creator}
-          stream={stream}
-          isFollowing={isFollowing}
-          onFollowClick={() => followMutation.mutate()}
-          viewerCount={stream.viewer_count || 0}
-        />
+        <div className="absolute top-4 left-16 z-20">
+          <BigoCreatorInfo
+            creator={creator}
+            stream={stream}
+            isFollowing={isFollowing}
+            onFollowClick={() => followMutation.mutate()}
+            viewerCount={stream.viewer_count || 0}
+          />
+        </div>
       )}
 
       {/* Viewer Wallet - Top Right */}
@@ -811,14 +829,6 @@ export default function WatchStream() {
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
         <>
-          {/* End Stream X Button - Top Right */}
-          <button
-            onClick={() => setShowEndDialog(true)}
-            className="absolute top-4 right-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
           {/* Animated Filter Overlay - Only show if effects are active */}
           {(activeOverlays.animatedEffect || activeOverlays.staticOverlay || activeOverlays.screenEffect) && (
             <AnimatedFilterOverlay

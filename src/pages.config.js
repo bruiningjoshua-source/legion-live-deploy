@@ -59,6 +59,7 @@ import CollaborationHub from './pages/CollaborationHub';
 import CommunityForums from './pages/CommunityForums';
 import ContentModerationAdmin from './pages/ContentModerationAdmin';
 import CreatorMonetization from './pages/CreatorMonetization';
+import CreatorOnboarding from './pages/CreatorOnboarding';
 import CreatorProfile from './pages/CreatorProfile';
 import CreatorStudio from './pages/CreatorStudio';
 import CustomizeTheme from './pages/CustomizeTheme';
@@ -89,7 +90,6 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CreatorOnboarding from './pages/CreatorOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -106,6 +106,7 @@ export const PAGES = {
     "CommunityForums": CommunityForums,
     "ContentModerationAdmin": ContentModerationAdmin,
     "CreatorMonetization": CreatorMonetization,
+    "CreatorOnboarding": CreatorOnboarding,
     "CreatorProfile": CreatorProfile,
     "CreatorStudio": CreatorStudio,
     "CustomizeTheme": CustomizeTheme,
@@ -136,7 +137,6 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CreatorOnboarding": CreatorOnboarding,
 }
 
 export const pagesConfig = {
