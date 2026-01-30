@@ -48,6 +48,10 @@ import DirectTipButton from '@/components/stream/DirectTipButton';
 import HostControls from '@/components/stream/HostControls';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
+import BigoStyleChat from '@/components/stream/BigoStyleChat';
+import BigoActionBar from '@/components/stream/BigoActionBar';
+import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
+import CameraFilters from '@/components/stream/CameraFilters';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import ModerationPanel from '@/components/stream/ModerationPanel';
@@ -661,7 +665,7 @@ export default function WatchStream() {
                 )}
       </div>
 
-      {/* Broadcaster Top Bar - Editable title & room icon (Creator Only) */}
+      {/* Bigo-Style Creator Info - Top Left */}
       {user?.email === creator?.user_email ? (
         <BroadcasterTopBar
           stream={stream}
@@ -672,72 +676,27 @@ export default function WatchStream() {
           }}
         />
       ) : (
-        /* Viewer Top Bar - Creator Info & Viewers */
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent pt-safe">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-stone-800">
-                    {creator?.avatar_url ? (
-                      <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
-                    )}
-                  </div>
-                </div>
-              </Link>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold text-sm">{creator?.display_name}</span>
-                  {creator?.is_verified && <Crown className="w-3 h-3 text-amber-400" />}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-red-500 text-white border-0 text-xs h-5">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full mr-1" />
-                    LIVE
-                  </Badge>
-                  <span className="text-white/80 text-xs">{(stream.viewer_count || 0).toLocaleString()} watching</span>
-                </div>
-              </div>
-            </div>
+        <BigoCreatorInfo
+          creator={creator}
+          stream={stream}
+          isFollowing={isFollowing}
+          onFollowClick={() => followMutation.mutate()}
+          viewerCount={stream.viewer_count || 0}
+        />
+      )}
 
-            <div className="flex items-center gap-2">
-              {wallet && (
-                <ViewerWallet 
-                  denariiBalance={wallet.denarii_balance || 0}
-                  asBalance={wallet.as_balance || 0}
-                />
-              )}
-              <Button
-                onClick={() => followMutation.mutate()}
-                size="sm"
-                className={isFollowing 
-                  ? "bg-stone-700/80 text-white h-7 text-xs" 
-                  : "bg-amber-600 hover:bg-amber-700 text-white h-7 text-xs"}
-              >
-                <Heart className={`w-3 h-3 mr-1 ${isFollowing ? 'fill-current' : ''}`} />
-                {isFollowing ? 'Following' : 'Follow'}
-              </Button>
-            </div>
-          </div>
+      {/* Viewer Wallet - Top Right */}
+      {wallet && user?.email !== creator?.user_email && (
+        <div className="absolute top-4 right-3 z-20">
+          <ViewerWallet 
+            denariiBalance={wallet.denarii_balance || 0}
+            asBalance={wallet.as_balance || 0}
+          />
         </div>
       )}
 
-      {/* Right Side - Info Card (like rank display) */}
-      <div className="absolute top-20 right-4 z-20">
-        <motion.div
-          initial={{ x: 100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-2xl p-3 text-center"
-        >
-          <div className="text-2xl mb-1">{creator?.badges?.[0] || '🏛️'}</div>
-          <div className="text-white text-xs font-semibold">Level {creator?.level || 1}</div>
-        </motion.div>
-      </div>
-
-      {/* Live Chat Overlay - Real-time floating chat with input */}
-      <LiveChatOverlay
+      {/* Bigo-Style Chat - Bottom Left with floating bubbles */}
+      <BigoStyleChat
         messages={chatMessages}
         onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
         isAuthenticated={!!user}
@@ -756,27 +715,19 @@ export default function WatchStream() {
         </div>
       )}
 
-      {/* Bottom Action Bar - Minimal icons */}
-      <div className="absolute bottom-16 right-4 z-30 flex flex-col gap-3">
-        <TipButton 
-          creatorId={creator?.id} 
-          streamId={streamId}
-          variant="ghost"
-          size="icon"
-          className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
-        />
-        
-        {creator && (
-          <DirectTipButton creator={creator} variant="ghost" size="icon" className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm" />
-        )}
-        
-        <button 
-          onClick={() => setShowGiftPanel(true)}
-          className="w-12 h-12 rounded-full bg-amber-600/80 backdrop-blur-sm flex items-center justify-center text-white hover:bg-amber-500 transition-colors"
-        >
-          <Gift className="w-6 h-6" />
-        </button>
-      </div>
+      {/* Bigo-Style Action Bar - Right side vertical */}
+      <BigoActionBar
+        onGiftClick={() => setShowGiftPanel(true)}
+        onLikeClick={() => followMutation.mutate()}
+        onShareClick={() => {
+          if (navigator.share) {
+            navigator.share({ title: stream.title, url: window.location.href });
+          }
+        }}
+        onCommentClick={() => {}}
+        isLiked={isFollowing}
+        likeCount={creator?.follower_count || 0}
+      />
 
       {/* Broadcaster Wallet - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
@@ -799,9 +750,9 @@ export default function WatchStream() {
             <X className="w-5 h-5" />
           </button>
 
-          {/* Host Controls - Below top bar */}
+          {/* Host Controls - TikTok/Snapchat style camera filters */}
           <div className="absolute top-20 left-4 z-20 flex gap-2">
-            <HostControls 
+            <CameraFilters 
               videoRef={videoRef}
               onMirrorChange={setIsMirrored}
               initialMirror={isMirrored}
@@ -810,10 +761,9 @@ export default function WatchStream() {
             <Button
               onClick={() => setShowModerationPanel(true)}
               size="sm"
-              className="bg-stone-900/80 border border-amber-600/30 text-amber-300 hover:bg-amber-800/20 h-8 text-xs"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
             >
-              <Shield className="w-3 h-3 mr-1" />
-              Mod
+              <Shield className="w-4 h-4" />
             </Button>
           </div>
 
