@@ -77,7 +77,6 @@ export default function WatchStream() {
   const [showModeration, setShowModeration] = useState(false);
   const [isMirrored, setIsMirrored] = useState(true);
   const [showEndDialog, setShowEndDialog] = useState(false);
-  const [customBackground, setCustomBackground] = useState(null);
 
   const [showModerationPanel, setShowModerationPanel] = useState(false);
   const [moderators, setModerators] = useState([]);
