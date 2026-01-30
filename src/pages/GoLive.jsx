@@ -468,25 +468,29 @@ export default function GoLive() {
                 style={{ objectFit: 'cover', backgroundColor: '#000' }}
               />
 
-              {/* Animated Filter Overlay */}
-              {(activeOverlays.animatedEffect || activeOverlays.staticOverlay || activeOverlays.screenEffect) && (
-                <AnimatedFilterOverlay
-                  activeEffect={activeOverlays.animatedEffect}
-                  staticOverlay={activeOverlays.staticOverlay}
-                  edgeEffect={activeOverlays.screenEffect}
-                  intensity={activeOverlays.intensity}
-                />
-              )}
-
-              {/* Custom Background Layer */}
-              {customBackground && customBackground !== 'blur' && (
+              {/* Background Layer */}
+              {activeBackground && activeBackground.type === 'image' && (
                 <div 
                   className="absolute inset-0 z-0"
                   style={{
-                    backgroundImage: `url(${customBackground})`,
+                    backgroundImage: `url(${activeBackground.url})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}
+                />
+              )}
+              {activeBackground && activeBackground.type === 'gradient' && (
+                <div 
+                  className="absolute inset-0 z-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${activeBackground.colors[0]}, ${activeBackground.colors[1]})`
+                  }}
+                />
+              )}
+              {activeBackground && activeBackground.type === 'color' && (
+                <div 
+                  className="absolute inset-0 z-0"
+                  style={{ backgroundColor: activeBackground.value }}
                 />
               )}
 
