@@ -61,42 +61,41 @@ export default function AchievementsPage() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen pt-20 pb-24">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 mb-4">
-            <Trophy className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-amber-100 mb-2">Achievements</h1>
-          <p className="text-amber-400/70">Unlock achievements by engaging with the platform</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-10"
+        >
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+            className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 mb-6 shadow-2xl shadow-amber-500/30"
+          >
+            <Trophy className="w-12 h-12 text-white drop-shadow-lg" />
+          </motion.div>
+          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-3">
+            Achievements
+          </h1>
+          <p className="text-white/60">Unlock achievements by engaging with the platform</p>
+        </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <Card className="bg-stone-800/50 border-amber-600/20">
-            <CardContent className="p-4 text-center">
-              <Trophy className="w-8 h-8 mx-auto mb-2 text-amber-400" />
-              <p className="text-2xl font-bold text-amber-100">{unlockedCount}</p>
-              <p className="text-amber-400/70 text-sm">Unlocked</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-stone-800/50 border-amber-600/20">
-            <CardContent className="p-4 text-center">
-              <Star className="w-8 h-8 mx-auto mb-2 text-amber-400" />
-              <p className="text-2xl font-bold text-amber-100">{totalPoints}</p>
-              <p className="text-amber-400/70 text-sm">Points Earned</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-stone-800/50 border-amber-600/20">
-            <CardContent className="p-4 text-center">
-              <Zap className="w-8 h-8 mx-auto mb-2 text-amber-400" />
-              <p className="text-2xl font-bold text-amber-100">
-                {achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0}%
-              </p>
-              <p className="text-amber-400/70 text-sm">Complete</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-3 gap-4 mb-10">
+          {[
+            { icon: Trophy, value: unlockedCount, label: 'Unlocked', color: 'amber' },
+            { icon: Star, value: totalPoints, label: 'Points', color: 'purple' },
+            { icon: Zap, value: `${achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0}%`, label: 'Complete', color: 'green' }
+          ].map((stat, i) => (
+            <GlassCard key={stat.label} delay={i * 0.1} glowColor={stat.color} className="text-center">
+              <stat.icon className={`w-8 h-8 mx-auto mb-2 text-${stat.color}-400`} />
+              <p className="text-3xl font-black text-white">{stat.value}</p>
+              <p className="text-white/50 text-sm">{stat.label}</p>
+            </GlassCard>
+          ))}
         </div>
 
         {/* Achievement Categories */}
