@@ -7,7 +7,7 @@ import { TrendingUp, Target, Zap, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const DEFAULT_THRESHOLDS = { bronze: 1000, silver: 2500, gold: 5000, platinum: 10000 };
-const DEFAULT_SHARES = { starter: 0.50, bronze: 0.55, silver: 0.60, gold: 0.65, platinum: 0.70 };
+const DEFAULT_SHARES = { starter: 0.50, bronze: 0.50, silver: 0.50, gold: 0.50, platinum: 0.50 };
 
 export default function CreatorPayoutOptimizer({ creatorEarningsUsd = 0 }) {
   // Fetch dynamic payout config
