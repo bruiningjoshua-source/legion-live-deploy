@@ -137,6 +137,22 @@ export default function WatchVideo() {
     }
   }, [videoId]);
 
+  // Handle autoplay navigation when video ends
+  useEffect(() => {
+    if (!videoEnded || !autoplay) return;
+    
+    // Set a short delay before auto-navigating (like YouTube)
+    autoplayTimerRef.current = setTimeout(() => {
+      // Navigation happens via RecommendedVideos onVideoSelect callback
+    }, 3000);
+    
+    return () => {
+      if (autoplayTimerRef.current) {
+        clearTimeout(autoplayTimerRef.current);
+      }
+    };
+  }, [videoEnded, autoplay]);
+
   const likeMutation = useMutation({
     mutationFn: async () => {
       const currentLikes = video.like_count || 0;
