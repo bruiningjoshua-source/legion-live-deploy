@@ -185,74 +185,93 @@ export default function TheGamingHub() {
             {/* Game Categories */}
             <GameCategoryGrid onSelectGame={setSelectedGame} selectedGame={selectedGame} />
 
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <TabsList className="bg-stone-800/50 border border-purple-500/20 p-1">
-                  <TabsTrigger value="live" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                    <Flame className="w-4 h-4 mr-2" />
-                    Live Channels
-                  </TabsTrigger>
-                  <TabsTrigger value="following" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Following
-                  </TabsTrigger>
-                </TabsList>
+            {/* Search & Filters */}
+            <GlassCard className="mb-6" padding="p-4" glowColor="purple">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400/50" />
+                  <Input
+                    placeholder="Search streams, games, creators..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50 rounded-xl"
+                  />
+                </div>
 
-                {/* Search & Sort */}
+                {/* Controls */}
                 <div className="flex gap-2">
-                  <div className="relative flex-1 md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/50" />
-                    <Input
-                      placeholder="Search streams, games..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-10 bg-stone-800/50 border-purple-500/20 text-white placeholder:text-white/40 focus:border-purple-500 rounded-lg"
-                    />
-                  </div>
-                  <Button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setSortBy(sortBy === 'viewers' ? 'recent' : 'viewers')}
-                    variant="outline"
-                    className="border-purple-500/20 text-purple-300 hover:bg-purple-500/20"
+                    className="p-3 rounded-xl bg-white/5 border border-white/10 text-purple-300 hover:bg-purple-500/20 transition-colors"
                   >
-                    {sortBy === 'viewers' ? <TrendingUp className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                  </Button>
-                  <Button
+                    {sortBy === 'viewers' ? <TrendingUp className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                    variant="outline"
-                    className="border-purple-500/20 text-purple-300 hover:bg-purple-500/20"
+                    className="p-3 rounded-xl bg-white/5 border border-white/10 text-purple-300 hover:bg-purple-500/20 transition-colors"
                   >
-                    {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
-                  </Button>
+                    {viewMode === 'grid' ? <List className="w-5 h-5" /> : <Grid className="w-5 h-5" />}
+                  </motion.button>
                 </div>
               </div>
 
               {/* Platform Filter Pills */}
-              <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
-                <button
+              <div className="flex gap-2 overflow-x-auto pt-4 scrollbar-hide">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedPlatform('All')}
-                  className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all text-sm ${
+                  className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all text-sm font-medium ${
                     selectedPlatform === 'All'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-stone-800/50 text-white/70 hover:bg-purple-500/20'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
                   }`}
                 >
                   All Platforms
-                </button>
+                </motion.button>
                 {CONSOLE_PLATFORMS.map(platform => (
-                  <button
+                  <motion.button
                     key={platform.name}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedPlatform(selectedPlatform === platform.name ? 'All' : platform.name)}
-                    className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all flex items-center gap-1.5 text-sm ${
+                    className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all flex items-center gap-2 text-sm font-medium ${
                       selectedPlatform === platform.name
-                        ? `${platform.color} text-white`
-                        : 'bg-stone-800/50 text-white/70 hover:bg-purple-500/20'
+                        ? `${platform.color} text-white shadow-lg`
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
                     }`}
                   >
                     <span>{platform.icon}</span>
                     {platform.name}
-                  </button>
+                  </motion.button>
                 ))}
+              </div>
+            </GlassCard>
+
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+              <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl mb-6">
+                <TabsList className="bg-transparent p-0 gap-1">
+                  <TabsTrigger 
+                    value="live" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+                  >
+                    <Flame className="w-4 h-4 mr-2" />
+                    Live Channels
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="following" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Following
+                  </TabsTrigger>
+                </TabsList>
               </div>
 
               {/* Content Grid */}
