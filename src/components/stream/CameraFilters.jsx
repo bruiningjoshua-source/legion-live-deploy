@@ -25,21 +25,26 @@ import {
   ZoomIn,
   Heart,
   Star,
-  Smile
+  Smile,
+  Zap,
+  Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AnimatedFilterOverlay, { ANIMATED_EFFECTS, STATIC_OVERLAYS, EDGE_EFFECTS } from './AnimatedFilterOverlay';
 
 // Snapchat/TikTok style beauty filters
 const BEAUTY_FILTERS = [
-  { id: 'none', name: 'Natural', icon: '👤', smooth: 0, brighten: 0, slim: 0 },
-  { id: 'soft', name: 'Soft Glow', icon: '✨', smooth: 20, brighten: 10, slim: 0 },
-  { id: 'beauty', name: 'Beauty', icon: '💄', smooth: 40, brighten: 15, slim: 10 },
-  { id: 'glam', name: 'Glam', icon: '💎', smooth: 50, brighten: 20, slim: 15 },
-  { id: 'flawless', name: 'Flawless', icon: '🌟', smooth: 60, brighten: 25, slim: 20 },
-  { id: 'doll', name: 'Doll Face', icon: '🎀', smooth: 70, brighten: 30, slim: 25 },
+  { id: 'none', name: 'Natural', icon: '👤', smooth: 0, brighten: 0, glow: 0 },
+  { id: 'soft', name: 'Soft Glow', icon: '✨', smooth: 15, brighten: 8, glow: 5 },
+  { id: 'beauty', name: 'Beauty', icon: '💄', smooth: 25, brighten: 12, glow: 10 },
+  { id: 'glam', name: 'Glam', icon: '💎', smooth: 35, brighten: 18, glow: 15 },
+  { id: 'flawless', name: 'Flawless', icon: '🌟', smooth: 45, brighten: 22, glow: 20 },
+  { id: 'doll', name: 'Doll Face', icon: '🎀', smooth: 55, brighten: 28, glow: 25 },
+  { id: 'porcelain', name: 'Porcelain', icon: '🪷', smooth: 60, brighten: 30, glow: 30 },
+  { id: 'angel', name: 'Angel Skin', icon: '👼', smooth: 40, brighten: 35, glow: 35 },
 ];
 
-// Color/mood filters (Instagram/TikTok style)
+// Color/mood filters (Instagram/TikTok style) - EXPANDED
 const COLOR_FILTERS = [
   { id: 'none', name: 'None', icon: '🚫', css: '' },
   { id: 'warm', name: 'Warm', icon: '☀️', css: 'sepia(0.2) saturate(1.3) hue-rotate(-10deg)' },
@@ -53,18 +58,56 @@ const COLOR_FILTERS = [
   { id: 'ocean', name: 'Ocean', icon: '🌊', css: 'hue-rotate(180deg) saturate(0.8) brightness(1.1)' },
   { id: 'sunset', name: 'Sunset', icon: '🌅', css: 'sepia(0.25) saturate(1.4) hue-rotate(-25deg)' },
   { id: 'neon', name: 'Neon', icon: '💜', css: 'saturate(2) hue-rotate(270deg) brightness(1.1)' },
+  { id: 'cyberpunk', name: 'Cyber', icon: '🤖', css: 'saturate(1.8) hue-rotate(300deg) contrast(1.2) brightness(1.05)' },
+  { id: 'dreamy', name: 'Dreamy', icon: '💭', css: 'saturate(0.8) brightness(1.15) contrast(0.9)' },
+  { id: 'film', name: 'Film', icon: '🎞️', css: 'sepia(0.15) saturate(1.1) contrast(1.05) brightness(0.98)' },
+  { id: 'fade', name: 'Fade', icon: '🌫️', css: 'saturate(0.7) brightness(1.1) contrast(0.85)' },
+  { id: 'pop', name: 'Pop', icon: '💥', css: 'saturate(1.8) contrast(1.15) brightness(1.02)' },
+  { id: 'moody', name: 'Moody', icon: '🌑', css: 'saturate(0.9) contrast(1.25) brightness(0.85)' },
+  { id: 'tropical', name: 'Tropical', icon: '🌴', css: 'saturate(1.4) hue-rotate(-5deg) brightness(1.08)' },
+  { id: 'retro', name: 'Retro', icon: '📺', css: 'sepia(0.35) saturate(1.2) hue-rotate(5deg) contrast(1.1)' },
 ];
 
-// AR-style face effects (simplified visual effects)
-const FACE_EFFECTS = [
-  { id: 'none', name: 'None', icon: '👤', overlay: null },
-  { id: 'hearts', name: 'Hearts', icon: '💕', overlay: 'hearts' },
-  { id: 'stars', name: 'Stars', icon: '⭐', overlay: 'stars' },
-  { id: 'sparkle', name: 'Sparkle', icon: '✨', overlay: 'sparkle' },
-  { id: 'crown', name: 'Crown', icon: '👑', overlay: 'crown' },
-  { id: 'angel', name: 'Angel', icon: '😇', overlay: 'angel' },
-  { id: 'fire', name: 'Fire', icon: '🔥', overlay: 'fire' },
-  { id: 'butterfly', name: 'Butterfly', icon: '🦋', overlay: 'butterfly' },
+// Animated face/screen effects
+const ANIMATED_FACE_EFFECTS = [
+  { id: 'none', name: 'None', icon: '👤', type: null },
+  { id: 'hearts', name: 'Hearts', icon: '💕', type: 'animated' },
+  { id: 'stars', name: 'Stars', icon: '⭐', type: 'animated' },
+  { id: 'sparkle', name: 'Sparkle', icon: '✨', type: 'animated' },
+  { id: 'fire', name: 'Fire', icon: '🔥', type: 'animated' },
+  { id: 'butterfly', name: 'Butterfly', icon: '🦋', type: 'animated' },
+  { id: 'snow', name: 'Snow', icon: '❄️', type: 'animated' },
+  { id: 'confetti', name: 'Confetti', icon: '🎉', type: 'animated' },
+  { id: 'bubbles', name: 'Bubbles', icon: '🫧', type: 'animated' },
+  { id: 'leaves', name: 'Leaves', icon: '🍃', type: 'animated' },
+  { id: 'money', name: 'Money', icon: '💰', type: 'animated' },
+  { id: 'magic', name: 'Magic', icon: '🪄', type: 'animated' },
+  { id: 'love', name: 'Love', icon: '💘', type: 'animated' },
+];
+
+// Static overlay accessories
+const STATIC_FACE_OVERLAYS = [
+  { id: 'none', name: 'None', icon: '👤' },
+  { id: 'crown', name: 'Crown', icon: '👑' },
+  { id: 'angel', name: 'Angel', icon: '😇' },
+  { id: 'devil', name: 'Devil', icon: '😈' },
+  { id: 'glasses', name: 'Glasses', icon: '🕶️' },
+  { id: 'cat', name: 'Cat', icon: '😺' },
+  { id: 'bunny', name: 'Bunny', icon: '🐰' },
+  { id: 'flower', name: 'Flower', icon: '🌸' },
+  { id: 'vip', name: 'VIP', icon: '💎' },
+];
+
+// Screen edge effects
+const SCREEN_EFFECTS = [
+  { id: 'none', name: 'None', icon: '🚫' },
+  { id: 'vignette', name: 'Vignette', icon: '⚫' },
+  { id: 'glow_gold', name: 'Gold Glow', icon: '✨' },
+  { id: 'glow_pink', name: 'Pink Glow', icon: '💗' },
+  { id: 'glow_blue', name: 'Blue Glow', icon: '💙' },
+  { id: 'dreamy', name: 'Dreamy', icon: '💭' },
+  { id: 'cinematic', name: 'Cinematic', icon: '🎬' },
+  { id: 'spotlight', name: 'Spotlight', icon: '🔦' },
 ];
 
 // Virtual backgrounds
@@ -77,6 +120,8 @@ const BACKGROUNDS = [
   { id: 'space', name: 'Space', preview: '🚀', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800' },
   { id: 'forest', name: 'Forest', preview: '🌲', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800' },
   { id: 'studio', name: 'Studio', preview: '🎬', url: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800' },
+  { id: 'mansion', name: 'Mansion', preview: '🏰', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800' },
+  { id: 'gaming', name: 'Gaming', preview: '🎮', url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800' },
 ];
 
 export default function CameraFilters({ 
