@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
-const SHIELD_MENU_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/b4560200c_Picsart_26-01-30_05-32-02-390.jpg';
+const SHIELD_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/0d561d144_1116385303_schild_roemerschild_shield_romans_medieval_spielzeug_toyYS3fLF686jeZI_600x600.jpg';
 
 const QUICK_ACTIONS = [
   { id: 'live', label: 'Live Now', sublabel: '2.4K watching', icon: Radio, page: 'Explore', gradient: 'from-red-500 to-rose-600' },
@@ -193,23 +193,85 @@ export default function LoadingScreen({ onComplete }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              {/* Roman Shield Menu Image */}
+              {/* Roman Shield with Buttons */}
               <motion.div
-                className="relative w-[280px] sm:w-[340px] mb-6"
+                className="relative w-[240px] sm:w-[280px] mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               >
-                <Link to={createPageUrl('Explore')} onClick={handleEnter}>
-                  <motion.img 
-                    src={SHIELD_MENU_IMAGE} 
-                    alt="Shield Menu"
-                    className="w-full h-auto cursor-pointer"
-                    style={{ filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.7))' }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  />
-                </Link>
+                {/* Shield Background Image */}
+                <img 
+                  src={SHIELD_IMAGE} 
+                  alt="Roman Shield"
+                  className="w-full h-auto"
+                  style={{ filter: 'drop-shadow(0 15px 40px rgba(0,0,0,0.6))' }}
+                />
+                
+                {/* Buttons Overlay - positioned over shield */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  {/* Top Row - Live Now & Videos */}
+                  <div className="flex gap-6 sm:gap-8 mb-2">
+                    {[QUICK_ACTIONS[0], QUICK_ACTIONS[1]].map((item, index) => {
+                      const Icon = item.icon;
+                      return (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
+                        >
+                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="flex flex-col items-center"
+                            >
+                              <div 
+                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                              >
+                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                              </div>
+                              <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
+                            </motion.div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Bottom Row - Gaming & Shop */}
+                  <div className="flex gap-6 sm:gap-8 mt-2">
+                    {[QUICK_ACTIONS[2], QUICK_ACTIONS[3]].map((item, index) => {
+                      const Icon = item.icon;
+                      return (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 + index * 0.1, type: 'spring' }}
+                        >
+                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="flex flex-col items-center"
+                            >
+                              <div 
+                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                              >
+                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                              </div>
+                              <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
+                            </motion.div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
               </motion.div>
 
               {/* Main CTA */}
