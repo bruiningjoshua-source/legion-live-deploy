@@ -18,8 +18,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const appId = '497c36af191647579fb65a825dd22b42';
+    const appId = Deno.env.get('AGORA_APP_ID');
     const appCertificate = Deno.env.get('AGORA_APP_CERTIFICATE');
+
+    if (!appId) {
+      console.error('AGORA_APP_ID not configured');
+      return Response.json({ error: 'Agora not configured' }, { status: 500 });
+    }
 
     // If no certificate, return empty token (works for testing)
     if (!appCertificate) {
@@ -43,7 +48,7 @@ Deno.serve(async (req) => {
     );
 
     console.log('Token generated successfully for channel:', channelName);
-    return Response.json({ token, uid });
+    return Response.json({ token, uid, appId });
 
   } catch (error) {
     console.error('Token generation error:', error.message, error.stack);

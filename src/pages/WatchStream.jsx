@@ -350,23 +350,19 @@ export default function WatchStream() {
     const initAgoraViewer = async () => {
       if (stream?.status === 'live' && user?.email !== creator?.user_email) {
         try {
-          const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42'; // Public App ID
-          await AgoraService.initialize(AGORA_APP_ID);
-
-          // Get Agora token for viewer (optional for testing)
-          let token = '';
+          // Get Agora token for viewer
           let viewerUid = Math.floor(Math.random() * 1000000);
-          try {
-            const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
-              channelName: streamId,
-              uid: viewerUid,
-              role: 'audience'
-            });
-            token = tokenResponse.data.token;
-            viewerUid = tokenResponse.data.uid;
-          } catch (error) {
-            console.log('Token generation skipped:', error.message);
-          }
+          const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
+            channelName: streamId,
+            uid: viewerUid,
+            role: 'audience'
+          });
+          
+          const AGORA_APP_ID = tokenResponse.data.appId || '497c36af191647579fb65a825dd22b42';
+          await AgoraService.initialize(AGORA_APP_ID);
+          
+          const token = tokenResponse.data.token || '';
+          viewerUid = tokenResponse.data.uid || viewerUid;
 
           // Join channel as viewer
           await AgoraService.joinChannel(token, streamId, viewerUid);
