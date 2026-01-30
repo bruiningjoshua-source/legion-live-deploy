@@ -181,53 +181,118 @@ export default function LoadingScreen({ onComplete }) {
         )}
       </AnimatePresence>
 
-      {/* Bottom section - Menu or Loading */}
+      {/* Bottom section - Roman Shield Menu or Loading */}
       <div className="absolute bottom-0 left-0 right-0 z-30">
         <AnimatePresence mode="wait">
           {phase >= 4 ? (
             <motion.div
               key="menu"
-              className="px-4 pb-10 sm:pb-12"
+              className="px-4 pb-8 sm:pb-10 flex flex-col items-center"
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              {/* Quick action grid */}
-              <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto mb-5">
-                {QUICK_ACTIONS.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + index * 0.08 }}
-                    >
-                      <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+              {/* Roman Shield Container */}
+              <motion.div
+                className="relative w-[280px] sm:w-[320px] aspect-[3/4] mb-6"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+              >
+                {/* Shield Background */}
+                <div 
+                  className="absolute inset-0 rounded-[40px] overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(180deg, #8B0000 0%, #B22222 30%, #8B0000 70%, #5C1010 100%)',
+                    boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), 0 10px 40px rgba(0,0,0,0.6)',
+                    border: '4px solid #DAA520'
+                  }}
+                >
+                  {/* Gold Cross Pattern */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {/* Vertical gold bar */}
+                    <div 
+                      className="absolute top-4 bottom-4 w-3 sm:w-4"
+                      style={{ background: 'linear-gradient(90deg, #B8860B, #FFD700, #B8860B)' }}
+                    />
+                    {/* Horizontal gold bar */}
+                    <div 
+                      className="absolute left-4 right-4 h-3 sm:h-4"
+                      style={{ background: 'linear-gradient(180deg, #B8860B, #FFD700, #B8860B)' }}
+                    />
+                  </div>
+
+                  {/* Wing decorations - top corners */}
+                  <div className="absolute top-6 left-4 right-4 flex justify-between">
+                    <div className="text-amber-400/80 text-2xl">🦅</div>
+                    <div className="text-amber-400/80 text-2xl transform scale-x-[-1]">🦅</div>
+                  </div>
+
+                  {/* Wing decorations - bottom corners */}
+                  <div className="absolute bottom-6 left-4 right-4 flex justify-between">
+                    <div className="text-amber-400/80 text-2xl rotate-180">🦅</div>
+                    <div className="text-amber-400/80 text-2xl rotate-180 transform scale-x-[-1]">🦅</div>
+                  </div>
+
+                  {/* Center Shield Boss (metal circle) */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 z-20">
+                    <div 
+                      className="w-full h-full rounded-full"
+                      style={{
+                        background: 'radial-gradient(ellipse at 30% 30%, #e8e8e8 0%, #a8a8a8 30%, #707070 60%, #505050 100%)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3)',
+                        border: '3px solid #DAA520'
+                      }}
+                    />
+                  </div>
+
+                  {/* Quick Action Buttons in 2x2 Grid */}
+                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-3 p-6 sm:p-8">
+                    {QUICK_ACTIONS.map((item, index) => {
+                      const Icon = item.icon;
+                      const positions = [
+                        'justify-end items-end pr-4 pb-2',    // Top-left: push to center
+                        'justify-start items-end pl-4 pb-2',  // Top-right: push to center
+                        'justify-end items-start pr-4 pt-2',  // Bottom-left: push to center
+                        'justify-start items-start pl-4 pt-2' // Bottom-right: push to center
+                      ];
+                      return (
                         <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors"
+                          key={item.id}
+                          className={`flex ${positions[index]}`}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
                         >
-                          <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-2 shadow-lg`}>
-                            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                          </div>
-                          <span className="text-white text-xs sm:text-sm font-semibold">{item.label}</span>
-                          <span className="text-white/40 text-[10px] hidden sm:block">{item.sublabel}</span>
+                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="flex flex-col items-center"
+                            >
+                              <div 
+                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-xl`}
+                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                              >
+                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                              </div>
+                              <span className="text-white text-xs sm:text-sm font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
+                            </motion.div>
+                          </Link>
                         </motion.div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
 
               {/* Main CTA */}
               <motion.button
                 onClick={handleEnter}
-                className="w-full max-w-md mx-auto block"
+                className="w-full max-w-sm mx-auto block"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.5 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -238,31 +303,12 @@ export default function LoadingScreen({ onComplete }) {
                     animate={{ x: ['-100%', '100%'] }}
                     transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                   />
-                  <div className="relative flex items-center justify-center gap-3 py-4 font-bold text-white text-base sm:text-lg">
+                  <div className="relative flex items-center justify-center gap-3 py-3.5 font-bold text-white text-base">
                     <Play className="w-5 h-5 fill-current" />
                     Start Watching
-                    <Zap className="w-4 h-4" />
                   </div>
                 </div>
               </motion.button>
-
-              {/* Bottom links */}
-              <motion.div
-                className="flex justify-center gap-6 mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Link to={createPageUrl('GoLive')} onClick={handleEnter} className="text-white/50 hover:text-white text-sm flex items-center gap-1">
-                  <Radio className="w-3 h-3" /> Go Live
-                </Link>
-                <Link to={createPageUrl('Leaderboard')} onClick={handleEnter} className="text-white/50 hover:text-white text-sm flex items-center gap-1">
-                  <Trophy className="w-3 h-3" /> Leaderboard
-                </Link>
-                <Link to={createPageUrl('Profile')} onClick={handleEnter} className="text-white/50 hover:text-white text-sm flex items-center gap-1">
-                  <Crown className="w-3 h-3" /> Profile
-                </Link>
-              </motion.div>
             </motion.div>
           ) : (
             <motion.div
