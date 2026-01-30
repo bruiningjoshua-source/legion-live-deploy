@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Navbar({ user, wallet }) {
+export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -63,11 +63,19 @@ export default function Navbar({ user, wallet }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-stone-950 via-stone-900/95 to-transparent border-b border-amber-600/20 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-          <div className="text-2xl">🏛️</div>
-          <span className="font-bold text-amber-100 text-lg hidden sm:inline">Legion Live</span>
-        </Link>
+        {/* Logo + Shield Menu Toggle */}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={onOpenShieldMenu}
+            className="text-2xl hover:scale-110 transition-transform cursor-pointer"
+            title="Open Shield Menu"
+          >
+            🛡️
+          </button>
+          <Link to={createPageUrl('Home')} className="flex items-center gap-2">
+            <span className="font-bold text-amber-100 text-lg hidden sm:inline">Legion Live</span>
+          </Link>
+        </div>
 
         {/* Desktop Nav - Main Platforms */}
         <div className="hidden lg:flex items-center gap-1">
