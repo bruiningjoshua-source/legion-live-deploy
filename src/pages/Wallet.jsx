@@ -107,81 +107,102 @@ export default function Wallet() {
   const vipColors = ['stone', 'amber', 'gray', 'amber', 'cyan', 'purple', 'red', 'pink', 'blue', 'orange', 'yellow'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen pt-20 pb-24">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Treasury</h1>
-          <p className="text-amber-400/70">Manage your Roman fortune</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2">
+            Treasury
+          </h1>
+          <p className="text-white/60">Manage your Roman fortune</p>
+        </motion.div>
 
         {/* Balance Card */}
-        <Card className="bg-gradient-to-br from-amber-900/40 to-stone-900 border-amber-600/30 mb-8 overflow-hidden relative">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,_rgba(251,191,36,0.3),_transparent)]" />
-          </div>
-          
-          <CardContent className="relative p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Coins className="w-5 h-5 text-amber-400" />
-                  <p className="text-amber-300/70 text-sm">Total Balance</p>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl">🪙</span>
-                  <span className="text-4xl md:text-5xl font-bold text-amber-100">
-                    {(wallet?.denarii_balance || 0).toLocaleString()}
-                  </span>
-                  <span className="text-amber-300/70">Denarii</span>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <GlassCard className="mb-8 relative overflow-hidden" padding="p-0" glow glowColor="amber">
+            {/* Background decoration */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="relative p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Coins className="w-5 h-5 text-amber-400" />
+                    <p className="text-white/50 text-sm font-medium">Total Balance</p>
+                  </div>
+                  <div className="flex items-baseline gap-3">
+                    <motion.span 
+                      className="text-5xl"
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
+                      🪙
+                    </motion.span>
+                    <span className="text-5xl md:text-6xl font-black text-white">
+                      {(wallet?.denarii_balance || 0).toLocaleString()}
+                    </span>
+                    <span className="text-white/50 font-medium">Denarii</span>
+                  </div>
+
+                  {/* Secondary currencies */}
+                  <div className="flex items-center gap-3 mt-5">
+                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10">
+                      <span>🥈</span>
+                      <span className="text-white/80 font-medium">{wallet?.sestertii_balance || 0}</span>
+                      <span className="text-white/40 text-sm">Sestertii</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10">
+                      <span>🥉</span>
+                      <span className="text-white/80 font-medium">{wallet?.as_balance || 0}</span>
+                      <span className="text-white/40 text-sm">As</span>
+                    </div>
+                  </div>
+
+                  {/* Conversion info */}
+                  <p className="text-white/30 text-xs mt-4">
+                    Total value: {((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0)).toLocaleString()} As
+                  </p>
                 </div>
 
-                {/* Secondary currencies */}
-                <div className="flex items-center gap-4 mt-4 text-sm">
-                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg px-3 py-1">
-                    <span>🥈</span>
-                    <span className="text-amber-200">{wallet?.sestertii_balance || 0} Sestertii</span>
+                {/* VIP Level */}
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 min-w-[220px]">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                      <Crown className="w-7 h-7 text-white drop-shadow-lg" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-xl">{vipNames[vipLevel]}</p>
+                      <p className="text-white/40 text-xs">VIP Level {vipLevel}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg px-3 py-1">
-                    <span>🥉</span>
-                    <span className="text-amber-200/70">{wallet?.as_balance || 0} As</span>
+                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ 
+                        width: `${Math.min(((wallet?.total_spent || 0) - vipLevelThresholds[vipLevel]) / 
+                          (vipLevelThresholds[vipLevel + 1] - vipLevelThresholds[vipLevel]) * 100, 100)}%` 
+                      }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                    />
                   </div>
+                  <p className="text-white/40 text-xs mt-3">
+                    ${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to {vipNames[vipLevel + 1] || 'max'}
+                  </p>
                 </div>
-
-                {/* Conversion info */}
-                <p className="text-amber-400/50 text-xs mt-3">
-                  Total value: {((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0)).toLocaleString()} As
-                </p>
-              </div>
-
-              {/* VIP Level */}
-              <div className="bg-stone-800/50 rounded-2xl p-4 border border-amber-600/20 min-w-[200px]">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
-                    <Crown className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-amber-100 font-bold text-lg">{vipNames[vipLevel]}</p>
-                    <p className="text-amber-400/60 text-xs">VIP Level {vipLevel}</p>
-                  </div>
-                </div>
-                <div className="w-full bg-stone-700 rounded-full h-2 mt-3">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ 
-                      width: `${Math.min(((wallet?.total_spent || 0) - vipLevelThresholds[vipLevel]) / 
-                        (vipLevelThresholds[vipLevel + 1] - vipLevelThresholds[vipLevel]) * 100, 100)}%` 
-                    }}
-                    className="bg-gradient-to-r from-amber-500 to-amber-400 h-2 rounded-full"
-                  />
-                </div>
-                <p className="text-amber-400/60 text-xs mt-2">
-                  ${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to {vipNames[vipLevel + 1] || 'max'}
-                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </GlassCard>
+        </motion.div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
