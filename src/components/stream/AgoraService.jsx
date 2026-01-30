@@ -42,14 +42,21 @@ class AgoraStreamingService {
     }
   }
 
-  async joinChannel(token, channelName, uid) {
+  async joinChannel(token, channelName, uid, role = 'host') {
     try {
       if (!this.client) {
         throw new Error('Agora client not initialized');
       }
+      if (!this.appId) {
+        throw new Error('Agora App ID not set');
+      }
 
-      await this.client.join(token, channelName, uid);
-      console.log(`Joined channel ${channelName} as user ${uid}`);
+      // Set client role for live streaming
+      await this.client.setClientRole(role === 'host' ? 'host' : 'audience');
+      
+      // Join with appId, channel, token, and uid
+      await this.client.join(this.appId, channelName, token || null, uid);
+      console.log(`Joined channel ${channelName} as ${role} with uid ${uid}`);
       return true;
     } catch (error) {
       console.error('Failed to join channel:', error);
