@@ -410,9 +410,9 @@ export default function CreatorSuccessProgram() {
                           </td>
                           <td className="py-4 px-4">
                             <Badge className={
-                              row.monthly >= 3000 ? 'bg-purple-600' :
-                              row.monthly >= 1000 ? 'bg-yellow-600' :
-                              row.monthly >= 300 ? 'bg-slate-500' :
+                              row.monthly >= 1500 ? 'bg-purple-600' :
+                              row.monthly >= 500 ? 'bg-yellow-600' :
+                              row.monthly >= 150 ? 'bg-slate-500' :
                               'bg-stone-600'
                             }>
                               {row.yearly >= 50000 ? 'Full-Time' :
