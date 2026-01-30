@@ -227,7 +227,11 @@ export default function WatchStream() {
         throw new Error('Please sign in to send gifts');
       }
       
-      const totalCost = gift.cost_as * quantity;
+      const totalCost = (gift.cost_denarii || gift.cost_as || 0) * quantity;
+      
+      if (totalCost > (wallet.denarii_balance || 0)) {
+        throw new Error('Insufficient balance. Please top up your wallet.');
+      }
       
       // Create transaction
       await base44.entities.GiftTransaction.create({
@@ -241,21 +245,15 @@ export default function WatchStream() {
         is_pk_gift: stream.stream_type === 'pk_battle'
       });
 
-      // Update wallet - deduct in real-time
-      const currentAs = (wallet.denarii_balance * 100) + (wallet.as_balance || 0);
-      const newAs = currentAs - totalCost;
-      const newDenarii = Math.floor(newAs / 100);
-      const remainingAs = newAs % 100;
-
+      // Update wallet - deduct denarii directly
       await base44.entities.Wallet.update(wallet.id, {
-        denarii_balance: newDenarii,
-        as_balance: remainingAs
+        denarii_balance: (wallet.denarii_balance || 0) - totalCost
       });
 
-      // Creator earnings: Convert As to Denarii (85% after 15% platform fee)
+      // Creator earnings: 85% after 15% platform fee
       const platformFee = totalCost * 0.15;
       const creatorEarning = totalCost - platformFee;
-      const earningInDenarii = Math.floor(creatorEarning / 100); // Convert As to Denarii
+      const earningInDenarii = Math.floor(creatorEarning);
 
       // Update creator earnings
       await base44.entities.Creator.update(creator.id, {
@@ -423,7 +421,7 @@ export default function WatchStream() {
     }
   });
 
-  const totalAsBalance = (wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0);
+  const walletBalance = wallet?.denarii_balance || 0;
 
   // Initialize Agora for viewers
   React.useEffect(() => {
@@ -896,7 +894,7 @@ export default function WatchStream() {
           >
             <GiftPanel 
               gifts={gifts}
-              walletBalance={totalAsBalance}
+              walletBalance={walletBalance}
               onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
               onClose={() => setShowGiftPanel(false)}
             />
