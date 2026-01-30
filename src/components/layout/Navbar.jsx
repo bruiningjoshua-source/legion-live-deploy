@@ -173,7 +173,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     <Radio className="w-4 h-4 mr-2 text-red-400" />
                     Live Streaming
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('GoLive')} className="cursor-pointer">
                         <Radio className="w-4 h-4 mr-2" />
@@ -207,7 +207,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     <Film className="w-4 h-4 mr-2 text-blue-400" />
                     Video Platform
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('TheAmphitheatre')} className="cursor-pointer">
                         <Film className="w-4 h-4 mr-2" />
@@ -265,7 +265,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     <Users className="w-4 h-4 mr-2 text-cyan-400" />
                     Community
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('CommunityForums')} className="cursor-pointer">
                         <MessageSquare className="w-4 h-4 mr-2" />
@@ -293,7 +293,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     <Gamepad2 className="w-4 h-4 mr-2 text-purple-400" />
                     Gaming Hub
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('TheGamingHub')} className="cursor-pointer">
                         <Gamepad2 className="w-4 h-4 mr-2" />
@@ -315,7 +315,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     <ShoppingBag className="w-4 h-4 mr-2 text-green-400" />
                     Affiliate Hub
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('AffiliateHub')} className="cursor-pointer">
                         <Megaphone className="w-4 h-4 mr-2" />
@@ -362,7 +362,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                         <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
                       </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20">
+                      <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
                         <DropdownMenuItem asChild>
                           <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer">
                             Admin Dashboard
