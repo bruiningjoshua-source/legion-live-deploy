@@ -469,8 +469,19 @@ export default function CreatorSuccessProgram() {
                     The 30/30 Goal (Your First Milestone)
                   </h4>
                   <p className="text-amber-200/80 text-sm">
-                    <strong className="text-amber-100">30 supporters</strong> spending <strong className="text-amber-100">$20/month</strong> = <strong className="text-green-400">$300/month</strong> in your pocket.
-                    This is your first realistic target — achievable in 3-6 months with consistent streaming and bringing your existing audience.
+                    <strong className="text-amber-100">30 loyal supporters</strong> spending <strong className="text-amber-100">$30/month</strong> = <strong className="text-green-400">$450/month</strong> in your pocket ($900 gross, 50% to you).
+                    This is your first realistic target — achievable in 3-6 months with consistent streaming.
+                  </p>
+                </div>
+
+                <div className="mt-4 p-4 bg-purple-900/20 rounded-xl border border-purple-500/30">
+                  <h4 className="text-purple-100 font-medium mb-2 flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-purple-400" />
+                    Platform Revenue Example
+                  </h4>
+                  <p className="text-purple-200/80 text-sm">
+                    <strong className="text-purple-100">50 creators</strong> × <strong className="text-purple-100">30 supporters each</strong> × <strong className="text-purple-100">$30/month</strong> = <strong className="text-green-400">$45,000/month gross</strong>.
+                    With 50/50 split: $22,500 to creators, $22,500 to platform. Everyone wins.
                   </p>
                 </div>
               </CardContent>
