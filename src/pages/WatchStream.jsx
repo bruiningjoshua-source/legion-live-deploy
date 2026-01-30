@@ -53,8 +53,7 @@ import EnhancedChat from '@/components/chat/EnhancedChat';
 import AIModerationBadge from '@/components/moderation/AIModerationBadge';
 import BigoActionBar from '@/components/stream/BigoActionBar';
 import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
-import CameraFilters from '@/components/stream/CameraFilters';
-import AnimatedFilterOverlay from '@/components/stream/AnimatedFilterOverlay';
+import SnapchatLensFilters from '@/components/stream/SnapchatLensFilters';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
