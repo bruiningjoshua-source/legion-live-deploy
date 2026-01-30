@@ -100,18 +100,31 @@ export default function AchievementsPage() {
 
         {/* Achievement Categories */}
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="w-full bg-stone-800/50 mb-6 flex-wrap h-auto">
-            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-            {categories.map(cat => {
-              const Icon = categoryIcons[cat];
-              return (
-                <TabsTrigger key={cat} value={cat} className="flex-1 capitalize gap-1">
-                  <Icon className="w-3 h-3" />
-                  {cat}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl overflow-x-auto">
+              <TabsList className="bg-transparent p-0 gap-1 flex-nowrap">
+                <TabsTrigger 
+                  value="all" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap"
+                >
+                  All
                 </TabsTrigger>
-              );
-            })}
-          </TabsList>
+                {categories.map(cat => {
+                  const Icon = categoryIcons[cat];
+                  return (
+                    <TabsTrigger 
+                      key={cat} 
+                      value={cat} 
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 capitalize gap-1.5 whitespace-nowrap"
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {cat}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </div>
+          </div>
 
           {['all', ...categories].map(category => (
             <TabsContent key={category} value={category}>
@@ -128,52 +141,64 @@ export default function AchievementsPage() {
                         key={achievement.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
                       >
-                        <Card className={`relative overflow-hidden transition-all ${
-                          isUnlocked 
-                            ? `bg-stone-800/80 ${rarityBorders[achievement.rarity]}` 
-                            : 'bg-stone-900/50 border-stone-700/30 opacity-70'
-                        }`}>
+                        <GlassCard 
+                          padding="p-0" 
+                          animate={false}
+                          hover={isUnlocked}
+                          className={`relative overflow-hidden ${
+                            isUnlocked ? '' : 'opacity-60 grayscale-[30%]'
+                          }`}
+                        >
                           {/* Rarity gradient bar */}
-                          <div className={`h-1 bg-gradient-to-r ${rarityColors[achievement.rarity]}`} />
+                          <div className={`h-1.5 bg-gradient-to-r ${rarityColors[achievement.rarity]}`} />
                           
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                              <div className={`p-3 rounded-xl ${
-                                isUnlocked 
-                                  ? `bg-gradient-to-br ${rarityColors[achievement.rarity]}`
-                                  : 'bg-stone-800'
-                              }`}>
+                          <div className="p-5">
+                            <div className="flex items-start gap-4">
+                              <motion.div 
+                                whileHover={isUnlocked ? { scale: 1.1, rotate: 5 } : {}}
+                                className={`relative p-4 rounded-2xl ${
+                                  isUnlocked 
+                                    ? `bg-gradient-to-br ${rarityColors[achievement.rarity]} shadow-lg`
+                                    : 'bg-white/5'
+                                }`}
+                              >
                                 {isUnlocked ? (
-                                  <span className="text-2xl">{achievement.icon || '🏆'}</span>
+                                  <span className="text-3xl drop-shadow-lg">{achievement.icon || '🏆'}</span>
                                 ) : (
-                                  <Lock className="w-6 h-6 text-stone-500" />
+                                  <Lock className="w-7 h-7 text-white/30" />
                                 )}
-                              </div>
-                              <div className="flex-1">
-                                <h3 className={`font-semibold ${isUnlocked ? 'text-amber-100' : 'text-stone-500'}`}>
+                                
+                                {/* Sparkle effect for unlocked */}
+                                {isUnlocked && (
+                                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-white animate-pulse" />
+                                )}
+                              </motion.div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className={`font-semibold text-lg ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
                                   {achievement.name}
                                 </h3>
-                                <p className={`text-sm mt-1 ${isUnlocked ? 'text-amber-400/70' : 'text-stone-600'}`}>
+                                <p className={`text-sm mt-1 line-clamp-2 ${isUnlocked ? 'text-white/60' : 'text-white/30'}`}>
                                   {achievement.description}
                                 </p>
                               </div>
                             </div>
 
                             <div className="mt-4 flex items-center justify-between">
-                              <Badge className={`capitalize ${
+                              <Badge className={`capitalize text-xs font-bold ${
                                 isUnlocked 
-                                  ? `bg-gradient-to-r ${rarityColors[achievement.rarity]} text-white`
-                                  : 'bg-stone-800 text-stone-500'
+                                  ? `bg-gradient-to-r ${rarityColors[achievement.rarity]} text-white border-0`
+                                  : 'bg-white/5 text-white/40 border-white/10'
                               }`}>
                                 {achievement.rarity}
                               </Badge>
                               {achievement.points_reward > 0 && (
-                                <span className={`text-sm flex items-center gap-1 ${
-                                  isUnlocked ? 'text-amber-400' : 'text-stone-600'
+                                <span className={`text-sm flex items-center gap-1.5 font-medium ${
+                                  isUnlocked ? 'text-amber-400' : 'text-white/30'
                                 }`}>
-                                  <Star className="w-3 h-3" />
+                                  <Star className="w-4 h-4" />
                                   {achievement.points_reward} pts
                                 </span>
                               )}
@@ -181,30 +206,43 @@ export default function AchievementsPage() {
 
                             {/* Progress bar for in-progress achievements */}
                             {!isUnlocked && achievement.requirement_value && (
-                              <div className="mt-3">
-                                <div className="flex justify-between text-xs text-stone-500 mb-1">
+                              <div className="mt-4">
+                                <div className="flex justify-between text-xs text-white/40 mb-1.5">
                                   <span>Progress</span>
-                                  <span>{progress} / {achievement.requirement_value}</span>
+                                  <span className="font-medium">{progress} / {achievement.requirement_value}</span>
                                 </div>
-                                <Progress 
-                                  value={(progress / achievement.requirement_value) * 100} 
-                                  className="h-1.5 bg-stone-800"
-                                />
+                                <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+                                  <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(progress / achievement.requirement_value) * 100}%` }}
+                                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                                    className={`h-full bg-gradient-to-r ${rarityColors[achievement.rarity]} rounded-full`}
+                                  />
+                                </div>
                               </div>
                             )}
 
                             {/* Unlock date */}
                             {isUnlocked && userAchievement?.unlocked_at && (
-                              <p className="text-amber-400/50 text-xs mt-3">
+                              <p className="text-white/30 text-xs mt-4 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3" />
                                 Unlocked {format(new Date(userAchievement.unlocked_at), 'MMM d, yyyy')}
                               </p>
                             )}
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </GlassCard>
                       </motion.div>
                     );
                   })}
               </div>
+              
+              {achievements.filter(a => category === 'all' || a.category === category).length === 0 && (
+                <GlassCard className="text-center py-16">
+                  <Trophy className="w-16 h-16 text-amber-500/20 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold text-lg mb-2">No Achievements Yet</h3>
+                  <p className="text-white/50">Start engaging with the platform to unlock achievements!</p>
+                </GlassCard>
+              )}
             </TabsContent>
           ))}
         </Tabs>
