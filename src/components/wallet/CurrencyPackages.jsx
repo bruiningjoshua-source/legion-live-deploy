@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { motion } from 'framer-motion';
-import { Sparkles, Crown, Star, Zap, Shield, Check, Gift, TrendingUp, Lock } from 'lucide-react';
+import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2 } from 'lucide-react';
+import GlassCard from '@/components/shared/GlassCard';
 
 // Denarii Crypto Trajectory: Current baseline $0.001/Denarii, targeting $0.01 in 6 months
 // Early adopters get maximum value before crypto launch
