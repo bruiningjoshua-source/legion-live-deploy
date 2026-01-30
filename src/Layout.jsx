@@ -9,7 +9,7 @@ import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
-import ThemeCustomizer from '@/components/settings/ThemeCustomizer';
+import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
@@ -118,13 +118,14 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Theme Customizer - Fixed position */}
             <div className="fixed bottom-24 right-4 z-40">
-              <ThemeCustomizer
+              <AdvancedThemeCustomizer
                 currentTheme={currentTheme}
                 onThemeChange={setCurrentTheme}
                 particleIntensity={particleIntensity}
                 onParticleChange={setParticleIntensity}
                 animatedBg={animatedBg}
                 onAnimatedBgChange={setAnimatedBg}
+                user={user}
               />
             </div>
 

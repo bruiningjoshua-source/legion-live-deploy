@@ -55,6 +55,7 @@ import CameraFilters from '@/components/stream/CameraFilters';
 import AnimatedFilterOverlay from '@/components/stream/AnimatedFilterOverlay';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
+import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 
@@ -635,27 +636,31 @@ export default function WatchStream() {
           Your browser does not support video playback.
         </video>
         
-        {/* Multi-Panel Layout - 4 Square Grid */}
+        {/* Multi-Panel Layout - Discord Style */}
         {stream.stream_type === 'multi_panel' && (
-          <div className="absolute inset-0">
-            <MultiPanelGrid 
+          <div className="absolute inset-0 z-10">
+            <DiscordStylePanel 
               hostStream={stream}
               hostCreator={creator}
               currentUser={user}
               panelParticipants={panelParticipants}
-              onInviteToPanel={(seatId, participant) => {
-                setPanelParticipants(prev => [...prev, participant]);
+              onInviteToPanel={(participant) => {
+                setPanelParticipants(prev => [...prev, participant || user]);
               }}
-              onRemoveFromPanel={(seatId) => {
-                // Handle removal
+              onRemoveFromPanel={(participant) => {
+                setPanelParticipants(prev => prev.filter(p => p.user_email !== participant?.user_email));
               }}
-              onMuteAudio={(seatId, participant) => {
-                console.log('Mute audio for seat:', seatId);
+              onMuteAudio={(participant) => {
+                console.log('Mute audio for:', participant?.display_name);
               }}
-              onEndCamera={(seatId, participant) => {
-                console.log('End camera for seat:', seatId);
+              onEndCamera={(participant) => {
+                console.log('End camera for:', participant?.display_name);
+              }}
+              onLeaveCall={() => {
+                window.location.href = createPageUrl('Explore');
               }}
               isHost={user?.email === creator?.user_email}
+              maxParticipants={8}
             />
           </div>
         )}
