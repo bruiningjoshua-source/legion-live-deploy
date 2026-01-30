@@ -1,13 +1,13 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Star, Lock, Eye, Gift, Users, Video, MessageSquare, Heart, Zap } from 'lucide-react';
+import { Trophy, Star, Lock, Eye, Users, Video, Zap, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import GlassCard from '@/components/shared/GlassCard';
 
 export default function AchievementsPage() {
   const { data: user } = useQuery({
