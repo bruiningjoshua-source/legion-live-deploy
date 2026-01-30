@@ -166,11 +166,13 @@ const growthStrategies = [
   }
 ];
 
+// Based on industry research: loyal supporters spend $25-35/month on average across platforms
+// Casual: $5-15, Regular/Loyal: $20-40, Super fans: $50-100+, Whales: $200-1000+
 const earningsCalculator = [
-  { supporters: 10, avgSpend: 10, monthly: 50, yearly: 600 },
-  { supporters: 20, avgSpend: 15, monthly: 150, yearly: 1800 },
-  { supporters: 30, avgSpend: 20, monthly: 300, yearly: 3600 },
-  { supporters: 50, avgSpend: 25, monthly: 625, yearly: 7500 },
+  { supporters: 10, avgSpend: 30, monthly: 150, yearly: 1800 },
+  { supporters: 20, avgSpend: 30, monthly: 300, yearly: 3600 },
+  { supporters: 30, avgSpend: 30, monthly: 450, yearly: 5400 },
+  { supporters: 50, avgSpend: 30, monthly: 750, yearly: 9000 },
   { supporters: 75, avgSpend: 30, monthly: 1125, yearly: 13500 },
   { supporters: 100, avgSpend: 30, monthly: 1500, yearly: 18000 }
 ];
