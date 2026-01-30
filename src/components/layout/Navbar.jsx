@@ -250,6 +250,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                         Clips
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('Playlists')} className="cursor-pointer">
+                        <Music className="w-4 h-4 mr-2" />
+                        Playlists
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
