@@ -129,13 +129,16 @@ export default function CameraFilters({
   onFilterChange,
   onMirrorChange,
   onBackgroundChange,
+  onOverlayChange,
   initialMirror = true 
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [mirrorEnabled, setMirrorEnabled] = useState(initialMirror);
   const [beautyFilter, setBeautyFilter] = useState('none');
   const [colorFilter, setColorFilter] = useState('none');
-  const [faceEffect, setFaceEffect] = useState('none');
+  const [animatedEffect, setAnimatedEffect] = useState('none');
+  const [staticOverlay, setStaticOverlay] = useState('none');
+  const [screenEffect, setScreenEffect] = useState('none');
   const [background, setBackground] = useState('none');
   const [customBgUrl, setCustomBgUrl] = useState(null);
   
@@ -148,8 +151,8 @@ export default function CameraFilters({
   
   // Beauty adjustments
   const [smoothSkin, setSmoothSkin] = useState(0);
-  const [eyeEnhance, setEyeEnhance] = useState(0);
-  const [faceSlim, setFaceSlim] = useState(0);
+  const [glowIntensity, setGlowIntensity] = useState(0);
+  const [effectIntensity, setEffectIntensity] = useState(100);
 
   const fileInputRef = useRef(null);
 
@@ -176,17 +179,26 @@ export default function CameraFilters({
       filterStr += `hue-rotate(${warmth}deg) `;
     }
     
-    // Beauty filter - blur for skin smoothing effect
+    // Beauty filter - smooth skin with subtle blur + glow
     const beautyPreset = BEAUTY_FILTERS.find(f => f.id === beautyFilter);
     if (beautyPreset && beautyPreset.smooth > 0) {
-      // Simulate smooth skin with slight blur
-      filterStr += `blur(${beautyPreset.smooth * 0.01}px) `;
-      filterStr += `brightness(${100 + beautyPreset.brighten}%) `;
+      // Simulate smooth skin with slight blur (reduced for better quality)
+      filterStr += `blur(${beautyPreset.smooth * 0.008}px) `;
+      filterStr += `brightness(${100 + beautyPreset.brighten * 0.5}%) `;
+      // Add subtle glow effect
+      if (beautyPreset.glow > 0) {
+        filterStr += `drop-shadow(0 0 ${beautyPreset.glow * 0.2}px rgba(255,255,255,0.3)) `;
+      }
     }
     
     // Additional manual beauty adjustments
     if (smoothSkin > 0) {
-      filterStr += `blur(${smoothSkin * 0.02}px) `;
+      filterStr += `blur(${smoothSkin * 0.015}px) `;
+    }
+    
+    // Manual glow
+    if (glowIntensity > 0) {
+      filterStr += `drop-shadow(0 0 ${glowIntensity * 0.3}px rgba(255,255,255,0.4)) `;
     }
 
     video.style.filter = filterStr.trim();
@@ -200,22 +212,33 @@ export default function CameraFilters({
     onFilterChange?.({
       beauty: beautyFilter,
       color: colorFilter,
-      faceEffect,
+      animatedEffect,
+      staticOverlay,
+      screenEffect,
       brightness,
       contrast,
       saturation,
       warmth,
       smoothSkin,
+      glowIntensity,
       zoom
     });
     
     onMirrorChange?.(mirrorEnabled);
+    
+    // Notify about overlay changes
+    onOverlayChange?.({
+      animatedEffect: animatedEffect !== 'none' ? animatedEffect : null,
+      staticOverlay: staticOverlay !== 'none' ? staticOverlay : null,
+      screenEffect: screenEffect !== 'none' ? screenEffect : null,
+      intensity: effectIntensity / 100
+    });
   };
 
   // Apply on any change
   React.useEffect(() => {
     applyFilters();
-  }, [mirrorEnabled, beautyFilter, colorFilter, brightness, contrast, saturation, warmth, smoothSkin, zoom]);
+  }, [mirrorEnabled, beautyFilter, colorFilter, brightness, contrast, saturation, warmth, smoothSkin, glowIntensity, zoom, animatedEffect, staticOverlay, screenEffect, effectIntensity]);
 
   // Handle background change
   React.useEffect(() => {
@@ -251,13 +274,17 @@ export default function CameraFilters({
     setMirrorEnabled(true);
     setBeautyFilter('none');
     setColorFilter('none');
-    setFaceEffect('none');
+    setAnimatedEffect('none');
+    setStaticOverlay('none');
+    setScreenEffect('none');
     setBackground('none');
     setBrightness(100);
     setContrast(100);
     setSaturation(100);
     setWarmth(0);
     setSmoothSkin(0);
+    setGlowIntensity(0);
+    setEffectIntensity(100);
     setZoom(100);
   };
 
@@ -282,17 +309,21 @@ export default function CameraFilters({
         </SheetHeader>
 
         <Tabs defaultValue="filters" className="mt-4">
-          <TabsList className="w-full bg-white/5 p-1">
-            <TabsTrigger value="filters" className="flex-1 text-xs data-[state=active]:bg-amber-600">
-              <Palette className="w-3 h-3 mr-1" />
-              Filters
+          <TabsList className="w-full bg-white/5 p-1 grid grid-cols-4">
+            <TabsTrigger value="filters" className="text-[10px] data-[state=active]:bg-amber-600 px-2">
+              <Palette className="w-3 h-3 mr-0.5" />
+              Color
             </TabsTrigger>
-            <TabsTrigger value="beauty" className="flex-1 text-xs data-[state=active]:bg-pink-600">
-              <Heart className="w-3 h-3 mr-1" />
+            <TabsTrigger value="beauty" className="text-[10px] data-[state=active]:bg-pink-600 px-2">
+              <Heart className="w-3 h-3 mr-0.5" />
               Beauty
             </TabsTrigger>
-            <TabsTrigger value="bg" className="flex-1 text-xs data-[state=active]:bg-purple-600">
-              <ImageIcon className="w-3 h-3 mr-1" />
+            <TabsTrigger value="effects" className="text-[10px] data-[state=active]:bg-purple-600 px-2">
+              <Zap className="w-3 h-3 mr-0.5" />
+              FX
+            </TabsTrigger>
+            <TabsTrigger value="bg" className="text-[10px] data-[state=active]:bg-blue-600 px-2">
+              <ImageIcon className="w-3 h-3 mr-0.5" />
               BG
             </TabsTrigger>
           </TabsList>
@@ -414,42 +445,20 @@ export default function CameraFilters({
             {/* Beauty Presets */}
             <div>
               <p className="text-white/60 text-xs mb-2">Beauty Presets</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {BEAUTY_FILTERS.map((filter) => (
                   <motion.button
                     key={filter.id}
                     onClick={() => setBeautyFilter(filter.id)}
-                    className={`p-3 rounded-xl flex flex-col items-center gap-1 transition-all ${
+                    className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all ${
                       beautyFilter === filter.id
                         ? 'bg-pink-600 ring-2 ring-pink-400'
                         : 'bg-white/10 hover:bg-white/20'
                     }`}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <span className="text-2xl">{filter.icon}</span>
-                    <span className="text-[10px] text-white/80">{filter.name}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Face Effects */}
-            <div>
-              <p className="text-white/60 text-xs mb-2">Face Effects</p>
-              <div className="grid grid-cols-4 gap-2">
-                {FACE_EFFECTS.map((effect) => (
-                  <motion.button
-                    key={effect.id}
-                    onClick={() => setFaceEffect(effect.id)}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-                      faceEffect === effect.id
-                        ? 'bg-purple-600 ring-2 ring-purple-400'
-                        : 'bg-white/10 hover:bg-white/20'
-                    }`}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-lg">{effect.icon}</span>
-                    <span className="text-[9px] text-white/80">{effect.name}</span>
+                    <span className="text-xl">{filter.icon}</span>
+                    <span className="text-[9px] text-white/80">{filter.name}</span>
                   </motion.button>
                 ))}
               </div>
@@ -472,6 +481,103 @@ export default function CameraFilters({
                   className="[&_[role=slider]]:bg-pink-500"
                 />
               </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-white/70">Glow</span>
+                  <span className="text-pink-400">{glowIntensity}%</span>
+                </div>
+                <Slider
+                  value={[glowIntensity]}
+                  onValueChange={([v]) => setGlowIntensity(v)}
+                  min={0}
+                  max={100}
+                  className="[&_[role=slider]]:bg-pink-500"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* EFFECTS TAB - NEW */}
+          <TabsContent value="effects" className="space-y-4 mt-4">
+            {/* Animated Effects */}
+            <div>
+              <p className="text-white/60 text-xs mb-2">Animated Effects</p>
+              <div className="grid grid-cols-4 gap-2">
+                {ANIMATED_FACE_EFFECTS.map((effect) => (
+                  <motion.button
+                    key={effect.id}
+                    onClick={() => setAnimatedEffect(effect.id)}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${
+                      animatedEffect === effect.id
+                        ? 'bg-purple-600 ring-2 ring-purple-400'
+                        : 'bg-white/10 hover:bg-white/20'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-lg">{effect.icon}</span>
+                    <span className="text-[8px] text-white/80">{effect.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Static Overlays */}
+            <div>
+              <p className="text-white/60 text-xs mb-2">Face Accessories</p>
+              <div className="grid grid-cols-5 gap-2">
+                {STATIC_FACE_OVERLAYS.map((overlay) => (
+                  <motion.button
+                    key={overlay.id}
+                    onClick={() => setStaticOverlay(overlay.id)}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all ${
+                      staticOverlay === overlay.id
+                        ? 'bg-amber-600 ring-2 ring-amber-400'
+                        : 'bg-white/10 hover:bg-white/20'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-xl">{overlay.icon}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Screen Effects */}
+            <div>
+              <p className="text-white/60 text-xs mb-2">Screen Effects</p>
+              <div className="grid grid-cols-4 gap-2">
+                {SCREEN_EFFECTS.map((effect) => (
+                  <motion.button
+                    key={effect.id}
+                    onClick={() => setScreenEffect(effect.id)}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all ${
+                      screenEffect === effect.id
+                        ? 'bg-blue-600 ring-2 ring-blue-400'
+                        : 'bg-white/10 hover:bg-white/20'
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-lg">{effect.icon}</span>
+                    <span className="text-[8px] text-white/80">{effect.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Effect Intensity */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-white/70">Effect Intensity</span>
+                <span className="text-purple-400">{effectIntensity}%</span>
+              </div>
+              <Slider
+                value={[effectIntensity]}
+                onValueChange={([v]) => setEffectIntensity(v)}
+                min={25}
+                max={150}
+                className="[&_[role=slider]]:bg-purple-500"
+              />
             </div>
           </TabsContent>
 
