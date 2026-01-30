@@ -113,48 +113,57 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
   return (
     <div className="space-y-6">
       {/* Legal Notice */}
-      <div className="bg-stone-800/50 rounded-xl p-4 border border-amber-600/20">
+      <GlassCard padding="p-4" animate={false}>
         <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="p-2 rounded-lg bg-amber-500/20">
+            <Shield className="w-5 h-5 text-amber-400" />
+          </div>
           <div className="text-sm">
-            <p className="text-amber-100 font-medium mb-1">Secure Digital Purchases</p>
-            <p className="text-amber-300/70 text-xs">
+            <p className="text-white font-medium mb-1">Secure Digital Purchases</p>
+            <p className="text-white/50 text-xs leading-relaxed">
               Denarii are virtual currency for use within Legion Live only. All purchases are final. 
               By purchasing, you agree to our Terms of Service. Must be 18+ or have parental consent.
-              Denarii have no real-world value and cannot be exchanged for real currency.
             </p>
           </div>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Crypto Launch Notice */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-gradient-to-r from-amber-500/20 to-purple-500/20 border border-amber-500/40 rounded-xl p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl"
       >
-        <p className="text-amber-200 font-bold text-center text-sm">
-          🚀 CRYPTO LAUNCH IN 6 MONTHS: Denarii converting to blockchain token at 10x current value!
-        </p>
-        <p className="text-amber-300/70 text-center text-xs mt-1">
-          Early adopters lock in the best rates. Current: $0.001/Denarii → Launch: $0.01/Denarii
-        </p>
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 via-purple-500/30 to-pink-500/30 animate-pulse" />
+        <div className="relative bg-black/40 backdrop-blur-sm border border-amber-500/40 rounded-2xl p-5">
+          <p className="text-white font-bold text-center">
+            🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-purple-200">CRYPTO LAUNCH IN 6 MONTHS</span>
+          </p>
+          <p className="text-white/60 text-center text-sm mt-2">
+            Denarii converting to blockchain token at <span className="text-green-400 font-bold">10x</span> current value!
+          </p>
+          <div className="flex items-center justify-center gap-3 mt-3 text-xs">
+            <span className="px-3 py-1 rounded-full bg-white/10 text-white/70">Current: $0.001</span>
+            <span className="text-amber-400">→</span>
+            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/30 to-purple-500/30 text-amber-200 font-bold">Launch: $0.01</span>
+          </div>
+        </div>
       </motion.div>
 
       {/* Currency Exchange Info */}
-      <div className="flex flex-col items-center justify-center gap-4 text-sm text-amber-300/80">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-3 text-sm">
+        <div className="flex items-center gap-4 bg-white/5 rounded-full px-6 py-2">
+          <div className="flex items-center gap-2 text-white/80">
             <span className="text-lg">🪙</span>
             <span>1 Denarii = 100 As</span>
           </div>
-          <div className="w-px h-4 bg-amber-600/30" />
-          <div className="flex items-center gap-2">
+          <div className="w-px h-4 bg-white/20" />
+          <div className="flex items-center gap-2 text-white/80">
             <span className="text-lg">🥈</span>
             <span>1 Sestertius = 4 As</span>
           </div>
         </div>
-        <p className="text-amber-400/70 text-xs">Buy more, save more • Larger packages = better value per Denarii</p>
+        <p className="text-white/40 text-xs">Buy more, save more • Larger packages = better value</p>
       </div>
 
       {/* Package Grid */}
