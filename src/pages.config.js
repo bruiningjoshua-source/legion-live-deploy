@@ -101,6 +101,7 @@ import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import CreatorSuccessProgram from './pages/CreatorSuccessProgram';
 import __Layout from './Layout.jsx';
 
 
@@ -159,6 +160,7 @@ export const PAGES = {
     "WatchLater": WatchLater,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "CreatorSuccessProgram": CreatorSuccessProgram,
 }
 
 export const pagesConfig = {
