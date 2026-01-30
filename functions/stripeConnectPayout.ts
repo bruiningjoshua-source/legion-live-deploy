@@ -1,0 +1,112 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import Stripe from 'npm:stripe@17.5.0';
+
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
+  apiVersion: '2024-12-18.acacia'
+});
+
+const CREATOR_SHARE = 0.40;
+const DENARII_TO_USD = 0.01;
+const MIN_PAYOUT_DENARII = 1000;
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      console.error('[stripeConnectPayout] Unauthorized');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { creatorId, amountDenarii } = await req.json();
+
+    if (!creatorId || !amountDenarii) {
+      return Response.json({ error: 'Missing creatorId or amountDenarii' }, { status: 400 });
+    }
+
+    if (amountDenarii < MIN_PAYOUT_DENARII) {
+      return Response.json({ error: `Minimum payout is ${MIN_PAYOUT_DENARII} Denarii` }, { status: 400 });
+    }
+
+    // Verify user owns this creator profile
+    const creators = await base44.entities.Creator.filter({ id: creatorId, user_email: user.email }, null, 1);
+    if (!creators[0]) {
+      console.error('[stripeConnectPayout] Creator not found');
+      return Response.json({ error: 'Creator not found' }, { status: 404 });
+    }
+
+    const creator = creators[0];
+
+    // Check balance
+    if ((creator.total_earnings_denarii || 0) < amountDenarii) {
+      return Response.json({ error: 'Insufficient balance' }, { status: 400 });
+    }
+
+    // Get Stripe Connect account
+    const methods = await base44.entities.CreatorPayoutMethod.filter(
+      { creator_id: creatorId, method_type: 'stripe_connect', stripe_payouts_enabled: true },
+      null,
+      1
+    );
+
+    if (!methods[0]) {
+      return Response.json({ error: 'Stripe Connect not set up or payouts not enabled' }, { status: 400 });
+    }
+
+    const stripeAccountId = methods[0].stripe_account_id;
+    const payoutUsd = amountDenarii * DENARII_TO_USD * CREATOR_SHARE;
+    const payoutCents = Math.round(payoutUsd * 100);
+
+    console.log('[stripeConnectPayout] Processing payout:', {
+      creatorId,
+      amountDenarii,
+      payoutUsd,
+      stripeAccountId
+    });
+
+    // Create transfer to connected account
+    const transfer = await stripe.transfers.create({
+      amount: payoutCents,
+      currency: 'usd',
+      destination: stripeAccountId,
+      metadata: {
+        base44_app_id: Deno.env.get("BASE44_APP_ID"),
+        creator_id: creatorId,
+        denarii_amount: amountDenarii.toString(),
+        user_email: user.email
+      }
+    });
+
+    console.log('[stripeConnectPayout] Transfer created:', transfer.id);
+
+    // Deduct from creator earnings
+    await base44.entities.Creator.update(creatorId, {
+      total_earnings_denarii: (creator.total_earnings_denarii || 0) - amountDenarii
+    });
+
+    // Create payout record
+    await base44.entities.CreatorPayout.create({
+      creator_id: creatorId,
+      user_email: user.email,
+      amount_denarii: amountDenarii,
+      payout_usd: payoutUsd,
+      payout_method: 'stripe_connect',
+      payout_identifier: stripeAccountId,
+      stripe_transfer_id: transfer.id,
+      status: 'completed'
+    });
+
+    console.log('[stripeConnectPayout] Payout completed successfully');
+
+    return Response.json({
+      success: true,
+      transfer_id: transfer.id,
+      amount_usd: payoutUsd,
+      amount_denarii: amountDenarii
+    });
+  } catch (error) {
+    console.error('[stripeConnectPayout] Error:', error.message, error.stack);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
