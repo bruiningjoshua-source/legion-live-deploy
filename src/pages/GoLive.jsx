@@ -408,43 +408,78 @@ export default function GoLive() {
         {hasPermissions && (
           <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-40 bg-black" style={{ width: '100vw', height: '100vh' }}>
             <div className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center">
-              {/* Portrait 9:13 Container */}
-              <div style={{ aspectRatio: '9/13', maxHeight: '100vh', width: 'auto' }} className="relative bg-black">
-                <video
-                  ref={videoPreviewRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  preload="auto"
-                  webkit-playsinline="true"
-                  className="w-full h-full"
-                  style={{ objectFit: 'cover', backgroundColor: '#000' }}
+              {/* Full Screen Video */}
+              <video
+                ref={videoPreviewRef}
+                autoPlay
+                playsInline
+                muted
+                preload="auto"
+                webkit-playsinline="true"
+                className="absolute inset-0 w-full h-full"
+                style={{ objectFit: 'cover', backgroundColor: '#000' }}
+              />
+
+              {/* Top Right - Settings */}
+              <div className="absolute top-4 right-4 z-20">
+                <HostControls 
+                  videoRef={videoPreviewRef}
+                  onMirrorChange={setIsMirrored}
+                  initialMirror={isMirrored}
                 />
-                <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-                  <Badge className="bg-red-500 text-white border-0 animate-pulse text-xs">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-ping" />
-                    LIVE
-                  </Badge>
-                </div>
-                <div className="absolute top-3 right-3 z-10">
-                  <HostControls 
-                    videoRef={videoPreviewRef}
-                    onMirrorChange={setIsMirrored}
-                    initialMirror={isMirrored}
+              </div>
+
+              {/* Top Left - Earnings Widget */}
+              <div className="absolute top-4 left-4 z-20">
+                <BroadcasterWallet 
+                  totalEarnings={creator?.total_earnings_denarii || 0}
+                  sessionEarnings={0}
+                  giftsReceived={0}
+                  creatorId={creator?.id}
+                />
+              </div>
+
+              {/* Stream Quality Monitor */}
+              {streamStats && (
+                <div className="absolute top-20 left-4 right-4 z-10">
+                  <StreamQualityMonitor 
+                    stats={streamStats}
+                    onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
                   />
                 </div>
+              )}
 
-                {/* Stream Quality Monitor */}
-                {streamStats && (
-                  <div className="absolute bottom-24 left-2 right-2 z-10">
-                    <StreamQualityMonitor 
-                      stats={streamStats}
-                      onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
-                    />
-                  </div>
-                )}
+              {/* Stream Setup Overlay - Title & Category Input - BOTTOM */}
+              {(!title.trim() || !category) && (
+                <div className="absolute bottom-24 left-4 right-4 z-20 bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter stream title..."
+                    className="bg-stone-900/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40"
+                    maxLength={100}
+                  />
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className="bg-stone-900/50 border-amber-600/20 text-amber-100">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-stone-900 border-amber-600/30">
+                      {categories.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
+                          <span className="flex items-center gap-2">
+                            <span>{cat.icon}</span>
+                            {cat.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-                        {/* Back Button */}
+              {/* Bottom Bar */}
+              <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between">
+                {/* Back Button */}
                 <Button
                   onClick={() => {
                     if (cameraStream) {
@@ -453,45 +488,17 @@ export default function GoLive() {
                       setHasPermissions(false);
                     }
                   }}
-                  className="absolute bottom-4 left-3 z-10 bg-stone-900/80 hover:bg-stone-800 text-white text-xs py-1"
+                  className="bg-stone-900/80 hover:bg-stone-800 text-white text-xs py-1"
                   size="sm"
                 >
                   ← Back
                 </Button>
 
-                {/* Stream Setup Overlay - Title & Category Input */}
-                {(!title.trim() || !category) && (
-                  <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 z-10 bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter stream title..."
-                      className="bg-stone-900/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40"
-                      maxLength={100}
-                    />
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger className="bg-stone-900/50 border-amber-600/20 text-amber-100">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-stone-900 border-amber-600/30">
-                        {categories.map(cat => (
-                          <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
-                            <span className="flex items-center gap-2">
-                              <span>{cat.icon}</span>
-                              {cat.label}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Go Live Button - in camera preview */}
+                {/* Go Live Button */}
                 <Button
                   onClick={() => goLiveMutation.mutate()}
                   disabled={!isFormValid || goLiveMutation.isPending}
-                  className="absolute bottom-4 right-3 z-10 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6"
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6"
                   size="sm"
                 >
                   {goLiveMutation.isPending ? (
@@ -507,14 +514,6 @@ export default function GoLive() {
                   )}
                 </Button>
               </div>
-              
-              {/* Broadcaster Wallet */}
-              <BroadcasterWallet 
-                totalEarnings={creator?.total_earnings_denarii || 0}
-                sessionEarnings={0}
-                giftsReceived={0}
-                creatorId={creator?.id}
-              />
 
               {/* Broadcaster Chat */}
               <BroadcasterChat messages={chatMessages} />
