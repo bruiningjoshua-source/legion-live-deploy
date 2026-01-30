@@ -43,20 +43,22 @@ import { toast } from 'sonner';
 import { FILTER_PRESETS, FACE_ACCESSORIES, BACKGROUNDS } from './ARFilterEngine';
 import AnimatedFilterOverlay from './AnimatedFilterOverlay';
 
-// Extended color filter presets with professional color grading
+// Extended color filter presets with CSS filter values
 const COLOR_FILTERS = [
-  { id: 'none', name: 'Natural', icon: '🌿', settings: FILTER_PRESETS.none?.settings || {} },
-  { id: 'portrait', name: 'Portrait', icon: '👤', settings: FILTER_PRESETS.portrait?.settings || {} },
-  { id: 'glamour', name: 'Glamour', icon: '✨', settings: FILTER_PRESETS.glamour?.settings || {} },
-  { id: 'cinematic', name: 'Cinematic', icon: '🎬', settings: FILTER_PRESETS.cinematic?.settings || {} },
-  { id: 'warmSunset', name: 'Golden Hour', icon: '🌅', settings: FILTER_PRESETS.warmSunset?.settings || {} },
-  { id: 'coolBlue', name: 'Cool Blue', icon: '❄️', settings: FILTER_PRESETS.coolBlue?.settings || {} },
-  { id: 'retroFilm', name: 'Retro Film', icon: '📽️', settings: FILTER_PRESETS.retroFilm?.settings || {} },
-  { id: 'neonNight', name: 'Neon Night', icon: '🌃', settings: FILTER_PRESETS.neonNight?.settings || {} },
-  { id: 'softDream', name: 'Soft Dream', icon: '☁️', settings: FILTER_PRESETS.softDream?.settings || {} },
-  { id: 'dramatic', name: 'Dramatic', icon: '🎭', settings: FILTER_PRESETS.dramatic?.settings || {} },
-  { id: 'vintage', name: 'Vintage', icon: '📻', settings: FILTER_PRESETS.vintage?.settings || {} },
-  { id: 'popArt', name: 'Pop Art', icon: '🎨', settings: FILTER_PRESETS.popArt?.settings || {} },
+  { id: 'none', name: 'Natural', icon: '🌿', css: '' },
+  { id: 'portrait', name: 'Portrait', icon: '👤', css: 'brightness(1.05) contrast(1.05) saturate(0.95)' },
+  { id: 'glamour', name: 'Glamour', icon: '✨', css: 'brightness(1.1) contrast(1.1) saturate(1.1) drop-shadow(0 0 8px rgba(255,255,255,0.3))' },
+  { id: 'cinematic', name: 'Cinematic', icon: '🎬', css: 'contrast(1.2) saturate(0.9) brightness(0.95) sepia(0.1)' },
+  { id: 'warmSunset', name: 'Golden Hour', icon: '🌅', css: 'brightness(1.05) saturate(1.15) sepia(0.25) hue-rotate(-5deg)' },
+  { id: 'coolBlue', name: 'Cool Blue', icon: '❄️', css: 'brightness(1.05) saturate(0.95) hue-rotate(15deg) contrast(1.1)' },
+  { id: 'retroFilm', name: 'Retro Film', icon: '📽️', css: 'sepia(0.4) contrast(1.15) saturate(0.8) brightness(0.95)' },
+  { id: 'neonNight', name: 'Neon Night', icon: '🌃', css: 'saturate(1.5) contrast(1.25) brightness(1.05) hue-rotate(10deg)' },
+  { id: 'softDream', name: 'Soft Dream', icon: '☁️', css: 'brightness(1.1) contrast(0.9) saturate(0.85) blur(0.5px)' },
+  { id: 'dramatic', name: 'Dramatic', icon: '🎭', css: 'contrast(1.4) saturate(0.7) brightness(0.9)' },
+  { id: 'vintage', name: 'Vintage', icon: '📻', css: 'sepia(0.5) contrast(1.1) saturate(0.75) brightness(0.95)' },
+  { id: 'popArt', name: 'Pop Art', icon: '🎨', css: 'saturate(1.6) contrast(1.3) brightness(1.05)' },
+  { id: 'bw', name: 'B&W', icon: '⚫', css: 'grayscale(1) contrast(1.1)' },
+  { id: 'vivid', name: 'Vivid', icon: '🌈', css: 'saturate(1.4) contrast(1.15) brightness(1.05)' },
 ];
 
 // AR face accessories
