@@ -94,6 +94,7 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import WatchLater from './pages/WatchLater';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +146,7 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "WatchLater": WatchLater,
 }
 
 export const pagesConfig = {
