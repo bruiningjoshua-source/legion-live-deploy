@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import TipButton from '@/components/stream/TipButton';
 import VideoCommentSystem from '@/components/community/VideoCommentSystem';
+import RecommendedVideos from '@/components/video/RecommendedVideos';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
