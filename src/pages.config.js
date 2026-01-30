@@ -95,6 +95,10 @@ import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import WatchLater from './pages/WatchLater';
+import WatchHistory from './pages/WatchHistory';
+import Achievements from './pages/Achievements';
+import Clips from './pages/Clips';
+import UpcomingStreams from './pages/UpcomingStreams';
 import __Layout from './Layout.jsx';
 
 
@@ -147,6 +151,10 @@ export const PAGES = {
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
     "WatchLater": WatchLater,
+    "WatchHistory": WatchHistory,
+    "Achievements": Achievements,
+    "Clips": Clips,
+    "UpcomingStreams": UpcomingStreams,
 }
 
 export const pagesConfig = {
