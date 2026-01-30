@@ -1,26 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Wallet as WalletIcon, 
-  TrendingUp, 
-  ArrowUpRight, 
   ArrowDownRight, 
   History,
   Crown,
-  Sparkles,
   Gift,
   CreditCard,
-  Coins,
-  Shield
+  Coins
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import CurrencyPackages from '@/components/wallet/CurrencyPackages';
+import GlassCard from '@/components/shared/GlassCard';
 import { toast } from 'sonner';
 
 export default function Wallet() {
