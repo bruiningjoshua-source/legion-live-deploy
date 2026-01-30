@@ -646,7 +646,7 @@ export default function WatchStream() {
       )}
 
       {/* Fullscreen Mobile-Optimized Video */}
-      <div className="absolute inset-0 overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 1, backgroundColor: customBackground ? 'transparent' : '#000' }}>
+      <div className="absolute inset-0 overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 1, backgroundColor: activeBackground ? 'transparent' : '#000' }}>
         <video
           ref={videoRef}
           className="w-full h-full"
