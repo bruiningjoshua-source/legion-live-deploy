@@ -8,6 +8,11 @@ import ShieldMenu from '@/components/shared/ShieldMenu';
 import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
+import { RateLimitProvider } from '@/components/security/RateLimiter';
+import { CSRFProvider } from '@/components/security/CSRFProtection';
+import { ErrorTrackerProvider } from '@/components/monitoring/ErrorTracker';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
+import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import { Toaster } from 'sonner';
@@ -94,6 +99,9 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <ErrorBoundary>
+      <CSRFProvider>
+      <RateLimitProvider>
+      <ErrorTrackerProvider user={user}>
       <NetworkStatus />
       <Toaster 
         position="top-center" 
@@ -220,8 +228,19 @@ export default function Layout({ children, currentPageName }) {
             </main>
 
             {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
-          </div>
-        </AnimatedBackground>
+
+                          {/* PWA Install Prompt */}
+                          <InstallPrompt />
+
+                          {/* Customer Support Widget */}
+                          <div className="fixed bottom-24 left-4 z-40">
+                            <CustomerSupport user={user} />
+                          </div>
+                    </div>
+                  </ErrorTrackerProvider>
+                  </RateLimitProvider>
+                  </CSRFProvider>
+                  </AnimatedBackground>
       ) : (
       <div className="min-h-screen bg-[#0f0f12]">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
@@ -276,8 +295,19 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
-      </div>
-      )}
-      </ErrorBoundary>
+
+                    {/* PWA Install Prompt */}
+                    <InstallPrompt />
+
+                    {/* Customer Support Widget */}
+                    <div className="fixed bottom-24 left-4 z-40">
+                      <CustomerSupport user={user} />
+                    </div>
+          </div>
+          )}
+          </ErrorTrackerProvider>
+          </RateLimitProvider>
+          </CSRFProvider>
+          </ErrorBoundary>
       );
       }

@@ -93,6 +93,7 @@ import WatchVideo from './pages/WatchVideo';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CommunityGuidelines from './pages/CommunityGuidelines';
+import DataPrivacy from './pages/DataPrivacy';
 import __Layout from './Layout.jsx';
 
 
@@ -143,6 +144,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "PrivacyPolicy": PrivacyPolicy,
     "CommunityGuidelines": CommunityGuidelines,
+    "DataPrivacy": DataPrivacy,
 }
 
 export const pagesConfig = {
