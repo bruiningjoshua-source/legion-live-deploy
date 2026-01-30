@@ -1,34 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { 
+  Radio, Film, Gamepad2, Users, ShoppingBag, Trophy, 
+  Wallet, User, Settings, Play
+} from 'lucide-react';
 
-// Comic-style Roman assets
-const ASSETS = {
-  centurion: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/54f8124d8_AI_Generated_Image_2026-01-16_506237618000201.png',
-  columns: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/576c630c3_AI_Generated_Image_2026-01-16_506237614012201.png',
-  soldiersRow: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/288cec758_AI_Generated_Sticker_2026-01-16_c4f2960c-1731-4397-96f9-57e32eaddbde.png',
-  treasure: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/82ed18382_AI_Generated_Sticker_2026-01-16_bd106f64-574f-49aa-ba53-c0081623475e.png',
-  soldiersGroup: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/96acf64a3_AI_Generated_Sticker_2026-01-16_1752b39c-8acd-4d97-82c7-6341dc4ba7bf3.png',
-  soldiersFormation: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/e38ccfbe2_AI_Generated_Sticker_2026-01-16_0d71c335-d5e0-447f-888c-cd18c1a16442.png',
-};
+const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
+
+// Shield menu sections - arranged like a wheel
+const SHIELD_SECTIONS = [
+  { id: 'arena', label: 'Live Arena', icon: Radio, page: 'Explore', color: '#dc2626', angle: -60 },
+  { id: 'amphitheatre', label: 'Amphitheatre', icon: Film, page: 'TheAmphitheatre', color: '#9333ea', angle: -20 },
+  { id: 'gaming', label: 'Gaming Hub', icon: Gamepad2, page: 'TheGamingHub', color: '#2563eb', angle: 20 },
+  { id: 'forum', label: 'Forum', icon: Users, page: 'CommunityForums', color: '#059669', angle: 60 },
+  { id: 'market', label: 'Marketplace', icon: ShoppingBag, page: 'AffiliateHub', color: '#d97706', angle: 100 },
+  { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: '#eab308', angle: 140 },
+];
 
 export default function LoadingScreen({ onComplete }) {
   const [phase, setPhase] = useState(0);
+  const [selectedSection, setSelectedSection] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 400),   // Background fades in
-      setTimeout(() => setPhase(2), 1200),  // Soldiers march in from sides
-      setTimeout(() => setPhase(3), 2200),  // Centurion hero appears
-      setTimeout(() => setPhase(4), 3500),  // Logo slam
-      setTimeout(() => setPhase(5), 4800),  // Ready state
-      setTimeout(() => {
-        setIsVisible(false);
-        setTimeout(() => onComplete?.(), 500);
-      }, 6500)
+      setTimeout(() => setPhase(1), 300),   // Fade in scene
+      setTimeout(() => setPhase(2), 1500),  // Energy builds
+      setTimeout(() => setPhase(3), 2800),  // Logo appears
+      setTimeout(() => setPhase(4), 4200),  // Shield menu reveals
     ];
     return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
+  }, []);
+
+  const handleEnter = () => {
+    setIsVisible(false);
+    setTimeout(() => onComplete?.(), 400);
+  };
 
   if (!isVisible) return null;
 
@@ -36,298 +45,382 @@ export default function LoadingScreen({ onComplete }) {
     <motion.div
       initial={{ opacity: 1 }}
       animate={{ opacity: isVisible ? 1 : 0 }}
-      className="fixed inset-0 z-[100] overflow-hidden bg-black"
+      className="fixed inset-0 z-[100] overflow-hidden"
+      style={{ background: '#0a0a0f' }}
     >
-      {/* Background - Columns with dark overlay */}
-      <motion.div 
-        className="absolute inset-0"
-        initial={{ scale: 1.3, opacity: 0 }}
+      {/* Animated background - Comic style */}
+      <div className="absolute inset-0">
+        {/* Dark gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1025] via-[#0f0a15] to-black" />
+        
+        {/* Animated radial glow */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            background: [
+              'radial-gradient(ellipse at 50% 30%, rgba(217, 119, 6, 0.15) 0%, transparent 50%)',
+              'radial-gradient(ellipse at 50% 30%, rgba(217, 119, 6, 0.25) 0%, transparent 60%)',
+              'radial-gradient(ellipse at 50% 30%, rgba(217, 119, 6, 0.15) 0%, transparent 50%)',
+            ]
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+
+        {/* Comic-style speed lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="transparent" />
+              <stop offset="50%" stopColor="#d97706" />
+              <stop offset="100%" stopColor="transparent" />
+            </linearGradient>
+          </defs>
+          {[...Array(12)].map((_, i) => (
+            <motion.line
+              key={i}
+              x1="0%"
+              y1={`${5 + i * 8}%`}
+              x2="100%"
+              y2={`${8 + i * 8}%`}
+              stroke="url(#lineGrad)"
+              strokeWidth="1"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={phase >= 2 ? { 
+                pathLength: [0, 1], 
+                opacity: [0, 0.6, 0] 
+              } : {}}
+              transition={{ 
+                duration: 1.5, 
+                delay: i * 0.1, 
+                repeat: Infinity,
+                repeatDelay: 2
+              }}
+            />
+          ))}
+        </svg>
+
+        {/* Column silhouettes */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: phase >= 1 ? 1 : 0 }}
+          transition={{ duration: 1 }}
+        >
+          <svg viewBox="0 0 1200 800" className="w-full h-full" preserveAspectRatio="xMidYMax slice">
+            {/* Left columns */}
+            <rect x="50" y="200" width="40" height="600" fill="#1a1520" />
+            <rect x="120" y="150" width="35" height="650" fill="#15101a" />
+            <rect x="180" y="250" width="30" height="550" fill="#1a1520" />
+            {/* Right columns */}
+            <rect x="1000" y="200" width="40" height="600" fill="#1a1520" />
+            <rect x="1060" y="150" width="35" height="650" fill="#15101a" />
+            <rect x="1130" y="250" width="30" height="550" fill="#1a1520" />
+            {/* Column tops */}
+            <rect x="45" y="180" width="50" height="25" fill="#252030" />
+            <rect x="115" y="130" width="45" height="25" fill="#201825" />
+            <rect x="995" y="180" width="50" height="25" fill="#252030" />
+            <rect x="1055" y="130" width="45" height="25" fill="#201825" />
+          </svg>
+        </motion.div>
+      </div>
+
+      {/* Centurion Hero Image */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center"
+        initial={{ scale: 1.2, opacity: 0 }}
         animate={{ 
-          scale: phase >= 1 ? 1 : 1.3, 
+          scale: phase >= 1 ? 1 : 1.2, 
           opacity: phase >= 1 ? 1 : 0 
         }}
         transition={{ duration: 1.5, ease: 'easeOut' }}
       >
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: `url(${ASSETS.columns})`,
-            filter: 'brightness(0.35) saturate(1.3) contrast(1.1)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
-      </motion.div>
-
-      {/* Comic-style speed lines / energy streaks */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute h-0.5 md:h-1"
-            style={{
-              background: `linear-gradient(90deg, transparent, rgba(217, 119, 6, ${0.4 + i * 0.05}), transparent)`,
-              top: `${10 + i * 10}%`,
-              left: '-100%',
-              width: '200%',
-              transform: `rotate(${-8 + i * 2}deg)`,
-            }}
-            animate={{ x: ['-50%', '100%'] }}
-            transition={{
-              duration: 2,
-              delay: i * 0.2,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Soldiers Formation - Left side */}
-      <motion.div
-        className="absolute bottom-0 left-0 w-[50%] md:w-[40%] max-w-[450px]"
-        initial={{ x: '-100%', opacity: 0 }}
-        animate={{ 
-          x: phase >= 2 ? '0%' : '-100%', 
-          opacity: phase >= 2 ? 1 : 0 
-        }}
-        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-      >
-        <img 
-          src={ASSETS.soldiersFormation} 
-          alt="" 
-          className="w-full h-auto"
-          style={{ 
-            filter: 'drop-shadow(0 0 30px rgba(217, 119, 6, 0.4)) drop-shadow(5px 5px 10px rgba(0,0,0,0.8))'
-          }}
-        />
-      </motion.div>
-
-      {/* Soldiers Row - Right side */}
-      <motion.div
-        className="absolute bottom-0 right-0 w-[45%] md:w-[38%] max-w-[400px]"
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ 
-          x: phase >= 2 ? '0%' : '100%', 
-          opacity: phase >= 2 ? 1 : 0 
-        }}
-        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-      >
-        <img 
-          src={ASSETS.soldiersRow} 
-          alt="" 
-          className="w-full h-auto"
-          style={{ 
-            filter: 'drop-shadow(0 0 30px rgba(217, 119, 6, 0.4)) drop-shadow(-5px 5px 10px rgba(0,0,0,0.8))'
-          }}
-        />
-      </motion.div>
-
-      {/* Treasure pile - Center bottom */}
-      <motion.div
-        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 w-24 md:w-36 z-10"
-        initial={{ y: 100, opacity: 0, scale: 0.5 }}
-        animate={{ 
-          y: phase >= 2 ? 0 : 100, 
-          opacity: phase >= 2 ? 1 : 0,
-          scale: phase >= 2 ? 1 : 0.5
-        }}
-        transition={{ duration: 0.6, ease: 'backOut', delay: 0.5 }}
-      >
-        <motion.img 
-          src={ASSETS.treasure} 
-          alt="" 
-          className="w-full h-auto"
-          animate={phase >= 2 ? { y: [0, -8, 0] } : {}}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ 
-            filter: 'drop-shadow(0 15px 40px rgba(217, 119, 6, 0.6)) drop-shadow(0 5px 15px rgba(0,0,0,0.8))'
-          }}
-        />
-      </motion.div>
-
-      {/* Centurion Hero - Center */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        initial={{ scale: 0.3, opacity: 0, y: 200 }}
-        animate={{ 
-          scale: phase >= 3 ? 1 : 0.3, 
-          opacity: phase >= 3 ? 1 : 0,
-          y: phase >= 3 ? 0 : 200
-        }}
-        transition={{ 
-          duration: 0.7, 
-          type: 'spring', 
-          stiffness: 120, 
-          damping: 12 
-        }}
-      >
-        <motion.div
-          className="relative w-[85%] md:w-[60%] max-w-[600px]"
-          animate={phase >= 3 ? { 
-            filter: [
-              'drop-shadow(0 0 30px rgba(217, 119, 6, 0.5))',
-              'drop-shadow(0 0 60px rgba(217, 119, 6, 0.8))',
-              'drop-shadow(0 0 30px rgba(217, 119, 6, 0.5))'
-            ]
-          } : {}}
-          transition={{ duration: 2.5, repeat: Infinity }}
-        >
+        <div className="relative w-full h-full max-w-4xl mx-auto">
           <img 
-            src={ASSETS.centurion} 
-            alt="Legion Live" 
-            className="w-full h-auto"
+            src={CENTURION_IMAGE} 
+            alt="Legion Live"
+            className="absolute inset-0 w-full h-full object-contain object-bottom"
+            style={{
+              filter: phase >= 4 ? 'brightness(0.6)' : 'brightness(1)',
+              transition: 'filter 0.8s ease'
+            }}
           />
-        </motion.div>
+          
+          {/* Glow effect around centurion */}
+          <motion.div
+            className="absolute inset-0"
+            animate={phase >= 2 ? {
+              boxShadow: [
+                'inset 0 0 100px rgba(217, 119, 6, 0)',
+                'inset 0 0 150px rgba(217, 119, 6, 0.3)',
+                'inset 0 0 100px rgba(217, 119, 6, 0)',
+              ]
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
       </motion.div>
 
-      {/* LEGION LIVE Logo - Slams in on top */}
+      {/* LEGION LIVE Logo */}
+      <AnimatePresence>
+        {phase >= 3 && phase < 4 && (
+          <motion.div
+            className="absolute top-[15%] left-1/2 -translate-x-1/2 text-center z-20"
+            initial={{ scale: 2.5, opacity: 0, y: -50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: -30 }}
+            transition={{ duration: 0.6, type: 'spring', stiffness: 150 }}
+          >
+            <h1 
+              className="text-6xl md:text-8xl font-black tracking-tight"
+              style={{
+                fontFamily: 'Georgia, serif',
+                background: 'linear-gradient(180deg, #fef3c7 0%, #f59e0b 40%, #b45309 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 4px 60px rgba(217, 119, 6, 0.5)',
+              }}
+            >
+              LEGION
+            </h1>
+            <p 
+              className="text-2xl md:text-4xl font-bold tracking-[0.5em] -mt-1"
+              style={{
+                background: 'linear-gradient(180deg, #fcd34d 0%, #d97706 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              LIVE
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Shield Wheel Menu */}
       <AnimatePresence>
         {phase >= 4 && (
           <motion.div
-            className="absolute top-[15%] md:top-[18%] left-1/2 -translate-x-1/2 text-center z-20"
-            initial={{ scale: 3, opacity: 0, y: -100 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ 
-              duration: 0.4, 
-              type: 'spring', 
-              stiffness: 200, 
-              damping: 15 
-            }}
+            className="absolute inset-0 flex items-center justify-center z-30"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            {/* Impact flash */}
-            <motion.div
-              className="absolute inset-0 -inset-x-20 -inset-y-10"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                background: 'radial-gradient(ellipse, rgba(217, 119, 6, 0.8) 0%, transparent 70%)'
-              }}
+            {/* Darkening overlay */}
+            <motion.div 
+              className="absolute inset-0 bg-black/60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8 }}
             />
-            
-            <motion.h1 
-              className="text-6xl md:text-8xl font-black tracking-tight relative"
-              style={{
-                fontFamily: 'serif',
-                background: 'linear-gradient(180deg, #fef3c7 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 0 60px rgba(217, 119, 6, 0.8)',
-              }}
-              animate={{
-                textShadow: [
-                  '0 0 30px rgba(217, 119, 6, 0.5)',
-                  '0 0 60px rgba(217, 119, 6, 0.8)',
-                  '0 0 30px rgba(217, 119, 6, 0.5)'
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
+
+            {/* Shield Container */}
+            <motion.div
+              className="relative"
+              initial={{ scale: 0.3, rotateY: 90 }}
+              animate={{ scale: 1, rotateY: 0 }}
+              transition={{ duration: 0.8, type: 'spring', stiffness: 80 }}
             >
-              LEGION
-            </motion.h1>
-            <motion.p 
-              className="text-3xl md:text-4xl font-black tracking-[0.4em] -mt-2 md:-mt-3"
-              style={{
-                background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-            >
-              LIVE
-            </motion.p>
+              {/* Shield SVG */}
+              <svg viewBox="0 0 400 480" className="w-72 h-[22rem] md:w-96 md:h-[28rem]">
+                <defs>
+                  <linearGradient id="shieldGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fcd34d" />
+                    <stop offset="50%" stopColor="#f59e0b" />
+                    <stop offset="100%" stopColor="#92400e" />
+                  </linearGradient>
+                  <linearGradient id="shieldRed" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#991b1b" />
+                    <stop offset="50%" stopColor="#7f1d1d" />
+                    <stop offset="100%" stopColor="#450a0a" />
+                  </linearGradient>
+                  <filter id="shieldGlow">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter id="innerShadow">
+                    <feOffset dx="0" dy="4" />
+                    <feGaussianBlur stdDeviation="4" />
+                    <feComposite operator="out" in="SourceGraphic" />
+                  </filter>
+                </defs>
+
+                {/* Shield base */}
+                <path
+                  d="M200 20 L360 60 L360 200 Q360 380 200 460 Q40 380 40 200 L40 60 Z"
+                  fill="url(#shieldRed)"
+                  stroke="url(#shieldGold)"
+                  strokeWidth="8"
+                  filter="url(#shieldGlow)"
+                />
+
+                {/* Inner decorative border */}
+                <path
+                  d="M200 45 L335 80 L335 195 Q335 355 200 425 Q65 355 65 195 L65 80 Z"
+                  fill="none"
+                  stroke="#fbbf24"
+                  strokeWidth="2"
+                  opacity="0.5"
+                />
+
+                {/* Center boss */}
+                <circle cx="200" cy="200" r="50" fill="url(#shieldGold)" stroke="#78350f" strokeWidth="4" />
+                <circle cx="200" cy="200" r="38" fill="#7f1d1d" stroke="#fbbf24" strokeWidth="2" />
+                
+                {/* Center emblem */}
+                <text x="200" y="195" textAnchor="middle" fill="#fcd34d" fontSize="18" fontWeight="bold" fontFamily="Georgia, serif">
+                  LEGION
+                </text>
+                <text x="200" y="215" textAnchor="middle" fill="#fcd34d" fontSize="12" fontWeight="bold" letterSpacing="4">
+                  LIVE
+                </text>
+
+                {/* Decorative rays */}
+                {[...Array(8)].map((_, i) => {
+                  const angle = (i * 45) * (Math.PI / 180);
+                  const x1 = 200 + Math.cos(angle) * 55;
+                  const y1 = 200 + Math.sin(angle) * 55;
+                  const x2 = 200 + Math.cos(angle) * 75;
+                  const y2 = 200 + Math.sin(angle) * 75;
+                  return (
+                    <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fbbf24" strokeWidth="2" opacity="0.6" />
+                  );
+                })}
+              </svg>
+
+              {/* Menu Sections - Positioned around shield */}
+              {SHIELD_SECTIONS.map((section, index) => {
+                const Icon = section.icon;
+                const angleRad = (section.angle - 90) * (Math.PI / 180);
+                const radius = 170;
+                const x = Math.cos(angleRad) * radius;
+                const y = Math.sin(angleRad) * radius;
+
+                return (
+                  <motion.div
+                    key={section.id}
+                    className="absolute"
+                    style={{
+                      left: '50%',
+                      top: '45%',
+                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                    }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3 + index * 0.1, type: 'spring' }}
+                  >
+                    <Link to={createPageUrl(section.page)} onClick={handleEnter}>
+                      <motion.div
+                        className="relative group cursor-pointer"
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        onHoverStart={() => setSelectedSection(section.id)}
+                        onHoverEnd={() => setSelectedSection(null)}
+                      >
+                        {/* Button glow */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full blur-md"
+                          style={{ background: section.color }}
+                          animate={selectedSection === section.id ? { 
+                            scale: [1, 1.3, 1],
+                            opacity: [0.5, 0.8, 0.5]
+                          } : { opacity: 0.3 }}
+                          transition={{ duration: 1, repeat: Infinity }}
+                        />
+                        
+                        {/* Button */}
+                        <div 
+                          className="relative w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center border-2"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${section.color}dd, ${section.color}88)`,
+                            borderColor: '#fbbf24',
+                            boxShadow: `0 4px 20px ${section.color}66`
+                          }}
+                        >
+                          <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                        </div>
+
+                        {/* Label */}
+                        <motion.div
+                          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap mt-2"
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: selectedSection === section.id ? 1 : 0.7, y: 0 }}
+                        >
+                          <span className="text-xs md:text-sm font-semibold text-amber-200 drop-shadow-lg">
+                            {section.label}
+                          </span>
+                        </motion.div>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+
+              {/* Enter/Skip Button at bottom of shield */}
+              <motion.button
+                className="absolute left-1/2 -translate-x-1/2 bottom-4 md:bottom-8"
+                onClick={handleEnter}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-700 to-amber-600 rounded-full border border-amber-400/50 text-amber-100 font-semibold text-sm shadow-lg">
+                  <Play className="w-4 h-4" />
+                  Enter Home
+                </div>
+              </motion.button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Enter Button */}
-      <AnimatePresence>
-        {phase >= 5 && (
-          <motion.div
-            className="absolute bottom-28 md:bottom-36 left-1/2 -translate-x-1/2 z-30"
-            initial={{ opacity: 0, y: 30, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, type: 'spring' }}
-          >
-            <motion.button
-              onClick={() => {
-                setIsVisible(false);
-                setTimeout(() => onComplete?.(), 300);
-              }}
-              className="relative px-10 md:px-14 py-4 md:py-5 bg-gradient-to-b from-red-700 via-red-800 to-red-900 text-amber-100 text-lg md:text-xl font-black tracking-wider rounded-lg border-2 border-amber-500/60 overflow-hidden"
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: [
-                  '0 0 20px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
-                  '0 0 50px rgba(217, 119, 6, 0.7), inset 0 1px 0 rgba(255,255,255,0.1)',
-                  '0 0 20px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
-                ]
-              }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              {/* Button shine effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-              />
-              <span className="relative flex items-center gap-3">
-                ⚔️ ENTER THE ARENA ⚔️
-              </span>
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Loading Progress */}
-      <motion.div
-        className="absolute bottom-10 md:bottom-14 left-1/2 -translate-x-1/2 text-center"
-        animate={{ opacity: phase < 5 ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.p
-          className="text-amber-400/90 text-base md:text-lg tracking-widest font-semibold mb-3"
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+      {/* Loading Progress - Only shown before shield */}
+      {phase < 4 && (
+        <motion.div
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center"
+          animate={{ opacity: phase < 4 ? 1 : 0 }}
         >
-          {phase < 2 ? 'SUMMONING THE LEGION...' : 
-           phase < 3 ? 'ASSEMBLING FORCES...' : 
-           phase < 4 ? 'THE CENTURION ARRIVES...' :
-           'GLORY AWAITS...'}
-        </motion.p>
-        
-        <div className="w-52 md:w-64 h-2 bg-stone-900/80 rounded-full overflow-hidden mx-auto border border-amber-900/30">
-          <motion.div
-            className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 relative"
-            initial={{ width: '0%' }}
-            animate={{ width: `${Math.min(phase * 20, 100)}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+          <motion.p
+            className="text-amber-400/80 text-sm md:text-base tracking-widest mb-3"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
           >
+            {phase < 2 ? 'LOADING...' : phase < 3 ? 'PREPARING THE ARENA...' : 'WELCOME, WARRIOR'}
+          </motion.p>
+          
+          <div className="w-48 h-1.5 bg-stone-900 rounded-full overflow-hidden mx-auto">
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 1, repeat: Infinity }}
+              className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600"
+              initial={{ width: '0%' }}
+              animate={{ width: phase >= 3 ? '100%' : `${phase * 35}%` }}
+              transition={{ duration: 0.5 }}
             />
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
+      )}
 
-        <motion.p
-          className="mt-3 text-amber-600/60 text-xs tracking-[0.5em] uppercase"
+      {/* Skip button - Always available */}
+      {phase < 4 && (
+        <motion.button
+          className="absolute bottom-4 right-4 text-amber-500/60 hover:text-amber-400 text-sm transition-colors"
+          onClick={handleEnter}
           initial={{ opacity: 0 }}
-          animate={{ opacity: phase >= 3 ? 1 : 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
         >
-          Veni • Vidi • Streami
-        </motion.p>
-      </motion.div>
+          Skip →
+        </motion.button>
+      )}
 
-      {/* Vignette edges */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        boxShadow: 'inset 0 0 150px 50px rgba(0,0,0,0.8)'
-      }} />
+      {/* Vignette */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{ boxShadow: 'inset 0 0 200px 100px rgba(0,0,0,0.7)' }}
+      />
     </motion.div>
   );
 }
