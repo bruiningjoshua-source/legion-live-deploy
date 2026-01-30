@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
 
 // Authorized admin emails - update these as needed
 // Authorized admin emails - add your admin emails here
@@ -226,6 +227,9 @@ export default function AdminDashboard() {
               <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
                 Controls
               </TabsTrigger>
+              <TabsTrigger value="payouts" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+                Payouts
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -372,6 +376,11 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Payouts Configuration */}
+          <TabsContent value="payouts">
+            <PayoutConfigManager />
           </TabsContent>
         </Tabs>
       </div>

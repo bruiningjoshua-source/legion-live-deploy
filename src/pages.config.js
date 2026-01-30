@@ -57,12 +57,15 @@ import BrandDashboard from './pages/BrandDashboard';
 import ChannelAnalytics from './pages/ChannelAnalytics';
 import CollaborationHub from './pages/CollaborationHub';
 import CommunityForums from './pages/CommunityForums';
+import CommunityGuidelines from './pages/CommunityGuidelines';
 import ContentModerationAdmin from './pages/ContentModerationAdmin';
+import CreatorAnalytics from './pages/CreatorAnalytics';
 import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorOnboarding from './pages/CreatorOnboarding';
 import CreatorProfile from './pages/CreatorProfile';
 import CreatorStudio from './pages/CreatorStudio';
 import CustomizeTheme from './pages/CustomizeTheme';
+import DataPrivacy from './pages/DataPrivacy';
 import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
 import ExclusiveContentManager from './pages/ExclusiveContentManager';
@@ -78,8 +81,10 @@ import MusicStudio from './pages/MusicStudio';
 import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
 import PlatformAnalytics from './pages/PlatformAnalytics';
 import PodcastStudio from './pages/PodcastStudio';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import TermsOfService from './pages/TermsOfService';
 import TheAmphitheatre from './pages/TheAmphitheatre';
 import TheGamingHub from './pages/TheGamingHub';
 import VideoEditor from './pages/VideoEditor';
@@ -90,11 +95,6 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import TermsOfService from './pages/TermsOfService';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import CommunityGuidelines from './pages/CommunityGuidelines';
-import DataPrivacy from './pages/DataPrivacy';
-import CreatorAnalytics from './pages/CreatorAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -109,12 +109,15 @@ export const PAGES = {
     "ChannelAnalytics": ChannelAnalytics,
     "CollaborationHub": CollaborationHub,
     "CommunityForums": CommunityForums,
+    "CommunityGuidelines": CommunityGuidelines,
     "ContentModerationAdmin": ContentModerationAdmin,
+    "CreatorAnalytics": CreatorAnalytics,
     "CreatorMonetization": CreatorMonetization,
     "CreatorOnboarding": CreatorOnboarding,
     "CreatorProfile": CreatorProfile,
     "CreatorStudio": CreatorStudio,
     "CustomizeTheme": CustomizeTheme,
+    "DataPrivacy": DataPrivacy,
     "EventDetails": EventDetails,
     "Events": Events,
     "ExclusiveContentManager": ExclusiveContentManager,
@@ -130,8 +133,10 @@ export const PAGES = {
     "PlatformAdminAnalytics": PlatformAdminAnalytics,
     "PlatformAnalytics": PlatformAnalytics,
     "PodcastStudio": PodcastStudio,
+    "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
     "Settings": Settings,
+    "TermsOfService": TermsOfService,
     "TheAmphitheatre": TheAmphitheatre,
     "TheGamingHub": TheGamingHub,
     "VideoEditor": VideoEditor,
@@ -142,11 +147,6 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "TermsOfService": TermsOfService,
-    "PrivacyPolicy": PrivacyPolicy,
-    "CommunityGuidelines": CommunityGuidelines,
-    "DataPrivacy": DataPrivacy,
-    "CreatorAnalytics": CreatorAnalytics,
 }
 
 export const pagesConfig = {
