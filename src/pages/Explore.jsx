@@ -124,13 +124,19 @@ export default function Explore() {
   }, [creators, searchQuery, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen pt-20 pb-24">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Explore</h1>
-          <p className="text-amber-400/70">Discover amazing streams and creators</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-300 mb-2">
+            Explore
+          </h1>
+          <p className="text-white/60">Discover amazing streams and creators</p>
+        </motion.div>
 
         {/* Filters */}
         <div className="mb-8 space-y-4">
