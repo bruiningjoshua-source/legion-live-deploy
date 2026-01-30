@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -13,10 +13,23 @@ import {
   SkipForward,
   X,
   Repeat,
-  Shuffle,
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Helper to extract YouTube video ID
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+};
+
+// Check if URL is a direct media file
+const isDirectMediaUrl = (url) => {
+  if (!url) return false;
+  const directExtensions = ['.mp3', '.mp4', '.wav', '.ogg', '.webm', '.m4a', '.aac', '.flac'];
+  return directExtensions.some(ext => url.toLowerCase().includes(ext));
+};
 
 export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
   const audioRef = useRef(null);
@@ -31,9 +44,23 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
   const [isRepeat, setIsRepeat] = useState(false);
   const [error, setError] = useState(null);
 
-  const mediaRef = track?.is_music_video && track?.video_url ? videoRef : audioRef;
+  // Determine if this is YouTube content
+  const youtubeId = useMemo(() => {
+    return getYouTubeId(track?.video_url) || getYouTubeId(track?.audio_url);
+  }, [track]);
+
+  const isYouTube = !!youtubeId;
+  const isDirectVideo = track?.is_music_video && track?.video_url && isDirectMediaUrl(track.video_url);
+  const isDirectAudio = track?.audio_url && isDirectMediaUrl(track.audio_url);
+  const mediaRef = isDirectVideo ? videoRef : audioRef;
 
   useEffect(() => {
+    // Skip native media setup if it's YouTube content
+    if (isYouTube) {
+      setIsLoading(false);
+      return;
+    }
+
     const media = mediaRef.current;
     if (!media) return;
 
@@ -88,16 +115,18 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
       media.removeEventListener('waiting', handleWaiting);
       media.removeEventListener('playing', handlePlaying);
     };
-  }, [track, isRepeat, onNext]);
+  }, [track, isRepeat, onNext, isYouTube]);
 
   useEffect(() => {
+    if (isYouTube) return;
     const media = mediaRef.current;
     if (media) {
       media.volume = isMuted ? 0 : volume;
     }
-  }, [volume, isMuted]);
+  }, [volume, isMuted, isYouTube]);
 
   const togglePlay = useCallback(() => {
+    if (isYouTube) return; // YouTube controls itself
     const media = mediaRef.current;
     if (!media) return;
 
@@ -112,15 +141,16 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
           setError('Could not play. Click to retry.');
         });
     }
-  }, [isPlaying]);
+  }, [isPlaying, isYouTube]);
 
   const handleSeek = useCallback((value) => {
+    if (isYouTube) return;
     const media = mediaRef.current;
     if (media && value[0] !== undefined) {
       media.currentTime = value[0];
       setCurrentTime(value[0]);
     }
-  }, []);
+  }, [isYouTube]);
 
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -131,14 +161,20 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
 
   if (!track) return null;
 
-  const isVideo = track.is_music_video && track.video_url;
-  const mediaSource = isVideo ? track.video_url : track.audio_url;
-
   return (
     <div className="space-y-4">
-      {/* Video/Cover */}
-      <div className="relative aspect-square bg-stone-900 rounded-xl overflow-hidden group">
-        {isVideo ? (
+      {/* Video/Cover/YouTube Embed */}
+      <div className="relative aspect-video bg-stone-900 rounded-xl overflow-hidden group">
+        {isYouTube ? (
+          /* YouTube Embed */
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={track.title}
+          />
+        ) : isDirectVideo ? (
           <video
             ref={videoRef}
             src={track.video_url}
@@ -158,17 +194,19 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
                 backgroundPosition: 'center'
               }}
             />
-            {/* Hidden audio element */}
-            <audio
-              ref={audioRef}
-              src={track.audio_url}
-              preload="metadata"
-            />
+            {/* Hidden audio element for direct audio files */}
+            {isDirectAudio && (
+              <audio
+                ref={audioRef}
+                src={track.audio_url}
+                preload="metadata"
+              />
+            )}
           </>
         )}
 
-        {/* Loading/Error overlay */}
-        {(isLoading || error) && (
+        {/* Loading/Error overlay (not for YouTube) */}
+        {!isYouTube && (isLoading || error) && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             {isLoading ? (
               <Loader2 className="w-10 h-10 text-amber-400 animate-spin" />
@@ -183,8 +221,8 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
           </div>
         )}
 
-        {/* Play/Pause overlay for cover art */}
-        {!isVideo && !isLoading && !error && (
+        {/* Play/Pause overlay for cover art (only for direct audio) */}
+        {!isYouTube && isDirectAudio && !isDirectVideo && !isLoading && !error && (
           <div 
             className="absolute inset-0 bg-black/30 flex items-center justify-center cursor-pointer group-hover:bg-black/50 transition-colors"
             onClick={togglePlay}
@@ -223,31 +261,35 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
         )}
       </div>
 
-      {/* Progress Bar */}
-      <div className="space-y-2 px-1">
-        <Slider
-          value={[currentTime]}
-          max={duration || 100}
-          step={0.1}
-          onValueChange={handleSeek}
-          className="cursor-pointer"
-        />
-        <div className="flex items-center justify-between text-xs text-amber-400/70">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+      {/* Progress Bar (only for direct media, not YouTube) */}
+      {!isYouTube && (isDirectAudio || isDirectVideo) && (
+        <div className="space-y-2 px-1">
+          <Slider
+            value={[currentTime]}
+            max={duration || 100}
+            step={0.1}
+            onValueChange={handleSeek}
+            className="cursor-pointer"
+          />
+          <div className="flex items-center justify-between text-xs text-amber-400/70">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Controls */}
       <div className="flex items-center justify-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsRepeat(!isRepeat)}
-          className={`${isRepeat ? 'text-amber-400' : 'text-amber-400/50'} hover:bg-amber-800/30`}
-        >
-          <Repeat className="w-4 h-4" />
-        </Button>
+        {!isYouTube && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsRepeat(!isRepeat)}
+            className={`${isRepeat ? 'text-amber-400' : 'text-amber-400/50'} hover:bg-amber-800/30`}
+          >
+            <Repeat className="w-4 h-4" />
+          </Button>
+        )}
 
         <Button
           variant="ghost"
@@ -258,19 +300,21 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
           <SkipBack className="w-5 h-5" />
         </Button>
 
-        <Button
-          onClick={togglePlay}
-          disabled={isLoading}
-          className="w-14 h-14 rounded-full bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/30"
-        >
-          {isLoading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
-          ) : isPlaying ? (
-            <Pause className="w-6 h-6" />
-          ) : (
-            <Play className="w-6 h-6 ml-0.5" />
-          )}
-        </Button>
+        {!isYouTube && (
+          <Button
+            onClick={togglePlay}
+            disabled={isLoading}
+            className="w-14 h-14 rounded-full bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/30"
+          >
+            {isLoading ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="w-6 h-6" />
+            ) : (
+              <Play className="w-6 h-6 ml-0.5" />
+            )}
+          </Button>
+        )}
 
         <Button
           variant="ghost"
@@ -281,37 +325,41 @@ export default function MusicPlayer({ track, onClose, onNext, onPrev }) {
           <SkipForward className="w-5 h-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMuted(!isMuted)}
-          className="text-amber-400/50 hover:bg-amber-800/30"
-        >
-          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        </Button>
+        {!isYouTube && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMuted(!isMuted)}
+            className="text-amber-400/50 hover:bg-amber-800/30"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </Button>
+        )}
       </div>
 
-      {/* Volume */}
-      <div className="flex items-center gap-3 px-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMuted(!isMuted)}
-          className="text-amber-400 hover:bg-amber-800/30 h-8 w-8"
-        >
-          {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        </Button>
-        <Slider
-          value={[isMuted ? 0 : volume]}
-          max={1}
-          step={0.01}
-          onValueChange={(v) => {
-            setVolume(v[0]);
-            setIsMuted(v[0] === 0);
-          }}
-          className="flex-1"
-        />
-      </div>
+      {/* Volume (only for direct media) */}
+      {!isYouTube && (isDirectAudio || isDirectVideo) && (
+        <div className="flex items-center gap-3 px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMuted(!isMuted)}
+            className="text-amber-400 hover:bg-amber-800/30 h-8 w-8"
+          >
+            {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </Button>
+          <Slider
+            value={[isMuted ? 0 : volume]}
+            max={1}
+            step={0.01}
+            onValueChange={(v) => {
+              setVolume(v[0]);
+              setIsMuted(v[0] === 0);
+            }}
+            className="flex-1"
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="grid grid-cols-2 gap-2">
