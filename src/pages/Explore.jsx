@@ -138,29 +138,29 @@ export default function Explore() {
           <p className="text-white/60">Discover amazing streams and creators</p>
         </motion.div>
 
-        {/* Filters */}
-        <div className="mb-8 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
-            <Input
-              placeholder="Search streams, creators..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 focus:border-amber-500 rounded-xl"
-            />
-          </div>
+        {/* Search & Filters */}
+        <GlassCard padding="p-4" className="mb-8" animate={false}>
+          <div className="space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              <Input
+                placeholder="Search streams, creators..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-500/50 focus:bg-white/10 rounded-xl transition-all"
+              />
+            </div>
 
-          {/* Filters & Sorting */}
-          <div className="space-y-3">
+            {/* Filters & Sorting */}
             <div className="flex flex-wrap items-center gap-3">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
+                <SelectTrigger className="w-44 bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
-                <SelectContent className="bg-stone-900 border-amber-600/30">
+                <SelectContent className="bg-stone-900/95 backdrop-blur-xl border-white/10">
                   {categories.map(cat => (
-                    <SelectItem key={cat.value} value={cat.value} className="text-amber-100 focus:bg-amber-800/30">
+                    <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-white/10">
                       {cat.label}
                     </SelectItem>
                   ))}
@@ -170,32 +170,33 @@ export default function Explore() {
               {activeTab === 'streams' && (
                 <>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
+                    <SelectTrigger className="w-44 bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
-                    <SelectContent className="bg-stone-900 border-amber-600/30">
-                      <SelectItem value="viewers" className="text-amber-100">Most Viewers</SelectItem>
-                      <SelectItem value="trending" className="text-amber-100">Most Trending</SelectItem>
-                      <SelectItem value="newest" className="text-amber-100">Newest</SelectItem>
+                    <SelectContent className="bg-stone-900/95 backdrop-blur-xl border-white/10">
+                      <SelectItem value="viewers" className="text-white focus:bg-white/10">Most Viewers</SelectItem>
+                      <SelectItem value="trending" className="text-white focus:bg-white/10">Most Trending</SelectItem>
+                      <SelectItem value="newest" className="text-white focus:bg-white/10">Newest</SelectItem>
                     </SelectContent>
                   </Select>
 
-                  <div className="flex items-center gap-1 bg-stone-800/50 rounded-lg border border-amber-600/20 p-0.5">
+                  <div className="flex items-center gap-1 bg-white/5 rounded-xl border border-white/10 p-1">
                     {streamTypes.map(type => {
                       const Icon = type.icon;
+                      const isSelected = selectedType === type.value;
                       return (
-                        <Button
+                        <button
                           key={type.value}
-                          variant={selectedType === type.value ? "default" : "ghost"}
-                          size="sm"
                           onClick={() => setSelectedType(type.value)}
-                          className={`${selectedType === type.value 
-                            ? "bg-amber-600 text-white" 
-                            : "text-amber-300 hover:bg-amber-800/20"} text-xs`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            isSelected 
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/25' 
+                              : 'text-white/60 hover:text-white hover:bg-white/10'
+                          }`}
                         >
-                          <Icon className="w-3 h-3 mr-1" />
+                          <Icon className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">{type.label}</span>
-                        </Button>
+                        </button>
                       );
                     })}
                   </div>
@@ -203,7 +204,7 @@ export default function Explore() {
               )}
             </div>
           </div>
-        </div>
+        </GlassCard>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
