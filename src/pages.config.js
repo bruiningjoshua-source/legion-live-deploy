@@ -90,6 +90,9 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CommunityGuidelines from './pages/CommunityGuidelines';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +140,9 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "TermsOfService": TermsOfService,
+    "PrivacyPolicy": PrivacyPolicy,
+    "CommunityGuidelines": CommunityGuidelines,
 }
 
 export const pagesConfig = {
