@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -20,6 +20,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Helper to extract YouTube video ID
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+};
+
+// Check if URL is a direct media file
+const isDirectMediaUrl = (url) => {
+  if (!url) return false;
+  const directExtensions = ['.mp3', '.mp4', '.wav', '.ogg', '.webm', '.m4a', '.mov', '.avi'];
+  return directExtensions.some(ext => url.toLowerCase().includes(ext));
+};
+
 const qualities = [
   { label: 'Auto', value: 'auto' },
   { label: '1080p', value: '1080p' },
@@ -38,6 +52,10 @@ const playbackSpeeds = [
 ];
 
 export default function VideoPlayer({ src, poster, className = '', onEnded, autoPlay = false }) {
+  // Check if this is a YouTube URL
+  const youtubeId = useMemo(() => getYouTubeId(src), [src]);
+  const isYouTube = !!youtubeId;
+  const isDirectMedia = isDirectMediaUrl(src);
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const hideControlsTimeout = useRef(null);
@@ -226,6 +244,21 @@ export default function VideoPlayer({ src, poster, className = '', onEnded, auto
     return (
       <div className={`relative bg-black flex items-center justify-center ${className}`}>
         <p className="text-white/50">No video source provided</p>
+      </div>
+    );
+  }
+
+  // YouTube Embed
+  if (isYouTube) {
+    return (
+      <div ref={containerRef} className={`relative bg-black ${className}`}>
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&rel=0&modestbranding=1`}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="Video"
+        />
       </div>
     );
   }
