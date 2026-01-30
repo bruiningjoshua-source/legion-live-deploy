@@ -102,28 +102,28 @@ export default function AdminDashboard() {
   const totalRevenue = streams.reduce((sum, s) => sum + (s.total_denarii_earned || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
+    <div className="min-h-screen pt-20 pb-24">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        {/* Header - Centered */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="text-center mb-8"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <Zap className="w-8 h-8 text-amber-400" />
-            <h1 className="text-3xl md:text-4xl font-bold text-amber-100">Admin Dashboard</h1>
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <Zap className="w-6 h-6 text-amber-400" />
+            <h1 className="text-2xl md:text-3xl font-bold text-white">Admin Dashboard</h1>
           </div>
-          <p className="text-amber-400/70">Manage platform, users, and content</p>
+          <p className="text-white/50 text-sm">Manage platform, users, and content</p>
         </motion.div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* Quick Stats - 2x2 grid on mobile */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
           {[
-            { icon: Radio, label: 'Live Streams', value: liveStreamCount, color: 'from-red-500' },
-            { icon: Users, label: 'Creators', value: creators.length, color: 'from-blue-500' },
-            { icon: Eye, label: 'Total Viewers', value: totalViewers.toLocaleString(), color: 'from-purple-500' },
-            { icon: TrendingUp, label: 'Revenue', value: totalRevenue.toLocaleString(), color: 'from-green-500' }
+            { icon: Radio, label: 'Live', value: liveStreamCount, color: 'red' },
+            { icon: Users, label: 'Creators', value: creators.length, color: 'blue' },
+            { icon: Eye, label: 'Viewers', value: totalViewers.toLocaleString(), color: 'purple' },
+            { icon: TrendingUp, label: 'Revenue', value: totalRevenue.toLocaleString(), color: 'green' }
           ].map((stat, i) => {
             const Icon = stat.icon;
             return (
@@ -131,13 +131,13 @@ export default function AdminDashboard() {
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.05 }}
               >
-                <Card className={`bg-gradient-to-br ${stat.color} bg-opacity-10 border-current border-opacity-20`}>
-                  <CardContent className="p-4">
-                    <Icon className="w-5 h-5 mb-2 opacity-70" />
-                    <div className="text-2xl font-bold text-amber-100">{stat.value}</div>
-                    <div className="text-xs text-amber-400/70">{stat.label}</div>
+                <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+                  <CardContent className="p-4 text-center">
+                    <Icon className={`w-5 h-5 mx-auto mb-2 text-${stat.color}-400`} />
+                    <div className="text-xl font-bold text-white">{stat.value}</div>
+                    <div className="text-xs text-white/50">{stat.label}</div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -145,131 +145,149 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* Quick Links - Compact 2x2 grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <Link to={createPageUrl('PlatformAdminAnalytics')}>
-            <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30 hover:border-blue-500/50 transition-all cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <BarChart3 className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                <p className="text-amber-100 font-semibold">Platform Analytics</p>
-                <p className="text-amber-400/60 text-xs">Revenue & metrics</p>
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Analytics</p>
+                  <p className="text-white/40 text-xs">Revenue & metrics</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('ContentModerationAdmin')}>
-            <Card className="bg-gradient-to-br from-red-900/30 to-stone-900 border-red-600/30 hover:border-red-500/50 transition-all cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Shield className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                <p className="text-amber-100 font-semibold">Content Moderation</p>
-                <p className="text-amber-400/60 text-xs">Review violations</p>
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Moderation</p>
+                  <p className="text-white/40 text-xs">Review content</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('AmbassadorProgram')}>
-            <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 hover:border-amber-500/50 transition-all cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Briefcase className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                <p className="text-amber-100 font-semibold">Ambassador Program</p>
-                <p className="text-amber-400/60 text-xs">Manage campaigns</p>
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Ambassadors</p>
+                  <p className="text-white/40 text-xs">Campaigns</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
           <Link to={createPageUrl('BrandCampaigns')}>
-            <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30 hover:border-green-500/50 transition-all cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <DollarSign className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-amber-100 font-semibold">Brand Campaigns</p>
-                <p className="text-amber-400/60 text-xs">Affiliate marketing</p>
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
+              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Brands</p>
+                  <p className="text-white/40 text-xs">Affiliate</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-4">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-amber-600">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600">
-              Streams
-            </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-amber-600">
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-amber-600">
-              Controls
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 mb-4">
+            <TabsList className="bg-white/5 backdrop-blur-sm border border-white/10 p-1 rounded-full inline-flex min-w-max">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="streams" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+                Streams
+              </TabsTrigger>
+              <TabsTrigger value="users" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+                Controls
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview */}
-          <TabsContent value="overview" className="mt-6 space-y-6">
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100">Platform Status</CardTitle>
+          <TabsContent value="overview" className="space-y-4">
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-base">Platform Status</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg">
-                  <span className="text-amber-200">Live Streams Active</span>
-                  <Badge className={liveStreamCount > 0 ? 'bg-red-600' : 'bg-green-600'}>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/80 text-sm">Live Streams</span>
+                  <Badge className={liveStreamCount > 0 ? 'bg-red-500' : 'bg-green-500'}>
                     {liveStreamCount}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg">
-                  <span className="text-amber-200">Total Registered Creators</span>
-                  <Badge className="bg-blue-600">{creators.length}</Badge>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/80 text-sm">Creators</span>
+                  <Badge className="bg-blue-500">{creators.length}</Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg">
-                  <span className="text-amber-200">Platform Users</span>
-                  <Badge className="bg-purple-600">{users.length}</Badge>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/80 text-sm">Users</span>
+                  <Badge className="bg-purple-500">{users.length}</Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg">
-                  <span className="text-amber-200">Total Generated Revenue</span>
-                  <Badge className="bg-green-600">${totalRevenue.toLocaleString()}</Badge>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/80 text-sm">Revenue</span>
+                  <Badge className="bg-green-500">${totalRevenue.toLocaleString()}</Badge>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
                   Key Metrics
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm text-amber-300/70">
-                  <p>Average viewers per stream: {streams.length > 0 ? Math.round(totalViewers / streams.length) : 0}</p>
+                <div className="space-y-2 text-sm text-white/60">
+                  <p>Avg viewers/stream: {streams.length > 0 ? Math.round(totalViewers / streams.length) : 0}</p>
                   <p>Top creator: {creators[0]?.display_name || 'N/A'}</p>
-                  <p>Peak concurrent streams: {liveStreamCount}</p>
+                  <p>Peak streams: {liveStreamCount}</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Streams */}
-          <TabsContent value="streams" className="mt-6">
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <Radio className="w-5 h-5" />
+          <TabsContent value="streams">
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <Radio className="w-4 h-4" />
                   Active Streams
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-80 overflow-y-auto">
                   {streams.filter(s => s.status === 'live').length > 0 ? (
                     streams.filter(s => s.status === 'live').map(stream => (
-                      <div key={stream.id} className="p-3 bg-stone-900/50 rounded-lg flex items-center justify-between">
-                        <div>
-                          <p className="text-amber-100 font-semibold">{stream.title}</p>
-                          <p className="text-amber-400/60 text-xs">{stream.viewer_count} viewers • {stream.category}</p>
+                      <div key={stream.id} className="p-3 bg-white/5 rounded-xl flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white font-medium text-sm truncate">{stream.title}</p>
+                          <p className="text-white/50 text-xs">{stream.viewer_count} viewers • {stream.category}</p>
                         </div>
-                        <Badge className="bg-red-600 animate-pulse">LIVE</Badge>
+                        <Badge className="bg-red-500 animate-pulse ml-2 shrink-0">LIVE</Badge>
                       </div>
                     ))
                   ) : (
-                    <p className="text-amber-400/50 text-center py-8">No active streams</p>
+                    <p className="text-white/40 text-center py-8 text-sm">No active streams</p>
                   )}
                 </div>
               </CardContent>
@@ -277,23 +295,23 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Users */}
-          <TabsContent value="users" className="mt-6">
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  User Accounts
+          <TabsContent value="users">
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Users
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-80 overflow-y-auto">
                   {users.map(u => (
-                    <div key={u.id} className="p-3 bg-stone-900/50 rounded-lg flex items-center justify-between">
-                      <div>
-                        <p className="text-amber-100 font-semibold">{u.full_name}</p>
-                        <p className="text-amber-400/60 text-xs">{u.email}</p>
+                    <div key={u.id} className="p-3 bg-white/5 rounded-xl flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-medium text-sm truncate">{u.full_name}</p>
+                        <p className="text-white/50 text-xs truncate">{u.email}</p>
                       </div>
-                      <Badge className={u.role === 'admin' ? 'bg-amber-600' : 'bg-stone-600'}>
+                      <Badge className={u.role === 'admin' ? 'bg-amber-500' : 'bg-white/20'}>
                         {u.role}
                       </Badge>
                     </div>
@@ -304,40 +322,41 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Settings/Controls */}
-          <TabsContent value="settings" className="mt-6 space-y-4">
-            <Card className="bg-stone-800/30 border-red-500/20">
-              <CardHeader>
-                <CardTitle className="text-red-300 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
+          <TabsContent value="settings" className="space-y-4">
+            <Card className="bg-white/5 backdrop-blur-sm border-red-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-red-400 text-base flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
                   Platform Controls
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
-                  <h3 className="text-red-200 font-semibold mb-2">Clear Live Streams</h3>
-                  <p className="text-red-300/70 text-sm mb-4">
-                    End all active streams and reset creator statuses for a clean launch.
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <h3 className="text-white font-medium text-sm mb-2">Clear Live Streams</h3>
+                  <p className="text-white/50 text-xs mb-4">
+                    End all streams and reset for clean launch.
                   </p>
                   <Button
                     onClick={() => {
-                      if (window.confirm('Clear all live streams? This action cannot be undone.')) {
+                      if (window.confirm('Clear all live streams?')) {
                         clearLiveStreamsMutation.mutate();
                       }
                     }}
                     disabled={clearLiveStreamsMutation.isPending}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-red-500 hover:bg-red-600 text-white rounded-full w-full"
+                    size="sm"
                   >
                     <Power className="w-4 h-4 mr-2" />
                     {clearLiveStreamsMutation.isPending ? 'Processing...' : 'Clear & Launch'}
                   </Button>
                 </div>
 
-                <div className="p-4 bg-stone-800 border border-amber-600/20 rounded-lg">
-                  <h3 className="text-amber-100 font-semibold mb-2">Maintenance Mode</h3>
-                  <p className="text-amber-300/70 text-sm mb-4">
-                    Take platform offline for maintenance (coming soon)
+                <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <h3 className="text-white font-medium text-sm mb-2">Maintenance Mode</h3>
+                  <p className="text-white/50 text-xs mb-4">
+                    Take platform offline (coming soon)
                   </p>
-                  <Button disabled className="bg-stone-700 text-stone-400">
+                  <Button disabled className="bg-white/10 text-white/40 rounded-full w-full" size="sm">
                     <Settings className="w-4 h-4 mr-2" />
                     Coming Soon
                   </Button>
