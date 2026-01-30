@@ -36,8 +36,7 @@ import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
-import CameraFilters from '@/components/stream/CameraFilters';
-import AnimatedFilterOverlay from '@/components/stream/AnimatedFilterOverlay';
+import SnapchatLensFilters from '@/components/stream/SnapchatLensFilters';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
