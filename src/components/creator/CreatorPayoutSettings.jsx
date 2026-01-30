@@ -35,10 +35,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const PAYOUT_METHODS = [
+  { id: 'stripe_connect', name: 'Bank Account (Stripe)', icon: '🏦', placeholder: 'Connect your bank', recommended: true },
   { id: 'paypal', name: 'PayPal', icon: '💳', placeholder: 'your@email.com' },
   { id: 'venmo', name: 'Venmo', icon: '📱', placeholder: '@username' },
-  { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' },
-  { id: 'bank_transfer', name: 'Bank Transfer', icon: '🏦', placeholder: 'Contact support to set up' }
+  { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' }
 ];
 
 // Platform takes 60%, creator gets 40%
@@ -52,6 +52,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
   const [showCashout, setShowCashout] = useState(false);
   const [newMethod, setNewMethod] = useState({ type: '', identifier: '', displayName: '' });
   const [cashoutAmount, setCashoutAmount] = useState('');
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeStatus, setStripeStatus] = useState(null);
 
   const { data: payoutMethods = [], isLoading: methodsLoading } = useQuery({
     queryKey: ['payout-methods', creator?.id],
@@ -64,6 +66,50 @@ export default function CreatorPayoutSettings({ creator, user }) {
     queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: creator.id }, '-created_date', 20),
     enabled: !!creator?.id
   });
+
+  // Check Stripe Connect status on load
+  React.useEffect(() => {
+    const checkStripeStatus = async () => {
+      if (!creator?.id) return;
+      const stripeMethod = payoutMethods.find(m => m.method_type === 'stripe_connect');
+      if (stripeMethod) {
+        const response = await base44.functions.invoke('stripeConnectOnboard', {
+          action: 'check_status',
+          creatorId: creator.id
+        });
+        setStripeStatus(response.data);
+      }
+    };
+    checkStripeStatus();
+  }, [creator?.id, payoutMethods]);
+
+  const handleStripeConnect = async () => {
+    setStripeLoading(true);
+    const response = await base44.functions.invoke('stripeConnectOnboard', {
+      action: 'create_account',
+      creatorId: creator.id
+    });
+    
+    if (response.data?.url) {
+      window.location.href = response.data.url;
+    } else {
+      toast.error('Failed to start Stripe setup');
+      setStripeLoading(false);
+    }
+  };
+
+  const handleStripeLogin = async () => {
+    setStripeLoading(true);
+    const response = await base44.functions.invoke('stripeConnectOnboard', {
+      action: 'create_login_link',
+      creatorId: creator.id
+    });
+    
+    if (response.data?.url) {
+      window.open(response.data.url, '_blank');
+    }
+    setStripeLoading(false);
+  };
 
   const addMethodMutation = useMutation({
     mutationFn: async (data) => {
@@ -97,9 +143,23 @@ export default function CreatorPayoutSettings({ creator, user }) {
 
   const requestPayoutMutation = useMutation({
     mutationFn: async ({ amount, method }) => {
+      // If Stripe Connect, process instantly
+      if (method.method_type === 'stripe_connect' && method.stripe_payouts_enabled) {
+        const response = await base44.functions.invoke('stripeConnectPayout', {
+          creatorId: creator.id,
+          amountDenarii: amount
+        });
+        
+        if (response.data?.error) {
+          throw new Error(response.data.error);
+        }
+        
+        return response.data;
+      }
+      
+      // Otherwise create pending payout request
       const payoutUsd = amount * DENARII_TO_USD * CREATOR_SHARE;
       
-      // Deduct from creator earnings
       await base44.entities.Creator.update(creator.id, {
         total_earnings_denarii: (creator.total_earnings_denarii || 0) - amount,
         pending_withdrawal: (creator.pending_withdrawal || 0) + payoutUsd
@@ -115,12 +175,20 @@ export default function CreatorPayoutSettings({ creator, user }) {
         status: 'pending'
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries(['payout-history']);
       queryClient.invalidateQueries(['my-creator']);
       setShowCashout(false);
       setCashoutAmount('');
-      toast.success('Payout request submitted! Processing within 3-5 business days.');
+      
+      if (data?.transfer_id) {
+        toast.success('Payout sent! Funds will arrive in 1-2 business days.');
+      } else {
+        toast.success('Payout request submitted! Processing within 3-5 business days.');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Payout failed');
     }
   });
 
@@ -176,12 +244,68 @@ export default function CreatorPayoutSettings({ creator, user }) {
         </CardContent>
       </Card>
 
-      {/* Payout Methods */}
+      {/* Stripe Connect - Recommended */}
+      <Card className="bg-gradient-to-br from-indigo-900/40 to-stone-900 border-indigo-500/30">
+        <CardHeader>
+          <CardTitle className="text-indigo-100 flex items-center gap-2">
+            🏦 Direct Bank Deposits
+            <Badge className="bg-green-600/20 text-green-300 border-green-500/30 text-xs">
+              Recommended
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {stripeStatus?.payouts_enabled ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-green-400">
+                <Check className="w-5 h-5" />
+                <span>Bank account connected - instant payouts enabled</span>
+              </div>
+              <Button
+                onClick={handleStripeLogin}
+                variant="outline"
+                className="border-indigo-500/30 text-indigo-300"
+                disabled={stripeLoading}
+              >
+                {stripeLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                View Stripe Dashboard
+              </Button>
+            </div>
+          ) : stripeStatus?.details_submitted ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-amber-400">
+                <AlertCircle className="w-5 h-5" />
+                <span>Verification in progress - payouts will be enabled soon</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-indigo-300/80 text-sm">
+                Connect your bank account for instant payouts. Funds arrive in 1-2 business days with no manual processing.
+              </p>
+              <Button
+                onClick={handleStripeConnect}
+                className="bg-indigo-600 hover:bg-indigo-700"
+                disabled={stripeLoading}
+              >
+                {stripeLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                )}
+                Connect Bank Account
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Other Payout Methods */}
       <Card className="bg-stone-800/30 border-amber-600/20">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-amber-100 flex items-center gap-2">
             <Wallet className="w-5 h-5 text-amber-400" />
-            Payout Methods
+            Other Payout Methods
           </CardTitle>
           <Button
             onClick={() => setShowAddMethod(true)}
@@ -208,7 +332,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
             </div>
           ) : (
             <div className="space-y-3">
-              {payoutMethods.map((method) => {
+              {payoutMethods.filter(m => m.method_type !== 'stripe_connect').map((method) => {
                 const methodInfo = PAYOUT_METHODS.find(m => m.id === method.method_type);
                 return (
                   <motion.div
@@ -299,7 +423,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                   <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent className="bg-stone-900 border-amber-600/30">
-                  {PAYOUT_METHODS.map(method => (
+                  {PAYOUT_METHODS.filter(m => m.id !== 'stripe_connect').map(method => (
                     <SelectItem key={method.id} value={method.id} className="text-amber-100">
                       <span className="flex items-center gap-2">
                         <span>{method.icon}</span>
@@ -381,8 +505,11 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <p className="text-amber-300/70 text-xs mb-1">Payout to</p>
                 <p className="text-amber-100 font-medium flex items-center gap-2">
                   {PAYOUT_METHODS.find(m => m.id === defaultMethod.method_type)?.icon}
-                  {defaultMethod.identifier}
+                  {defaultMethod.method_type === 'stripe_connect' ? 'Your Bank Account' : defaultMethod.identifier}
                 </p>
+                {defaultMethod.method_type === 'stripe_connect' && defaultMethod.stripe_payouts_enabled && (
+                  <p className="text-green-400 text-xs mt-1">⚡ Instant payout - arrives in 1-2 days</p>
+                )}
               </div>
             )}
 
