@@ -39,9 +39,9 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
 
   return (
     <motion.div
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      className="absolute top-24 left-4 z-20"
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="relative z-20"
     >
       <AnimatePresence mode="wait">
         {isMinimized ? (
