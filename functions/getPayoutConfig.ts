@@ -1,14 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const DEFAULT_CONFIG = {
-  creator_base_share: 0.50,
-  platform_base_share: 0.50,
+  creator_base_share: 0.80,
+  platform_base_share: 0.20,
   tier_thresholds: { bronze: 1000, silver: 2500, gold: 5000, platinum: 10000 },
-  tier_shares: { starter: 0.50, bronze: 0.55, silver: 0.60, gold: 0.65, platinum: 0.70 },
-  tip_platform_fee: 0.15,
-  gift_platform_fee: 0.30,
-  subscription_platform_fee: 0.30,
-  affiliate_partner_share: 0.75,
+  tier_shares: { starter: 0.80, bronze: 0.80, silver: 0.80, gold: 0.80, platinum: 0.80 },
+  tip_platform_fee: 0.20,        // Creator gets 80% of tips
+  gift_platform_fee: 0.60,        // Creator gets 40% of gifts
+  subscription_platform_fee: 0.20, // Creator gets 80% of subs
+  affiliate_partner_share: 0.90,   // Affiliates get 90%
   referral_bonus_percent: 0.10,
   min_payout_usd: 50
 };

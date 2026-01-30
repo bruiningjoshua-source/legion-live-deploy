@@ -13,8 +13,8 @@ import { toast } from 'sonner';
 
 const DEFAULT_CONFIG = {
   config_name: 'default',
-  creator_base_share: 0.50,
-  platform_base_share: 0.50,
+  creator_base_share: 0.80,
+  platform_base_share: 0.20,
   tier_thresholds: {
     bronze: 1000,
     silver: 2500,
@@ -22,16 +22,16 @@ const DEFAULT_CONFIG = {
     platinum: 10000
   },
   tier_shares: {
-    starter: 0.50,
-    bronze: 0.55,
-    silver: 0.60,
-    gold: 0.65,
-    platinum: 0.70
+    starter: 0.80,
+    bronze: 0.80,
+    silver: 0.80,
+    gold: 0.80,
+    platinum: 0.80
   },
-  tip_platform_fee: 0.15,
-  gift_platform_fee: 0.30,
-  subscription_platform_fee: 0.30,
-  affiliate_partner_share: 0.75,
+  tip_platform_fee: 0.20,       // Platform takes 20%, creator gets 80%
+  gift_platform_fee: 0.60,       // Platform takes 60%, creator gets 40%
+  subscription_platform_fee: 0.20, // Platform takes 20%, creator gets 80%
+  affiliate_partner_share: 0.90,  // Affiliates get 90%
   referral_bonus_percent: 0.10,
   min_payout_usd: 50,
   is_active: true
