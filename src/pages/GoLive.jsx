@@ -296,16 +296,25 @@ export default function GoLive() {
       });
 
       // Initialize Agora - App ID fetched from token response
+      const uid = Math.floor(Math.random() * 1000000);
       const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
         channelName: stream.id,
-        uid: Math.floor(Math.random() * 1000000),
+        uid: uid,
         role: 'host'
       });
       
-      const AGORA_APP_ID = tokenResponse.data.appId || Deno.env?.get?.('AGORA_APP_ID') || '497c36af191647579fb65a825dd22b42';
+      const AGORA_APP_ID = tokenResponse.data.appId || '497c36af191647579fb65a825dd22b42';
       await AgoraService.initialize(AGORA_APP_ID);
+      
+      // Join the channel
+      await AgoraService.joinChannel(tokenResponse.data.token || '', stream.id, uid);
+      
+      // Create and publish tracks
+      await AgoraService.createLocalTracks();
+      await AgoraService.publishTracks();
 
       setAgoraToken(tokenResponse.data.token || '');
+      console.log('Stream started and tracks published');
 
       // Update creator to live status
       await base44.entities.Creator.update(creatorId, {
