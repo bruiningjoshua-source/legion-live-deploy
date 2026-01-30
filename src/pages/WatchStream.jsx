@@ -619,15 +619,29 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Custom Background Layer - Behind video as backdrop */}
-      {customBackground && customBackground !== 'blur' && (
+      {/* Background Layer - Behind video as backdrop */}
+      {activeBackground && activeBackground.type === 'image' && (
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url(${customBackground})`,
+            backgroundImage: `url(${activeBackground.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
+        />
+      )}
+      {activeBackground && activeBackground.type === 'gradient' && (
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            background: `linear-gradient(135deg, ${activeBackground.colors[0]}, ${activeBackground.colors[1]})`
+          }}
+        />
+      )}
+      {activeBackground && activeBackground.type === 'color' && (
+        <div 
+          className="absolute inset-0 z-0"
+          style={{ backgroundColor: activeBackground.value }}
         />
       )}
 
