@@ -304,7 +304,7 @@ export default function GoLive() {
         role: 'host'
       });
       
-      const AGORA_APP_ID = tokenResponse.data.appId || '497c36af191647579fb65a825dd22b42';
+      const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42';
       await AgoraService.initialize(AGORA_APP_ID);
       
       // Join the channel as host
