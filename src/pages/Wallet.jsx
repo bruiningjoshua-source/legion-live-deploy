@@ -206,22 +206,24 @@ export default function Wallet() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl mb-6">
-            <TabsTrigger 
-              value="buy"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg px-6"
-            >
-              <CreditCard className="w-4 h-4 mr-2" />
-              Buy Denarii
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg px-6"
-            >
-              <History className="w-4 h-4 mr-2" />
-              History
-            </TabsTrigger>
-          </TabsList>
+          <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl mb-8">
+            <TabsList className="bg-transparent p-0 gap-1">
+              <TabsTrigger 
+                value="buy"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Buy Denarii
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+              >
+                <History className="w-4 h-4 mr-2" />
+                History
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="buy" className="mt-0">
             <CurrencyPackages 
@@ -231,92 +233,90 @@ export default function Wallet() {
           </TabsContent>
 
           <TabsContent value="history" className="mt-0">
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <History className="w-5 h-5 text-amber-400" />
-                  Transaction History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Purchases */}
-                {purchases.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-amber-300 font-medium text-sm mb-3">Purchases</h4>
-                    <div className="space-y-3">
-                      {purchases.map((purchase, i) => (
-                        <motion.div
-                          key={purchase.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className="flex items-center justify-between p-3 bg-green-900/20 rounded-xl border border-green-600/20"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
-                              <ArrowDownRight className="w-5 h-5 text-green-400" />
-                            </div>
-                            <div>
-                              <p className="text-amber-100 font-medium">{purchase.package_name}</p>
-                              <p className="text-amber-400/60 text-xs">
-                                {format(new Date(purchase.created_date), 'MMM d, yyyy h:mm a')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-green-400 font-bold">+{(purchase.denarii_amount + (purchase.bonus_denarii || 0)).toLocaleString()}</p>
-                            <p className="text-amber-400/60 text-xs">${purchase.price_usd?.toFixed(2)}</p>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <GlassCard>
+              <div className="flex items-center gap-2 mb-6">
+                <History className="w-5 h-5 text-amber-400" />
+                <h3 className="text-white font-semibold text-lg">Transaction History</h3>
+              </div>
 
-                {/* Gifts Sent */}
-                {transactions.length > 0 && (
-                  <div>
-                    <h4 className="text-amber-300 font-medium text-sm mb-3">Gifts Sent</h4>
-                    <div className="space-y-3">
-                      {transactions.map((tx, i) => (
-                        <motion.div
-                          key={tx.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className="flex items-center justify-between p-3 bg-amber-900/20 rounded-xl border border-amber-600/20"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-amber-600/20 flex items-center justify-center">
-                              <Gift className="w-5 h-5 text-amber-400" />
-                            </div>
-                            <div>
-                              <p className="text-amber-100 font-medium">
-                                {tx.quantity > 1 && `${tx.quantity}x `}{tx.gift_name}
-                              </p>
-                              <p className="text-amber-400/60 text-xs">
-                                {format(new Date(tx.created_date), 'MMM d, yyyy h:mm a')}
-                              </p>
-                            </div>
+              {/* Purchases */}
+              {purchases.length > 0 && (
+                <div className="mb-8">
+                  <h4 className="text-white/50 font-medium text-sm mb-4">Purchases</h4>
+                  <div className="space-y-3">
+                    {purchases.map((purchase, i) => (
+                      <motion.div
+                        key={purchase.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="flex items-center justify-between p-4 bg-green-500/10 rounded-xl border border-green-500/20"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                            <ArrowDownRight className="w-6 h-6 text-green-400" />
                           </div>
-                          <div className="text-right">
-                            <p className="text-amber-400 font-bold">-{tx.total_as_value?.toLocaleString()}</p>
-                            <p className="text-amber-400/60 text-xs">As</p>
+                          <div>
+                            <p className="text-white font-medium">{purchase.package_name}</p>
+                            <p className="text-white/40 text-xs">
+                              {format(new Date(purchase.created_date), 'MMM d, yyyy h:mm a')}
+                            </p>
                           </div>
-                        </motion.div>
-                      ))}
-                    </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-green-400 font-bold text-lg">+{(purchase.denarii_amount + (purchase.bonus_denarii || 0)).toLocaleString()}</p>
+                          <p className="text-white/40 text-xs">${purchase.price_usd?.toFixed(2)}</p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {purchases.length === 0 && transactions.length === 0 && (
-                  <div className="text-center py-12 text-amber-400/60">
-                    <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No transactions yet</p>
+              {/* Gifts Sent */}
+              {transactions.length > 0 && (
+                <div>
+                  <h4 className="text-white/50 font-medium text-sm mb-4">Gifts Sent</h4>
+                  <div className="space-y-3">
+                    {transactions.map((tx, i) => (
+                      <motion.div
+                        key={tx.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="flex items-center justify-between p-4 bg-amber-500/10 rounded-xl border border-amber-500/20"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                            <Gift className="w-6 h-6 text-amber-400" />
+                          </div>
+                          <div>
+                            <p className="text-white font-medium">
+                              {tx.quantity > 1 && `${tx.quantity}x `}{tx.gift_name}
+                            </p>
+                            <p className="text-white/40 text-xs">
+                              {format(new Date(tx.created_date), 'MMM d, yyyy h:mm a')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-amber-400 font-bold text-lg">-{tx.total_as_value?.toLocaleString()}</p>
+                          <p className="text-white/40 text-xs">As</p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              )}
+
+              {purchases.length === 0 && transactions.length === 0 && (
+                <div className="text-center py-16">
+                  <History className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                  <p className="text-white/40">No transactions yet</p>
+                  <p className="text-white/30 text-sm mt-1">Purchase Denarii to get started!</p>
+                </div>
+              )}
+            </GlassCard>
           </TabsContent>
         </Tabs>
       </div>
