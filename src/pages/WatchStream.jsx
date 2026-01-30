@@ -45,7 +45,7 @@ import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
 import DirectTipButton from '@/components/stream/DirectTipButton';
-import HostControls from '@/components/stream/HostControls';
+
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
 import BigoStyleChat from '@/components/stream/BigoStyleChat';
