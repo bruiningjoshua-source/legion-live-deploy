@@ -84,12 +84,8 @@ export default function WatchStream() {
   const [kickedUsers, setKickedUsers] = useState([]);
   const [chatMuted, setChatMuted] = useState(false);
   const [panelParticipants, setPanelParticipants] = useState([]);
-  const [activeOverlays, setActiveOverlays] = useState({
-    animatedEffect: null,
-    staticOverlay: null,
-    screenEffect: null,
-    intensity: 1
-  });
+  const [activeLens, setActiveLens] = useState(null);
+  const [activeBackground, setActiveBackground] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
