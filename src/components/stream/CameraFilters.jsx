@@ -154,46 +154,51 @@ export default function CameraFilters({
     if (!videoRef?.current) return;
 
     const video = videoRef.current;
-    let filterStr = '';
     
-    // Get preset settings
+    // Get preset CSS filter
     const preset = COLOR_FILTERS.find(f => f.id === selectedFilter);
-    const settings = preset?.settings || {};
+    let filterStr = preset?.css || '';
     
-    // Apply brightness
-    const finalBrightness = (settings.brightness || 1) * brightness;
-    filterStr += `brightness(${finalBrightness}) `;
+    // Add manual adjustments on top of preset
+    let manualFilters = '';
     
-    // Apply contrast
-    const finalContrast = (settings.contrast || 1) * contrast;
-    filterStr += `contrast(${finalContrast}) `;
+    // Brightness adjustment
+    if (brightness !== 1) {
+      manualFilters += `brightness(${brightness}) `;
+    }
     
-    // Apply saturation
-    const finalSaturation = (settings.saturation || 1) * saturation;
-    filterStr += `saturate(${finalSaturation}) `;
+    // Contrast adjustment
+    if (contrast !== 1) {
+      manualFilters += `contrast(${contrast}) `;
+    }
     
-    // Apply temperature (warm/cool shift)
-    const finalTemp = (settings.temperature || 0) + temperature;
-    if (finalTemp !== 0) {
-      if (finalTemp > 0) {
-        filterStr += `sepia(${Math.abs(finalTemp) * 0.2}) `;
+    // Saturation adjustment
+    if (saturation !== 1) {
+      manualFilters += `saturate(${saturation}) `;
+    }
+    
+    // Temperature (warm/cool shift)
+    if (temperature !== 0) {
+      if (temperature > 0) {
+        manualFilters += `sepia(${temperature * 0.3}) `;
       } else {
-        filterStr += `hue-rotate(${finalTemp * 20}deg) `;
+        manualFilters += `hue-rotate(${temperature * 30}deg) `;
       }
     }
     
     // Beauty smoothing (subtle blur)
     if (beautySmooth > 0) {
-      filterStr += `blur(${beautySmooth * 0.02}px) `;
+      manualFilters += `blur(${beautySmooth * 0.03}px) `;
     }
     
     // Glow effect
-    if (glow > 0 || (settings.glow && settings.glow > 0)) {
-      const finalGlow = (settings.glow || 0) + glow;
-      filterStr += `drop-shadow(0 0 ${finalGlow * 5}px rgba(255,255,255,0.3)) `;
+    if (glow > 0) {
+      manualFilters += `drop-shadow(0 0 ${glow * 8}px rgba(255,255,255,0.4)) `;
     }
 
-    video.style.filter = filterStr.trim() || 'none';
+    // Combine preset and manual filters
+    const combinedFilter = (filterStr + ' ' + manualFilters).trim() || 'none';
+    video.style.filter = combinedFilter;
     
     // Transform (mirror + zoom)
     const scaleX = mirrorEnabled ? -1 : 1;
