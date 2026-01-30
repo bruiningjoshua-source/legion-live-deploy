@@ -46,6 +46,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
 import InterestSelector from '@/components/amphitheatre/InterestSelector';
 import DirectMessaging from '@/components/community/DirectMessaging';
+import AutoPlaylist from '@/components/amphitheatre/AutoPlaylist';
 
 const CATEGORIES = [
   { value: 'all', label: 'All', icon: '🎬' },
