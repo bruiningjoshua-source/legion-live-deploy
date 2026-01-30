@@ -3,8 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -16,12 +14,12 @@ import {
   Film,
   Gamepad2,
   ShoppingBag,
-  Compass,
-  Play
+  ArrowRight
 } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from 'framer-motion';
-import StreamCard from '@/components/stream/StreamCard';
+import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
+import GlassCard from '@/components/shared/GlassCard';
+import PremiumButton from '@/components/shared/PremiumButton';
 import TrendingSection from '@/components/shared/TrendingSection';
 
 export default function Home() {
