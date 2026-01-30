@@ -477,8 +477,8 @@ export default function WatchStream() {
           const token = tokenResponse.data.token || '';
           viewerUid = tokenResponse.data.uid || viewerUid;
 
-          // Join channel as viewer
-          await AgoraService.joinChannel(token, streamId, viewerUid);
+          // Join channel as viewer (audience role)
+          await AgoraService.joinChannel(token, streamId, viewerUid, 'audience');
 
           // Monitor stream quality
           AgoraService.onQualityChange((stats) => {
