@@ -593,8 +593,8 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Custom Background Layer */}
-      {customBackground && (
+      {/* Custom Background Layer - Behind video as backdrop */}
+      {customBackground && customBackground !== 'blur' && (
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -606,7 +606,7 @@ export default function WatchStream() {
       )}
 
       {/* Fullscreen Mobile-Optimized Video */}
-      <div className="absolute inset-0 bg-black overflow-hidden" style={{ width: '100%', height: '100%', zIndex: customBackground ? 1 : 0 }}>
+      <div className="absolute inset-0 overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 1, backgroundColor: customBackground ? 'transparent' : '#000' }}>
         <video
           ref={videoRef}
           className="w-full h-full"
@@ -614,7 +614,7 @@ export default function WatchStream() {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
-            backgroundColor: '#000',
+            backgroundColor: 'transparent',
             position: 'absolute',
             top: 0,
             left: 0,

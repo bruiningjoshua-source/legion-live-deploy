@@ -76,9 +76,9 @@ export default function LoadingScreen({ onComplete }) {
         />
       </div>
 
-      {/* Centurion image - Dramatic reveal */}
+      {/* Centurion image - Full Screen */}
       <motion.div 
-        className="absolute inset-0 flex items-end justify-center"
+        className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: phase >= 1 ? 1 : 0 }}
         transition={{ duration: 1 }}
@@ -86,17 +86,16 @@ export default function LoadingScreen({ onComplete }) {
         <motion.img
           src={CENTURION_IMAGE}
           alt=""
-          className="h-[75vh] sm:h-[80vh] w-auto object-contain object-bottom"
-          initial={{ y: 100, scale: 1.1 }}
+          className="w-full h-full object-cover object-center"
+          initial={{ scale: 1.1 }}
           animate={{ 
-            y: phase >= 2 ? 0 : 100,
             scale: phase >= 2 ? 1 : 1.1,
-            filter: phase >= 4 ? 'brightness(0.4)' : 'brightness(0.9)'
+            filter: phase >= 4 ? 'brightness(0.4)' : 'brightness(0.8)'
           }}
           transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
         />
-        {/* Gradient fade at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-black via-black/80 to-transparent" />
+        {/* Gradient overlays for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
       </motion.div>
 
       {/* Top section - Logo */}
