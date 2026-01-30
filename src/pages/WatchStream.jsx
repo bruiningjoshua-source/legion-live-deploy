@@ -824,24 +824,14 @@ export default function WatchStream() {
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
         <>
-          {/* Animated Filter Overlay - Only show if effects are active */}
-          {(activeOverlays.animatedEffect || activeOverlays.staticOverlay || activeOverlays.screenEffect) && (
-            <AnimatedFilterOverlay
-              activeEffect={activeOverlays.animatedEffect}
-              staticOverlay={activeOverlays.staticOverlay}
-              edgeEffect={activeOverlays.screenEffect}
-              intensity={activeOverlays.intensity}
-            />
-          )}
-
-          {/* Host Controls - TikTok/Snapchat style camera filters */}
+          {/* Host Controls - Snapchat-style lens filters */}
           <div className="absolute top-20 left-4 z-20 flex gap-2">
-            <CameraFilters 
+            <SnapchatLensFilters 
               videoRef={videoRef}
               onMirrorChange={setIsMirrored}
               initialMirror={isMirrored}
-              onBackgroundChange={setCustomBackground}
-              onOverlayChange={setActiveOverlays}
+              onLensChange={setActiveLens}
+              onBackgroundChange={setActiveBackground}
             />
             <Button
               onClick={() => setShowModerationPanel(true)}
