@@ -38,7 +38,7 @@ const tiers = [
     icon: Circle,
     color: 'from-slate-500 to-slate-600',
     followers: '0-99',
-    monthlyEarnings: '$0-50',
+    monthlyEarnings: '$0-100',
     split: '50%',
     requirements: ['Complete profile', 'First stream', 'Monetization enabled'],
     perks: ['Basic analytics', 'Standard gifts', 'Chat features']
@@ -48,7 +48,7 @@ const tiers = [
     icon: Star,
     color: 'from-amber-700 to-amber-800',
     followers: '100-499',
-    monthlyEarnings: '$50-200',
+    monthlyEarnings: '$100-400',
     split: '55%',
     requirements: ['100+ followers', '10+ hours streamed', '20+ average viewers'],
     perks: ['Priority support', 'Custom emotes (3)', 'Bronze badge']
@@ -58,7 +58,7 @@ const tiers = [
     icon: Zap,
     color: 'from-slate-400 to-slate-500',
     followers: '500-1,999',
-    monthlyEarnings: '$200-800',
+    monthlyEarnings: '$400-1,200',
     split: '60%',
     requirements: ['500+ followers', '40+ hours streamed', '50+ average viewers'],
     perks: ['Featured placement', 'Custom emotes (10)', 'Silver badge', 'Raid priority']
@@ -68,7 +68,7 @@ const tiers = [
     icon: Crown,
     color: 'from-yellow-500 to-amber-600',
     followers: '2,000-9,999',
-    monthlyEarnings: '$800-3,000',
+    monthlyEarnings: '$1,200-4,000',
     split: '65%',
     requirements: ['2,000+ followers', '100+ hours streamed', '100+ average viewers'],
     perks: ['Homepage feature', 'Custom emotes (25)', 'Gold badge', 'Dedicated manager']
@@ -78,7 +78,7 @@ const tiers = [
     icon: Trophy,
     color: 'from-purple-500 to-pink-600',
     followers: '10,000+',
-    monthlyEarnings: '$3,000+',
+    monthlyEarnings: '$4,000+',
     split: '70%',
     requirements: ['10,000+ followers', '500+ hours streamed', '500+ average viewers'],
     perks: ['Top creator status', 'Unlimited emotes', 'Platinum badge', 'Revenue bonuses', 'Brand deals access']
@@ -168,11 +168,11 @@ const growthStrategies = [
 
 const earningsCalculator = [
   { supporters: 10, avgSpend: 10, monthly: 50, yearly: 600 },
+  { supporters: 20, avgSpend: 15, monthly: 150, yearly: 1800 },
   { supporters: 30, avgSpend: 20, monthly: 300, yearly: 3600 },
   { supporters: 50, avgSpend: 25, monthly: 625, yearly: 7500 },
-  { supporters: 100, avgSpend: 30, monthly: 1500, yearly: 18000 },
-  { supporters: 250, avgSpend: 30, monthly: 3750, yearly: 45000 },
-  { supporters: 500, avgSpend: 35, monthly: 8750, yearly: 105000 }
+  { supporters: 75, avgSpend: 30, monthly: 1125, yearly: 13500 },
+  { supporters: 100, avgSpend: 30, monthly: 1500, yearly: 18000 }
 ];
 
 const milestones = [
@@ -410,9 +410,9 @@ export default function CreatorSuccessProgram() {
                           </td>
                           <td className="py-4 px-4">
                             <Badge className={
-                              row.yearly >= 50000 ? 'bg-purple-600' :
-                              row.yearly >= 20000 ? 'bg-yellow-600' :
-                              row.yearly >= 5000 ? 'bg-slate-500' :
+                              row.monthly >= 3000 ? 'bg-purple-600' :
+                              row.monthly >= 1000 ? 'bg-yellow-600' :
+                              row.monthly >= 300 ? 'bg-slate-500' :
                               'bg-stone-600'
                             }>
                               {row.yearly >= 50000 ? 'Full-Time' :
@@ -430,11 +430,11 @@ export default function CreatorSuccessProgram() {
                 <div className="mt-6 p-4 bg-amber-900/20 rounded-xl border border-amber-500/30">
                   <h4 className="text-amber-100 font-medium mb-2 flex items-center gap-2">
                     <Target className="w-4 h-4 text-amber-400" />
-                    The 100/30/30 Goal
+                    The 30/30 Goal (Your First Milestone)
                   </h4>
                   <p className="text-amber-200/80 text-sm">
-                    <strong className="text-amber-100">100 supporters</strong> spending <strong className="text-amber-100">$30/month</strong> = <strong className="text-green-400">$1,500/month</strong> in your pocket.
-                    That's a realistic first milestone for serious creators, achievable in 6-12 months with consistent effort.
+                    <strong className="text-amber-100">30 supporters</strong> spending <strong className="text-amber-100">$20/month</strong> = <strong className="text-green-400">$300/month</strong> in your pocket.
+                    This is your first realistic target — achievable in 3-6 months with consistent streaming and bringing your existing audience.
                   </p>
                 </div>
               </CardContent>
