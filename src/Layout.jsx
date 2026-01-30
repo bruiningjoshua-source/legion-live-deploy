@@ -52,6 +52,8 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.auth.me(),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     retry: 1
   });
 
@@ -82,7 +84,9 @@ export default function Layout({ children, currentPageName }) {
       }
     },
     enabled: !!user?.email,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     retry: 1
   });
 
