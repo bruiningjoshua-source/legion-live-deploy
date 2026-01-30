@@ -10,13 +10,12 @@ import {
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
 
 // Shield menu sections - arranged like a wheel
+// Simplified to 4 main sections for cleaner mobile layout
 const SHIELD_SECTIONS = [
-  { id: 'arena', label: 'Live Arena', icon: Radio, page: 'Explore', color: '#dc2626', angle: -60 },
-  { id: 'amphitheatre', label: 'Amphitheatre', icon: Film, page: 'TheAmphitheatre', color: '#9333ea', angle: -20 },
-  { id: 'gaming', label: 'Gaming Hub', icon: Gamepad2, page: 'TheGamingHub', color: '#2563eb', angle: 20 },
-  { id: 'forum', label: 'Forum', icon: Users, page: 'CommunityForums', color: '#059669', angle: 60 },
-  { id: 'market', label: 'Marketplace', icon: ShoppingBag, page: 'AffiliateHub', color: '#d97706', angle: 100 },
-  { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, page: 'Leaderboard', color: '#eab308', angle: 140 },
+  { id: 'arena', label: 'Live', icon: Radio, page: 'Explore', color: '#dc2626', angle: -45 },
+  { id: 'amphitheatre', label: 'Videos', icon: Film, page: 'TheAmphitheatre', color: '#9333ea', angle: 45 },
+  { id: 'gaming', label: 'Gaming', icon: Gamepad2, page: 'TheGamingHub', color: '#2563eb', angle: 135 },
+  { id: 'market', label: 'Shop', icon: ShoppingBag, page: 'AffiliateHub', color: '#22c55e', angle: 225 },
 ];
 
 export default function LoadingScreen({ onComplete }) {
@@ -220,8 +219,8 @@ export default function LoadingScreen({ onComplete }) {
               animate={{ scale: 1, rotateY: 0 }}
               transition={{ duration: 0.8, type: 'spring', stiffness: 80 }}
             >
-              {/* Shield SVG */}
-              <svg viewBox="0 0 400 480" className="w-72 h-[22rem] md:w-96 md:h-[28rem]">
+              {/* Shield SVG - Mobile optimized */}
+              <svg viewBox="0 0 400 480" className="w-64 h-80 sm:w-72 sm:h-[22rem] md:w-80 md:h-[24rem]">
                 <defs>
                   <linearGradient id="shieldGold" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#fcd34d" />
@@ -290,11 +289,11 @@ export default function LoadingScreen({ onComplete }) {
                 })}
               </svg>
 
-              {/* Menu Sections - Positioned around shield */}
+              {/* Menu Sections - 4 corners around shield, mobile optimized */}
               {SHIELD_SECTIONS.map((section, index) => {
                 const Icon = section.icon;
                 const angleRad = (section.angle - 90) * (Math.PI / 180);
-                const radius = 170;
+                const radius = 130; // Smaller radius for mobile
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius;
 
@@ -304,7 +303,7 @@ export default function LoadingScreen({ onComplete }) {
                     className="absolute"
                     style={{
                       left: '50%',
-                      top: '45%',
+                      top: '42%',
                       transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                     }}
                     initial={{ scale: 0, opacity: 0 }}
@@ -313,54 +312,44 @@ export default function LoadingScreen({ onComplete }) {
                   >
                     <Link to={createPageUrl(section.page)} onClick={handleEnter}>
                       <motion.div
-                        className="relative group cursor-pointer"
-                        whileHover={{ scale: 1.15 }}
+                        className="relative flex flex-col items-center cursor-pointer"
+                        whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         onHoverStart={() => setSelectedSection(section.id)}
                         onHoverEnd={() => setSelectedSection(null)}
                       >
                         {/* Button glow */}
                         <motion.div
-                          className="absolute inset-0 rounded-full blur-md"
+                          className="absolute inset-0 rounded-2xl blur-lg -z-10"
                           style={{ background: section.color }}
-                          animate={selectedSection === section.id ? { 
-                            scale: [1, 1.3, 1],
-                            opacity: [0.5, 0.8, 0.5]
-                          } : { opacity: 0.3 }}
-                          transition={{ duration: 1, repeat: Infinity }}
+                          animate={{ opacity: [0.3, 0.5, 0.3] }}
+                          transition={{ duration: 2, repeat: Infinity }}
                         />
-                        
-                        {/* Button */}
+
+                        {/* Button - Compact */}
                         <div 
-                          className="relative w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center border-2"
+                          className="relative w-12 h-12 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm"
                           style={{ 
-                            background: `linear-gradient(135deg, ${section.color}dd, ${section.color}88)`,
-                            borderColor: '#fbbf24',
-                            boxShadow: `0 4px 20px ${section.color}66`
+                            background: `linear-gradient(135deg, ${section.color}cc, ${section.color}66)`,
+                            boxShadow: `0 4px 20px ${section.color}40`
                           }}
                         >
-                          <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                          <Icon className="w-5 h-5 text-white" />
                         </div>
 
-                        {/* Label */}
-                        <motion.div
-                          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap mt-2"
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: selectedSection === section.id ? 1 : 0.7, y: 0 }}
-                        >
-                          <span className="text-xs md:text-sm font-semibold text-amber-200 drop-shadow-lg">
-                            {section.label}
-                          </span>
-                        </motion.div>
+                        {/* Label - Below button */}
+                        <span className="text-[10px] sm:text-xs font-medium text-white/80 mt-1.5 drop-shadow-lg">
+                          {section.label}
+                        </span>
                       </motion.div>
                     </Link>
                   </motion.div>
                 );
               })}
 
-              {/* Enter/Skip Button at bottom of shield */}
+              {/* Enter Button - Prominent at bottom */}
               <motion.button
-                className="absolute left-1/2 -translate-x-1/2 bottom-4 md:bottom-8"
+                className="absolute left-1/2 -translate-x-1/2 -bottom-16 sm:-bottom-12"
                 onClick={handleEnter}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -368,9 +357,9 @@ export default function LoadingScreen({ onComplete }) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-700 to-amber-600 rounded-full border border-amber-400/50 text-amber-100 font-semibold text-sm shadow-lg">
+                <div className="flex items-center gap-2 px-8 py-3 bg-white text-black rounded-full font-semibold text-sm shadow-xl">
                   <Play className="w-4 h-4" />
-                  Enter Home
+                  Enter
                 </div>
               </motion.button>
             </motion.div>
