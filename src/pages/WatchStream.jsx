@@ -225,6 +225,37 @@ export default function WatchStream() {
         total_earnings_denarii: (creator.total_earnings_denarii || 0) + earningInDenarii
       });
 
+      // Update real-time broadcaster earnings tracker
+      try {
+        const existingEarnings = await base44.entities.BroadcasterEarnings.filter({ 
+          creator_id: creator.id 
+        }, null, 1);
+        
+        if (existingEarnings[0]) {
+          await base44.entities.BroadcasterEarnings.update(existingEarnings[0].id, {
+            session_earnings_denarii: (existingEarnings[0].session_earnings_denarii || 0) + earningInDenarii,
+            session_gifts_count: (existingEarnings[0].session_gifts_count || 0) + quantity,
+            total_earnings_denarii: (existingEarnings[0].total_earnings_denarii || 0) + earningInDenarii,
+            total_gifts_received: (existingEarnings[0].total_gifts_received || 0) + quantity,
+            last_gift_at: new Date().toISOString()
+          });
+        } else {
+          await base44.entities.BroadcasterEarnings.create({
+            creator_id: creator.id,
+            user_email: creator.user_email,
+            stream_id: streamId,
+            session_earnings_denarii: earningInDenarii,
+            session_gifts_count: quantity,
+            total_earnings_denarii: earningInDenarii,
+            total_gifts_received: quantity,
+            session_start_time: new Date().toISOString(),
+            last_gift_at: new Date().toISOString()
+          });
+        }
+      } catch (e) {
+        console.error('Failed to update broadcaster earnings:', e);
+      }
+
       // Add chat message
       await base44.entities.ChatMessage.create({
         stream_id: streamId,
