@@ -85,7 +85,9 @@ export default function Profile() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: creator, isLoading } = useQuery({
@@ -95,25 +97,33 @@ export default function Profile() {
       const creators = await base44.entities.Creator.filter({ user_email: user.email }, null, 1);
       return creators[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: pastStreams = [] } = useQuery({
     queryKey: ['my-past-streams', creator?.id],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creator.id, status: 'ended' }, '-created_date', 20),
-    enabled: !!creator?.id
+    enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: myVideos = [] } = useQuery({
     queryKey: ['my-videos', creator?.id],
     queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creator.id }, '-created_date', 50),
-    enabled: !!creator?.id
+    enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: followers = [] } = useQuery({
     queryKey: ['my-followers', creator?.id],
     queryFn: () => base44.entities.Follow.filter({ following_creator_id: creator.id }, '-created_date', 100),
-    enabled: !!creator?.id
+    enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: hostSubscription } = useQuery({
@@ -125,7 +135,9 @@ export default function Profile() {
       }, '-created_date', 1);
       return subs[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const isSubscribed = hostSubscription?.status === 'active';

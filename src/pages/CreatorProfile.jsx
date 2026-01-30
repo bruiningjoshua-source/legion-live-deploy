@@ -40,21 +40,24 @@ export default function CreatorProfile() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: creator, isLoading } = useQuery({
     queryKey: ['creator', creatorId],
     queryFn: () => base44.entities.Creator.filter({ id: creatorId }, null, 1).then(r => r[0]),
     enabled: !!creatorId,
-    staleTime: 2 * 60 * 1000 // 2 minutes
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: allStreams = [] } = useQuery({
     queryKey: ['creator-streams', creatorId],
     queryFn: () => base44.entities.Stream.filter({ creator_id: creatorId }, '-created_date', 20),
     enabled: !!creatorId,
-    staleTime: 60 * 1000 // 1 minute
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const streams = allStreams.filter(s => s.status !== 'scheduled');
@@ -63,14 +66,16 @@ export default function CreatorProfile() {
     queryKey: ['creator-videos', creatorId],
     queryFn: () => base44.entities.VlogVideo.filter({ creator_id: creatorId, is_published: true }, '-view_count', 30),
     enabled: !!creatorId,
-    staleTime: 2 * 60 * 1000 // 2 minutes
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: subscriptionTiers = [] } = useQuery({
     queryKey: ['subscription-tiers', creatorId],
     queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: creatorId, is_active: true }),
     enabled: !!creatorId,
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: mySubscription } = useQuery({
@@ -84,7 +89,9 @@ export default function CreatorProfile() {
       }, null, 1);
       return subs[0] || null;
     },
-    enabled: !!creatorId && !!user?.email
+    enabled: !!creatorId && !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: isFollowing } = useQuery({
@@ -97,7 +104,9 @@ export default function CreatorProfile() {
       }, null, 1);
       return follows.length > 0;
     },
-    enabled: !!user?.email && !!creatorId
+    enabled: !!user?.email && !!creatorId,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const followMutation = useMutation({

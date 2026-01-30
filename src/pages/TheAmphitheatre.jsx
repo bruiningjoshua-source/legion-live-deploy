@@ -83,7 +83,9 @@ export default function TheAmphitheatre() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: userInterests } = useQuery({
@@ -92,7 +94,9 @@ export default function TheAmphitheatre() {
       const interests = await base44.entities.UserInterest.filter({ user_email: user.email }, null, 1);
       return interests[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: videos = [], isLoading: videosLoading } = useQuery({
@@ -102,32 +106,37 @@ export default function TheAmphitheatre() {
       review_status: 'approved',
       visibility: 'public'
     }, '-created_date', 200),
-    staleTime: 2 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['amphitheatre-creators'],
     queryFn: () => base44.entities.Creator.list('-follower_count', 100),
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: musicVideos = [] } = useQuery({
     queryKey: ['amphitheatre-music'],
     queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   // Affiliate/Recommended Products Videos
   const { data: affiliateVideos = [] } = useQuery({
     queryKey: ['amphitheatre-affiliate-videos'],
     queryFn: () => base44.entities.AffiliateVideo.filter({ is_published: true }, '-created_date', 100),
-    staleTime: 2 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: affiliatePartners = [] } = useQuery({
     queryKey: ['affiliate-partners-map'],
     queryFn: () => base44.entities.AffiliatePartner.filter({ status: 'approved' }, null, 200),
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const partnerMap = useMemo(() =>

@@ -29,7 +29,9 @@ export default function Home() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: personalizedRecs = [], isLoading: recsLoading } = useQuery({
@@ -51,15 +53,17 @@ export default function Home() {
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams'],
     queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
-    staleTime: 10 * 1000,
-    refetchInterval: 15 * 1000,
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchOnWindowFocus: false,
     retry: 1
   });
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['creators'],
     queryFn: () => base44.entities.Creator.list('-follower_count', 50),
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const creatorMap = creators.reduce((acc, c) => {

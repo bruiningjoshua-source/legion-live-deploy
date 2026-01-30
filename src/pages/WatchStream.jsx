@@ -88,19 +88,25 @@ export default function WatchStream() {
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: stream, isLoading: streamLoading } = useQuery({
     queryKey: ['stream', streamId],
     queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
-    enabled: !!streamId
+    enabled: !!streamId,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: creator } = useQuery({
     queryKey: ['creator', stream?.creator_id],
     queryFn: () => base44.entities.Creator.filter({ id: stream.creator_id }, null, 1).then(r => r[0]),
-    enabled: !!stream?.creator_id
+    enabled: !!stream?.creator_id,
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: opponentCreator } = useQuery({
@@ -117,7 +123,9 @@ export default function WatchStream() {
 
   const { data: gifts = [] } = useQuery({
     queryKey: ['gifts'],
-    queryFn: () => base44.entities.Gift.filter({ is_active: true }, 'sort_order', 50)
+    queryFn: () => base44.entities.Gift.filter({ is_active: true }, 'sort_order', 50),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: wallet } = useQuery({
@@ -126,7 +134,9 @@ export default function WatchStream() {
       const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
       return wallets[0] || { denarii_balance: 0, as_balance: 0 };
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const [chatMessages, setChatMessages] = useState([]);
@@ -135,6 +145,8 @@ export default function WatchStream() {
     queryKey: ['chat-messages', streamId],
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
     enabled: !!streamId,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
     onSuccess: (data) => setChatMessages(data || [])
   });
 
@@ -163,7 +175,9 @@ export default function WatchStream() {
       }, null, 1);
       return follows.length > 0;
     },
-    enabled: !!user?.email && !!creator?.id
+    enabled: !!user?.email && !!creator?.id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const { data: mutedUsers = [] } = useQuery({
