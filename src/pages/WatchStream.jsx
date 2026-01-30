@@ -341,17 +341,21 @@ export default function WatchStream() {
         throw new Error('Unauthorized: Only the stream creator can end the broadcast');
       }
 
+      console.log('[EndStream] Ending stream:', stream.id);
+
       // Update stream status to ended
       await base44.entities.Stream.update(stream.id, {
         status: 'ended',
         duration_minutes: Math.floor((new Date() - new Date(stream.created_date)) / 60000)
       });
 
-      // Update creator status
+      // Update creator status - CRITICAL: Reset is_live
       await base44.entities.Creator.update(creator.id, {
         is_live: false,
         current_stream_id: null
       });
+
+      console.log('[EndStream] Creator status reset for:', creator.id);
 
       // End any active PK battles
       if (stream.stream_type === 'pk_battle' && pkBattle) {
@@ -368,12 +372,20 @@ export default function WatchStream() {
       if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
       }
-      await AgoraService.leave();
+      
+      try {
+        await AgoraService.leave();
+      } catch (e) {
+        console.error('[EndStream] Agora leave error:', e);
+      }
+
+      console.log('[EndStream] Stream ended successfully');
     },
     onSuccess: () => {
       window.location.href = createPageUrl('Profile');
     },
     onError: (error) => {
+      console.error('[EndStream] Error:', error);
       alert(error.message);
     }
   });

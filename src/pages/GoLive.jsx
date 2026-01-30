@@ -239,12 +239,32 @@ export default function GoLive() {
         throw new Error('Camera and microphone permissions are required to go live');
       }
 
-      // Check if creator already has a live stream
-      if (creator?.is_live) {
-        throw new Error('You already have a live stream. End it before starting a new one.');
-      }
-
       let creatorId = creator?.id;
+
+      // Check if creator already has a live stream - clean up stale ones
+      if (creator?.is_live || creator?.current_stream_id) {
+        // Check if that stream is actually still live
+        const existingStreams = await base44.entities.Stream.filter({
+          creator_id: creatorId,
+          status: 'live'
+        }, '-created_date', 5);
+
+        if (existingStreams.length > 0) {
+          // End all existing live streams from this creator
+          for (const oldStream of existingStreams) {
+            await base44.entities.Stream.update(oldStream.id, {
+              status: 'ended',
+              duration_minutes: Math.floor((new Date() - new Date(oldStream.created_date)) / 60000)
+            });
+          }
+        }
+
+        // Reset creator live status
+        await base44.entities.Creator.update(creatorId, {
+          is_live: false,
+          current_stream_id: null
+        });
+      }
 
       // Create creator profile if doesn't exist
       if (!creatorId) {

@@ -127,9 +127,30 @@ Deno.serve(async (req) => {
 
         // Handle Denarii Purchase
         if (metadata.purchase_type === 'denarii' && metadata.user_email) {
-          const denariiAmount = parseInt(metadata.denarii_amount);
-          const bonusDenarii = parseInt(metadata.bonus_denarii || 0);
+          const denariiAmount = parseInt(metadata.denarii_amount) || 0;
+          const bonusDenarii = parseInt(metadata.bonus_denarii) || 0;
           const totalDenarii = denariiAmount + bonusDenarii;
+          const priceUsd = (session.amount_total || 0) / 100;
+
+          console.log('[stripeWebhook] Processing denarii purchase:', {
+            user_email: metadata.user_email,
+            denariiAmount,
+            bonusDenarii,
+            totalDenarii,
+            priceUsd
+          });
+
+          // Check for duplicate payment intent
+          const existingPurchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
+            { stripe_payment_intent: session.payment_intent },
+            null,
+            1
+          );
+
+          if (existingPurchases.length > 0) {
+            console.log('[stripeWebhook] Duplicate payment intent, skipping:', session.payment_intent);
+            break;
+          }
 
           // Update wallet
           const wallets = await base44.asServiceRole.entities.Wallet.filter(
@@ -138,27 +159,39 @@ Deno.serve(async (req) => {
             1
           );
 
+          console.log('[stripeWebhook] Found wallet:', wallets[0]?.id, 'Current balance:', wallets[0]?.denarii_balance);
+
           if (wallets[0]) {
+            const newBalance = (wallets[0].denarii_balance || 0) + totalDenarii;
+            const newSpent = (wallets[0].total_spent || 0) + priceUsd;
+            
             await base44.asServiceRole.entities.Wallet.update(wallets[0].id, {
-              denarii_balance: (wallets[0].denarii_balance || 0) + totalDenarii,
-              total_spent: (wallets[0].total_spent || 0) + (session.amount_total / 100)
+              denarii_balance: newBalance,
+              total_spent: newSpent
             });
+            
+            console.log('[stripeWebhook] Updated wallet balance:', newBalance);
           } else {
-            await base44.asServiceRole.entities.Wallet.create({
+            const newWallet = await base44.asServiceRole.entities.Wallet.create({
               user_email: metadata.user_email,
               denarii_balance: totalDenarii,
-              total_spent: session.amount_total / 100
+              sestertii_balance: 0,
+              as_balance: 0,
+              total_spent: priceUsd,
+              vip_level: 0
             });
+            console.log('[stripeWebhook] Created new wallet:', newWallet.id);
           }
 
           // Create purchase record
           await base44.asServiceRole.entities.CurrencyPurchase.create({
             user_email: metadata.user_email,
-            package_name: metadata.package_id,
+            package_name: metadata.package_id || metadata.package_name || 'Denarii Package',
             denarii_amount: denariiAmount,
             bonus_denarii: bonusDenarii,
-            price_usd: session.amount_total / 100,
-            stripe_payment_intent: session.payment_intent
+            price_usd: priceUsd,
+            stripe_payment_intent: session.payment_intent,
+            status: 'completed'
           });
 
           console.log('[stripeWebhook] Denarii purchase completed:', totalDenarii, 'for', metadata.user_email);
