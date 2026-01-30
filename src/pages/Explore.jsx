@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -17,18 +16,14 @@ import {
   Search, 
   Radio, 
   Users, 
-  Swords, 
-  Grid, 
-  LayoutGrid,
-  Filter,
-  Sparkles,
-  TrendingUp,
-  ChevronUp,
-  ChevronDown
+  Swords,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import StreamCard from '@/components/stream/StreamCard';
-import CreatorCard from '@/components/creator/CreatorCard';
+import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
+import PremiumCreatorCard from '@/components/creator/PremiumCreatorCard';
+import GlassCard from '@/components/shared/GlassCard';
+import PremiumButton from '@/components/shared/PremiumButton';
 
 const categories = [
   { value: 'all', label: 'All Categories' },
