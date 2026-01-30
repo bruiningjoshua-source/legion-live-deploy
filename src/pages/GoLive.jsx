@@ -509,14 +509,14 @@ export default function GoLive() {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Top Right - Settings */}
+              {/* Top Right - Lens Filters */}
               <div className="absolute top-4 right-4 z-20">
-                <CameraFilters 
+                <SnapchatLensFilters 
                   videoRef={videoPreviewRef}
                   onMirrorChange={setIsMirrored}
                   initialMirror={isMirrored}
-                  onBackgroundChange={setCustomBackground}
-                  onOverlayChange={setActiveOverlays}
+                  onLensChange={setActiveLens}
+                  onBackgroundChange={setActiveBackground}
                 />
               </div>
 
