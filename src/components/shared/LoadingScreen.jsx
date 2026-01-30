@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
-const SHIELD_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/0d561d144_1116385303_schild_roemerschild_shield_romans_medieval_spielzeug_toyYS3fLF686jeZI_600x600.jpg';
+const SHIELD_MENU_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/003c82ef0_Picsart_26-01-30_05-28-18-276.jpg';
 
 const QUICK_ACTIONS = [
   { id: 'live', label: 'Live Now', sublabel: '2.4K watching', icon: Radio, page: 'Explore', gradient: 'from-red-500 to-rose-600' },
@@ -193,60 +193,23 @@ export default function LoadingScreen({ onComplete }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              {/* Roman Shield Container */}
+              {/* Roman Shield Menu Image */}
               <motion.div
-                className="relative w-[260px] sm:w-[300px] mb-6"
+                className="relative w-[280px] sm:w-[340px] mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               >
-                {/* Shield Image */}
-                <div className="relative">
-                  <img 
-                    src={SHIELD_IMAGE} 
-                    alt="Roman Shield"
-                    className="w-full h-auto drop-shadow-2xl"
-                    style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' }}
+                <Link to={createPageUrl('Explore')} onClick={handleEnter}>
+                  <motion.img 
+                    src={SHIELD_MENU_IMAGE} 
+                    alt="Shield Menu"
+                    className="w-full h-auto cursor-pointer"
+                    style={{ filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.7))' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   />
-                  
-                  {/* Quick Action Buttons Overlay */}
-                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-2 p-8 sm:p-10">
-                    {QUICK_ACTIONS.map((item, index) => {
-                      const Icon = item.icon;
-                      const positions = [
-                        'justify-end items-end pr-2 pb-1',
-                        'justify-start items-end pl-2 pb-1',
-                        'justify-end items-start pr-2 pt-1',
-                        'justify-start items-start pl-2 pt-1'
-                      ];
-                      return (
-                        <motion.div
-                          key={item.id}
-                          className={`flex ${positions[index]}`}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
-                        >
-                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
-                            <motion.div
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="flex flex-col items-center"
-                            >
-                              <div 
-                                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-xl`}
-                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
-                              >
-                                <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                              </div>
-                              <span className="text-white text-[11px] sm:text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
+                </Link>
               </motion.div>
 
               {/* Main CTA */}
