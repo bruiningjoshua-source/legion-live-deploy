@@ -277,20 +277,26 @@ export default function TheGamingHub() {
               {/* Content Grid */}
               <TabsContent value="live" className="mt-0">
                 {streamsLoading ? (
-                  <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                  <div className={`grid gap-5 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
                     {[...Array(12)].map((_, i) => (
-                      <Skeleton key={i} className="aspect-video rounded-xl bg-stone-800" />
+                      <div key={i} className="rounded-2xl bg-white/5 overflow-hidden">
+                        <Skeleton className="aspect-video bg-white/10" />
+                        <div className="p-4 space-y-3">
+                          <Skeleton className="h-4 w-3/4 bg-white/10" />
+                          <Skeleton className="h-3 w-1/2 bg-white/10" />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : filteredStreams.length > 0 ? (
-                  <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                  <div className={`grid gap-5 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
                     <AnimatePresence>
                       {filteredStreams.map((stream, i) => (
                         <motion.div
                           key={stream.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.02 }}
+                          transition={{ delay: i * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
                         >
                           <GamingStreamCard 
                             stream={stream} 
@@ -302,29 +308,28 @@ export default function TheGamingHub() {
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-purple-500/20">
-                    <Gamepad2 className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
-                    <h3 className="text-white font-semibold text-lg mb-2">No Streams Found</h3>
-                    <p className="text-white/50 mb-4">Try adjusting your filters or check back later</p>
+                  <GlassCard className="text-center py-16" glowColor="purple">
+                    <Gamepad2 className="w-16 h-16 text-purple-400/30 mx-auto mb-4" />
+                    <h3 className="text-white font-semibold text-xl mb-2">No Streams Found</h3>
+                    <p className="text-white/50 mb-6">Try adjusting your filters or check back later</p>
                     <Link to={createPageUrl('GoLive')}>
-                      <Button className="bg-purple-600 hover:bg-purple-700">
-                        <Radio className="w-4 h-4 mr-2" />
+                      <PremiumButton variant="premium" leftIcon={<Radio className="w-4 h-4" />}>
                         Be the First to Stream
-                      </Button>
+                      </PremiumButton>
                     </Link>
-                  </div>
+                  </GlassCard>
                 )}
               </TabsContent>
 
               <TabsContent value="following" className="mt-0">
                 {filteredStreams.length > 0 ? (
-                  <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                  <div className={`grid gap-5 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
                     {filteredStreams.map((stream, i) => (
                       <motion.div
                         key={stream.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
+                        transition={{ delay: i * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
                       >
                         <GamingStreamCard 
                           stream={stream} 
@@ -335,17 +340,16 @@ export default function TheGamingHub() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-purple-500/20">
-                    <Heart className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
-                    <h3 className="text-white font-semibold text-lg mb-2">No Followed Channels Live</h3>
-                    <p className="text-white/50 mb-4">Follow some gaming streamers to see them here when they go live!</p>
+                  <GlassCard className="text-center py-16" glowColor="purple">
+                    <Heart className="w-16 h-16 text-purple-400/30 mx-auto mb-4" />
+                    <h3 className="text-white font-semibold text-xl mb-2">No Followed Channels Live</h3>
+                    <p className="text-white/50 mb-6">Follow some gaming streamers to see them here when they go live!</p>
                     <Link to={createPageUrl('Explore')}>
-                      <Button variant="outline" className="border-purple-500/30 text-purple-300">
-                        <Users className="w-4 h-4 mr-2" />
+                      <PremiumButton variant="secondary" leftIcon={<Users className="w-4 h-4" />}>
                         Discover Streamers
-                      </Button>
+                      </PremiumButton>
                     </Link>
-                  </div>
+                  </GlassCard>
                 )}
               </TabsContent>
             </Tabs>
