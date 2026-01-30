@@ -73,67 +73,68 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pt-20 pb-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Header - Centered */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">🏛️ Legion Live</h1>
-          <p className="text-white/60">Stream, command, and conquer • 21+ Adult Platform</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Hero Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <motion.h1 
+            className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-3"
+            animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+            transition={{ duration: 5, repeat: Infinity }}
+            style={{ backgroundSize: '200% 200%' }}
+          >
+            Legion Live
+          </motion.h1>
+          <p className="text-white/60 text-lg">Stream, command, and conquer • Premium Creator Platform</p>
+          
+          {/* Quick Stats */}
+          <div className="flex items-center justify-center gap-6 mt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{streams.filter(s => s.status === 'live').length}</p>
+              <p className="text-white/50 text-xs">Live Now</p>
+            </div>
+            <div className="w-px h-8 bg-white/20" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{creators.length}</p>
+              <p className="text-white/50 text-xs">Creators</p>
+            </div>
+          </div>
+        </motion.div>
 
-        {/* Platform Quick Access - Centered grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 max-w-4xl mx-auto">
-          <Link to={createPageUrl('Explore')}>
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-red-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/20">
-                  <Radio className="w-6 h-6 text-white" />
+        {/* Platform Quick Access - Premium Glass Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-5xl mx-auto">
+          {[
+            { to: 'Explore', icon: Radio, title: 'Live Streams', desc: 'Solo • PK • Group', color: 'red', gradient: 'from-red-500 to-rose-600' },
+            { to: 'TheAmphitheatre', icon: Film, title: 'Videos', desc: 'Shorts • Long Form', color: 'blue', gradient: 'from-blue-500 to-cyan-600' },
+            { to: 'TheGamingHub', icon: Gamepad2, title: 'Gaming Hub', desc: 'OBS • Streamlabs', color: 'purple', gradient: 'from-purple-500 to-violet-600' },
+            { to: 'AffiliateHub', icon: ShoppingBag, title: 'Affiliate Hub', desc: 'Products • Brands', color: 'green', gradient: 'from-emerald-500 to-green-600' }
+          ].map((item, i) => (
+            <Link key={item.to} to={createPageUrl(item.to)}>
+              <GlassCard 
+                delay={i * 0.1} 
+                glowColor={item.color}
+                padding="p-5"
+                className="h-full group cursor-pointer"
+              >
+                <div className="flex flex-col items-center text-center gap-3">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg shadow-${item.color}-500/30`}
+                  >
+                    <item.icon className="w-7 h-7 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="text-white font-semibold">{item.title}</p>
+                    <p className="text-white/50 text-xs">{item.desc}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/30 group-hover:text-white/70 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Live Streams</p>
-                  <p className="text-white/50 text-xs">Solo • PK • Group</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={createPageUrl('TheAmphitheatre')}>
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/20">
-                  <Film className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Videos</p>
-                  <p className="text-white/50 text-xs">Shorts • Long Form</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={createPageUrl('TheGamingHub')}>
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-purple-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/20">
-                  <Gamepad2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Gaming Hub</p>
-                  <p className="text-white/50 text-xs">OBS • Streamlabs</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to={createPageUrl('AffiliateHub')}>
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-green-500/50 hover:bg-white/10 transition-all cursor-pointer group h-full">
-              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-green-500/20">
-                  <ShoppingBag className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Affiliate Hub</p>
-                  <p className="text-white/50 text-xs">Products • Brands</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </GlassCard>
+            </Link>
+          ))}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
