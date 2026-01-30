@@ -94,6 +94,7 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CommunityGuidelines from './pages/CommunityGuidelines';
 import DataPrivacy from './pages/DataPrivacy';
+import CreatorAnalytics from './pages/CreatorAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +146,7 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "CommunityGuidelines": CommunityGuidelines,
     "DataPrivacy": DataPrivacy,
+    "CreatorAnalytics": CreatorAnalytics,
 }
 
 export const pagesConfig = {
