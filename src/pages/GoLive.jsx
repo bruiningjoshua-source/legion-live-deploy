@@ -307,8 +307,8 @@ export default function GoLive() {
       const AGORA_APP_ID = tokenResponse.data.appId || '497c36af191647579fb65a825dd22b42';
       await AgoraService.initialize(AGORA_APP_ID);
       
-      // Join the channel
-      await AgoraService.joinChannel(tokenResponse.data.token || '', stream.id, uid);
+      // Join the channel as host
+      await AgoraService.joinChannel(tokenResponse.data.token || '', stream.id, uid, 'host');
       
       // Create and publish tracks
       await AgoraService.createLocalTracks();
