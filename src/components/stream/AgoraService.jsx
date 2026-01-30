@@ -3,6 +3,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 class AgoraStreamingService {
   constructor() {
     this.client = null;
+    this.appId = null;
     this.localAudioTrack = null;
     this.localVideoTrack = null;
     this.remoteUsers = new Map();
@@ -19,8 +20,9 @@ class AgoraStreamingService {
 
   async initialize(appId) {
     try {
+      this.appId = appId;
       AgoraRTC.setLogLevel(2); // Info level logging
-      this.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp9' });
+      this.client = AgoraRTC.createClient({ mode: 'live', codec: 'vp9' });
       
       // Handle network quality changes
       this.client.on('network-quality', (stats) => {
