@@ -173,79 +173,97 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
             key={pkg.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handlePurchase(pkg)}
+            className="cursor-pointer"
           >
-            <Card 
-              className={`relative overflow-hidden bg-gradient-to-br ${pkg.color} ${pkg.border} border-2 
-                ${pkg.popular ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-stone-900' : ''}
-                ${pkg.premium ? 'shadow-xl shadow-amber-500/20' : ''}
-                hover:scale-[1.02] transition-transform cursor-pointer`}
-              onClick={() => handlePurchase(pkg)}
+            <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${pkg.color} 
+              ${pkg.popular ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-black shadow-xl shadow-amber-500/30' : 'shadow-xl'}
+              ${pkg.premium ? 'shadow-2xl shadow-purple-500/30' : ''}
+              border ${pkg.border} transition-all duration-300`}
             >
               {pkg.popular && (
-                <div className="absolute top-0 left-0 right-0 bg-amber-500 text-center py-1">
-                  <span className="text-xs font-bold text-white flex items-center justify-center gap-1">
-                    <Star className="w-3 h-3" /> MOST POPULAR
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-center py-1.5">
+                  <span className="text-xs font-bold text-white flex items-center justify-center gap-1.5">
+                    <Star className="w-3.5 h-3.5" /> MOST POPULAR
                   </span>
                 </div>
               )}
               
               {pkg.premium && (
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-purple-500/10 animate-pulse" />
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               )}
 
-              <div className={`p-5 ${pkg.popular ? 'pt-8' : ''} relative`}>
+              <div className={`p-6 ${pkg.popular ? 'pt-10' : ''} relative`}>
                 {/* Icon & Name */}
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-4xl">{pkg.icon}</span>
+                <div className="flex items-center gap-4 mb-5">
+                  <motion.span 
+                    className="text-5xl drop-shadow-lg"
+                    animate={pkg.premium ? { rotate: [0, 5, -5, 0] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {pkg.icon}
+                  </motion.span>
                   <div>
                     <h3 className="text-white font-bold text-lg">{pkg.name}</h3>
-                    <p className="text-white/70 text-xs">One-time purchase</p>
+                    <p className="text-white/50 text-xs">One-time purchase</p>
                   </div>
                 </div>
 
                 {/* Denarii Amount */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-5">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">{pkg.denarii.toLocaleString()}</span>
-                    <span className="text-white/60">Denarii</span>
+                    <span className="text-4xl font-black text-white drop-shadow-lg">{pkg.denarii.toLocaleString()}</span>
+                    <span className="text-white/60 font-medium">Denarii</span>
                   </div>
                   
                   {pkg.bonus > 0 && (
-                    <div className="space-y-1">
-                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 animate-pulse w-full justify-center">
-                        <Sparkles className="w-3 h-3 mr-1" />
+                    <div className="space-y-2">
+                      <motion.div 
+                        className="inline-flex items-center gap-1.5 bg-green-500/30 text-green-200 border border-green-400/40 rounded-full px-3 py-1 text-xs font-bold"
+                        animate={{ scale: [1, 1.02, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
                         +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
-                      </Badge>
-                      <p className="text-xs text-green-300/80 text-center font-semibold">{pkg.value}</p>
+                      </motion.div>
+                      <p className="text-xs text-green-200/90 font-semibold">{pkg.value}</p>
                       {pkg.futureValue && (
-                        <p className="text-xs text-purple-300/80 text-center">📈 {pkg.futureValue}</p>
+                        <p className="text-xs text-purple-200/80">📈 {pkg.futureValue}</p>
                       )}
                     </div>
                   )}
                 </div>
 
                 {/* Value per denarii */}
-                <p className="text-white/60 text-xs text-center mb-3">
+                <p className="text-white/40 text-xs text-center mb-4">
                   ${(pkg.usdPerDenarii * 100).toFixed(3)}/100 Denarii
                 </p>
 
-                {/* Price */}
-                <Button 
-                  className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 font-bold"
+                {/* Price Button */}
+                <motion.button 
+                  className="w-full py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 font-bold text-lg transition-all flex items-center justify-center gap-2"
                   disabled={isProcessing && selectedPackage === pkg.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   {isProcessing && selectedPackage === pkg.id ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
                       Processing...
-                    </span>
+                    </>
                   ) : (
                     `$${pkg.price.toFixed(2)}`
                   )}
-                </Button>
+                </motion.button>
               </div>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </div>
