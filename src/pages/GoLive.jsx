@@ -36,6 +36,8 @@ import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
+import CameraFilters from '@/components/stream/CameraFilters';
+import AnimatedFilterOverlay from '@/components/stream/AnimatedFilterOverlay';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -90,6 +92,13 @@ export default function GoLive() {
   const [agoraToken, setAgoraToken] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
   const [chatMessages, setChatMessages] = useState([]);
+  const [customBackground, setCustomBackground] = useState(null);
+  const [activeOverlays, setActiveOverlays] = useState({
+    animatedEffect: null,
+    staticOverlay: null,
+    screenEffect: null,
+    intensity: 1
+  });
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
@@ -440,12 +449,36 @@ export default function GoLive() {
                 style={{ objectFit: 'cover', backgroundColor: '#000' }}
               />
 
+              {/* Animated Filter Overlay */}
+              {(activeOverlays.animatedEffect || activeOverlays.staticOverlay || activeOverlays.screenEffect) && (
+                <AnimatedFilterOverlay
+                  activeEffect={activeOverlays.animatedEffect}
+                  staticOverlay={activeOverlays.staticOverlay}
+                  edgeEffect={activeOverlays.screenEffect}
+                  intensity={activeOverlays.intensity}
+                />
+              )}
+
+              {/* Custom Background Layer */}
+              {customBackground && customBackground !== 'blur' && (
+                <div 
+                  className="absolute inset-0 z-0"
+                  style={{
+                    backgroundImage: `url(${customBackground})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                />
+              )}
+
               {/* Top Right - Settings */}
               <div className="absolute top-4 right-4 z-20">
-                <HostControls 
+                <CameraFilters 
                   videoRef={videoPreviewRef}
                   onMirrorChange={setIsMirrored}
                   initialMirror={isMirrored}
+                  onBackgroundChange={setCustomBackground}
+                  onOverlayChange={setActiveOverlays}
                 />
               </div>
 

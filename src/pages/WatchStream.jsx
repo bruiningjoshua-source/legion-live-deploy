@@ -52,6 +52,7 @@ import BigoStyleChat from '@/components/stream/BigoStyleChat';
 import BigoActionBar from '@/components/stream/BigoActionBar';
 import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
 import CameraFilters from '@/components/stream/CameraFilters';
+import AnimatedFilterOverlay from '@/components/stream/AnimatedFilterOverlay';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import ModerationPanel from '@/components/stream/ModerationPanel';
@@ -81,6 +82,12 @@ export default function WatchStream() {
   const [kickedUsers, setKickedUsers] = useState([]);
   const [chatMuted, setChatMuted] = useState(false);
   const [panelParticipants, setPanelParticipants] = useState([]);
+  const [activeOverlays, setActiveOverlays] = useState({
+    animatedEffect: null,
+    staticOverlay: null,
+    screenEffect: null,
+    intensity: 1
+  });
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -762,6 +769,16 @@ export default function WatchStream() {
             <X className="w-5 h-5" />
           </button>
 
+          {/* Animated Filter Overlay - Only show if effects are active */}
+          {(activeOverlays.animatedEffect || activeOverlays.staticOverlay || activeOverlays.screenEffect) && (
+            <AnimatedFilterOverlay
+              activeEffect={activeOverlays.animatedEffect}
+              staticOverlay={activeOverlays.staticOverlay}
+              edgeEffect={activeOverlays.screenEffect}
+              intensity={activeOverlays.intensity}
+            />
+          )}
+
           {/* Host Controls - TikTok/Snapchat style camera filters */}
           <div className="absolute top-20 left-4 z-20 flex gap-2">
             <CameraFilters 
@@ -769,6 +786,7 @@ export default function WatchStream() {
               onMirrorChange={setIsMirrored}
               initialMirror={isMirrored}
               onBackgroundChange={setCustomBackground}
+              onOverlayChange={setActiveOverlays}
             />
             <Button
               onClick={() => setShowModerationPanel(true)}
