@@ -93,7 +93,7 @@ export default function Layout({ children, currentPageName }) {
           }
         }}
       />
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
+      <div className="min-h-screen bg-[#0f0f12]">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
       
       {/* Age Verification Gate - Admin users are excluded */}
@@ -120,60 +120,60 @@ export default function Layout({ children, currentPageName }) {
       </head>
       <style>{`
         :root {
-          --background: 12 10 9;
-          --foreground: 254 243 199;
-          --card: 28 25 23;
-          --card-foreground: 254 243 199;
-          --popover: 28 25 23;
-          --popover-foreground: 254 243 199;
+          --background: 15 15 18;
+          --foreground: 245 245 250;
+          --card: 22 22 28;
+          --card-foreground: 245 245 250;
+          --popover: 22 22 28;
+          --popover-foreground: 245 245 250;
           --primary: 217 119 6;
           --primary-foreground: 255 255 255;
-          --secondary: 68 64 60;
-          --secondary-foreground: 254 243 199;
-          --muted: 68 64 60;
-          --muted-foreground: 161 161 170;
-          --accent: 68 64 60;
-          --accent-foreground: 254 243 199;
-          --destructive: 239 68 68;
-          --destructive-foreground: 254 243 199;
-          --border: 68 64 60;
-          --input: 68 64 60;
+          --secondary: 35 35 42;
+          --secondary-foreground: 245 245 250;
+          --muted: 35 35 42;
+          --muted-foreground: 140 140 150;
+          --accent: 35 35 42;
+          --accent-foreground: 245 245 250;
+          --destructive: 220 38 38;
+          --destructive-foreground: 255 255 255;
+          --border: 45 45 55;
+          --input: 35 35 42;
           --ring: 217 119 6;
           --radius: 0.75rem;
         }
         
         body {
-          background: linear-gradient(to bottom, #0c0a09, #1c1917, #0c0a09);
-          color: #fef3c7;
+          background: #0f0f12;
+          color: #f5f5fa;
         }
 
         ::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
         }
 
         ::-webkit-scrollbar-track {
-          background: #1c1917;
+          background: #16161c;
         }
 
         ::-webkit-scrollbar-thumb {
-          background: #78350f;
-          border-radius: 4px;
+          background: #3a3a48;
+          border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-          background: #92400e;
+          background: #4a4a58;
         }
 
         /* Custom animations */
         @keyframes float {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+          50% { transform: translateY(-6px); }
         }
 
         @keyframes glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
-          50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.5); }
+          0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); }
+          50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); }
         }
 
         .animate-float {
