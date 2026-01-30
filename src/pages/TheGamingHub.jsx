@@ -3,23 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search,
   Gamepad2,
-  Play,
   TrendingUp,
   Users,
-  Eye,
   Radio,
-  Zap,
-  Cpu,
-  Award,
-  Filter,
   Grid,
   List,
   Flame,
@@ -27,6 +19,8 @@ import {
   Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import GlassCard from '@/components/shared/GlassCard';
+import PremiumButton from '@/components/shared/PremiumButton';
 import GamingStreamCard from '@/components/gaming/GamingStreamCard';
 import FeaturedGameCarousel from '@/components/gaming/FeaturedGameCarousel';
 import GameCategoryGrid from '@/components/gaming/GameCategoryGrid';

@@ -66,6 +66,7 @@ import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorOnboarding from './pages/CreatorOnboarding';
 import CreatorProfile from './pages/CreatorProfile';
 import CreatorStudio from './pages/CreatorStudio';
+import CreatorSuccessProgram from './pages/CreatorSuccessProgram';
 import CustomizeTheme from './pages/CustomizeTheme';
 import DataPrivacy from './pages/DataPrivacy';
 import EventDetails from './pages/EventDetails';
@@ -101,7 +102,6 @@ import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CreatorSuccessProgram from './pages/CreatorSuccessProgram';
 import __Layout from './Layout.jsx';
 
 
@@ -125,6 +125,7 @@ export const PAGES = {
     "CreatorOnboarding": CreatorOnboarding,
     "CreatorProfile": CreatorProfile,
     "CreatorStudio": CreatorStudio,
+    "CreatorSuccessProgram": CreatorSuccessProgram,
     "CustomizeTheme": CustomizeTheme,
     "DataPrivacy": DataPrivacy,
     "EventDetails": EventDetails,
@@ -160,7 +161,6 @@ export const PAGES = {
     "WatchLater": WatchLater,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CreatorSuccessProgram": CreatorSuccessProgram,
 }
 
 export const pagesConfig = {
