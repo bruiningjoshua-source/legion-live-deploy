@@ -8,7 +8,74 @@ import {
 } from 'lucide-react';
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
-const SHIELD_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/0d561d144_1116385303_schild_roemerschild_shield_romans_medieval_spielzeug_toyYS3fLF686jeZI_600x600.jpg';
+
+// Roman Scutum Shield Component - CSS-based curved shield
+const RomanShield = ({ children }) => (
+  <div 
+    className="relative"
+    style={{
+      width: '260px',
+      height: '320px',
+    }}
+  >
+    {/* Shield shape - curved rectangle (scutum) */}
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(180deg, #c9553d 0%, #b91c1c 20%, #991b1b 80%, #7f1d1d 100%)',
+        borderRadius: '50% / 8%',
+        border: '8px solid #cd7f32',
+        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.4), 0 15px 40px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.1)',
+      }}
+    >
+      {/* Gold decorative elements - wing patterns */}
+      <div className="absolute inset-0 flex flex-col items-center justify-between py-6 overflow-hidden">
+        {/* Top wing decoration */}
+        <svg viewBox="0 0 200 50" className="w-48 h-12 text-amber-600" style={{ filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.3))' }}>
+          <path d="M100,45 L40,25 L20,5 L40,20 L60,35 L100,40 L140,35 L160,20 L180,5 L160,25 L100,45" fill="currentColor" />
+          <path d="M100,35 L50,20 L30,5 L50,15 L70,25 L100,30 L130,25 L150,15 L170,5 L150,20 L100,35" fill="#d97706" />
+        </svg>
+        
+        {/* Center boss (umbo) */}
+        <div 
+          className="w-14 h-14 rounded-full"
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, #e5e5e5 0%, #9ca3af 40%, #6b7280 70%, #4b5563 100%)',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
+            border: '3px solid #78716c',
+          }}
+        />
+        
+        {/* Bottom wing decoration */}
+        <svg viewBox="0 0 200 50" className="w-48 h-12 text-amber-600 rotate-180" style={{ filter: 'drop-shadow(0 -2px 2px rgba(0,0,0,0.3))' }}>
+          <path d="M100,45 L40,25 L20,5 L40,20 L60,35 L100,40 L140,35 L160,20 L180,5 L160,25 L100,45" fill="currentColor" />
+          <path d="M100,35 L50,20 L30,5 L50,15 L70,25 L100,30 L130,25 L150,15 L170,5 L150,20 L100,35" fill="#d97706" />
+        </svg>
+      </div>
+      
+      {/* Vertical gold stripes */}
+      <div 
+        className="absolute left-1/2 top-6 bottom-6 w-1 -translate-x-1/2"
+        style={{ background: 'linear-gradient(180deg, #d97706 0%, #b45309 100%)' }}
+      />
+      
+      {/* Lightning bolt / arrow pattern in center */}
+      <svg 
+        viewBox="0 0 40 80" 
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-20 text-amber-600"
+        style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
+      >
+        <path d="M20,0 L25,30 L30,30 L20,50 L25,50 L20,80 L15,50 L10,50 L20,30 L15,30 Z" fill="currentColor" />
+      </svg>
+    </div>
+    
+    {/* Content overlay for buttons */}
+    <div className="absolute inset-0 flex items-center justify-center">
+      {children}
+    </div>
+  </div>
+);
 
 const QUICK_ACTIONS = [
   { id: 'live', label: 'Live Now', sublabel: '2.4K watching', icon: Radio, page: 'Explore', gradient: 'from-red-500 to-rose-600' },
@@ -195,83 +262,76 @@ export default function LoadingScreen({ onComplete }) {
             >
               {/* Roman Shield with Buttons */}
               <motion.div
-                className="relative w-[240px] sm:w-[280px] mb-6"
+                className="relative mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               >
-                {/* Shield Background Image */}
-                <img 
-                  src={SHIELD_IMAGE} 
-                  alt="Roman Shield"
-                  className="w-full h-auto"
-                  style={{ filter: 'drop-shadow(0 15px 40px rgba(0,0,0,0.6))' }}
-                />
-                
-                {/* Buttons Overlay - positioned over shield */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  {/* Top Row - Live Now & Videos */}
-                  <div className="flex gap-6 sm:gap-8 mb-2">
-                    {[QUICK_ACTIONS[0], QUICK_ACTIONS[1]].map((item, index) => {
-                      const Icon = item.icon;
-                      return (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
-                        >
-                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
-                            <motion.div
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="flex flex-col items-center"
-                            >
-                              <div 
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
-                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                <RomanShield>
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    {/* Top Row - Live Now & Videos */}
+                    <div className="flex gap-8">
+                      {[QUICK_ACTIONS[0], QUICK_ACTIONS[1]].map((item, index) => {
+                        const Icon = item.icon;
+                        return (
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2 + index * 0.1, type: 'spring' }}
+                          >
+                            <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+                              <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="flex flex-col items-center"
                               >
-                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                              </div>
-                              <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Bottom Row - Gaming & Shop */}
-                  <div className="flex gap-6 sm:gap-8 mt-2">
-                    {[QUICK_ACTIONS[2], QUICK_ACTIONS[3]].map((item, index) => {
-                      const Icon = item.icon;
-                      return (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.4 + index * 0.1, type: 'spring' }}
-                        >
-                          <Link to={createPageUrl(item.page)} onClick={handleEnter}>
-                            <motion.div
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="flex flex-col items-center"
-                            >
-                              <div 
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
-                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                                <div 
+                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                  style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
+                                >
+                                  <Icon className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
+                              </motion.div>
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Bottom Row - Gaming & Shop */}
+                    <div className="flex gap-8 mt-1">
+                      {[QUICK_ACTIONS[2], QUICK_ACTIONS[3]].map((item, index) => {
+                        const Icon = item.icon;
+                        return (
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.4 + index * 0.1, type: 'spring' }}
+                          >
+                            <Link to={createPageUrl(item.page)} onClick={handleEnter}>
+                              <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="flex flex-col items-center"
                               >
-                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                              </div>
-                              <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
+                                <div 
+                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                  style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
+                                >
+                                  <Icon className="w-7 h-7 text-white" />
+                                </div>
+                                <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
+                              </motion.div>
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                </RomanShield>
               </motion.div>
 
               {/* Main CTA */}
