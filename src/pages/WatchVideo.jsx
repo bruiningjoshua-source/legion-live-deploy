@@ -24,13 +24,20 @@ import RecommendedVideos from '@/components/video/RecommendedVideos';
 
 export default function WatchVideo() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const videoId = urlParams.get('id');
   const contentType = urlParams.get('type'); // 'music' or null for video
 
   const isMusic = contentType === 'music';
 
-  const viewTrackedRef = React.useRef(false);
+  const viewTrackedRef = useRef(false);
+  const [autoplay, setAutoplay] = useState(() => {
+    const saved = localStorage.getItem('video_autoplay');
+    return saved !== 'false';
+  });
+  const [videoEnded, setVideoEnded] = useState(false);
+  const autoplayTimerRef = useRef(null);
 
   const { data: video } = useQuery({
     queryKey: ['video', videoId, contentType],
