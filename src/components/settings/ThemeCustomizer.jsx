@@ -75,13 +75,13 @@ export default function ThemeCustomizer({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white/70 hover:text-white hover:bg-white/10"
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors shadow-lg"
         >
           <Palette className="w-5 h-5" />
-        </Button>
+        </motion.button>
       </SheetTrigger>
       
       <SheetContent className="bg-stone-950/95 backdrop-blur-xl border-white/10">

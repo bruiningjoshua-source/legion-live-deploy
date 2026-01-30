@@ -21,7 +21,7 @@ export default function BigoActionBar({
   ];
 
   return (
-    <div className={`absolute right-3 bottom-28 z-30 flex flex-col items-center gap-4 ${className}`}>
+    <div className={`absolute right-4 bottom-24 z-30 flex flex-col items-center gap-3 ${className}`}>
       {actions.map((action, idx) => {
         const Icon = action.icon;
         return (

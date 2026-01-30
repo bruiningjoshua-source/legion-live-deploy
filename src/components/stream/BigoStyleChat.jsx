@@ -85,8 +85,8 @@ export default function BigoStyleChat({
   };
 
   return (
-    <div className="absolute bottom-4 left-0 z-30 w-full max-w-[320px] pointer-events-none">
-      <div className="flex flex-col pl-3 pr-16">
+    <div className="absolute bottom-4 left-0 z-30 w-full max-w-[300px] pointer-events-none">
+      <div className="flex flex-col pl-4 pr-20">
         {/* Messages - Floating bubbles */}
         <div 
           ref={scrollRef}

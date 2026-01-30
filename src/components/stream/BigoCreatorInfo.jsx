@@ -19,7 +19,7 @@ export default function BigoCreatorInfo({
     <motion.div
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className={`absolute top-4 left-3 z-30 ${className}`}
+      className={`absolute top-4 left-4 z-30 ${className}`}
     >
       <div className="flex items-center gap-2">
         {/* Avatar with LIVE ring */}
