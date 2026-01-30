@@ -91,13 +91,8 @@ export default function GoLive() {
   const [agoraToken, setAgoraToken] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
   const [chatMessages, setChatMessages] = useState([]);
-  const [customBackground, setCustomBackground] = useState(null);
-  const [activeOverlays, setActiveOverlays] = useState({
-    animatedEffect: null,
-    staticOverlay: null,
-    screenEffect: null,
-    intensity: 1
-  });
+  const [activeLens, setActiveLens] = useState(null);
+  const [activeBackground, setActiveBackground] = useState(null);
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
