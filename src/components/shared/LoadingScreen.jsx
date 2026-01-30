@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
+const SHIELD_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/0d561d144_1116385303_schild_roemerschild_shield_romans_medieval_spielzeug_toyYS3fLF686jeZI_600x600.jpg';
 
 const QUICK_ACTIONS = [
   { id: 'live', label: 'Live Now', sublabel: '2.4K watching', icon: Radio, page: 'Explore', gradient: 'from-red-500 to-rose-600' },
@@ -194,67 +195,29 @@ export default function LoadingScreen({ onComplete }) {
             >
               {/* Roman Shield Container */}
               <motion.div
-                className="relative w-[280px] sm:w-[320px] aspect-[3/4] mb-6"
+                className="relative w-[260px] sm:w-[300px] mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               >
-                {/* Shield Background */}
-                <div 
-                  className="absolute inset-0 rounded-[40px] overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(180deg, #8B0000 0%, #B22222 30%, #8B0000 70%, #5C1010 100%)',
-                    boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), 0 10px 40px rgba(0,0,0,0.6)',
-                    border: '4px solid #DAA520'
-                  }}
-                >
-                  {/* Gold Cross Pattern */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {/* Vertical gold bar */}
-                    <div 
-                      className="absolute top-4 bottom-4 w-3 sm:w-4"
-                      style={{ background: 'linear-gradient(90deg, #B8860B, #FFD700, #B8860B)' }}
-                    />
-                    {/* Horizontal gold bar */}
-                    <div 
-                      className="absolute left-4 right-4 h-3 sm:h-4"
-                      style={{ background: 'linear-gradient(180deg, #B8860B, #FFD700, #B8860B)' }}
-                    />
-                  </div>
-
-                  {/* Wing decorations - top corners */}
-                  <div className="absolute top-6 left-4 right-4 flex justify-between">
-                    <div className="text-amber-400/80 text-2xl">🦅</div>
-                    <div className="text-amber-400/80 text-2xl transform scale-x-[-1]">🦅</div>
-                  </div>
-
-                  {/* Wing decorations - bottom corners */}
-                  <div className="absolute bottom-6 left-4 right-4 flex justify-between">
-                    <div className="text-amber-400/80 text-2xl rotate-180">🦅</div>
-                    <div className="text-amber-400/80 text-2xl rotate-180 transform scale-x-[-1]">🦅</div>
-                  </div>
-
-                  {/* Center Shield Boss (metal circle) */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 z-20">
-                    <div 
-                      className="w-full h-full rounded-full"
-                      style={{
-                        background: 'radial-gradient(ellipse at 30% 30%, #e8e8e8 0%, #a8a8a8 30%, #707070 60%, #505050 100%)',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3)',
-                        border: '3px solid #DAA520'
-                      }}
-                    />
-                  </div>
-
-                  {/* Quick Action Buttons in 2x2 Grid */}
-                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-3 p-6 sm:p-8">
+                {/* Shield Image */}
+                <div className="relative">
+                  <img 
+                    src={SHIELD_IMAGE} 
+                    alt="Roman Shield"
+                    className="w-full h-auto drop-shadow-2xl"
+                    style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' }}
+                  />
+                  
+                  {/* Quick Action Buttons Overlay */}
+                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-2 p-8 sm:p-10">
                     {QUICK_ACTIONS.map((item, index) => {
                       const Icon = item.icon;
                       const positions = [
-                        'justify-end items-end pr-4 pb-2',    // Top-left: push to center
-                        'justify-start items-end pl-4 pb-2',  // Top-right: push to center
-                        'justify-end items-start pr-4 pt-2',  // Bottom-left: push to center
-                        'justify-start items-start pl-4 pt-2' // Bottom-right: push to center
+                        'justify-end items-end pr-2 pb-1',
+                        'justify-start items-end pl-2 pb-1',
+                        'justify-end items-start pr-2 pt-1',
+                        'justify-start items-start pl-2 pt-1'
                       ];
                       return (
                         <motion.div
@@ -271,12 +234,12 @@ export default function LoadingScreen({ onComplete }) {
                               className="flex flex-col items-center"
                             >
                               <div 
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-xl`}
-                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}
+                                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-xl`}
+                                style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
                               >
-                                <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                                <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                               </div>
-                              <span className="text-white text-xs sm:text-sm font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
+                              <span className="text-white text-[11px] sm:text-xs font-bold mt-1 drop-shadow-lg">{item.label}</span>
                             </motion.div>
                           </Link>
                         </motion.div>
