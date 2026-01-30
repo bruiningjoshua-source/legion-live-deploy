@@ -5,9 +5,11 @@ import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ShieldMenu from '@/components/shared/ShieldMenu';
+import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
+import ThemeCustomizer from '@/components/settings/ThemeCustomizer';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
@@ -15,6 +17,11 @@ export default function Layout({ children, currentPageName }) {
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
+  
+  // Theme customization state
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('legion_theme') || 'roman');
+  const [particleIntensity, setParticleIntensity] = useState(() => localStorage.getItem('legion_particles') || 'medium');
+  const [animatedBg, setAnimatedBg] = useState(() => localStorage.getItem('legion_animated_bg') !== 'false');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,6 +89,9 @@ export default function Layout({ children, currentPageName }) {
 
   // Removed authentication gate - app is publicly accessible
 
+  // Determine if page needs animated background (exclude streaming pages)
+  const needsAnimatedBg = !['GoLive', 'WatchStream'].includes(currentPageName);
+
   return (
     <ErrorBoundary>
       <NetworkStatus />
@@ -95,15 +105,133 @@ export default function Layout({ children, currentPageName }) {
           }
         }}
       />
+
+      {/* Animated Background for non-streaming pages */}
+      {needsAnimatedBg ? (
+        <AnimatedBackground 
+          theme={currentTheme} 
+          intensity={particleIntensity}
+          showParticles={particleIntensity !== 'off'}
+        >
+          <div className="min-h-screen">
+            {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+
+            {/* Theme Customizer - Fixed position */}
+            <div className="fixed bottom-24 right-4 z-40">
+              <ThemeCustomizer
+                currentTheme={currentTheme}
+                onThemeChange={setCurrentTheme}
+                particleIntensity={particleIntensity}
+                onParticleChange={setParticleIntensity}
+                animatedBg={animatedBg}
+                onAnimatedBgChange={setAnimatedBg}
+              />
+            </div>
+
+            {/* Shield Menu - Accessible from any page */}
+            <ShieldMenu 
+              isOpen={showShieldMenu} 
+              onClose={() => setShowShieldMenu(false)} 
+            />
+
+            {/* Age Verification Gate - Admin users are excluded */}
+            {showAgeVerification && user && user.role !== 'admin' && (
+              <AgeVerificationGate 
+                user={user} 
+                onVerified={() => {
+                  setShowAgeVerification(false);
+                  refetchUser();
+                }} 
+              />
+            )}
+
+            <style>{`
+              :root {
+                --background: 15 15 18;
+                --foreground: 245 245 250;
+                --card: 22 22 28;
+                --card-foreground: 245 245 250;
+                --popover: 22 22 28;
+                --popover-foreground: 245 245 250;
+                --primary: 217 119 6;
+                --primary-foreground: 255 255 255;
+                --secondary: 35 35 42;
+                --secondary-foreground: 245 245 250;
+                --muted: 35 35 42;
+                --muted-foreground: 140 140 150;
+                --accent: 35 35 42;
+                --accent-foreground: 245 245 250;
+                --destructive: 220 38 38;
+                --destructive-foreground: 255 255 255;
+                --border: 45 45 55;
+                --input: 35 35 42;
+                --ring: 217 119 6;
+                --radius: 0.75rem;
+              }
+
+              body {
+                background: transparent;
+                color: #f5f5fa;
+              }
+
+              ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+              }
+
+              ::-webkit-scrollbar-track {
+                background: #16161c;
+              }
+
+              ::-webkit-scrollbar-thumb {
+                background: #3a3a48;
+                border-radius: 3px;
+              }
+
+              ::-webkit-scrollbar-thumb:hover {
+                background: #4a4a58;
+              }
+
+              /* Custom animations */
+              @keyframes float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-6px); }
+              }
+
+              @keyframes glow {
+                0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); }
+                50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); }
+              }
+
+              .animate-float {
+                animation: float 3s ease-in-out infinite;
+              }
+
+              .animate-glow {
+                animation: glow 2s ease-in-out infinite;
+              }
+            `}</style>
+
+            <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
+
+            <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
+              {children}
+            </main>
+
+            {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
+          </div>
+        </AnimatedBackground>
+      ) : (
       <div className="min-h-screen bg-[#0f0f12]">
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+
       
       {/* Shield Menu - Accessible from any page */}
       <ShieldMenu 
         isOpen={showShieldMenu} 
         onClose={() => setShowShieldMenu(false)} 
       />
-      
+
       {/* Age Verification Gate - Admin users are excluded */}
       {showAgeVerification && user && user.role !== 'admin' && (
         <AgeVerificationGate 
@@ -138,58 +266,17 @@ export default function Layout({ children, currentPageName }) {
           --ring: 217 119 6;
           --radius: 0.75rem;
         }
-        
-        body {
-          background: #0f0f12;
-          color: #f5f5fa;
-        }
-
-        ::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: #16161c;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #3a3a48;
-          border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #4a4a58;
-        }
-
-        /* Custom animations */
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-
-        @keyframes glow {
-          0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); }
-          50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); }
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-
-        .animate-glow {
-          animation: glow 2s ease-in-out infinite;
-        }
       `}</style>
-      
+
       <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
-      
+
       <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
         {children}
       </main>
 
       {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
       </div>
+      )}
       </ErrorBoundary>
-  );
-}
+      );
+      }
