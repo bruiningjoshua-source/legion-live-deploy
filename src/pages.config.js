@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Achievements from './pages/Achievements';
 import AdminDashboard from './pages/AdminDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import AffiliateGoLive from './pages/AffiliateGoLive';
@@ -55,6 +56,7 @@ import AmbassadorProgram from './pages/AmbassadorProgram';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
 import ChannelAnalytics from './pages/ChannelAnalytics';
+import Clips from './pages/Clips';
 import CollaborationHub from './pages/CollaborationHub';
 import CommunityForums from './pages/CommunityForums';
 import CommunityGuidelines from './pages/CommunityGuidelines';
@@ -86,23 +88,24 @@ import Settings from './pages/Settings';
 import TermsOfService from './pages/TermsOfService';
 import TheAmphitheatre from './pages/TheAmphitheatre';
 import TheGamingHub from './pages/TheGamingHub';
+import UpcomingStreams from './pages/UpcomingStreams';
 import VideoEditor from './pages/VideoEditor';
 import VideoUpload from './pages/VideoUpload';
 import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
+import WatchHistory from './pages/WatchHistory';
+import WatchLater from './pages/WatchLater';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import WatchLater from './pages/WatchLater';
-import WatchHistory from './pages/WatchHistory';
-import Achievements from './pages/Achievements';
-import Clips from './pages/Clips';
-import UpcomingStreams from './pages/UpcomingStreams';
+import Playlists from './pages/Playlists';
+import PlaylistView from './pages/PlaylistView';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Achievements": Achievements,
     "AdminDashboard": AdminDashboard,
     "AffiliateDashboard": AffiliateDashboard,
     "AffiliateGoLive": AffiliateGoLive,
@@ -111,6 +114,7 @@ export const PAGES = {
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
     "ChannelAnalytics": ChannelAnalytics,
+    "Clips": Clips,
     "CollaborationHub": CollaborationHub,
     "CommunityForums": CommunityForums,
     "CommunityGuidelines": CommunityGuidelines,
@@ -142,19 +146,19 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "TheAmphitheatre": TheAmphitheatre,
     "TheGamingHub": TheGamingHub,
+    "UpcomingStreams": UpcomingStreams,
     "VideoEditor": VideoEditor,
     "VideoUpload": VideoUpload,
     "Videos": Videos,
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchAffiliateVideo": WatchAffiliateVideo,
+    "WatchHistory": WatchHistory,
+    "WatchLater": WatchLater,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "WatchLater": WatchLater,
-    "WatchHistory": WatchHistory,
-    "Achievements": Achievements,
-    "Clips": Clips,
-    "UpcomingStreams": UpcomingStreams,
+    "Playlists": Playlists,
+    "PlaylistView": PlaylistView,
 }
 
 export const pagesConfig = {
