@@ -235,10 +235,32 @@ export default function WatchStream() {
     }
   });
 
+  // Check if creator has monetization enabled
+  const { data: creatorSubscription } = useQuery({
+    queryKey: ['creator-monetization', creator?.user_email],
+    queryFn: async () => {
+      if (!creator?.user_email) return null;
+      const subs = await base44.entities.CreatorSubscription.filter({ 
+        user_email: creator.user_email, 
+        status: 'active' 
+      }, '-created_date', 1);
+      return subs[0] || null;
+    },
+    enabled: !!creator?.user_email,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || user?.role === 'admin';
+
   const sendGiftMutation = useMutation({
     mutationFn: async ({ gift, quantity }) => {
       if (!user || !wallet) {
         throw new Error('Please sign in to send gifts');
+      }
+
+      // Check if creator can receive gifts (has monetization subscription)
+      if (!creatorCanReceiveGifts) {
+        throw new Error('This creator has not enabled monetization yet');
       }
       
       const totalCost = (gift.cost_denarii || gift.cost_as || 0) * quantity;
@@ -823,7 +845,13 @@ export default function WatchStream() {
 
       {/* Bigo-Style Action Bar - Right side vertical */}
       <BigoActionBar
-        onGiftClick={() => setShowGiftPanel(true)}
+        onGiftClick={() => {
+          if (!creatorCanReceiveGifts) {
+            alert('This creator has not enabled monetization. They can broadcast for free but cannot receive gifts yet.');
+            return;
+          }
+          setShowGiftPanel(true);
+        }}
         onLikeClick={() => followMutation.mutate()}
         onShareClick={() => {
           if (navigator.share) {
@@ -833,6 +861,7 @@ export default function WatchStream() {
         onCommentClick={() => {}}
         isLiked={isFollowing}
         likeCount={creator?.follower_count || 0}
+        giftDisabled={!creatorCanReceiveGifts}
       />
 
       {/* Broadcaster Wallet - Only for Stream Owner */}
