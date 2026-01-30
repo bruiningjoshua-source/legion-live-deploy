@@ -243,96 +243,100 @@ export default function TheAmphitheatre() {
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-amber-100 flex items-center gap-3">
-              <Film className="w-8 h-8 text-red-500" />
-              The Amphitheatre
-            </h1>
-            <p className="text-amber-400/70">Discover videos, music, and creators</p>
-          </div>
-          
-          <div className="flex gap-3">
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-amber-100 flex items-center gap-3">
+                <Film className="w-7 h-7 text-red-500" />
+                The Amphitheatre
+              </h1>
+              <p className="text-amber-400/70 text-sm">Discover videos, music, and creators</p>
+            </div>
+            
             {user && (
-              <>
+              <div className="flex flex-wrap items-center gap-2">
                 <Button 
                   onClick={() => setShowMessages(true)}
                   variant="outline" 
-                  className="border-cyan-600/30 text-cyan-300"
+                  size="sm"
+                  className="border-cyan-600/30 text-cyan-300 h-9"
                 >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Messages
+                  <MessageSquare className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Messages</span>
                 </Button>
                 <Button 
                   onClick={() => setShowInterestPicker(true)}
                   variant="outline" 
-                  className="border-amber-600/30 text-amber-300"
+                  size="sm"
+                  className="border-amber-600/30 text-amber-300 h-9"
                 >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Interests
+                  <Heart className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Interests</span>
                 </Button>
                 <Link to={createPageUrl('CreatorStudio')}>
-                  <Button variant="outline" className="border-amber-600/30 text-amber-300">
-                    <Video className="w-4 h-4 mr-2" />
-                    Studio
+                  <Button variant="outline" size="sm" className="border-amber-600/30 text-amber-300 h-9">
+                    <Video className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Studio</span>
                   </Button>
                 </Link>
                 <Link to={createPageUrl('VideoUpload')}>
-                  <Button className="bg-red-600 hover:bg-red-700">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 h-9">
+                    <Upload className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Upload</span>
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[
-            { id: 'discover', label: 'Discover', icon: Compass },
-            { id: 'shorts', label: 'Shorts', icon: Play },
-            { id: 'longform', label: 'Long Form', icon: Film },
-            { id: 'trending', label: 'Trending', icon: TrendingUp },
-            { id: 'foryou', label: 'For You', icon: Sparkles },
-            { id: 'recommended', label: 'Products & Services', icon: ShoppingBag },
-            { id: 'history', label: 'History', icon: History },
-            { id: 'community', label: 'Community', icon: Users }
-          ].map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveSection(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
-                  activeSection === tab.id
-                    ? 'bg-red-600 text-white'
-                    : 'bg-stone-800/50 text-amber-300 hover:bg-stone-700/50'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+        <div className="relative mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {[
+              { id: 'discover', label: 'Discover', icon: Compass },
+              { id: 'shorts', label: 'Shorts', icon: Play },
+              { id: 'longform', label: 'Long Form', icon: Film },
+              { id: 'trending', label: 'Trending', icon: TrendingUp },
+              { id: 'foryou', label: 'For You', icon: Sparkles },
+              { id: 'recommended', label: 'Products', icon: ShoppingBag },
+              { id: 'history', label: 'History', icon: History },
+              { id: 'community', label: 'Community', icon: Users }
+            ].map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSection(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                    activeSection === tab.id
+                      ? 'bg-red-600 text-white font-medium'
+                      : 'bg-stone-800/60 text-amber-300/80 hover:bg-stone-700/60 hover:text-amber-200'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Search & Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400/50" />
             <Input
-              placeholder="Search videos, creators, topics..."
+              placeholder="Search videos, creators..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 rounded-xl"
+              className="pl-10 h-10 bg-stone-800/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40 rounded-lg"
             />
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-40 bg-stone-800/50 border-amber-600/20 text-amber-100">
+              <SelectTrigger className="w-32 h-10 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-stone-900 border-amber-600/30">
@@ -345,7 +349,7 @@ export default function TheAmphitheatre() {
             </Select>
             
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-36 bg-stone-800/50 border-amber-600/20 text-amber-100">
+              <SelectTrigger className="w-28 h-10 bg-stone-800/50 border-amber-600/20 text-amber-100 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-stone-900 border-amber-600/30">
@@ -361,9 +365,9 @@ export default function TheAmphitheatre() {
               onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
               variant="outline"
               size="icon"
-              className="border-amber-600/20 text-amber-400"
+              className="h-10 w-10 border-amber-600/20 text-amber-400 shrink-0"
             >
-              {viewMode === 'grid' ? <LayoutList className="w-5 h-5" /> : <Grid className="w-5 h-5" />}
+              {viewMode === 'grid' ? <LayoutList className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
             </Button>
           </div>
         </div>
