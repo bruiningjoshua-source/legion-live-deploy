@@ -23,7 +23,6 @@ export default function Layout({ children, currentPageName }) {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
   
-  // Theme customization state
   const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('legion_theme') || 'roman');
   const [particleIntensity, setParticleIntensity] = useState(() => localStorage.getItem('legion_particles') || 'medium');
   const [animatedBg, setAnimatedBg] = useState(() => localStorage.getItem('legion_animated_bg') !== 'false');
@@ -38,11 +37,8 @@ export default function Layout({ children, currentPageName }) {
         setIsAuthenticated(false);
       }
       
-      // Always show loading screen on app load (not stored in session)
-      // This ensures it shows on every browser refresh/close-reopen
       const lastLoadTime = localStorage.getItem('lastAppLoadTime');
       const now = Date.now();
-      // Show loading screen if more than 5 seconds since last load (covers refresh/reopen)
       if (!lastLoadTime || (now - parseInt(lastLoadTime)) > 5000) {
         setShowLoadingScreen(true);
       }
@@ -55,11 +51,10 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     retry: 1
   });
 
-  // Check age verification for non-admin users
   useEffect(() => {
     if (user && user.role !== 'admin' && !user.age_verified) {
       setShowAgeVerification(true);
@@ -75,7 +70,6 @@ export default function Layout({ children, currentPageName }) {
       try {
         const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
         if (wallets.length > 0) return wallets[0];
-        // Create wallet lazily in background
         return base44.entities.Wallet.create({ 
           user_email: user.email, 
           denarii_balance: 100,
@@ -88,226 +82,123 @@ export default function Layout({ children, currentPageName }) {
       }
     },
     enabled: !!user?.email,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
     retry: 1
   });
 
-  // Removed authentication gate - app is publicly accessible
-
-  // Determine if page needs animated background (exclude streaming pages)
   const needsAnimatedBg = !['GoLive', 'WatchStream'].includes(currentPageName);
+
+  const globalStyles = `
+    :root {
+      --background: 15 15 18;
+      --foreground: 245 245 250;
+      --card: 22 22 28;
+      --card-foreground: 245 245 250;
+      --popover: 22 22 28;
+      --popover-foreground: 245 245 250;
+      --primary: 217 119 6;
+      --primary-foreground: 255 255 255;
+      --secondary: 35 35 42;
+      --secondary-foreground: 245 245 250;
+      --muted: 35 35 42;
+      --muted-foreground: 140 140 150;
+      --accent: 35 35 42;
+      --accent-foreground: 245 245 250;
+      --destructive: 220 38 38;
+      --destructive-foreground: 255 255 255;
+      --border: 45 45 55;
+      --input: 35 35 42;
+      --ring: 217 119 6;
+      --radius: 0.75rem;
+    }
+    body { background: transparent; color: #f5f5fa; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #16161c; }
+    ::-webkit-scrollbar-thumb { background: #3a3a48; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4a4a58; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); } 50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); } }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-glow { animation: glow 2s ease-in-out infinite; }
+  `;
+
+  const renderContent = () => (
+    <>
+      {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      
+      <ShieldMenu isOpen={showShieldMenu} onClose={() => setShowShieldMenu(false)} />
+      
+      {showAgeVerification && user && user.role !== 'admin' && (
+        <AgeVerificationGate 
+          user={user} 
+          onVerified={() => { setShowAgeVerification(false); refetchUser(); }} 
+        />
+      )}
+      
+      <style>{globalStyles}</style>
+      
+      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
+      
+      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
+        {children}
+      </main>
+      
+      {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
+      
+      <InstallPrompt />
+      
+      <div className="fixed bottom-24 left-4 z-40">
+        <CustomerSupport user={user} />
+      </div>
+    </>
+  );
 
   return (
     <ErrorBoundary>
       <CSRFProvider>
-      <RateLimitProvider>
-      <ErrorTrackerProvider user={user}>
-      <NetworkStatus />
-      <Toaster 
-        position="top-center" 
-        toastOptions={{
-          style: {
-            background: '#1c1917',
-            border: '1px solid rgba(217, 119, 6, 0.3)',
-            color: '#fef3c7'
-          }
-        }}
-      />
-
-      {/* Animated Background for non-streaming pages */}
-      {needsAnimatedBg ? (
-        <AnimatedBackground 
-          theme={currentTheme} 
-          intensity={particleIntensity}
-          showParticles={particleIntensity !== 'off'}
-        >
-          <div className="min-h-screen">
-            {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
-
-            {/* Theme Customizer - Fixed position */}
-            <div className="fixed bottom-24 right-4 z-40">
-              <AdvancedThemeCustomizer
-                currentTheme={currentTheme}
-                onThemeChange={setCurrentTheme}
-                particleIntensity={particleIntensity}
-                onParticleChange={setParticleIntensity}
-                animatedBg={animatedBg}
-                onAnimatedBgChange={setAnimatedBg}
-                user={user}
-              />
-            </div>
-
-            {/* Shield Menu - Accessible from any page */}
-            <ShieldMenu 
-              isOpen={showShieldMenu} 
-              onClose={() => setShowShieldMenu(false)} 
+        <RateLimitProvider>
+          <ErrorTrackerProvider user={user}>
+            <NetworkStatus />
+            <Toaster 
+              position="top-center" 
+              toastOptions={{
+                style: {
+                  background: '#1c1917',
+                  border: '1px solid rgba(217, 119, 6, 0.3)',
+                  color: '#fef3c7'
+                }
+              }}
             />
-
-            {/* Age Verification Gate - Admin users are excluded */}
-            {showAgeVerification && user && user.role !== 'admin' && (
-              <AgeVerificationGate 
-                user={user} 
-                onVerified={() => {
-                  setShowAgeVerification(false);
-                  refetchUser();
-                }} 
-              />
+            
+            {needsAnimatedBg ? (
+              <AnimatedBackground 
+                theme={currentTheme} 
+                intensity={particleIntensity}
+                showParticles={particleIntensity !== 'off'}
+              >
+                <div className="min-h-screen">
+                  <div className="fixed bottom-24 right-4 z-40">
+                    <AdvancedThemeCustomizer
+                      currentTheme={currentTheme}
+                      onThemeChange={setCurrentTheme}
+                      particleIntensity={particleIntensity}
+                      onParticleChange={setParticleIntensity}
+                      animatedBg={animatedBg}
+                      onAnimatedBgChange={setAnimatedBg}
+                      user={user}
+                    />
+                  </div>
+                  {renderContent()}
+                </div>
+              </AnimatedBackground>
+            ) : (
+              <div className="min-h-screen bg-[#0f0f12]">
+                {renderContent()}
+              </div>
             )}
-
-            <style>{`
-              :root {
-                --background: 15 15 18;
-                --foreground: 245 245 250;
-                --card: 22 22 28;
-                --card-foreground: 245 245 250;
-                --popover: 22 22 28;
-                --popover-foreground: 245 245 250;
-                --primary: 217 119 6;
-                --primary-foreground: 255 255 255;
-                --secondary: 35 35 42;
-                --secondary-foreground: 245 245 250;
-                --muted: 35 35 42;
-                --muted-foreground: 140 140 150;
-                --accent: 35 35 42;
-                --accent-foreground: 245 245 250;
-                --destructive: 220 38 38;
-                --destructive-foreground: 255 255 255;
-                --border: 45 45 55;
-                --input: 35 35 42;
-                --ring: 217 119 6;
-                --radius: 0.75rem;
-              }
-
-              body {
-                background: transparent;
-                color: #f5f5fa;
-              }
-
-              ::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-              }
-
-              ::-webkit-scrollbar-track {
-                background: #16161c;
-              }
-
-              ::-webkit-scrollbar-thumb {
-                background: #3a3a48;
-                border-radius: 3px;
-              }
-
-              ::-webkit-scrollbar-thumb:hover {
-                background: #4a4a58;
-              }
-
-              /* Custom animations */
-              @keyframes float {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-6px); }
-              }
-
-              @keyframes glow {
-                0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); }
-                50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); }
-              }
-
-              .animate-float {
-                animation: float 3s ease-in-out infinite;
-              }
-
-              .animate-glow {
-                animation: glow 2s ease-in-out infinite;
-              }
-            `}</style>
-
-            <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
-
-            <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
-              {children}
-            </main>
-
-            {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
-
-                          {/* PWA Install Prompt */}
-                          <InstallPrompt />
-
-                          {/* Customer Support Widget */}
-                          <div className="fixed bottom-24 left-4 z-40">
-                            <CustomerSupport user={user} />
-                          </div>
-                    </div>
-                  </ErrorTrackerProvider>
-                  </RateLimitProvider>
-                  </CSRFProvider>
-                  </AnimatedBackground>
-      ) : (
-      <div className="min-h-screen bg-[#0f0f12]">
-        {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
-
-      
-      {/* Shield Menu - Accessible from any page */}
-      <ShieldMenu 
-        isOpen={showShieldMenu} 
-        onClose={() => setShowShieldMenu(false)} 
-      />
-
-      {/* Age Verification Gate - Admin users are excluded */}
-      {showAgeVerification && user && user.role !== 'admin' && (
-        <AgeVerificationGate 
-          user={user} 
-          onVerified={() => {
-            setShowAgeVerification(false);
-            refetchUser();
-          }} 
-        />
-      )}
-
-      <style>{`
-        :root {
-          --background: 15 15 18;
-          --foreground: 245 245 250;
-          --card: 22 22 28;
-          --card-foreground: 245 245 250;
-          --popover: 22 22 28;
-          --popover-foreground: 245 245 250;
-          --primary: 217 119 6;
-          --primary-foreground: 255 255 255;
-          --secondary: 35 35 42;
-          --secondary-foreground: 245 245 250;
-          --muted: 35 35 42;
-          --muted-foreground: 140 140 150;
-          --accent: 35 35 42;
-          --accent-foreground: 245 245 250;
-          --destructive: 220 38 38;
-          --destructive-foreground: 255 255 255;
-          --border: 45 45 55;
-          --input: 35 35 42;
-          --ring: 217 119 6;
-          --radius: 0.75rem;
-        }
-      `}</style>
-
-      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
-
-      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
-        {children}
-      </main>
-
-      {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
-
-                    {/* PWA Install Prompt */}
-                    <InstallPrompt />
-
-                    {/* Customer Support Widget */}
-                    <div className="fixed bottom-24 left-4 z-40">
-                      <CustomerSupport user={user} />
-                    </div>
-          </div>
-          )}
           </ErrorTrackerProvider>
-          </RateLimitProvider>
-          </CSRFProvider>
-          </ErrorBoundary>
-      );
-      }
+        </RateLimitProvider>
+      </CSRFProvider>
+    </ErrorBoundary>
+  );
+}
