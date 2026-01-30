@@ -250,6 +250,7 @@ export default function WatchVideo() {
                     src={video.video_url || video.audio_url}
                     poster={video.cover_url || video.thumbnail_url}
                     className="w-full h-full"
+                    onEnded={() => setVideoEnded(true)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-amber-400/50">
@@ -263,6 +264,7 @@ export default function WatchVideo() {
                     src={video.video_url}
                     poster={video.thumbnail_url}
                     className="w-full h-full"
+                    onEnded={() => setVideoEnded(true)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-amber-400/50">
