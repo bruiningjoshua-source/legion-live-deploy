@@ -10,6 +10,7 @@ export default function BigoActionBar({
   isLiked = false,
   isFollowing = false,
   likeCount = 0,
+  giftDisabled = false,
   className = ''
 }) {
   const formatCount = (count) => {
@@ -22,10 +23,11 @@ export default function BigoActionBar({
     { 
       id: 'gift', 
       icon: Gift, 
-      bg: 'bg-gradient-to-br from-amber-500 to-orange-600',
+      bg: giftDisabled ? 'bg-gray-500/50' : 'bg-gradient-to-br from-amber-500 to-orange-600',
       onClick: onGiftClick, 
       primary: true,
-      label: 'Gift'
+      label: 'Gift',
+      disabled: giftDisabled
     },
     { 
       id: 'follow', 
@@ -66,8 +68,9 @@ export default function BigoActionBar({
           >
             <motion.button
               onClick={action.onClick}
-              className={`${action.primary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full ${action.bg} backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20 active:scale-90 transition-transform`}
-              whileTap={{ scale: 0.9 }}
+              disabled={action.disabled}
+              className={`${action.primary ? 'w-14 h-14' : 'w-12 h-12'} rounded-full ${action.bg} backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20 active:scale-90 transition-transform ${action.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              whileTap={action.disabled ? {} : { scale: 0.9 }}
             >
               <Icon className={`${action.primary ? 'w-7 h-7' : 'w-6 h-6'} ${action.filled ? 'fill-current' : ''} text-white`} />
             </motion.button>
