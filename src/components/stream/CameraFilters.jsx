@@ -40,8 +40,7 @@ import {
   Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FILTER_PRESETS, FACE_ACCESSORIES, BACKGROUNDS } from './ARFilterEngine';
-import AnimatedFilterOverlay from './AnimatedFilterOverlay';
+// AR imports removed - using simplified CSS-based filters
 
 // Extended color filter presets with CSS filter values
 const COLOR_FILTERS = [
