@@ -133,7 +133,7 @@ export default function TheGamingHub() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0e0e10] via-[#18181b] to-[#0e0e10] pt-16">
+    <div className="min-h-screen pt-16 pb-24">
       <div className="flex">
         {/* Sidebar */}
         <LiveChannelsSidebar 
@@ -149,36 +149,38 @@ export default function TheGamingHub() {
             <FeaturedGameCarousel streams={streams} creators={creatorMap} />
 
             {/* Header with Stats */}
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 flex items-center gap-3">
-                  <Gamepad2 className="w-7 h-7 text-purple-500" />
+                <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-purple-400 to-pink-400 mb-2 flex items-center gap-3">
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    <Gamepad2 className="w-8 h-8 text-purple-400" />
+                  </motion.div>
                   Gaming Hub
                 </h1>
                 <div className="flex items-center gap-4 text-sm">
-                  <span className="text-purple-400 flex items-center gap-1">
+                  <span className="flex items-center gap-2 bg-red-500/20 px-3 py-1 rounded-full">
                     <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    {streams.filter(s => s.status === 'live').length} Live
+                    <span className="text-red-300 font-medium">{streams.filter(s => s.status === 'live').length} Live</span>
                   </span>
                   <span className="text-white/50">{totalLiveViewers.toLocaleString()} viewers</span>
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Link to={createPageUrl('GamingSetup')}>
-                  <Button variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
-                    <Cpu className="w-4 h-4 mr-2" />
-                    Setup
-                  </Button>
-                </Link>
+              <div className="flex gap-3">
                 <Link to={createPageUrl('GoLive')}>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <Radio className="w-4 h-4 mr-2" />
+                  <PremiumButton variant="premium" leftIcon={<Radio className="w-4 h-4" />}>
                     Go Live
-                  </Button>
+                  </PremiumButton>
                 </Link>
               </div>
-            </div>
+            </motion.div>
 
             {/* Game Categories */}
             <GameCategoryGrid onSelectGame={setSelectedGame} selectedGame={selectedGame} />
