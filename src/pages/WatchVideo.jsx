@@ -123,6 +123,20 @@ export default function WatchVideo() {
   const hasLiked = userInterest?.liked_videos?.includes(videoId);
   const hasDisliked = userInterest?.disliked_videos?.includes(videoId);
 
+  // Autoplay persistence
+  useEffect(() => {
+    localStorage.setItem('video_autoplay', autoplay.toString());
+  }, [autoplay]);
+
+  // Reset video ended state when video changes
+  useEffect(() => {
+    setVideoEnded(false);
+    viewTrackedRef.current = false;
+    if (autoplayTimerRef.current) {
+      clearTimeout(autoplayTimerRef.current);
+    }
+  }, [videoId]);
+
   const likeMutation = useMutation({
     mutationFn: async () => {
       const currentLikes = video.like_count || 0;
