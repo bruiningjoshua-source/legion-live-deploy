@@ -362,7 +362,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                         <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
                       </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}
+                      <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
                         <DropdownMenuItem asChild>
                           <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer">
                             Admin Dashboard
