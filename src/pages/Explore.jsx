@@ -208,54 +208,49 @@ export default function Explore() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl">
-            <TabsTrigger 
-              value="streams"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg px-6"
-            >
-              <Radio className="w-4 h-4 mr-2" />
-              Live Streams
-              <Badge className="ml-2 bg-red-500 text-white border-0 text-xs">{streams.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="creators"
-              className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg px-6"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Creators
-              <Badge className="ml-2 bg-amber-500/50 text-amber-100 border-0 text-xs">{creators.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
+          <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl">
+            <TabsList className="bg-transparent p-0 gap-1">
+              <TabsTrigger 
+                value="streams"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+              >
+                <Radio className="w-4 h-4 mr-2" />
+                Live Streams
+                <Badge className="ml-2 bg-red-500/80 text-white border-0 text-[10px] px-1.5">{streams.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="creators"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-6 py-2.5 text-white/60 hover:text-white transition-all"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Creators
+                <Badge className="ml-2 bg-amber-500/50 text-white border-0 text-[10px] px-1.5">{creators.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="streams" className="mt-0">
             {streamsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="aspect-video rounded-2xl bg-stone-800" />
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {[...Array(10)].map((_, i) => (
+                  <Skeleton key={i} className="aspect-[9/16] rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : filteredStreams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <AnimatePresence>
-                  {filteredStreams.map((stream, i) => (
-                    <motion.div
-                      key={stream.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredStreams.map((stream, i) => (
+                  <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
+                ))}
               </div>
             ) : (
-              <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
-                <Radio className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                <h3 className="text-amber-100 font-semibold text-lg mb-2">No Streams Found</h3>
-                <p className="text-amber-400/60">Try adjusting your filters or check back later</p>
-              </div>
+              <GlassCard className="text-center py-16">
+                <Radio className="w-16 h-16 text-red-500/30 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">No Streams Found</h3>
+                <p className="text-white/50 mb-6">Try adjusting your filters or check back later</p>
+                <PremiumButton onClick={() => { setSelectedCategory('all'); setSelectedType('all'); setSearchQuery(''); }}>
+                  Clear Filters
+                </PremiumButton>
+              </GlassCard>
             )}
           </TabsContent>
 
@@ -263,31 +258,21 @@ export default function Explore() {
             {creatorsLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {[...Array(10)].map((_, i) => (
-                  <Skeleton key={i} className="h-72 rounded-2xl bg-stone-800" />
+                  <Skeleton key={i} className="h-64 rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : filteredCreators.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                <AnimatePresence>
-                  {filteredCreators.map((creator, i) => (
-                    <motion.div
-                      key={creator.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <CreatorCard creator={creator} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                {filteredCreators.map((creator, i) => (
+                  <PremiumCreatorCard key={creator.id} creator={creator} index={i} />
+                ))}
               </div>
             ) : (
-              <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
-                <Users className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                <h3 className="text-amber-100 font-semibold text-lg mb-2">No Creators Found</h3>
-                <p className="text-amber-400/60">Try adjusting your search</p>
-              </div>
+              <GlassCard className="text-center py-16">
+                <Users className="w-16 h-16 text-amber-500/30 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">No Creators Found</h3>
+                <p className="text-white/50">Try adjusting your search</p>
+              </GlassCard>
             )}
           </TabsContent>
         </Tabs>
