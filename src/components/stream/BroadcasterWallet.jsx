@@ -1,9 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, Gift, Coins, ChevronUp, ChevronDown } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
-export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings = 0, giftsReceived = 0 }) {
+export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings = 0, giftsReceived = 0, creatorId }) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [liveEarnings, setLiveEarnings] = useState({
+    session: sessionEarnings,
+    total: totalEarnings,
+    gifts: giftsReceived
+  });
+
+  // Real-time subscription to earnings updates
+  useEffect(() => {
+    if (!creatorId) return;
+
+    const unsubscribe = base44.entities.BroadcasterEarnings.subscribe((event) => {
+      if (event.data.creator_id === creatorId) {
+        setLiveEarnings({
+          session: event.data.session_earnings_denarii || 0,
+          total: event.data.total_earnings_denarii || 0,
+          gifts: event.data.session_gifts_count || 0
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, [creatorId]);
+
+  // Update from props when they change
+  useEffect(() => {
+    setLiveEarnings({
+      session: sessionEarnings,
+      total: totalEarnings,
+      gifts: giftsReceived
+    });
+  }, [sessionEarnings, totalEarnings, giftsReceived]);
 
   return (
     <motion.div
@@ -22,7 +54,7 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
             className="bg-black/70 backdrop-blur-md border border-amber-500/30 rounded-full p-3 flex items-center gap-2"
           >
             <span className="text-lg">🪙</span>
-            <span className="text-amber-300 font-bold text-sm">{sessionEarnings}</span>
+            <span className="text-amber-300 font-bold text-sm">{liveEarnings.session}</span>
             <ChevronDown className="w-3 h-3 text-amber-400" />
           </motion.button>
         ) : (
@@ -51,7 +83,7 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
               <span className="text-amber-400/70 text-xs">This Stream</span>
               <div className="flex items-center gap-1">
                 <span className="text-amber-300 text-lg">🪙</span>
-                <span className="text-white font-bold text-sm">{sessionEarnings}</span>
+                <span className="text-white font-bold text-sm">{liveEarnings.session}</span>
               </div>
             </div>
             
@@ -60,7 +92,7 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
               <span className="text-amber-400/70 text-xs">Gifts</span>
               <div className="flex items-center gap-1">
                 <Gift className="w-3 h-3 text-pink-400" />
-                <span className="text-white font-semibold text-xs">{giftsReceived}</span>
+                <span className="text-white font-semibold text-xs">{liveEarnings.gifts}</span>
               </div>
             </div>
             
@@ -69,7 +101,7 @@ export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings =
               <span className="text-amber-400/70 text-xs">Total</span>
               <div className="flex items-center gap-1">
                 <Coins className="w-3 h-3 text-amber-400" />
-                <span className="text-amber-300 font-bold text-sm">{totalEarnings}</span>
+                <span className="text-amber-300 font-bold text-sm">{liveEarnings.total}</span>
               </div>
             </div>
           </motion.div>
