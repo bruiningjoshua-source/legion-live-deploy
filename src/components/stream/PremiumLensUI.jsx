@@ -77,54 +77,63 @@ export default function PremiumLensUI({
     ? { id: 'custom', type: 'image', url: customBgUrl, name: 'Custom', icon: '📷' }
     : VIRTUAL_BACKGROUNDS.find(b => b.id === selectedBackground) || VIRTUAL_BACKGROUNDS[0];
 
-  // Apply effects to video element
+  // Apply effects to video element - OPTIMIZED for broadcast quality
   const applyEffects = useCallback(() => {
     if (!videoRef?.current) return;
 
     const video = videoRef.current;
-    let filterStr = '';
+    const filters = [];
     
     // Get filter adjustments
     const adj = currentFilter.adjustments || {};
     
-    // Brightness
+    // Brightness - combine user adjustment with filter preset
     const totalBrightness = (brightness / 100) * (adj.brightness || 1);
-    filterStr += `brightness(${totalBrightness}) `;
+    if (totalBrightness !== 1) {
+      filters.push(`brightness(${totalBrightness.toFixed(2)})`);
+    }
     
-    // Contrast  
+    // Contrast
     const totalContrast = (contrast / 100) * (adj.contrast || 1);
-    filterStr += `contrast(${totalContrast}) `;
+    if (totalContrast !== 1) {
+      filters.push(`contrast(${totalContrast.toFixed(2)})`);
+    }
     
     // Saturation
     let totalSat = (saturation / 100) * (adj.saturation || 1);
-    filterStr += `saturate(${totalSat}) `;
+    if (totalSat !== 1) {
+      filters.push(`saturate(${totalSat.toFixed(2)})`);
+    }
     
     // Sepia for vintage effects
-    if (adj.sepia) {
-      filterStr += `sepia(${adj.sepia}) `;
+    if (adj.sepia && adj.sepia > 0) {
+      filters.push(`sepia(${adj.sepia})`);
     }
     
-    // Temperature via hue-rotate
-    const tempShift = warmth * 0.4 + (adj.temperature || 0) * 0.3;
-    if (tempShift !== 0) {
-      filterStr += `hue-rotate(${tempShift}deg) `;
+    // Temperature via hue-rotate (subtle effect)
+    const tempShift = warmth * 0.25 + (adj.temperature || 0) * 0.2;
+    if (Math.abs(tempShift) > 0.5) {
+      filters.push(`hue-rotate(${tempShift.toFixed(1)}deg)`);
     }
     
-    // Beauty smooth
+    // Beauty smooth - VERY subtle to avoid blurring broadcast
+    // Only apply minimal blur that doesn't degrade video quality
     const totalSmooth = smooth + (currentBeauty.smooth || 0);
-    if (totalSmooth > 0) {
-      filterStr += `blur(${totalSmooth * 0.012}px) `;
+    if (totalSmooth > 30) {
+      // Max 0.5px blur to maintain sharpness
+      const blurAmount = Math.min(0.5, totalSmooth * 0.008);
+      filters.push(`blur(${blurAmount.toFixed(2)}px)`);
     }
 
-    video.style.filter = filterStr.trim() || 'none';
+    // Apply combined filter string
+    video.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
     
-    // Transform
+    // Transform - mirror only, no zoom to prevent cropping issues
     const scaleX = mirrorEnabled ? -1 : 1;
-    const scale = zoom / 100;
-    video.style.transform = `scaleX(${scaleX}) scale(${scale})`;
+    video.style.transform = `scaleX(${scaleX})`;
     video.style.transformOrigin = 'center center';
     
-    // Callbacks
+    // Callbacks - pass processed values
     onFilterChange?.({ 
       filter: currentFilter, 
       brightness, 
@@ -165,7 +174,7 @@ export default function PremiumLensUI({
     }
   };
 
-  // Reset all
+  // Reset all - restore to broadcast-safe defaults
   const resetAll = () => {
     setSelectedFilter('none');
     setSelectedBeauty('off');
@@ -177,8 +186,13 @@ export default function PremiumLensUI({
     setWarmth(0);
     setSmooth(0);
     setZoom(100);
-    setMirrorEnabled(true);
-    toast.success('Reset');
+    // Don't reset mirror - users typically want to stay mirrored
+    
+    // Clear video filter immediately
+    if (videoRef?.current) {
+      videoRef.current.style.filter = 'none';
+    }
+    toast.success('Reset to defaults');
   };
 
   const tabs = [
@@ -353,14 +367,7 @@ export default function PremiumLensUI({
                       max={50}
                       centered
                     />
-                    <AdjustmentSlider 
-                      icon={<ZoomIn className="w-4 h-4" />}
-                      label="Zoom"
-                      value={zoom}
-                      onChange={setZoom}
-                      min={100}
-                      max={200}
-                    />
+                    {/* Zoom removed - causes cropping issues during broadcast */}
                   </div>
                 </div>
               )}
@@ -379,8 +386,8 @@ export default function PremiumLensUI({
                     ))}
                   </div>
 
-                  {/* Manual Smooth */}
-                  <div className="pt-4 border-t border-white/10">
+                  {/* Manual Smooth - with warning */}
+                  <div className="pt-4 border-t border-white/10 space-y-2">
                     <AdjustmentSlider 
                       icon={<Sparkles className="w-4 h-4" />}
                       label="Skin Smooth"
@@ -389,6 +396,11 @@ export default function PremiumLensUI({
                       min={0}
                       max={100}
                     />
+                    {smooth > 50 && (
+                      <p className="text-amber-400/70 text-[10px]">
+                        ⚠️ High smoothing may reduce video sharpness
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -818,31 +830,22 @@ function AROverlayElement({ element, effectId }) {
 // ============================================
 
 function BackgroundRenderer({ background }) {
-  if (!background || background.type === 'none') return null;
+  // NOTE: Virtual backgrounds require AI-powered person segmentation to work properly.
+  // Without segmentation, backgrounds appear BEHIND the video (not replacing it).
+  // This is a UI indicator only - actual background replacement needs MediaPipe/TensorFlow.
+  
+  if (!background || background.type === 'none' || background.type === 'blur') {
+    return null;
+  }
 
-  // For blur - we don't render a separate layer, it's applied to the video
-  if (background.type === 'blur') return null;
-
+  // Show a subtle indicator that background is "selected" but explain limitation
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none">
-      {background.type === 'solid' && (
-        <div className="absolute inset-0" style={{ backgroundColor: background.color }} />
-      )}
-      {background.type === 'gradient' && (
-        <div 
-          className="absolute inset-0"
-          style={{ 
-            background: `linear-gradient(${background.angle || 135}deg, ${background.colors.join(', ')})` 
-          }}
-        />
-      )}
-      {background.type === 'image' && (
-        <img 
-          src={background.url} 
-          alt="" 
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
+    <div className="absolute bottom-4 left-4 z-30 pointer-events-none">
+      <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/70 flex items-center gap-2">
+        <span>{background.icon}</span>
+        <span>Background: {background.name}</span>
+        <span className="text-amber-400/80">(requires green screen)</span>
+      </div>
     </div>
   );
 }
