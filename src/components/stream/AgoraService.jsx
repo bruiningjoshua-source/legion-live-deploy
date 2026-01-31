@@ -21,8 +21,10 @@ class AgoraStreamingService {
   async initialize(appId) {
     try {
       this.appId = appId;
-      AgoraRTC.setLogLevel(2); // Info level logging
-      this.client = AgoraRTC.createClient({ mode: 'live', codec: 'vp9' });
+      AgoraRTC.setLogLevel(1); // Debug level logging for troubleshooting
+      
+      // Create client with live mode for broadcasting
+      this.client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' }); // vp8 has better compatibility
       
       // Handle network quality changes
       this.client.on('network-quality', (stats) => {
@@ -66,40 +68,36 @@ class AgoraStreamingService {
 
   async createLocalTracks(videoConfig = {}, audioConfig = {}) {
     try {
-      // Create video track with adaptive bitrate
+      // Create video track with mobile-friendly settings
       this.localVideoTrack = await AgoraRTC.createCameraVideoTrack({
         cameraId: videoConfig.cameraId,
+        facingMode: 'user',
         encoderConfig: {
-          width: videoConfig.width || 1080,
-          height: videoConfig.height || 1920,
+          width: { ideal: 720, max: 1080 },
+          height: { ideal: 1280, max: 1920 },
           frameRate: videoConfig.frameRate || 30,
-          bitrateMin: videoConfig.bitrateMin || 500,
-          bitrateMax: videoConfig.bitrateMax || 2500,
-          bitrate: videoConfig.bitrate || 1500
+          bitrateMin: 400,
+          bitrateMax: 2000,
         },
-        optimizationMode: 'motion'
+        optimizationMode: 'detail' // Better for faces
       });
 
-      // Create audio track
+      // Create audio track with echo cancellation
       this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
         microphoneId: audioConfig.microphoneId,
-        encoderConfig: {
-          sampleRate: audioConfig.sampleRate || 48000,
-          stereo: audioConfig.stereo !== false,
-          mono: audioConfig.mono || false,
-          bitrate: audioConfig.bitrate || 128
-        },
-        AEC: true,
-        AGC: true,
-        ANS: true
+        AEC: true, // Echo cancellation
+        AGC: true, // Auto gain control
+        ANS: true, // Noise suppression
+        encoderConfig: 'music_standard'
       });
 
+      console.log('[Agora] Local tracks created successfully');
       return {
         videoTrack: this.localVideoTrack,
         audioTrack: this.localAudioTrack
       };
     } catch (error) {
-      console.error('Failed to create local tracks:', error);
+      console.error('[Agora] Failed to create local tracks:', error);
       throw error;
     }
   }
@@ -200,28 +198,37 @@ class AgoraStreamingService {
 
   async handleUserPublished(user, mediaType) {
     try {
+      console.log(`[Agora] Subscribing to user ${user.uid} ${mediaType}`);
       await this.client.subscribe(user, mediaType);
       
       if (mediaType === 'video') {
         this.remoteUsers.set(user.uid, { ...user, videoTrack: user.videoTrack });
+        
         // Play video in the main video element for viewers
         const videoElement = document.querySelector('video');
         if (videoElement && user.videoTrack) {
-          user.videoTrack.play(videoElement, { fit: 'contain' });
+          // Stop any existing playback first
+          try {
+            user.videoTrack.stop();
+          } catch (e) {}
+          
+          // Play to video element
+          user.videoTrack.play(videoElement, { fit: 'contain', mirror: false });
+          console.log(`[Agora] Playing remote video for user ${user.uid}`);
         }
       } else if (mediaType === 'audio') {
-        this.remoteUsers.set(user.uid, { ...this.remoteUsers.get(user.uid), audioTrack: user.audioTrack });
+        const existingUser = this.remoteUsers.get(user.uid) || {};
+        this.remoteUsers.set(user.uid, { ...existingUser, audioTrack: user.audioTrack });
         if (user.audioTrack) {
           user.audioTrack.play();
+          console.log(`[Agora] Playing remote audio for user ${user.uid}`);
         }
       }
-
-      console.log(`User ${user.uid} published ${mediaType}`);
       
       // Notify listeners of user join
       this.notifyQualityChange();
     } catch (error) {
-      console.error('Failed to handle user published:', error);
+      console.error('[Agora] Failed to handle user published:', error);
     }
   }
 

@@ -492,6 +492,8 @@ export default function WatchStream() {
     const initAgoraViewer = async () => {
       if (stream?.status === 'live' && user?.email !== creator?.user_email) {
         try {
+          console.log('[WatchStream] Initializing Agora for viewer...');
+          
           // Get Agora token for viewer
           let viewerUid = Math.floor(Math.random() * 1000000);
           const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
@@ -500,11 +502,14 @@ export default function WatchStream() {
             role: 'audience'
           });
           
-          const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42';
+          console.log('[WatchStream] Token response:', tokenResponse.data);
+          
+          // Use App ID from env or response
+          const AGORA_APP_ID = tokenResponse.data?.appId || '497c36af191647579fb65a825dd22b42';
           await AgoraService.initialize(AGORA_APP_ID);
           
-          const token = tokenResponse.data.token || '';
-          viewerUid = tokenResponse.data.uid || viewerUid;
+          const token = tokenResponse.data?.token || '';
+          viewerUid = tokenResponse.data?.uid || viewerUid;
 
           // Join channel as viewer (audience role)
           await AgoraService.joinChannel(token, streamId, viewerUid, 'audience');
@@ -514,13 +519,15 @@ export default function WatchStream() {
             setStreamStats(stats);
           });
 
-          // Get remote users
-          setRemoteUsers(AgoraService.getRemoteUsers());
+          // Get remote users after short delay
+          setTimeout(() => {
+            setRemoteUsers(AgoraService.getRemoteUsers());
+          }, 1000);
+          
           setLiveStream(true);
-
-          console.log('Joined stream as viewer');
+          console.log('[WatchStream] Joined stream as viewer successfully');
         } catch (error) {
-          console.error('Failed to join Agora stream:', error);
+          console.error('[WatchStream] Failed to join Agora stream:', error);
           setLiveStream(true); // Fallback to basic viewing
         }
       }
@@ -529,9 +536,7 @@ export default function WatchStream() {
     initAgoraViewer();
 
     return () => {
-      if (stream?.status === 'ended') {
-        AgoraService.leave().catch(e => console.error('Leave error:', e));
-      }
+      AgoraService.leave().catch(e => console.error('[WatchStream] Leave error:', e));
     };
   }, [stream?.status, streamId, user?.email, creator?.user_email]);
 

@@ -27,15 +27,68 @@ import {
   Check
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  PREMIUM_FILTERS,
-  BEAUTY_MODES,
-  AR_EFFECTS,
-  VIRTUAL_BACKGROUNDS,
-  PARTICLE_EFFECTS
-} from './PremiumARProcessor';
-import { useMediaPipe, mediaPipeManager } from './MediaPipeProcessor';
-import AREffectOverlay from './AREffectOverlay';
+// Import AR data directly to avoid circular dependencies
+const PREMIUM_FILTERS = [
+  { id: 'none', name: 'Original', icon: '⚪', adjustments: {} },
+  { id: 'clarendon', name: 'Clarendon', icon: '🌟', adjustments: { brightness: 1.1, contrast: 1.2, saturation: 1.35 } },
+  { id: 'gingham', name: 'Gingham', icon: '🍃', adjustments: { brightness: 1.05, contrast: 0.95, saturation: 0.9 } },
+  { id: 'moon', name: 'Moon', icon: '🌙', adjustments: { saturation: 0, contrast: 1.15, brightness: 1.1 } },
+  { id: 'lark', name: 'Lark', icon: '🐦', adjustments: { brightness: 1.08, contrast: 1.0, saturation: 0.85 } },
+  { id: 'reyes', name: 'Reyes', icon: '☀️', adjustments: { brightness: 1.15, contrast: 0.85, saturation: 0.75, temperature: 15 } },
+  { id: 'juno', name: 'Juno', icon: '💫', adjustments: { brightness: 1.02, contrast: 1.1, saturation: 1.25 } },
+  { id: 'slumber', name: 'Slumber', icon: '😴', adjustments: { brightness: 1.05, contrast: 0.9, saturation: 0.7 } },
+  { id: 'crema', name: 'Crema', icon: '☕', adjustments: { brightness: 1.08, contrast: 0.95, saturation: 0.9, temperature: 8 } },
+  { id: 'ludwig', name: 'Ludwig', icon: '🎭', adjustments: { brightness: 1.05, contrast: 1.05, saturation: 0.95 } },
+  { id: 'aden', name: 'Aden', icon: '🌸', adjustments: { brightness: 1.2, contrast: 0.9, saturation: 0.85, temperature: 10 } },
+  { id: 'perpetua', name: 'Perpetua', icon: '🌊', adjustments: { brightness: 1.05, contrast: 1.1, saturation: 1.1 } },
+  { id: 'valencia', name: 'Valencia', icon: '🍊', adjustments: { brightness: 1.1, contrast: 1.05, saturation: 1.15, temperature: 12 } },
+  { id: 'hudson', name: 'Hudson', icon: '❄️', adjustments: { brightness: 1.05, contrast: 1.15, saturation: 0.9, temperature: -15 } },
+  { id: 'vivid', name: 'Vivid', icon: '🎨', adjustments: { brightness: 1.0, contrast: 1.2, saturation: 1.4 } },
+];
+
+const BEAUTY_MODES = [
+  { id: 'off', name: 'Natural', icon: '🌿', smooth: 0, brighten: 0 },
+  { id: 'subtle', name: 'Subtle', icon: '✨', smooth: 20, brighten: 5 },
+  { id: 'natural', name: 'Natural+', icon: '🌟', smooth: 35, brighten: 8 },
+  { id: 'enhance', name: 'Enhance', icon: '💫', smooth: 50, brighten: 12 },
+  { id: 'glam', name: 'Glam', icon: '💎', smooth: 65, brighten: 15 },
+  { id: 'studio', name: 'Studio', icon: '📺', smooth: 45, brighten: 10 },
+];
+
+const AR_EFFECTS = [
+  { id: 'none', name: 'None', icon: '🚫', elements: [], category: null },
+  { id: 'puppy', name: 'Puppy', icon: '🐶', category: 'animals', elements: [{ type: 'ears' }, { type: 'nose' }] },
+  { id: 'cat', name: 'Kitty', icon: '🐱', category: 'animals', elements: [{ type: 'ears' }, { type: 'nose' }] },
+  { id: 'bunny', name: 'Bunny', icon: '🐰', category: 'animals', elements: [{ type: 'ears' }, { type: 'nose' }] },
+  { id: 'fox', name: 'Fox', icon: '🦊', category: 'animals', elements: [{ type: 'ears' }, { type: 'nose' }] },
+  { id: 'crown', name: 'Crown', icon: '👑', category: 'accessories', elements: [{ type: 'headwear', animated: true }] },
+  { id: 'halo', name: 'Angel', icon: '😇', category: 'accessories', elements: [{ type: 'headwear', glow: true }] },
+  { id: 'devil', name: 'Devil', icon: '😈', category: 'accessories', elements: [{ type: 'horns' }] },
+  { id: 'sunglasses', name: 'Shades', icon: '😎', category: 'accessories', elements: [{ type: 'glasses' }] },
+  { id: 'heart_eyes', name: 'Heart Eyes', icon: '😍', category: 'eyes', elements: [{ type: 'eyes', animated: true }] },
+  { id: 'star_eyes', name: 'Star Eyes', icon: '🤩', category: 'eyes', elements: [{ type: 'eyes', animated: true }] },
+  { id: 'fire_eyes', name: 'Fire Eyes', icon: '🔥', category: 'eyes', elements: [{ type: 'eyes', animated: true }] },
+  { id: 'sparkle', name: 'Sparkle', icon: '✨', category: 'face', elements: [{ type: 'overlay', animated: true }] },
+  { id: 'party', name: 'Party', icon: '🥳', category: 'seasonal', elements: [{ type: 'hat' }] },
+  { id: 'unicorn', name: 'Unicorn', icon: '🦄', category: 'seasonal', elements: [{ type: 'horn' }, { type: 'ears' }] },
+];
+
+const VIRTUAL_BACKGROUNDS = [
+  { id: 'none', name: 'Camera', icon: '📷', type: 'none' },
+  { id: 'blur_subtle', name: 'Subtle Blur', icon: '💨', type: 'blur', intensity: 6 },
+  { id: 'blur_medium', name: 'Medium Blur', icon: '🌫️', type: 'blur', intensity: 14 },
+  { id: 'blur_strong', name: 'Strong Blur', icon: '🌁', type: 'blur', intensity: 25 },
+  { id: 'black', name: 'Black', icon: '⬛', type: 'solid', color: '#000000' },
+  { id: 'white', name: 'White', icon: '⬜', type: 'solid', color: '#ffffff' },
+  { id: 'green_screen', name: 'Green', icon: '🟩', type: 'solid', color: '#00ff00' },
+  { id: 'gray', name: 'Gray', icon: '🔘', type: 'solid', color: '#2d2d2d' },
+  { id: 'sunset', name: 'Sunset', icon: '🌅', type: 'gradient', colors: ['#ff512f', '#f09819'], angle: 135 },
+  { id: 'ocean', name: 'Ocean', icon: '🌊', type: 'gradient', colors: ['#2193b0', '#6dd5ed'], angle: 180 },
+  { id: 'purple_haze', name: 'Purple', icon: '💜', type: 'gradient', colors: ['#8e2de2', '#4a00e0'], angle: 135 },
+  { id: 'neon_city', name: 'Neon City', icon: '🏙️', type: 'image', url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1920&q=90' },
+  { id: 'beach', name: 'Beach', icon: '🏖️', type: 'image', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=90' },
+  { id: 'space', name: 'Space', icon: '🚀', type: 'image', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1920&q=90' },
+];
 
 // ============================================
 // MAIN COMPONENT
@@ -95,31 +148,8 @@ export default function PremiumLensUI({
     [selectedBackground, customBgUrl]
   );
 
-  // MediaPipe integration for face mesh tracking (after currentBackground is defined)
-  const { 
-    isReady: mediaPipeReady, 
-    isProcessing: mediaPipeProcessing,
-    faceLandmarks,
-    startProcessing: startMediaPipe,
-    stopProcessing: stopMediaPipe,
-  } = useMediaPipe(videoRef, canvasRef, {
-    faceMeshEnabled: faceMeshEnabled && selectedEffect !== 'none',
-    segmentationEnabled: segmentationEnabled && selectedBackground !== 'none',
-    backgroundType: currentBackground?.type,
-    backgroundValue: currentBackground?.type === 'solid' ? currentBackground.color :
-                     currentBackground?.type === 'gradient' ? { colors: currentBackground.colors, angle: currentBackground.angle } :
-                     currentBackground?.type === 'image' ? currentBackground.url :
-                     currentBackground?.type === 'blur' ? currentBackground.intensity : null,
-  });
-
-  // Start/stop MediaPipe based on effect selection
-  useEffect(() => {
-    if (mediaPipeReady && (selectedEffect !== 'none' || (segmentationEnabled && selectedBackground !== 'none'))) {
-      startMediaPipe();
-    } else {
-      stopMediaPipe();
-    }
-  }, [mediaPipeReady, selectedEffect, selectedBackground, segmentationEnabled, startMediaPipe, stopMediaPipe]);
+  // Simplified state for face landmarks (MediaPipe optional)
+  const [faceLandmarks, setFaceLandmarks] = useState(null);
 
   // Apply effects to video element - OPTIMIZED for broadcast quality
   const applyEffects = useCallback(() => {
@@ -274,17 +304,22 @@ export default function PremiumLensUI({
 
   return (
     <>
-      {/* AR Effect Overlay - Now with face mesh tracking */}
-      <AREffectOverlay 
-        effect={currentEffect}
-        faceLandmarks={faceLandmarks}
-        videoWidth={videoWidth}
-        videoHeight={videoHeight}
-        isMirrored={mirrorEnabled}
-      />
+      {/* Simple AR Effect Overlay - emoji based */}
+      {currentEffect && currentEffect.id !== 'none' && (
+        <div className="absolute inset-0 pointer-events-none z-20 flex items-start justify-center pt-[15%]">
+          <div className="text-6xl animate-bounce">{currentEffect.icon}</div>
+        </div>
+      )}
       
-      {/* Background Layer */}
-      <BackgroundRenderer background={currentBackground} segmentationEnabled={segmentationEnabled} />
+      {/* Background Layer Indicator */}
+      {currentBackground && currentBackground.id !== 'none' && (
+        <div className="absolute bottom-4 left-4 z-30 pointer-events-none">
+          <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/70 flex items-center gap-2">
+            <span>{currentBackground.icon}</span>
+            <span>BG: {currentBackground.name}</span>
+          </div>
+        </div>
+      )}
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
