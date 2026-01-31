@@ -36,7 +36,7 @@ import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
-import SnapchatLensFilters from '@/components/stream/SnapchatLensFilters';
+import PremiumLensUI from '@/components/stream/PremiumLensUI';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -91,8 +91,9 @@ export default function GoLive() {
   const [agoraToken, setAgoraToken] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
   const [chatMessages, setChatMessages] = useState([]);
-  const [activeLens, setActiveLens] = useState(null);
+  const [activeEffect, setActiveEffect] = useState(null);
   const [activeBackground, setActiveBackground] = useState(null);
+  const [activeBeauty, setActiveBeauty] = useState(null);
   const videoPreviewRef = React.useRef(null);
 
   const { data: user } = useQuery({
@@ -455,7 +456,7 @@ export default function GoLive() {
                 style={{ objectFit: 'cover', backgroundColor: '#000' }}
               />
 
-              {/* Background Layer */}
+              {/* Background Layer - Rendered behind video for green screen effect */}
               {activeBackground && activeBackground.type === 'image' && (
                 <div 
                   className="absolute inset-0 z-0"
@@ -470,14 +471,14 @@ export default function GoLive() {
                 <div 
                   className="absolute inset-0 z-0"
                   style={{
-                    background: `linear-gradient(135deg, ${activeBackground.colors[0]}, ${activeBackground.colors[1]})`
+                    background: `linear-gradient(${activeBackground.angle || 135}deg, ${activeBackground.colors?.join(', ')})`
                   }}
                 />
               )}
-              {activeBackground && activeBackground.type === 'color' && (
+              {activeBackground && activeBackground.type === 'solid' && (
                 <div 
                   className="absolute inset-0 z-0"
-                  style={{ backgroundColor: activeBackground.value }}
+                  style={{ backgroundColor: activeBackground.color }}
                 />
               )}
 
@@ -496,14 +497,15 @@ export default function GoLive() {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Top Right - Lens Filters */}
+              {/* Top Right - Premium Lens UI */}
               <div className="absolute top-4 right-4 z-20">
-                <SnapchatLensFilters 
+                <PremiumLensUI 
                   videoRef={videoPreviewRef}
                   onMirrorChange={setIsMirrored}
                   initialMirror={isMirrored}
-                  onLensChange={setActiveLens}
+                  onEffectChange={setActiveEffect}
                   onBackgroundChange={setActiveBackground}
+                  onBeautyChange={setActiveBeauty}
                 />
               </div>
 
