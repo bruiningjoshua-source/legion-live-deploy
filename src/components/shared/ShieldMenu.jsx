@@ -1,193 +1,162 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
+  X, 
+  Home, 
   Radio, 
   Film, 
   Gamepad2, 
-  Users, 
   ShoppingBag, 
+  Users, 
+  Heart,
   Trophy,
-  Settings,
-  X,
+  Target,
+  Ticket,
+  Sparkles,
   Wallet,
-  BarChart3,
-  Calendar,
-  HelpCircle
+  Gift,
+  Zap,
+  Star,
+  Crown,
+  MessageSquare
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const MENU_SECTIONS = [
-  { 
-    id: 'live', 
-    label: 'Live', 
-    icon: Radio, 
-    page: 'Explore', 
-    color: 'from-red-500 to-rose-600',
-    description: 'Watch streams'
+const menuSections = [
+  {
+    title: 'Platforms',
+    items: [
+      { name: 'Home', path: 'Home', icon: Home, color: 'text-amber-400' },
+      { name: 'Live Streams', path: 'Explore', icon: Radio, color: 'text-red-400' },
+      { name: 'Videos', path: 'TheAmphitheatre', icon: Film, color: 'text-blue-400' },
+      { name: 'Gaming Hub', path: 'TheGamingHub', icon: Gamepad2, color: 'text-purple-400' },
+      { name: 'Affiliate Marketplace', path: 'AffiliateMarketplace', icon: ShoppingBag, color: 'text-emerald-400' }
+    ]
   },
-  { 
-    id: 'videos', 
-    label: 'Videos', 
-    icon: Film, 
-    page: 'TheAmphitheatre', 
-    color: 'from-violet-500 to-purple-600',
-    description: 'On-demand content'
+  {
+    title: 'Community',
+    items: [
+      { name: 'Fan Clubs', path: 'FanClubs', icon: Heart, color: 'text-pink-400' },
+      { name: 'Watch Parties', path: 'WatchParties', icon: Users, color: 'text-cyan-400' },
+      { name: 'Forums', path: 'CommunityForums', icon: MessageSquare, color: 'text-indigo-400' },
+      { name: 'Collab Matching', path: 'CollabMatching', icon: Sparkles, color: 'text-violet-400' }
+    ]
   },
-  { 
-    id: 'gaming', 
-    label: 'Gaming', 
-    icon: Gamepad2, 
-    page: 'TheGamingHub', 
-    color: 'from-emerald-500 to-green-600',
-    description: 'Game streams'
+  {
+    title: 'Rewards & Events',
+    items: [
+      { name: 'Daily Quests', path: 'Quests', icon: Target, color: 'text-orange-400' },
+      { name: 'Achievements', path: 'Achievements', icon: Trophy, color: 'text-yellow-400' },
+      { name: 'PPV Events', path: 'PPVEvents', icon: Ticket, color: 'text-purple-400' },
+      { name: 'Leaderboard', path: 'Leaderboard', icon: Crown, color: 'text-amber-400' }
+    ]
   },
-  { 
-    id: 'community', 
-    label: 'Community', 
-    icon: Users, 
-    page: 'CommunityForums', 
-    color: 'from-cyan-500 to-blue-600',
-    description: 'Forums & chat'
-  },
-  { 
-    id: 'market', 
-    label: 'Shop', 
-    icon: ShoppingBag, 
-    page: 'AffiliateHub', 
-    color: 'from-amber-500 to-orange-600',
-    description: 'Affiliate deals'
-  },
-  { 
-    id: 'leaderboard', 
-    label: 'Rankings', 
-    icon: Trophy, 
-    page: 'Leaderboard', 
-    color: 'from-yellow-500 to-amber-600',
-    description: 'Top creators'
-  },
+  {
+    title: 'Your Stuff',
+    items: [
+      { name: 'Wallet', path: 'Wallet', icon: Wallet, color: 'text-emerald-400' },
+      { name: 'Following', path: 'Following', icon: Heart, color: 'text-red-400' },
+      { name: 'Watch Later', path: 'WatchLater', icon: Star, color: 'text-blue-400' },
+      { name: 'My Profile', path: 'Profile', icon: Users, color: 'text-amber-400' }
+    ]
+  }
 ];
 
-const SECONDARY_LINKS = [
-  { label: 'Wallet', icon: Wallet, page: 'Wallet' },
-  { label: 'Analytics', icon: BarChart3, page: 'CreatorAnalytics' },
-  { label: 'Events', icon: Calendar, page: 'Events' },
-  { label: 'Help', icon: HelpCircle, page: 'CommunityGuidelines' },
-];
-
-export default function ShieldMenu({ isOpen, onClose, onNavigate }) {
+export default function ShieldMenu({ isOpen, onClose }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg"
-          onClick={onClose}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <h2 className="text-white font-bold text-lg">Menu</h2>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </motion.button>
-          </div>
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+          />
 
-          {/* Main Content */}
-          <div className="p-4 overflow-y-auto max-h-[calc(100vh-140px)]" onClick={(e) => e.stopPropagation()}>
-            {/* Primary Navigation Grid */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {MENU_SECTIONS.map((section, i) => {
-                const Icon = section.icon;
-                return (
-                  <motion.div
-                    key={section.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                  >
-                    <Link
-                      to={createPageUrl(section.page)}
-                      onClick={() => {
-                        onNavigate?.(section.page);
-                        onClose();
-                      }}
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        className={`p-4 rounded-2xl bg-gradient-to-br ${section.color} shadow-lg active:scale-95 transition-transform`}
-                      >
-                        <div className="flex flex-col items-center text-center gap-2">
-                          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                            <Icon className="w-6 h-6 text-white" />
-                          </div>
-                          <span className="text-white font-semibold text-sm">{section.label}</span>
-                          <span className="text-white/60 text-[10px] leading-tight">{section.description}</span>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/10 my-4" />
-
-            {/* Secondary Links */}
-            <div className="space-y-1">
-              {SECONDARY_LINKS.map((link, i) => {
-                const Icon = link.icon;
-                return (
-                  <motion.div
-                    key={link.page}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.03 }}
-                  >
-                    <Link
-                      to={createPageUrl(link.page)}
-                      onClick={onClose}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-white/70" />
-                      </div>
-                      <span className="text-white/80 font-medium">{link.label}</span>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/10 my-4" />
-
-            {/* Settings */}
-            <Link
-              to={createPageUrl('Settings')}
-              onClick={onClose}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-amber-400" />
+          {/* Menu Panel */}
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed top-0 left-0 bottom-0 z-50 w-80 bg-gradient-to-b from-[#0f0f12] via-[#111114] to-[#0f0f12] border-r border-white/10 overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-[#0f0f12]/90 backdrop-blur-xl p-4 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🛡️</span>
+                <span className="text-white font-bold text-lg">Legion Live</span>
               </div>
-              <span className="text-white/80 font-medium">Settings</span>
-            </Link>
-          </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="p-2 rounded-lg bg-white/10 text-white/60 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </motion.button>
+            </div>
 
-          {/* Footer */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-black/50 backdrop-blur-sm">
-            <p className="text-center text-white/30 text-xs">Legion Live v1.0</p>
-          </div>
-        </motion.div>
+            {/* Menu Sections */}
+            <div className="p-4 space-y-6">
+              {menuSections.map((section, sectionIndex) => (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: sectionIndex * 0.1 }}
+                >
+                  <h3 className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3 px-2">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-1">
+                    {section.items.map((item, itemIndex) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.path}
+                          to={createPageUrl(item.path)}
+                          onClick={onClose}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
+                            whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+                          >
+                            <div className={`p-2 rounded-lg bg-white/5 ${item.color}`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <span className="text-white/80 font-medium">{item.name}</span>
+                          </motion.div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="sticky bottom-0 p-4 bg-gradient-to-t from-[#0f0f12] via-[#0f0f12] to-transparent">
+              <Link to={createPageUrl('GoLive')} onClick={onClose}>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold shadow-lg shadow-red-500/30"
+                >
+                  <Radio className="w-5 h-5" />
+                  Go Live
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

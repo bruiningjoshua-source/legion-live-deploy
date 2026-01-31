@@ -110,6 +110,7 @@ import PPVEvents from './pages/PPVEvents';
 import FanClubs from './pages/FanClubs';
 import CollabMatching from './pages/CollabMatching';
 import CreatorCommunity from './pages/CreatorCommunity';
+import Highlights from './pages/Highlights';
 import __Layout from './Layout.jsx';
 
 
@@ -177,6 +178,7 @@ export const PAGES = {
     "FanClubs": FanClubs,
     "CollabMatching": CollabMatching,
     "CreatorCommunity": CreatorCommunity,
+    "Highlights": Highlights,
 }
 
 export const pagesConfig = {
