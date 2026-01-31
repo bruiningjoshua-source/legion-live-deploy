@@ -1,20 +1,16 @@
 /**
  * PremiumLensUI - TikTok/Instagram style lens picker interface
+ * Simplified version without MediaPipe dependencies for reliability
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from "@/components/ui/button";
+import { motion } from 'framer-motion';
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   Wand2, 
-  Sparkles, 
-  Palette, 
-  Layers, 
-  Smile, 
   Upload,
   FlipHorizontal,
   RefreshCw,
@@ -22,8 +18,6 @@ import {
   Contrast,
   Droplets,
   Thermometer,
-  ZoomIn,
-  X,
   Check
 } from 'lucide-react';
 import { toast } from 'sonner';
