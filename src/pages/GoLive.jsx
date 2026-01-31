@@ -311,24 +311,30 @@ export default function GoLive() {
 
       // Initialize Agora - App ID fetched from token response
       const uid = Math.floor(Math.random() * 1000000);
+      console.log('[GoLive] Requesting Agora token for channel:', stream.id);
+      
       const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
         channelName: stream.id,
         uid: uid,
         role: 'host'
       });
       
-      const AGORA_APP_ID = '497c36af191647579fb65a825dd22b42';
+      console.log('[GoLive] Token received:', tokenResponse.data);
+      
+      const AGORA_APP_ID = tokenResponse.data?.appId || '497c36af191647579fb65a825dd22b42';
       await AgoraService.initialize(AGORA_APP_ID);
       
       // Join the channel as host
-      await AgoraService.joinChannel(tokenResponse.data.token || '', stream.id, uid, 'host');
+      const token = tokenResponse.data?.token || '';
+      await AgoraService.joinChannel(token, stream.id, uid, 'host');
+      console.log('[GoLive] Joined channel as host');
       
       // Create and publish tracks
       await AgoraService.createLocalTracks();
       await AgoraService.publishTracks();
+      console.log('[GoLive] Tracks published successfully');
 
-      setAgoraToken(tokenResponse.data.token || '');
-      console.log('Stream started and tracks published');
+      setAgoraToken(token);
 
       // Update creator to live status
       await base44.entities.Creator.update(creatorId, {
@@ -350,6 +356,7 @@ export default function GoLive() {
       return stream;
     },
     onSuccess: (stream) => {
+      console.log('[GoLive] Stream created successfully:', stream.id);
       window.location.href = createPageUrl(`WatchStream?id=${stream.id}`);
     },
     onError: (error) => {
