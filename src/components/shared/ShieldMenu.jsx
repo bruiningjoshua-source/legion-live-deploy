@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
@@ -11,64 +11,76 @@ import {
   Users, 
   Heart,
   Trophy,
+  Wallet,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  MessageSquare,
+  Calendar,
   Target,
   Ticket,
   Sparkles,
-  Wallet,
-  Gift,
-  Zap,
-  Star,
   Crown,
-  MessageSquare
+  Award,
+  Clock,
+  History,
+  Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const menuSections = [
-  {
-    title: 'Platforms',
-    items: [
-      { name: 'Home', path: 'Home', icon: Home, color: 'text-amber-400' },
-      { name: 'Live Streams', path: 'Explore', icon: Radio, color: 'text-red-400' },
-      { name: 'Videos', path: 'TheAmphitheatre', icon: Film, color: 'text-blue-400' },
-      { name: 'Gaming Hub', path: 'TheGamingHub', icon: Gamepad2, color: 'text-purple-400' },
-      { name: 'Affiliate Marketplace', path: 'AffiliateMarketplace', icon: ShoppingBag, color: 'text-emerald-400' }
-    ]
-  },
+const mainItems = [
+  { name: 'Home', path: 'Home', icon: Home, color: 'text-amber-400' },
+  { name: 'Live Streams', path: 'Explore', icon: Radio, color: 'text-red-400' },
+  { name: 'Videos', path: 'TheAmphitheatre', icon: Film, color: 'text-blue-400' },
+  { name: 'Gaming Hub', path: 'TheGamingHub', icon: Gamepad2, color: 'text-purple-400' },
+  { name: 'Marketplace', path: 'AffiliateMarketplace', icon: ShoppingBag, color: 'text-emerald-400' },
+];
+
+const expandableSections = [
   {
     title: 'Community',
+    icon: Users,
+    color: 'text-cyan-400',
     items: [
-      { name: 'Fan Clubs', path: 'FanClubs', icon: Heart, color: 'text-pink-400' },
-      { name: 'Watch Parties', path: 'WatchParties', icon: Users, color: 'text-cyan-400' },
-      { name: 'Forums', path: 'CommunityForums', icon: MessageSquare, color: 'text-indigo-400' },
-      { name: 'Collab Matching', path: 'CollabMatching', icon: Sparkles, color: 'text-violet-400' }
+      { name: 'Fan Clubs', path: 'FanClubs', icon: Heart },
+      { name: 'Watch Parties', path: 'WatchParties', icon: Users },
+      { name: 'Forums', path: 'CommunityForums', icon: MessageSquare },
+      { name: 'Events', path: 'Events', icon: Calendar },
     ]
   },
   {
-    title: 'Rewards & Events',
+    title: 'Rewards',
+    icon: Trophy,
+    color: 'text-yellow-400',
     items: [
-      { name: 'Daily Quests', path: 'Quests', icon: Target, color: 'text-orange-400' },
-      { name: 'Achievements', path: 'Achievements', icon: Trophy, color: 'text-yellow-400' },
-      { name: 'PPV Events', path: 'PPVEvents', icon: Ticket, color: 'text-purple-400' },
-      { name: 'Leaderboard', path: 'Leaderboard', icon: Crown, color: 'text-amber-400' }
+      { name: 'Daily Quests', path: 'Quests', icon: Target },
+      { name: 'Achievements', path: 'Achievements', icon: Award },
+      { name: 'Leaderboard', path: 'Leaderboard', icon: Crown },
     ]
   },
   {
-    title: 'Your Stuff',
+    title: 'Your Library',
+    icon: Star,
+    color: 'text-pink-400',
     items: [
-      { name: 'Wallet', path: 'Wallet', icon: Wallet, color: 'text-emerald-400' },
-      { name: 'Following', path: 'Following', icon: Heart, color: 'text-red-400' },
-      { name: 'Watch Later', path: 'WatchLater', icon: Star, color: 'text-blue-400' },
-      { name: 'My Profile', path: 'Profile', icon: Users, color: 'text-amber-400' }
+      { name: 'Following', path: 'Following', icon: Heart },
+      { name: 'Watch Later', path: 'WatchLater', icon: Clock },
+      { name: 'History', path: 'WatchHistory', icon: History },
     ]
   }
 ];
 
 export default function ShieldMenu({ isOpen, onClose }) {
+  const [expandedSection, setExpandedSection] = useState(null);
+
+  const toggleSection = (title) => {
+    setExpandedSection(expandedSection === title ? null : title);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -77,78 +89,122 @@ export default function ShieldMenu({ isOpen, onClose }) {
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
           />
 
-          {/* Menu Panel */}
           <motion.div
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 z-50 w-80 bg-gradient-to-b from-[#0f0f12] via-[#111114] to-[#0f0f12] border-r border-white/10 overflow-y-auto"
+            className="fixed top-0 left-0 bottom-0 z-50 w-72 bg-gradient-to-b from-[#0f0f12] to-[#111114] border-r border-white/10 flex flex-col"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[#0f0f12]/90 backdrop-blur-xl p-4 border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🛡️</span>
-                <span className="text-white font-bold text-lg">Legion Live</span>
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🛡️</span>
+                <span className="text-white font-bold">Legion Live</span>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={onClose}
-                className="p-2 rounded-lg bg-white/10 text-white/60 hover:text-white"
-              >
+              <button onClick={onClose} className="p-2 rounded-lg bg-white/5 text-white/60 hover:text-white">
                 <X className="w-5 h-5" />
-              </motion.button>
+              </button>
             </div>
 
-            {/* Menu Sections */}
-            <div className="p-4 space-y-6">
-              {menuSections.map((section, sectionIndex) => (
-                <motion.div
-                  key={section.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: sectionIndex * 0.1 }}
-                >
-                  <h3 className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3 px-2">
-                    {section.title}
-                  </h3>
-                  <div className="space-y-1">
-                    {section.items.map((item, itemIndex) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={createPageUrl(item.path)}
-                          onClick={onClose}
+            {/* Main Nav */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-1">
+              {mainItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.path} to={createPageUrl(item.path)} onClick={onClose}>
+                    <motion.div
+                      whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                    >
+                      <Icon className={`w-5 h-5 ${item.color}`} />
+                      <span className="text-white/80 font-medium">{item.name}</span>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+
+              <div className="h-px bg-white/10 my-3" />
+
+              {/* Expandable Sections */}
+              {expandableSections.map((section) => {
+                const SectionIcon = section.icon;
+                const isExpanded = expandedSection === section.title;
+
+                return (
+                  <div key={section.title}>
+                    <button
+                      onClick={() => toggleSection(section.title)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <SectionIcon className={`w-5 h-5 ${section.color}`} />
+                        <span className="text-white/80 font-medium">{section.title}</span>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-4 h-4 text-white/40" />
+                      </motion.div>
+                    </button>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
                         >
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: sectionIndex * 0.1 + itemIndex * 0.05 }}
-                            whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
-                          >
-                            <div className={`p-2 rounded-lg bg-white/5 ${item.color}`}>
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <span className="text-white/80 font-medium">{item.name}</span>
-                          </motion.div>
-                        </Link>
-                      );
-                    })}
+                          <div className="pl-6 py-1 space-y-1">
+                            {section.items.map((item) => {
+                              const ItemIcon = item.icon;
+                              return (
+                                <Link key={item.path} to={createPageUrl(item.path)} onClick={onClose}>
+                                  <motion.div
+                                    whileHover={{ x: 4 }}
+                                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5"
+                                  >
+                                    <ItemIcon className="w-4 h-4" />
+                                    <span className="text-sm">{item.name}</span>
+                                  </motion.div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
+                );
+              })}
+
+              <div className="h-px bg-white/10 my-3" />
+
+              {/* Bottom Items */}
+              <Link to={createPageUrl('Wallet')} onClick={onClose}>
+                <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5">
+                  <Wallet className="w-5 h-5 text-emerald-400" />
+                  <span className="text-white/80 font-medium">Wallet</span>
                 </motion.div>
-              ))}
+              </Link>
+              <Link to={createPageUrl('Settings')} onClick={onClose}>
+                <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5">
+                  <Settings className="w-5 h-5 text-white/40" />
+                  <span className="text-white/80 font-medium">Settings</span>
+                </motion.div>
+              </Link>
             </div>
 
-            {/* Quick Actions */}
-            <div className="sticky bottom-0 p-4 bg-gradient-to-t from-[#0f0f12] via-[#0f0f12] to-transparent">
+            {/* Go Live Button */}
+            <div className="p-4 border-t border-white/10">
               <Link to={createPageUrl('GoLive')} onClick={onClose}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold shadow-lg shadow-red-500/30"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold"
                 >
                   <Radio className="w-5 h-5" />
                   Go Live
