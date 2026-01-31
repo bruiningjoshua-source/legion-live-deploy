@@ -67,6 +67,7 @@ import { ProductOverlay, QuickReactionOverlay, FloatingReaction, GoalProgressOve
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
 import MultiStreamManager from '@/components/stream/MultiStreamManager';
 import StreamOverlayEditor from '@/components/stream/StreamOverlayEditor';
+import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -1086,6 +1087,49 @@ export default function WatchStream() {
               <Shield className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Full Broadcast Control Panel - Bottom Center */}
+          <BroadcastControlPanel
+            stream={stream}
+            streamStats={{
+              viewers: stream?.viewer_count || 0,
+              duration: stream?.created_date 
+                ? `${Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000)}:${String(Math.floor(((Date.now() - new Date(stream.created_date).getTime()) % 60000) / 1000)).padStart(2, '0')}`
+                : '0:00',
+              bitrate: streamStats?.bitrate || 0
+            }}
+            onToggleMic={(enabled) => {
+              if (liveStream && typeof liveStream !== 'boolean') {
+                liveStream.getAudioTracks().forEach(track => track.enabled = enabled);
+              }
+            }}
+            onToggleCamera={(enabled) => {
+              if (liveStream && typeof liveStream !== 'boolean') {
+                liveStream.getVideoTracks().forEach(track => track.enabled = enabled);
+              }
+            }}
+            onToggleScreenShare={async (enabled) => {
+              if (enabled) {
+                try {
+                  const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                  if (videoRef.current) {
+                    videoRef.current.srcObject = screenStream;
+                  }
+                } catch (e) {
+                  console.error('Screen share failed:', e);
+                }
+              } else if (liveStream && typeof liveStream !== 'boolean') {
+                if (videoRef.current) {
+                  videoRef.current.srcObject = liveStream;
+                }
+              }
+            }}
+            onFlipCamera={() => setIsMirrored(!isMirrored)}
+            onEndStream={() => setShowEndDialog(true)}
+            onUpdateSettings={(settings) => {
+              console.log('Broadcast settings updated:', settings);
+            }}
+          />
 
           {/* End Stream Dialog */}
           <EndStreamDialog
