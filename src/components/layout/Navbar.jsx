@@ -1,36 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Menu,
-  X,
   Home,
   Gamepad2,
   Radio,
-  Wallet,
-  User,
-  LogOut,
-  Settings,
-  Shield,
   Film,
   ShoppingBag,
-  BarChart3,
-  DollarSign,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
 
 export default function Navbar({ user, wallet, onOpenShieldMenu }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const mainNavLinks = [
@@ -116,78 +99,13 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Notifications */}
           {user && <NotificationBell user={user} />}
 
-          {/* User Menu - Simplified */}
+          {/* Profile Avatar - Links to Profile */}
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                    <span className="text-sm">👤</span>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-stone-900 border-amber-600/20">
-                <div className="px-3 py-2 border-b border-amber-600/20">
-                  <p className="text-amber-100 font-semibold">{user.full_name}</p>
-                  <p className="text-amber-400/60 text-xs">{user.email}</p>
-                </div>
-                
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Profile')} className="cursor-pointer">
-                    <User className="w-4 h-4 mr-2" />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Wallet')} className="cursor-pointer">
-                    <Wallet className="w-4 h-4 mr-2" />
-                    Wallet
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('CreatorStudio')} className="cursor-pointer">
-                    <Film className="w-4 h-4 mr-2" />
-                    Creator Studio
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('CreatorMonetization')} className="cursor-pointer">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Monetization
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('ChannelAnalytics')} className="cursor-pointer">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    Analytics
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Settings')} className="cursor-pointer">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-
-                {user.role === 'admin' && (
-                  <>
-                    <DropdownMenuSeparator className="bg-amber-600/20" />
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer text-amber-400">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Admin Panel
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-
-                <DropdownMenuSeparator className="bg-amber-600/20" />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link to={createPageUrl('Profile')}>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
+                <span className="text-sm">👤</span>
+              </div>
+            </Link>
           ) : (
             <Button
               onClick={() => base44.auth.redirectToLogin()}
@@ -196,49 +114,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
               Sign In
             </Button>
           )}
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-amber-300 hover:bg-amber-800/20 rounded-lg"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden bg-stone-900 border-t border-amber-600/20"
-          >
-            <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
-              {mainNavLinks.map(link => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      isActive(link.path)
-                        ? 'bg-amber-600 text-white'
-                        : 'text-amber-300 hover:bg-amber-800/20'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {link.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </nav>
   );
 }
