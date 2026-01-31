@@ -75,7 +75,27 @@ export default function PremiumLensUI({
 
   const fileInputRef = useRef(null);
 
-  // MediaPipe integration for face mesh tracking
+  // Get current selections - memoized to prevent infinite loops (MUST be defined before useMediaPipe)
+  const currentFilter = useMemo(() => 
+    PREMIUM_FILTERS.find(f => f.id === selectedFilter) || PREMIUM_FILTERS[0], 
+    [selectedFilter]
+  );
+  const currentBeauty = useMemo(() => 
+    BEAUTY_MODES.find(b => b.id === selectedBeauty) || BEAUTY_MODES[0], 
+    [selectedBeauty]
+  );
+  const currentEffect = useMemo(() => 
+    AR_EFFECTS.find(e => e.id === selectedEffect) || AR_EFFECTS[0], 
+    [selectedEffect]
+  );
+  const currentBackground = useMemo(() => 
+    selectedBackground === 'custom' && customBgUrl 
+      ? { id: 'custom', type: 'image', url: customBgUrl, name: 'Custom', icon: '📷' }
+      : VIRTUAL_BACKGROUNDS.find(b => b.id === selectedBackground) || VIRTUAL_BACKGROUNDS[0],
+    [selectedBackground, customBgUrl]
+  );
+
+  // MediaPipe integration for face mesh tracking (after currentBackground is defined)
   const { 
     isReady: mediaPipeReady, 
     isProcessing: mediaPipeProcessing,
@@ -100,26 +120,6 @@ export default function PremiumLensUI({
       stopMediaPipe();
     }
   }, [mediaPipeReady, selectedEffect, selectedBackground, segmentationEnabled, startMediaPipe, stopMediaPipe]);
-
-  // Get current selections - memoized to prevent infinite loops
-  const currentFilter = useMemo(() => 
-    PREMIUM_FILTERS.find(f => f.id === selectedFilter) || PREMIUM_FILTERS[0], 
-    [selectedFilter]
-  );
-  const currentBeauty = useMemo(() => 
-    BEAUTY_MODES.find(b => b.id === selectedBeauty) || BEAUTY_MODES[0], 
-    [selectedBeauty]
-  );
-  const currentEffect = useMemo(() => 
-    AR_EFFECTS.find(e => e.id === selectedEffect) || AR_EFFECTS[0], 
-    [selectedEffect]
-  );
-  const currentBackground = useMemo(() => 
-    selectedBackground === 'custom' && customBgUrl 
-      ? { id: 'custom', type: 'image', url: customBgUrl, name: 'Custom', icon: '📷' }
-      : VIRTUAL_BACKGROUNDS.find(b => b.id === selectedBackground) || VIRTUAL_BACKGROUNDS[0],
-    [selectedBackground, customBgUrl]
-  );
 
   // Apply effects to video element - OPTIMIZED for broadcast quality
   const applyEffects = useCallback(() => {
