@@ -61,8 +61,11 @@ import ModerationPanel from '@/components/stream/ModerationPanel';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 import StreamInteractionWidgets from '@/components/stream/StreamInteractionWidgets';
 import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
+import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
 import { ProductOverlay, QuickReactionOverlay, FloatingReaction, GoalProgressOverlay, CoStreamInviteOverlay } from '@/components/stream/InteractiveOverlays';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
+import MultiStreamManager from '@/components/stream/MultiStreamManager';
+import StreamOverlayEditor from '@/components/stream/StreamOverlayEditor';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -92,6 +95,10 @@ export default function WatchStream() {
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [activeProduct, setActiveProduct] = useState(null);
+  const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
+  const [showMultiStream, setShowMultiStream] = useState(false);
+  const [showOverlayEditor, setShowOverlayEditor] = useState(false);
+  const [streamOverlays, setStreamOverlays] = useState([]);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -850,7 +857,9 @@ export default function WatchStream() {
           />
           
           {/* Gift Leaderboard - Compact */}
-          <GiftLeaderboard streamId={streamId} compact />
+          <div onClick={() => setShowExpandedLeaderboard(true)} className="cursor-pointer">
+            <GiftLeaderboard streamId={streamId} compact />
+          </div>
         </div>
       )}
 
@@ -895,6 +904,75 @@ export default function WatchStream() {
           />
         )}
       </AnimatePresence>
+
+      {/* Expanded Gift Leaderboard */}
+      <AnimatePresence>
+        {showExpandedLeaderboard && (
+          <ExpandedGiftLeaderboard
+            streamId={streamId}
+            onClose={() => setShowExpandedLeaderboard(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Multi-Stream Manager (Host Only) */}
+      <AnimatePresence>
+        {showMultiStream && user?.email === creator?.user_email && (
+          <MultiStreamManager
+            isLive={stream?.status === 'live'}
+            onClose={() => setShowMultiStream(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Stream Overlay Editor (Host Only) */}
+      <AnimatePresence>
+        {showOverlayEditor && user?.email === creator?.user_email && (
+          <StreamOverlayEditor
+            overlays={streamOverlays}
+            onUpdate={setStreamOverlays}
+            onClose={() => setShowOverlayEditor(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Render Stream Overlays */}
+      {streamOverlays.filter(o => o.visible).map(overlay => (
+        <div
+          key={overlay.id}
+          className={`absolute z-30 ${
+            overlay.position === 'top-left' ? 'top-24 left-4' :
+            overlay.position === 'top-center' ? 'top-24 left-1/2 -translate-x-1/2' :
+            overlay.position === 'top-right' ? 'top-24 right-4' :
+            overlay.position === 'center-left' ? 'top-1/2 left-4 -translate-y-1/2' :
+            overlay.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
+            overlay.position === 'center-right' ? 'top-1/2 right-4 -translate-y-1/2' :
+            overlay.position === 'bottom-left' ? 'bottom-32 left-4' :
+            overlay.position === 'bottom-center' ? 'bottom-32 left-1/2 -translate-x-1/2' :
+            'bottom-32 right-20'
+          }`}
+        >
+          {overlay.type === 'text' && (
+            <div className="bg-black/70 backdrop-blur-xl px-4 py-2 rounded-xl text-white">
+              {overlay.content}
+            </div>
+          )}
+          {overlay.type === 'product' && (
+            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-black/80 backdrop-blur-xl rounded-xl p-3 border border-pink-500/30 hover:border-pink-500/60 transition-colors">
+              <p className="text-white font-medium text-sm">{overlay.productName}</p>
+              <p className="text-emerald-400 font-bold">{overlay.productPrice}</p>
+            </a>
+          )}
+          {overlay.type === 'cta' && (
+            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold text-sm hover:from-amber-400 hover:to-orange-400 transition-colors">
+              {overlay.content}
+            </a>
+          )}
+          {overlay.type === 'image' && overlay.content && (
+            <img src={overlay.content} alt="" className="max-w-48 max-h-32 rounded-xl" />
+          )}
+        </div>
+      ))}
 
       {/* Quality Monitor - Viewer View */}
       {streamStats && user?.email !== creator?.user_email && (
@@ -958,6 +1036,22 @@ export default function WatchStream() {
               title="Co-Stream"
             >
               <Users className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => setShowMultiStream(true)}
+              size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
+              title="Multi-Stream to other platforms"
+            >
+              <Radio className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => setShowOverlayEditor(true)}
+              size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
+              title="Stream Overlays"
+            >
+              <Sparkles className="w-4 h-4" />
             </Button>
             <Button
               onClick={() => setShowModerationPanel(true)}
