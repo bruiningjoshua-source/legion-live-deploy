@@ -283,15 +283,13 @@ export default function AchievementsPage() {
                       </motion.div>
                     );
                   })}
-              </div>
-              
-              {achievements.filter(a => category === 'all' || a.category === category).length === 0 && (
-                <GlassCard className="text-center py-16 col-span-full">
-                  <Trophy className="w-16 h-16 text-amber-500/20 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold text-lg mb-2">No Achievements Yet</h3>
-                  <p className="text-white/50">Start engaging with the platform to unlock achievements!</p>
-                </GlassCard>
-              )}
+                {achievements.filter(a => category === 'all' || a.category === category).length === 0 && (
+                  <GlassCard className="text-center py-16 col-span-full">
+                    <Trophy className="w-16 h-16 text-amber-500/20 mx-auto mb-4" />
+                    <h3 className="text-white font-semibold text-lg mb-2">No Achievements Yet</h3>
+                    <p className="text-white/50">Start engaging with the platform to unlock achievements!</p>
+                  </GlassCard>
+                )}
               </div>
               )}
             </TabsContent>
