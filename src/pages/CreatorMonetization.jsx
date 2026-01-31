@@ -17,13 +17,21 @@ import {
   Check,
   Sparkles,
   Settings,
-  Shield
+  Shield,
+  Heart,
+  Trophy,
+  Zap,
+  Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MonetizationShowcase from '@/components/monetization/MonetizationShowcase';
 import ViewerSpendingIncentives from '@/components/monetization/ViewerSpendingIncentives';
 import ReferralDashboard from '@/components/monetization/ReferralDashboard';
 import CreatorPayoutOptimizer from '@/components/monetization/CreatorPayoutOptimizer';
+import CustomTierEditor from '@/components/monetization/CustomTierEditor';
+import LimitedTimeOfferManager from '@/components/monetization/LimitedTimeOfferManager';
+import TipRewardManager from '@/components/monetization/TipRewardManager';
+import MilestoneAlertManager from '@/components/monetization/MilestoneAlertManager';
 
 export default function CreatorMonetization() {
   const queryClient = useQueryClient();
@@ -72,6 +80,12 @@ export default function CreatorMonetization() {
     queryKey: ['my-tips', creator?.id],
     queryFn: () => base44.entities.Tip.filter({ receiver_creator_id: creator.id }, '-created_date', 50),
     enabled: !!creator?.id && !!subscription
+  });
+
+  const { data: customTiers = [] } = useQuery({
+    queryKey: ['custom-tiers', user?.email],
+    queryFn: () => base44.entities.CustomSubscriptionTier.filter({ creator_id: user.email }, 'tier_level'),
+    enabled: !!user?.email && !!subscription
   });
 
   const subscribeMutation = useMutation({
@@ -324,57 +338,92 @@ export default function CreatorMonetization() {
 
             {/* Tabs */}
             <Tabs defaultValue="tiers" className="space-y-6">
-              <TabsList className="bg-stone-800/50 border border-amber-600/20">
-                <TabsTrigger value="tiers">Subscription Tiers</TabsTrigger>
-                <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
-                <TabsTrigger value="tips">Recent Tips</TabsTrigger>
+              <TabsList className="bg-stone-800/50 border border-amber-600/20 flex-wrap h-auto p-1">
+                <TabsTrigger value="tiers" className="gap-1">
+                  <Crown className="w-4 h-4" /> Tiers
+                </TabsTrigger>
+                <TabsTrigger value="offers" className="gap-1">
+                  <Zap className="w-4 h-4" /> Offers
+                </TabsTrigger>
+                <TabsTrigger value="tips" className="gap-1">
+                  <Heart className="w-4 h-4" /> Tips
+                </TabsTrigger>
+                <TabsTrigger value="milestones" className="gap-1">
+                  <Trophy className="w-4 h-4" /> Milestones
+                </TabsTrigger>
+                <TabsTrigger value="subscribers" className="gap-1">
+                  <Users className="w-4 h-4" /> Subs
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tiers">
                 <Card className="bg-stone-800/30 border-amber-600/20">
                   <CardHeader>
                     <CardTitle className="text-amber-100 flex items-center gap-2">
-                      <Settings className="w-5 h-5" />
-                      Configure Your Subscription Tiers
+                      <Crown className="w-5 h-5 text-amber-400" />
+                      Custom Subscription Tiers
                     </CardTitle>
+                    <p className="text-amber-400/70 text-sm mt-2">
+                      Create unique tiers with custom names, pricing, and perks
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      {['bronze', 'silver', 'gold'].map(tier => (
-                        <div key={tier} className="bg-stone-900/50 rounded-xl p-6 border border-amber-600/20">
-                          <h3 className="text-amber-100 font-bold capitalize mb-4">{tier} Tier</h3>
-                          <div className="space-y-3">
-                            <div>
-                              <Label className="text-amber-200">Price (USD/month)</Label>
-                              <Input
-                                type="number"
-                                value={tierSettings[tier].price}
-                                onChange={(e) => setTierSettings({
-                                  ...tierSettings,
-                                  [tier]: { ...tierSettings[tier], price: parseFloat(e.target.value) }
-                                })}
-                                className="bg-stone-800 border-amber-600/20 text-amber-100"
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-amber-200">Perks (one per line)</Label>
-                              <textarea
-                                value={tierSettings[tier].perks.join('\n')}
-                                onChange={(e) => setTierSettings({
-                                  ...tierSettings,
-                                  [tier]: { ...tierSettings[tier], perks: e.target.value.split('\n') }
-                                })}
-                                className="w-full bg-stone-800 border border-amber-600/20 text-amber-100 rounded-lg p-3"
-                                rows={4}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      <Button className="w-full bg-amber-600 hover:bg-amber-700">
-                        Save Tier Settings
-                      </Button>
-                    </div>
+                    <CustomTierEditor 
+                      creatorId={user?.email} 
+                      existingTiers={customTiers}
+                      onSave={() => queryClient.invalidateQueries(['custom-tiers'])}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="offers">
+                <Card className="bg-stone-800/30 border-amber-600/20">
+                  <CardHeader>
+                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-yellow-400" />
+                      Limited Time Offers
+                    </CardTitle>
+                    <p className="text-amber-400/70 text-sm mt-2">
+                      Create flash sales, discounts, and special promotions
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <LimitedTimeOfferManager creatorId={user?.email} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="tips">
+                <Card className="bg-stone-800/30 border-amber-600/20">
+                  <CardHeader>
+                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-pink-400" />
+                      Tip Reward Messages
+                    </CardTitle>
+                    <p className="text-amber-400/70 text-sm mt-2">
+                      Set up custom thank-you messages and rewards for different tip amounts
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <TipRewardManager creatorId={user?.email} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="milestones">
+                <Card className="bg-stone-800/30 border-amber-600/20">
+                  <CardHeader>
+                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-yellow-400" />
+                      Milestone Alerts
+                    </CardTitle>
+                    <p className="text-amber-400/70 text-sm mt-2">
+                      Automated celebrations when you hit follower, subscriber, or earning goals
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <MilestoneAlertManager creatorId={user?.email} />
                   </CardContent>
                 </Card>
               </TabsContent>
