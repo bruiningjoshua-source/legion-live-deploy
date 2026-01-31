@@ -43,7 +43,8 @@ import {
   History,
   Scissors,
   Calendar,
-  Award
+  Award,
+  Ticket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
@@ -259,7 +260,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
-                {/* Community */}
+                {/* Community & Social */}
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="cursor-pointer">
                     <Users className="w-4 h-4 mr-2 text-cyan-400" />
@@ -273,6 +274,24 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('FanClubs')} className="cursor-pointer">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Fan Clubs
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('WatchParties')} className="cursor-pointer">
+                        <Users className="w-4 h-4 mr-2" />
+                        Watch Parties
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('CollabMatching')} className="cursor-pointer">
+                        <Swords className="w-4 h-4 mr-2" />
+                        Collab Matching
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to={createPageUrl('UpcomingStreams')} className="cursor-pointer">
                         <Calendar className="w-4 h-4 mr-2" />
                         Upcoming Streams
@@ -282,6 +301,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                       <Link to={createPageUrl('Achievements')} className="cursor-pointer">
                         <Award className="w-4 h-4 mr-2" />
                         Achievements
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('Quests')} className="cursor-pointer">
+                        <Trophy className="w-4 h-4 mr-2" />
+                        Daily Quests
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -350,6 +375,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   <Link to={createPageUrl('CreatorMonetization')} className="cursor-pointer">
                     <DollarSign className="w-4 h-4 mr-2" />
                     Monetization
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('PPVEvents')} className="cursor-pointer">
+                    <Film className="w-4 h-4 mr-2" />
+                    Pay-Per-View Events
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
