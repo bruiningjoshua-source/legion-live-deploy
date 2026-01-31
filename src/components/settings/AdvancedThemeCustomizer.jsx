@@ -27,16 +27,18 @@ import {
 import { toast } from 'sonner';
 
 const THEMES = [
-  { id: 'roman', name: 'Roman Gold', colors: ['#d97706', '#f59e0b', '#fbbf24'], icon: '🏛️' },
-  { id: 'neon', name: 'Neon Nights', colors: ['#ec4899', '#8b5cf6', '#06b6d4'], icon: '💜' },
-  { id: 'ocean', name: 'Ocean Blue', colors: ['#0ea5e9', '#06b6d4', '#22d3ee'], icon: '🌊' },
-  { id: 'fire', name: 'Fire Red', colors: ['#ef4444', '#f97316', '#eab308'], icon: '🔥' },
-  { id: 'forest', name: 'Forest Green', colors: ['#22c55e', '#10b981', '#14b8a6'], icon: '🌲' },
-  { id: 'midnight', name: 'Midnight Purple', colors: ['#6366f1', '#8b5cf6', '#a855f7'], icon: '🌙' },
-  { id: 'sunset', name: 'Sunset', colors: ['#f97316', '#ec4899', '#8b5cf6'], icon: '🌅' },
-  { id: 'cyber', name: 'Cyberpunk', colors: ['#00ff88', '#00ccff', '#ff00aa'], icon: '🤖' },
-  { id: 'rose', name: 'Rose Gold', colors: ['#f472b6', '#fb7185', '#fda4af'], icon: '🌹' },
-  { id: 'arctic', name: 'Arctic', colors: ['#67e8f9', '#a5f3fc', '#e0f2fe'], icon: '❄️' },
+  { id: 'roman', name: 'Roman Gold', colors: ['#d97706', '#f59e0b', '#fbbf24'], icon: '🏛️', premium: false },
+  { id: 'neon', name: 'Neon Nights', colors: ['#ec4899', '#8b5cf6', '#06b6d4'], icon: '💜', premium: false },
+  { id: 'ocean', name: 'Ocean Blue', colors: ['#0ea5e9', '#06b6d4', '#22d3ee'], icon: '🌊', premium: false },
+  { id: 'fire', name: 'Fire Red', colors: ['#ef4444', '#f97316', '#eab308'], icon: '🔥', premium: false },
+  { id: 'forest', name: 'Forest Green', colors: ['#22c55e', '#10b981', '#14b8a6'], icon: '🌲', premium: false },
+  { id: 'midnight', name: 'Midnight Purple', colors: ['#6366f1', '#8b5cf6', '#a855f7'], icon: '🌙', premium: false },
+  { id: 'sunset', name: 'Sunset', colors: ['#f97316', '#ec4899', '#8b5cf6'], icon: '🌅', premium: false },
+  { id: 'cyber', name: 'Cyberpunk', colors: ['#00ff88', '#00ccff', '#ff00aa'], icon: '🤖', premium: false },
+  { id: 'rose', name: 'Rose Gold', colors: ['#f472b6', '#fb7185', '#fda4af'], icon: '🌹', premium: false },
+  { id: 'arctic', name: 'Arctic', colors: ['#67e8f9', '#a5f3fc', '#e0f2fe'], icon: '❄️', premium: false },
+  { id: 'aurora', name: 'Aurora Borealis', colors: ['#22d3ee', '#a78bfa', '#34d399'], icon: '🌌', premium: true },
+  { id: 'blood', name: 'Blood Moon', colors: ['#991b1b', '#dc2626', '#f87171'], icon: '🔴', premium: true },
 ];
 
 const PARTICLE_MODES = [
@@ -53,6 +55,9 @@ const PRESET_BACKGROUNDS = [
   { id: 'gradient3', name: 'Abstract', url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1920', icon: '🎨' },
   { id: 'gradient4', name: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920', icon: '🏔️' },
   { id: 'gradient5', name: 'Ocean', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920', icon: '🏖️' },
+  { id: 'gradient6', name: 'Northern Lights', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1920', icon: '✨' },
+  { id: 'gradient7', name: 'Dark Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920', icon: '🌲' },
+  { id: 'gradient8', name: 'Cosmos', url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920', icon: '🚀' },
 ];
 
 const ACCENT_COLORS = [
@@ -221,13 +226,32 @@ export default function AdvancedThemeCustomizer({
         </motion.button>
       </SheetTrigger>
       
-      <SheetContent className="bg-stone-950/95 backdrop-blur-xl border-white/10 w-[380px] overflow-y-auto">
+      <SheetContent className="bg-stone-950/95 backdrop-blur-xl border-white/10 w-[400px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="w-5 h-5 text-amber-400" />
+            </motion.div>
             Theme Studio
           </SheetTitle>
+          <p className="text-white/50 text-xs">Personalize your Legion experience</p>
         </SheetHeader>
+        
+        {/* Live Theme Preview Strip */}
+        <div className="mt-4 h-2 rounded-full overflow-hidden flex">
+          {currentThemeColors.map((color, i) => (
+            <motion.div
+              key={i}
+              className="flex-1 h-full"
+              style={{ backgroundColor: color }}
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
+            />
+          ))}
+        </div>
 
         <Tabs defaultValue="theme" className="mt-4">
           <TabsList className="w-full bg-white/5 p-1 grid grid-cols-3">
@@ -255,33 +279,55 @@ export default function AdvancedThemeCustomizer({
                   <motion.button
                     key={theme.id}
                     onClick={() => handleThemeSelect(theme.id)}
-                    className={`relative p-3 rounded-xl border transition-all ${
+                    className={`relative p-3 rounded-xl border transition-all overflow-hidden ${
                       selectedTheme === theme.id
                         ? 'border-white/50 ring-2 ring-white/20'
                         : 'border-white/10 hover:border-white/30'
                     }`}
                     whileTap={{ scale: 0.98 }}
+                    whileHover={{ y: -2 }}
                   >
-                    <div className="flex gap-1 mb-1.5">
-                      {theme.colors.map((color, i) => (
-                        <div
-                          key={i}
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
+                    {/* Animated gradient background on hover */}
+                    <motion.div 
+                      className="absolute inset-0 opacity-0"
+                      style={{ 
+                        background: `linear-gradient(135deg, ${theme.colors[0]}30, ${theme.colors[1]}30, ${theme.colors[2]}30)` 
+                      }}
+                      whileHover={{ opacity: 1 }}
+                    />
+                    
+                    <div className="relative z-10">
+                      <div className="flex gap-1 mb-1.5">
+                        {theme.colors.map((color, i) => (
+                          <motion.div
+                            key={i}
+                            className="w-4 h-4 rounded-full shadow-lg"
+                            style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}50` }}
+                            animate={selectedTheme === theme.id ? { scale: [1, 1.2, 1] } : {}}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-base">{theme.icon}</span>
+                        <span className="text-white text-xs font-medium">{theme.name}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm">{theme.icon}</span>
-                      <span className="text-white text-xs">{theme.name}</span>
-                    </div>
+                    
+                    {theme.premium && (
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded text-[8px] text-white font-bold">
+                        PRO
+                      </div>
+                    )}
                     
                     {selectedTheme === theme.id && (
                       <motion.div
                         layoutId="theme-check"
-                        className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
+                        className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
                       >
-                        <span className="text-white text-[10px]">✓</span>
+                        <span className="text-white text-xs">✓</span>
                       </motion.div>
                     )}
                   </motion.button>
@@ -486,25 +532,50 @@ export default function AdvancedThemeCustomizer({
           </TabsContent>
         </Tabs>
 
+        {/* Quick Stats */}
+        <div className="mt-6 p-3 bg-white/5 rounded-xl">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-white/50">Current Theme</span>
+            <span className="text-amber-400 font-medium flex items-center gap-1">
+              {THEMES.find(t => t.id === selectedTheme)?.icon}
+              {THEMES.find(t => t.id === selectedTheme)?.name}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs mt-2">
+            <span className="text-white/50">Effects</span>
+            <span className="text-white/70">
+              {particles !== 'off' ? '✨ Particles' : ''}
+              {animated ? ' 🌀 Animated' : ''}
+              {particles === 'off' && !animated ? 'Minimal' : ''}
+            </span>
+          </div>
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex gap-2 mt-6">
+        <div className="flex gap-2 mt-4">
           <Button
             onClick={resetAll}
             variant="outline"
+            size="sm"
             className="flex-1 border-white/20 text-white/70 hover:bg-white/10"
           >
-            <RotateCcw className="w-4 h-4 mr-1" />
+            <RotateCcw className="w-3 h-3 mr-1" />
             Reset
           </Button>
           <Button
             onClick={saveToAccount}
             disabled={isSaving || !user}
-            className="flex-1 bg-amber-600 hover:bg-amber-700"
+            size="sm"
+            className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
           >
-            <Save className="w-4 h-4 mr-1" />
-            {isSaving ? 'Saving...' : 'Save'}
+            <Save className="w-3 h-3 mr-1" />
+            {isSaving ? 'Saving...' : 'Save to Account'}
           </Button>
         </div>
+        
+        <p className="text-center text-white/30 text-[10px] mt-3">
+          Settings sync across all your devices
+        </p>
       </SheetContent>
     </Sheet>
   );
