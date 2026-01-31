@@ -54,6 +54,7 @@ import AIModerationBadge from '@/components/moderation/AIModerationBadge';
 import BigoActionBar from '@/components/stream/BigoActionBar';
 import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
 import PremiumLensUI from '@/components/stream/PremiumLensUI';
+import StreamingSettings from '@/components/stream/StreamingSettings';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
@@ -99,6 +100,19 @@ export default function WatchStream() {
   const [showMultiStream, setShowMultiStream] = useState(false);
   const [showOverlayEditor, setShowOverlayEditor] = useState(false);
   const [streamOverlays, setStreamOverlays] = useState([]);
+  
+  // Streaming quality settings
+  const [streamSettings, setStreamSettings] = useState({
+    resolution: '720p',
+    bitrate: 'auto',
+    frameRate: 30,
+    arComplexity: 'medium',
+    faceMeshEnabled: true,
+    segmentationEnabled: false,
+    adaptiveEnabled: true,
+    lowPowerMode: false,
+  });
+  const arCanvasRef = useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -693,6 +707,9 @@ export default function WatchStream() {
 
       {/* Fullscreen Mobile-Optimized Video */}
       <div className="absolute inset-0 overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 1, backgroundColor: activeBackground ? 'transparent' : '#000' }}>
+        {/* Hidden canvas for AR/segmentation processing */}
+        <canvas ref={arCanvasRef} className="hidden" />
+        
         <video
           ref={videoRef}
           className="w-full h-full"
@@ -1020,14 +1037,22 @@ export default function WatchStream() {
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
         <>
-          {/* Host Controls - Premium lens filters */}
+          {/* Host Controls - Premium lens filters with face mesh */}
           <div className="absolute top-20 left-4 z-20 flex gap-2">
             <PremiumLensUI 
               videoRef={videoRef}
+              canvasRef={arCanvasRef}
               onMirrorChange={setIsMirrored}
               initialMirror={isMirrored}
               onEffectChange={setActiveLens}
               onBackgroundChange={setActiveBackground}
+              faceMeshEnabled={streamSettings.faceMeshEnabled}
+              segmentationEnabled={streamSettings.segmentationEnabled}
+            />
+            <StreamingSettings
+              onSettingsChange={setStreamSettings}
+              initialSettings={streamSettings}
+              isLive={stream?.status === 'live'}
             />
             <Button
               onClick={() => setShowCoStreamPanel(true)}

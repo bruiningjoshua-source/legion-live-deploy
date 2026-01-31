@@ -52,16 +52,19 @@ import AdminDashboard from './pages/AdminDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import AffiliateGoLive from './pages/AffiliateGoLive';
 import AffiliateHub from './pages/AffiliateHub';
+import AffiliateMarketplace from './pages/AffiliateMarketplace';
 import AmbassadorProgram from './pages/AmbassadorProgram';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
 import ChannelAnalytics from './pages/ChannelAnalytics';
 import Clips from './pages/Clips';
+import CollabMatching from './pages/CollabMatching';
 import CollaborationHub from './pages/CollaborationHub';
 import CommunityForums from './pages/CommunityForums';
 import CommunityGuidelines from './pages/CommunityGuidelines';
 import ContentModerationAdmin from './pages/ContentModerationAdmin';
 import CreatorAnalytics from './pages/CreatorAnalytics';
+import CreatorCommunity from './pages/CreatorCommunity';
 import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorOnboarding from './pages/CreatorOnboarding';
 import CreatorProfile from './pages/CreatorProfile';
@@ -73,13 +76,18 @@ import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
 import ExclusiveContentManager from './pages/ExclusiveContentManager';
 import Explore from './pages/Explore';
+import FanClubs from './pages/FanClubs';
 import Following from './pages/Following';
 import ForumPost from './pages/ForumPost';
+import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
+import HelpAndInfo from './pages/HelpAndInfo';
+import Highlights from './pages/Highlights';
 import Home from './pages/Home';
 import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
 import Leaderboard from './pages/Leaderboard';
 import MusicStudio from './pages/MusicStudio';
+import PPVEvents from './pages/PPVEvents';
 import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
 import PlatformAnalytics from './pages/PlatformAnalytics';
 import PlaylistView from './pages/PlaylistView';
@@ -87,6 +95,7 @@ import Playlists from './pages/Playlists';
 import PodcastStudio from './pages/PodcastStudio';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
+import Quests from './pages/Quests';
 import Settings from './pages/Settings';
 import TermsOfService from './pages/TermsOfService';
 import TheAmphitheatre from './pages/TheAmphitheatre';
@@ -100,19 +109,10 @@ import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
 import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
+import WatchParties from './pages/WatchParties';
+import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import AffiliateMarketplace from './pages/AffiliateMarketplace';
-import GamingSetup from './pages/GamingSetup';
-import Quests from './pages/Quests';
-import WatchParties from './pages/WatchParties';
-import PPVEvents from './pages/PPVEvents';
-import FanClubs from './pages/FanClubs';
-import CollabMatching from './pages/CollabMatching';
-import CreatorCommunity from './pages/CreatorCommunity';
-import Highlights from './pages/Highlights';
-import HelpAndInfo from './pages/HelpAndInfo';
-import WatchPartyRoom from './pages/WatchPartyRoom';
 import __Layout from './Layout.jsx';
 
 
@@ -122,16 +122,19 @@ export const PAGES = {
     "AffiliateDashboard": AffiliateDashboard,
     "AffiliateGoLive": AffiliateGoLive,
     "AffiliateHub": AffiliateHub,
+    "AffiliateMarketplace": AffiliateMarketplace,
     "AmbassadorProgram": AmbassadorProgram,
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
     "ChannelAnalytics": ChannelAnalytics,
     "Clips": Clips,
+    "CollabMatching": CollabMatching,
     "CollaborationHub": CollaborationHub,
     "CommunityForums": CommunityForums,
     "CommunityGuidelines": CommunityGuidelines,
     "ContentModerationAdmin": ContentModerationAdmin,
     "CreatorAnalytics": CreatorAnalytics,
+    "CreatorCommunity": CreatorCommunity,
     "CreatorMonetization": CreatorMonetization,
     "CreatorOnboarding": CreatorOnboarding,
     "CreatorProfile": CreatorProfile,
@@ -143,13 +146,18 @@ export const PAGES = {
     "Events": Events,
     "ExclusiveContentManager": ExclusiveContentManager,
     "Explore": Explore,
+    "FanClubs": FanClubs,
     "Following": Following,
     "ForumPost": ForumPost,
+    "GamingSetup": GamingSetup,
     "GoLive": GoLive,
+    "HelpAndInfo": HelpAndInfo,
+    "Highlights": Highlights,
     "Home": Home,
     "ImportYouTubeLibrary": ImportYouTubeLibrary,
     "Leaderboard": Leaderboard,
     "MusicStudio": MusicStudio,
+    "PPVEvents": PPVEvents,
     "PlatformAdminAnalytics": PlatformAdminAnalytics,
     "PlatformAnalytics": PlatformAnalytics,
     "PlaylistView": PlaylistView,
@@ -157,6 +165,7 @@ export const PAGES = {
     "PodcastStudio": PodcastStudio,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
+    "Quests": Quests,
     "Settings": Settings,
     "TermsOfService": TermsOfService,
     "TheAmphitheatre": TheAmphitheatre,
@@ -170,19 +179,10 @@ export const PAGES = {
     "WatchAffiliateVideo": WatchAffiliateVideo,
     "WatchHistory": WatchHistory,
     "WatchLater": WatchLater,
+    "WatchParties": WatchParties,
+    "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "AffiliateMarketplace": AffiliateMarketplace,
-    "GamingSetup": GamingSetup,
-    "Quests": Quests,
-    "WatchParties": WatchParties,
-    "PPVEvents": PPVEvents,
-    "FanClubs": FanClubs,
-    "CollabMatching": CollabMatching,
-    "CreatorCommunity": CreatorCommunity,
-    "Highlights": Highlights,
-    "HelpAndInfo": HelpAndInfo,
-    "WatchPartyRoom": WatchPartyRoom,
 }
 
 export const pagesConfig = {
