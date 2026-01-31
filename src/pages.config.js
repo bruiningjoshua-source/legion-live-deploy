@@ -111,6 +111,7 @@ import FanClubs from './pages/FanClubs';
 import CollabMatching from './pages/CollabMatching';
 import CreatorCommunity from './pages/CreatorCommunity';
 import Highlights from './pages/Highlights';
+import HelpAndInfo from './pages/HelpAndInfo';
 import __Layout from './Layout.jsx';
 
 
@@ -179,6 +180,7 @@ export const PAGES = {
     "CollabMatching": CollabMatching,
     "CreatorCommunity": CreatorCommunity,
     "Highlights": Highlights,
+    "HelpAndInfo": HelpAndInfo,
 }
 
 export const pagesConfig = {

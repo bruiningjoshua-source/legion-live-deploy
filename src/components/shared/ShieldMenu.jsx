@@ -24,7 +24,10 @@ import {
   Award,
   Clock,
   History,
-  Star
+  Star,
+  HelpCircle,
+  FileText,
+  Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -66,6 +69,16 @@ const expandableSections = [
       { name: 'Following', path: 'Following', icon: Heart },
       { name: 'Watch Later', path: 'WatchLater', icon: Clock },
       { name: 'History', path: 'WatchHistory', icon: History },
+    ]
+  },
+  {
+    title: 'Help & Info',
+    icon: HelpCircle,
+    color: 'text-white/60',
+    items: [
+      { name: 'Help & FAQ', path: 'HelpAndInfo', icon: HelpCircle },
+      { name: 'Terms of Service', path: 'TermsOfService', icon: FileText },
+      { name: 'Privacy Policy', path: 'PrivacyPolicy', icon: Lock },
     ]
   }
 ];
