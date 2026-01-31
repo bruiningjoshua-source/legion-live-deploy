@@ -2,7 +2,7 @@
  * PremiumLensUI - TikTok/Instagram style lens picker interface
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -101,13 +101,25 @@ export default function PremiumLensUI({
     }
   }, [mediaPipeReady, selectedEffect, selectedBackground, segmentationEnabled, startMediaPipe, stopMediaPipe]);
 
-  // Get current selections
-  const currentFilter = PREMIUM_FILTERS.find(f => f.id === selectedFilter) || PREMIUM_FILTERS[0];
-  const currentBeauty = BEAUTY_MODES.find(b => b.id === selectedBeauty) || BEAUTY_MODES[0];
-  const currentEffect = AR_EFFECTS.find(e => e.id === selectedEffect) || AR_EFFECTS[0];
-  const currentBackground = selectedBackground === 'custom' && customBgUrl 
-    ? { id: 'custom', type: 'image', url: customBgUrl, name: 'Custom', icon: '📷' }
-    : VIRTUAL_BACKGROUNDS.find(b => b.id === selectedBackground) || VIRTUAL_BACKGROUNDS[0];
+  // Get current selections - memoized to prevent infinite loops
+  const currentFilter = useMemo(() => 
+    PREMIUM_FILTERS.find(f => f.id === selectedFilter) || PREMIUM_FILTERS[0], 
+    [selectedFilter]
+  );
+  const currentBeauty = useMemo(() => 
+    BEAUTY_MODES.find(b => b.id === selectedBeauty) || BEAUTY_MODES[0], 
+    [selectedBeauty]
+  );
+  const currentEffect = useMemo(() => 
+    AR_EFFECTS.find(e => e.id === selectedEffect) || AR_EFFECTS[0], 
+    [selectedEffect]
+  );
+  const currentBackground = useMemo(() => 
+    selectedBackground === 'custom' && customBgUrl 
+      ? { id: 'custom', type: 'image', url: customBgUrl, name: 'Custom', icon: '📷' }
+      : VIRTUAL_BACKGROUNDS.find(b => b.id === selectedBackground) || VIRTUAL_BACKGROUNDS[0],
+    [selectedBackground, customBgUrl]
+  );
 
   // Apply effects to video element - OPTIMIZED for broadcast quality
   const applyEffects = useCallback(() => {
