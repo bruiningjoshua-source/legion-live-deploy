@@ -60,6 +60,9 @@ import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 import StreamInteractionWidgets from '@/components/stream/StreamInteractionWidgets';
+import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
+import { ProductOverlay, QuickReactionOverlay, FloatingReaction, GoalProgressOverlay, CoStreamInviteOverlay } from '@/components/stream/InteractiveOverlays';
+import CoStreamPanel from '@/components/stream/CoStreamPanel';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -86,6 +89,9 @@ export default function WatchStream() {
   const [panelParticipants, setPanelParticipants] = useState([]);
   const [activeLens, setActiveLens] = useState(null);
   const [activeBackground, setActiveBackground] = useState(null);
+  const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
+  const [floatingReactions, setFloatingReactions] = useState([]);
+  const [activeProduct, setActiveProduct] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -834,7 +840,7 @@ export default function WatchStream() {
 
       {/* Stream Interaction Widgets - Polls, Q&A, Tipping Goals */}
       {stream && user && (
-        <div className="absolute top-36 right-4 z-20 w-72">
+        <div className="absolute top-36 right-4 z-20 w-72 space-y-3">
           <StreamInteractionWidgets
             streamId={streamId}
             creatorId={creator?.id}
@@ -842,8 +848,53 @@ export default function WatchStream() {
             userEmail={user.email}
             userName={user.full_name}
           />
+          
+          {/* Gift Leaderboard - Compact */}
+          <GiftLeaderboard streamId={streamId} compact />
         </div>
       )}
+
+      {/* Interactive Overlays */}
+      {activeProduct && (
+        <ProductOverlay 
+          product={activeProduct} 
+          position="bottom-left"
+          onClose={() => setActiveProduct(null)}
+        />
+      )}
+
+      {/* Floating Reactions */}
+      {floatingReactions.map(r => (
+        <FloatingReaction 
+          key={r.id} 
+          emoji={r.emoji} 
+          onComplete={() => setFloatingReactions(prev => prev.filter(x => x.id !== r.id))}
+        />
+      ))}
+
+      {/* Quick Reactions Bar */}
+      {user && (
+        <div className="absolute bottom-32 left-4 z-20">
+          <QuickReactionOverlay 
+            onReact={(emoji) => {
+              setFloatingReactions(prev => [...prev, { id: Date.now(), emoji }]);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Co-Stream Panel */}
+      <AnimatePresence>
+        {showCoStreamPanel && (
+          <CoStreamPanel
+            streamId={streamId}
+            hostCreator={creator}
+            currentUser={user}
+            isHost={user?.email === creator?.user_email}
+            onClose={() => setShowCoStreamPanel(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Quality Monitor - Viewer View */}
       {streamStats && user?.email !== creator?.user_email && (
@@ -900,6 +951,14 @@ export default function WatchStream() {
               onLensChange={setActiveLens}
               onBackgroundChange={setActiveBackground}
             />
+            <Button
+              onClick={() => setShowCoStreamPanel(true)}
+              size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
+              title="Co-Stream"
+            >
+              <Users className="w-4 h-4" />
+            </Button>
             <Button
               onClick={() => setShowModerationPanel(true)}
               size="sm"
