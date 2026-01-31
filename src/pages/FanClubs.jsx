@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -207,6 +207,19 @@ export default function FanClubs() {
   const [joinCreator, setJoinCreator] = useState(null);
   const queryClient = useQueryClient();
 
+  // Handle success/cancel from Stripe
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      toast.success('🎉 Welcome to the fan club!');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (urlParams.get('cancelled') === 'true') {
+      toast.info('Checkout cancelled');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me()
@@ -230,23 +243,28 @@ export default function FanClubs() {
 
   const joinMutation = useMutation({
     mutationFn: async ({ creator, tier }) => {
-      // In production, this would create a Stripe subscription
-      const membership = await base44.entities.FanClubMembership.create({
-        user_email: user.email,
+      // Check if in iframe
+      if (window.self !== window.top) {
+        throw new Error('Checkout must be done from the published app, not preview.');
+      }
+
+      const tierConfig = TIER_CONFIG[tier];
+      const response = await base44.functions.invoke('createFanClubCheckout', {
         creator_id: creator.id,
         tier,
-        tier_name: TIER_CONFIG[tier].name,
-        monthly_price_usd: TIER_CONFIG[tier].price,
-        perks: TIER_CONFIG[tier].perks,
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        price_usd: tierConfig.price,
+        tier_name: tierConfig.name,
+        perks: tierConfig.perks
       });
-      return membership;
+
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
     },
-    onSuccess: () => {
-      toast.success('🎉 Welcome to the fan club!');
-      setJoinCreator(null);
-      queryClient.invalidateQueries({ queryKey: ['my-fan-memberships'] });
+    onError: (error) => {
+      toast.error(error.message || 'Failed to start checkout');
     }
   });
 

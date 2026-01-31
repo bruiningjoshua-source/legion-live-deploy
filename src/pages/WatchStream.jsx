@@ -59,6 +59,7 @@ import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
+import StreamInteractionWidgets from '@/components/stream/StreamInteractionWidgets';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -830,6 +831,19 @@ export default function WatchStream() {
       <div className="absolute top-20 right-4 z-20">
         <AIModerationBadge status="active" />
       </div>
+
+      {/* Stream Interaction Widgets - Polls, Q&A, Tipping Goals */}
+      {stream && user && (
+        <div className="absolute top-36 right-4 z-20 w-72">
+          <StreamInteractionWidgets
+            streamId={streamId}
+            creatorId={creator?.id}
+            isHost={user.email === creator?.user_email}
+            userEmail={user.email}
+            userName={user.full_name}
+          />
+        </div>
+      )}
 
       {/* Quality Monitor - Viewer View */}
       {streamStats && user?.email !== creator?.user_email && (
