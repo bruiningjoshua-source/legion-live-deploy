@@ -309,23 +309,35 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
-                {/* Affiliate Hub */}
+                {/* Affiliate Marketplace */}
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="cursor-pointer">
                     <ShoppingBag className="w-4 h-4 mr-2 text-green-400" />
-                    Affiliate Hub
+                    Affiliate Marketplace
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
                     <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('AffiliateMarketplace')} className="cursor-pointer">
+                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        Browse Marketplace
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to={createPageUrl('AffiliateHub')} className="cursor-pointer">
                         <Megaphone className="w-4 h-4 mr-2" />
-                        Affiliate Dashboard
+                        Partner Dashboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('AffiliateGoLive')} className="cursor-pointer">
                         <Radio className="w-4 h-4 mr-2" />
                         Go Live (Affiliate)
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('AffiliateDashboard')} className="cursor-pointer">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Product Analytics
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -443,12 +455,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                 );
               })}
               <Link
-                to={createPageUrl('AffiliateHub')}
+                to={createPageUrl('AffiliateMarketplace')}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-green-300 hover:bg-green-800/20"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-emerald-300 hover:bg-emerald-800/20"
               >
                 <ShoppingBag className="w-5 h-5" />
-                Affiliate Hub
+                Affiliate Marketplace
               </Link>
             </div>
           </motion.div>
