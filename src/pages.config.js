@@ -112,6 +112,7 @@ import CollabMatching from './pages/CollabMatching';
 import CreatorCommunity from './pages/CreatorCommunity';
 import Highlights from './pages/Highlights';
 import HelpAndInfo from './pages/HelpAndInfo';
+import WatchPartyRoom from './pages/WatchPartyRoom';
 import __Layout from './Layout.jsx';
 
 
@@ -181,6 +182,7 @@ export const PAGES = {
     "CreatorCommunity": CreatorCommunity,
     "Highlights": Highlights,
     "HelpAndInfo": HelpAndInfo,
+    "WatchPartyRoom": WatchPartyRoom,
 }
 
 export const pagesConfig = {
