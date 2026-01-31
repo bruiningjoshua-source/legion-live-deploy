@@ -104,6 +104,11 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import AffiliateMarketplace from './pages/AffiliateMarketplace';
 import GamingSetup from './pages/GamingSetup';
+import Quests from './pages/Quests';
+import WatchParties from './pages/WatchParties';
+import PPVEvents from './pages/PPVEvents';
+import FanClubs from './pages/FanClubs';
+import CollabMatching from './pages/CollabMatching';
 import __Layout from './Layout.jsx';
 
 
@@ -165,6 +170,11 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "AffiliateMarketplace": AffiliateMarketplace,
     "GamingSetup": GamingSetup,
+    "Quests": Quests,
+    "WatchParties": WatchParties,
+    "PPVEvents": PPVEvents,
+    "FanClubs": FanClubs,
+    "CollabMatching": CollabMatching,
 }
 
 export const pagesConfig = {
