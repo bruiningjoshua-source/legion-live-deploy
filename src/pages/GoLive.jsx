@@ -37,6 +37,7 @@ import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import PremiumLensUI from '@/components/stream/PremiumLensUI';
+import StreamingSettings from '@/components/stream/StreamingSettings';
 
 const categories = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -94,7 +95,18 @@ export default function GoLive() {
   const [activeEffect, setActiveEffect] = useState(null);
   const [activeBackground, setActiveBackground] = useState(null);
   const [activeBeauty, setActiveBeauty] = useState(null);
+  const [streamSettings, setStreamSettings] = useState({
+    resolution: '720p',
+    bitrate: 'auto',
+    frameRate: 30,
+    arComplexity: 'medium',
+    faceMeshEnabled: true,
+    segmentationEnabled: false,
+    adaptiveEnabled: true,
+    lowPowerMode: false,
+  });
   const videoPreviewRef = React.useRef(null);
+  const arCanvasRef = React.useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -497,15 +509,26 @@ export default function GoLive() {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Top Right - Premium Lens UI */}
-              <div className="absolute top-4 right-4 z-20">
+              {/* Hidden canvas for AR processing */}
+              <canvas ref={arCanvasRef} className="hidden" />
+
+              {/* Top Right - Premium Lens UI & Settings */}
+              <div className="absolute top-4 right-4 z-20 flex gap-2">
                 <PremiumLensUI 
                   videoRef={videoPreviewRef}
+                  canvasRef={arCanvasRef}
                   onMirrorChange={setIsMirrored}
                   initialMirror={isMirrored}
                   onEffectChange={setActiveEffect}
                   onBackgroundChange={setActiveBackground}
                   onBeautyChange={setActiveBeauty}
+                  faceMeshEnabled={streamSettings.faceMeshEnabled}
+                  segmentationEnabled={streamSettings.segmentationEnabled}
+                />
+                <StreamingSettings
+                  onSettingsChange={setStreamSettings}
+                  initialSettings={streamSettings}
+                  isLive={false}
                 />
               </div>
 
