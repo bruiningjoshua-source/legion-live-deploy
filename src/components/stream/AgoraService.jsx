@@ -204,18 +204,22 @@ class AgoraStreamingService {
       
       if (mediaType === 'video') {
         this.remoteUsers.set(user.uid, { ...user, videoTrack: user.videoTrack });
+        // Play video in the main video element for viewers
+        const videoElement = document.querySelector('video');
+        if (videoElement && user.videoTrack) {
+          user.videoTrack.play(videoElement, { fit: 'contain' });
+        }
       } else if (mediaType === 'audio') {
         this.remoteUsers.set(user.uid, { ...this.remoteUsers.get(user.uid), audioTrack: user.audioTrack });
-      }
-
-      if (user.videoTrack) {
-        user.videoTrack.play(`remote-${user.uid}`);
-      }
-      if (user.audioTrack) {
-        user.audioTrack.play();
+        if (user.audioTrack) {
+          user.audioTrack.play();
+        }
       }
 
       console.log(`User ${user.uid} published ${mediaType}`);
+      
+      // Notify listeners of user join
+      this.notifyQualityChange();
     } catch (error) {
       console.error('Failed to handle user published:', error);
     }
@@ -260,22 +264,76 @@ class AgoraStreamingService {
     try {
       if (this.localAudioTrack) {
         this.localAudioTrack.close();
+        this.localAudioTrack = null;
       }
       if (this.localVideoTrack) {
         this.localVideoTrack.close();
+        this.localVideoTrack = null;
       }
 
-      await this.client.leave();
+      if (this.client) {
+        await this.client.leave();
+      }
       
       if (this.statsInterval) {
         clearInterval(this.statsInterval);
+        this.statsInterval = null;
       }
 
       this.remoteUsers.clear();
+      this.qualityCallbacks = [];
       console.log('Left channel and cleaned up resources');
     } catch (error) {
       console.error('Failed to leave channel:', error);
     }
+  }
+
+  // Toggle microphone
+  async toggleMic(enabled) {
+    if (this.localAudioTrack) {
+      await this.localAudioTrack.setEnabled(enabled);
+      console.log(`Microphone ${enabled ? 'enabled' : 'disabled'}`);
+      return true;
+    }
+    return false;
+  }
+
+  // Toggle camera
+  async toggleCamera(enabled) {
+    if (this.localVideoTrack) {
+      await this.localVideoTrack.setEnabled(enabled);
+      console.log(`Camera ${enabled ? 'enabled' : 'disabled'}`);
+      return true;
+    }
+    return false;
+  }
+
+  // Switch camera (front/back on mobile)
+  async switchCamera() {
+    if (this.localVideoTrack) {
+      const devices = await AgoraRTC.getCameras();
+      if (devices.length > 1) {
+        const currentDevice = this.localVideoTrack.getTrackLabel();
+        const nextDevice = devices.find(d => d.label !== currentDevice) || devices[0];
+        await this.localVideoTrack.setDevice(nextDevice.deviceId);
+        console.log(`Switched to camera: ${nextDevice.label}`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Get available devices
+  async getDevices() {
+    const cameras = await AgoraRTC.getCameras();
+    const microphones = await AgoraRTC.getMicrophones();
+    const speakers = await AgoraRTC.getPlaybackDevices();
+    return { cameras, microphones, speakers };
+  }
+
+  // Check if tracks are active
+  isStreaming() {
+    return !!(this.localVideoTrack && this.localAudioTrack && this.client);
   }
 }
 
