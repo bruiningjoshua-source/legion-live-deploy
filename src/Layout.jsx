@@ -15,6 +15,7 @@ import InstallPrompt from '@/components/pwa/InstallPrompt';
 import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
+import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
@@ -22,6 +23,7 @@ export default function Layout({ children, currentPageName }) {
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('legion_theme') || 'roman');
   const [particleIntensity, setParticleIntensity] = useState(() => localStorage.getItem('legion_particles') || 'medium');
@@ -62,6 +64,14 @@ export default function Layout({ children, currentPageName }) {
       setShowAgeVerification(true);
     } else {
       setShowAgeVerification(false);
+    }
+  }, [user]);
+
+  // Show tutorial for new users
+  useEffect(() => {
+    if (user && !localStorage.getItem('legion_tutorial_completed')) {
+      const timer = setTimeout(() => setShowTutorial(true), 1500);
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
@@ -127,9 +137,21 @@ export default function Layout({ children, currentPageName }) {
     .animate-glow { animation: glow 2s ease-in-out infinite; }
   `;
 
+  const handleTutorialComplete = () => {
+    localStorage.setItem('legion_tutorial_completed', 'true');
+    setShowTutorial(false);
+  };
+
   const renderContent = () => (
     <>
       {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      
+      {showTutorial && (
+        <GettingStartedTutorial 
+          onComplete={handleTutorialComplete} 
+          onDismiss={handleTutorialComplete} 
+        />
+      )}
       
       <ShieldMenu isOpen={showShieldMenu} onClose={() => setShowShieldMenu(false)} />
       

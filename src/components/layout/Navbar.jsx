@@ -9,42 +9,22 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Menu,
   X,
   Home,
-  Compass,
   Gamepad2,
   Radio,
   Wallet,
   User,
   LogOut,
   Settings,
-  Trophy,
-  Bell,
   Shield,
-  Video,
   Film,
-  Users,
   ShoppingBag,
-  Megaphone,
   BarChart3,
-  Swords,
-  Music,
-  Upload,
   DollarSign,
-  Heart,
-  MessageSquare,
-  Clock,
-  History,
-  Scissors,
-  Calendar,
-  Award,
-  Ticket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
@@ -53,12 +33,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Main navigation - 4 platforms
   const mainNavLinks = [
     { name: 'Home', path: createPageUrl('Home'), icon: Home },
-    { name: 'Live Streams', path: createPageUrl('Explore'), icon: Radio },
+    { name: 'Live', path: createPageUrl('Explore'), icon: Radio },
     { name: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film },
-    { name: 'Gaming Hub', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
+    { name: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
+    { name: 'Shop', path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -70,12 +50,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Logo + Shield Menu Toggle */}
+        {/* Logo + Shield Menu */}
         <div className="flex items-center gap-2">
           <button 
             onClick={onOpenShieldMenu}
             className="text-2xl hover:scale-110 transition-transform cursor-pointer"
-            title="Open Shield Menu"
+            title="Open Menu"
           >
             🛡️
           </button>
@@ -84,7 +64,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           </Link>
         </div>
 
-        {/* Desktop Nav - Main Platforms */}
+        {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-1 bg-white/5 rounded-full p-1">
           {mainNavLinks.map(link => {
             const Icon = link.icon;
@@ -107,7 +87,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Wallet Display */}
+          {/* Wallet */}
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
               <motion.div 
@@ -121,7 +101,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
             </Link>
           )}
 
-          {/* Go Live Button */}
+          {/* Go Live */}
           {user && (
             <Link to={createPageUrl('GoLive')}>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -136,7 +116,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Notifications */}
           {user && <NotificationBell user={user} />}
 
-          {/* User Menu */}
+          {/* User Menu - Simplified */}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -146,13 +126,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 bg-stone-900 border-amber-600/20">
+              <DropdownMenuContent align="end" className="w-56 bg-stone-900 border-amber-600/20">
                 <div className="px-3 py-2 border-b border-amber-600/20">
                   <p className="text-amber-100 font-semibold">{user.full_name}</p>
                   <p className="text-amber-400/60 text-xs">{user.email}</p>
                 </div>
                 
-                {/* Profile & Account */}
                 <DropdownMenuItem asChild>
                   <Link to={createPageUrl('Profile')} className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
@@ -162,215 +141,15 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                 <DropdownMenuItem asChild>
                   <Link to={createPageUrl('Wallet')} className="cursor-pointer">
                     <Wallet className="w-4 h-4 mr-2" />
-                    Vault (Wallet)
+                    Wallet
                   </Link>
                 </DropdownMenuItem>
-
-                <DropdownMenuSeparator className="bg-amber-600/20" />
-
-                {/* Live Streaming Platform */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Radio className="w-4 h-4 mr-2 text-red-400" />
-                    Live Streaming
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('GoLive')} className="cursor-pointer">
-                        <Radio className="w-4 h-4 mr-2" />
-                        Go Live (Solo/PK/Group)
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Explore')} className="cursor-pointer">
-                        <Compass className="w-4 h-4 mr-2" />
-                        Browse Live Streams
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Leaderboard')} className="cursor-pointer">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        Leaderboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Following')} className="cursor-pointer">
-                        <Heart className="w-4 h-4 mr-2" />
-                        Following
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Video Platform (Amphitheatre) */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Film className="w-4 h-4 mr-2 text-blue-400" />
-                    Video Platform
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('TheAmphitheatre')} className="cursor-pointer">
-                        <Film className="w-4 h-4 mr-2" />
-                        Browse Videos
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('VideoUpload')} className="cursor-pointer">
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Video
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('CreatorStudio')} className="cursor-pointer">
-                        <Video className="w-4 h-4 mr-2" />
-                        Creator Studio
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('ChannelAnalytics')} className="cursor-pointer">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Analytics
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('WatchLater')} className="cursor-pointer">
-                        <Clock className="w-4 h-4 mr-2" />
-                        Watch Later
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('WatchHistory')} className="cursor-pointer">
-                        <History className="w-4 h-4 mr-2" />
-                        History
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Clips')} className="cursor-pointer">
-                        <Scissors className="w-4 h-4 mr-2" />
-                        Clips
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Playlists')} className="cursor-pointer">
-                        <Music className="w-4 h-4 mr-2" />
-                        Playlists
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Community & Social */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Users className="w-4 h-4 mr-2 text-cyan-400" />
-                    Community
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('CommunityForums')} className="cursor-pointer">
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Forums
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('FanClubs')} className="cursor-pointer">
-                        <Heart className="w-4 h-4 mr-2" />
-                        Fan Clubs
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('WatchParties')} className="cursor-pointer">
-                        <Users className="w-4 h-4 mr-2" />
-                        Watch Parties
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('CollabMatching')} className="cursor-pointer">
-                        <Swords className="w-4 h-4 mr-2" />
-                        Collab Matching
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('UpcomingStreams')} className="cursor-pointer">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Upcoming Streams
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Achievements')} className="cursor-pointer">
-                        <Award className="w-4 h-4 mr-2" />
-                        Achievements
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('Quests')} className="cursor-pointer">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        Daily Quests
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Gaming Hub */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Gamepad2 className="w-4 h-4 mr-2 text-purple-400" />
-                    Gaming Hub
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('TheGamingHub')} className="cursor-pointer">
-                        <Gamepad2 className="w-4 h-4 mr-2" />
-                        Gaming Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('GamingSetup')} className="cursor-pointer">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Stream Setup (OBS/Streamlabs)
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Affiliate Marketplace */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <ShoppingBag className="w-4 h-4 mr-2 text-green-400" />
-                    Affiliate Marketplace
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('AffiliateMarketplace')} className="cursor-pointer">
-                        <ShoppingBag className="w-4 h-4 mr-2" />
-                        Browse Marketplace
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('AffiliateHub')} className="cursor-pointer">
-                        <Megaphone className="w-4 h-4 mr-2" />
-                        Partner Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('AffiliateGoLive')} className="cursor-pointer">
-                        <Radio className="w-4 h-4 mr-2" />
-                        Go Live (Affiliate)
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('AffiliateDashboard')} className="cursor-pointer">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Product Analytics
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                <DropdownMenuSeparator className="bg-amber-600/20" />
-
-                {/* Monetization */}
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('CreatorStudio')} className="cursor-pointer">
+                    <Film className="w-4 h-4 mr-2" />
+                    Creator Studio
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to={createPageUrl('CreatorMonetization')} className="cursor-pointer">
                     <DollarSign className="w-4 h-4 mr-2" />
@@ -378,15 +157,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('PPVEvents')} className="cursor-pointer">
-                    <Film className="w-4 h-4 mr-2" />
-                    Pay-Per-View Events
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('ExclusiveContentManager')} className="cursor-pointer">
-                    <Film className="w-4 h-4 mr-2" />
-                    Exclusive Content
+                  <Link to={createPageUrl('ChannelAnalytics')} className="cursor-pointer">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Analytics
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -396,38 +169,15 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </Link>
                 </DropdownMenuItem>
 
-                {/* Admin Section */}
                 {user.role === 'admin' && (
                   <>
                     <DropdownMenuSeparator className="bg-amber-600/20" />
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger className="cursor-pointer text-amber-400">
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer text-amber-400">
                         <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="bg-stone-900 border-amber-600/20" sideOffset={8} alignOffset={-5}>
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer">
-                            Admin Dashboard
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl('ContentModerationAdmin')} className="cursor-pointer">
-                            Content Moderation
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl('PlatformAdminAnalytics')} className="cursor-pointer">
-                            Platform Analytics
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl('BrandDashboard')} className="cursor-pointer">
-                            Brand Campaigns
-                          </Link>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
+                      </Link>
+                    </DropdownMenuItem>
                   </>
                 )}
 
@@ -485,14 +235,6 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </Link>
                 );
               })}
-              <Link
-                to={createPageUrl('AffiliateMarketplace')}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-emerald-300 hover:bg-emerald-800/20"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                Affiliate Marketplace
-              </Link>
             </div>
           </motion.div>
         )}
