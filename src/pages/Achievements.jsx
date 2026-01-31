@@ -2,9 +2,9 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Star, Lock, Eye, Users, Video, Zap, Sparkles } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Trophy, Star, Lock, Eye, Users, Video, Zap, Sparkles, Medal, Award, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import GlassCard from '@/components/shared/GlassCard';
@@ -15,16 +15,18 @@ export default function AchievementsPage() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: achievements = [] } = useQuery({
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
     queryKey: ['all-achievements'],
     queryFn: () => base44.entities.Achievement.filter({ is_active: true }, 'category', 100)
   });
 
-  const { data: userAchievements = [] } = useQuery({
+  const { data: userAchievements = [], isLoading: userAchievementsLoading } = useQuery({
     queryKey: ['user-achievements', user?.email],
     queryFn: () => base44.entities.UserAchievement.filter({ user_email: user.email }),
     enabled: !!user?.email
   });
+
+  const isLoading = achievementsLoading || userAchievementsLoading;
 
   const unlockedIds = userAchievements.map(ua => ua.achievement_id);
   
@@ -85,18 +87,58 @@ export default function AchievementsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-10">
-          {[
-            { icon: Trophy, value: unlockedCount, label: 'Unlocked', color: 'amber' },
-            { icon: Star, value: totalPoints, label: 'Points', color: 'purple' },
-            { icon: Zap, value: `${achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0}%`, label: 'Complete', color: 'green' }
-          ].map((stat, i) => (
-            <GlassCard key={stat.label} delay={i * 0.1} glowColor={stat.color} className="text-center">
-              <stat.icon className={`w-8 h-8 mx-auto mb-2 text-${stat.color}-400`} />
-              <p className="text-3xl font-black text-white">{stat.value}</p>
-              <p className="text-white/50 text-sm">{stat.label}</p>
-            </GlassCard>
-          ))}
+          <GlassCard delay={0} glowColor="amber" className="text-center">
+            <Trophy className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+            <p className="text-3xl font-black text-white">{unlockedCount}</p>
+            <p className="text-white/50 text-sm">Unlocked</p>
+          </GlassCard>
+          <GlassCard delay={0.1} glowColor="purple" className="text-center">
+            <Star className="w-8 h-8 mx-auto mb-2 text-purple-400" />
+            <p className="text-3xl font-black text-white">{totalPoints.toLocaleString()}</p>
+            <p className="text-white/50 text-sm">Points</p>
+          </GlassCard>
+          <GlassCard delay={0.2} glowColor="green" className="text-center">
+            <Target className="w-8 h-8 mx-auto mb-2 text-green-400" />
+            <p className="text-3xl font-black text-white">
+              {achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0}%
+            </p>
+            <p className="text-white/50 text-sm">Complete</p>
+          </GlassCard>
         </div>
+
+        {/* Recently Unlocked Section */}
+        {userAchievements.filter(ua => ua.unlocked_at).length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Award className="w-5 h-5 text-amber-400" />
+              Recently Unlocked
+            </h2>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {userAchievements
+                .filter(ua => ua.unlocked_at)
+                .sort((a, b) => new Date(b.unlocked_at) - new Date(a.unlocked_at))
+                .slice(0, 5)
+                .map(ua => {
+                  const achievement = achievements.find(a => a.id === ua.achievement_id);
+                  if (!achievement) return null;
+                  return (
+                    <motion.div
+                      key={ua.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`flex-shrink-0 p-4 rounded-2xl bg-gradient-to-br ${rarityColors[achievement.rarity]} min-w-[140px] text-center`}
+                    >
+                      <span className="text-3xl block mb-2">{achievement.icon || '🏆'}</span>
+                      <p className="text-white font-bold text-sm truncate">{achievement.name}</p>
+                      <p className="text-white/70 text-xs mt-1">
+                        {format(new Date(ua.unlocked_at), 'MMM d')}
+                      </p>
+                    </motion.div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
 
         {/* Achievement Categories */}
         <Tabs defaultValue="all" className="w-full">
@@ -128,6 +170,13 @@ export default function AchievementsPage() {
 
           {['all', ...categories].map(category => (
             <TabsContent key={category} value={category}>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton key={i} className="h-48 rounded-2xl bg-white/5" />
+                  ))}
+                </div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {achievements
                   .filter(a => category === 'all' || a.category === category)
@@ -237,11 +286,13 @@ export default function AchievementsPage() {
               </div>
               
               {achievements.filter(a => category === 'all' || a.category === category).length === 0 && (
-                <GlassCard className="text-center py-16">
+                <GlassCard className="text-center py-16 col-span-full">
                   <Trophy className="w-16 h-16 text-amber-500/20 mx-auto mb-4" />
                   <h3 className="text-white font-semibold text-lg mb-2">No Achievements Yet</h3>
                   <p className="text-white/50">Start engaging with the platform to unlock achievements!</p>
                 </GlassCard>
+              )}
+              </div>
               )}
             </TabsContent>
           ))}
