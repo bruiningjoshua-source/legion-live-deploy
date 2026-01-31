@@ -3,9 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Megaphone, 
@@ -25,10 +22,14 @@ import {
   Video,
   Eye,
   Gift,
-  Play
+  Play,
+  Sparkles,
+  Store
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import GlassCard from '@/components/shared/GlassCard';
+import PremiumButton from '@/components/shared/PremiumButton';
 import AffiliateVideoUpload from '@/components/affiliate/AffiliateVideoUpload';
 
 const TIER_BENEFITS = {
@@ -139,21 +140,21 @@ export default function AffiliateHub() {
   // Not a partner yet - show application
   if (!partner) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+      <div className="min-h-screen pt-20 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <div className="inline-flex items-center gap-2 bg-green-600/20 border border-green-500/30 rounded-full px-6 py-3 mb-6">
-              <Megaphone className="w-5 h-5 text-green-400" />
-              <span className="text-green-200 font-semibold">Legion Affiliate Network</span>
+            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/40 rounded-full px-6 py-3 mb-6">
+              <Sparkles className="w-5 h-5 text-emerald-400" />
+              <span className="text-emerald-200 font-semibold">Affiliate Partner Program</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-amber-100 mb-4">
+            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-400 mb-4">
               Turn Your Influence Into Income
             </h1>
-            <p className="text-xl text-amber-400/70 max-w-2xl mx-auto">
+            <p className="text-xl text-white/60 max-w-2xl mx-auto">
               Partner with proven brands. Stream live campaigns. Keep 75% of everything you sell.
             </p>
           </motion.div>
@@ -170,35 +171,40 @@ export default function AffiliateHub() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <Card className="bg-stone-800/30 border-green-600/30 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-14 h-14 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
-                      <item.icon className="w-7 h-7 text-green-400" />
-                    </div>
-                    <h3 className="text-amber-100 font-bold text-lg mb-2">{item.title}</h3>
-                    <p className="text-amber-400/70 text-sm">{item.desc}</p>
-                  </CardContent>
-                </Card>
+                <GlassCard glowColor="green" className="text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="w-7 h-7 text-emerald-400" />
+                  </div>
+                  <h3 className="text-white font-bold text-lg mb-2">{item.title}</h3>
+                  <p className="text-white/50 text-sm">{item.desc}</p>
+                </GlassCard>
               </motion.div>
             ))}
           </div>
 
-          <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-amber-100 mb-4">Ready to Start Earning?</h2>
-              <p className="text-amber-400/70 mb-6">
-                Apply now and get approved within 24-48 hours. Once approved, browse live campaigns and start streaming.
-              </p>
-              <Button
+          <GlassCard glowColor="green" className="text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">Ready to Start Earning?</h2>
+            <p className="text-white/60 mb-6">
+              Apply now and get approved within 24-48 hours. Once approved, browse live campaigns and start streaming.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <PremiumButton
                 onClick={() => applyToPartnerMutation.mutate()}
                 disabled={applyToPartnerMutation.isPending}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg"
+                variant="premium"
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-green-600"
+                rightIcon={<ArrowRight className="w-5 h-5" />}
               >
                 {applyToPartnerMutation.isPending ? 'Submitting...' : 'Apply to Join'}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
+              </PremiumButton>
+              <Link to={createPageUrl('AffiliateMarketplace')}>
+                <PremiumButton variant="secondary" size="lg" leftIcon={<Store className="w-5 h-5" />}>
+                  Browse Marketplace
+                </PremiumButton>
+              </Link>
+            </div>
+          </GlassCard>
         </div>
       </div>
     );
@@ -207,19 +213,24 @@ export default function AffiliateHub() {
   // Pending approval
   if (partner.status === 'pending') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
-        <Card className="bg-stone-800/30 border-amber-600/20 max-w-md">
-          <CardContent className="p-8 text-center">
-            <Clock className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-amber-100 mb-2">Application Under Review</h2>
-            <p className="text-amber-400/70 mb-4">
-              Your affiliate partner application is being reviewed. You'll be notified once approved.
-            </p>
-            <Badge className="bg-amber-600/20 text-amber-300 border-amber-500/30">
-              Usually 24-48 hours
-            </Badge>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen pt-20 pb-12 flex items-center justify-center">
+        <GlassCard glowColor="amber" className="max-w-md text-center">
+          <Clock className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">Application Under Review</h2>
+          <p className="text-white/60 mb-6">
+            Your affiliate partner application is being reviewed. You'll be notified once approved.
+          </p>
+          <span className="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/30 px-4 py-2 rounded-xl text-sm">
+            Usually 24-48 hours
+          </span>
+          <div className="mt-6">
+            <Link to={createPageUrl('AffiliateMarketplace')}>
+              <PremiumButton variant="secondary" leftIcon={<Store className="w-4 h-4" />}>
+                Browse Marketplace
+              </PremiumButton>
+            </Link>
+          </div>
+        </GlassCard>
       </div>
     );
   }
@@ -228,108 +239,126 @@ export default function AffiliateHub() {
   const tierInfo = TIER_BENEFITS[partner.tier] || TIER_BENEFITS.bronze;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-amber-100 flex items-center gap-3">
-              <Megaphone className="w-8 h-8 text-green-500" />
+            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/40 rounded-full px-4 py-1.5 mb-3">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-200 text-sm font-medium">Partner Dashboard</span>
+            </div>
+            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-400 flex items-center gap-3">
               Affiliate Hub
             </h1>
-            <p className="text-amber-400/70">Live campaign streaming platform</p>
+            <p className="text-white/50">Manage campaigns, track earnings, go live</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge className={`bg-${tierInfo.color}-600/20 text-${tierInfo.color}-300 border-${tierInfo.color}-500/30 px-4 py-2 text-lg`}>
-              <Star className="w-4 h-4 mr-2" />
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
+              partner.tier === 'elite' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+              partner.tier === 'platinum' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+              partner.tier === 'gold' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+              partner.tier === 'silver' ? 'bg-gray-500/20 text-gray-300 border border-gray-500/30' :
+              'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+            }`}>
+              <Star className="w-4 h-4" />
               {partner.tier.toUpperCase()} Partner
-            </Badge>
-            <Button onClick={() => setShowVideoUpload(true)} variant="outline" className="border-green-600/30 text-green-300">
-              <Video className="w-4 h-4 mr-2" />
+            </span>
+            <Link to={createPageUrl('AffiliateMarketplace')}>
+              <PremiumButton variant="secondary" leftIcon={<Store className="w-4 h-4" />}>
+                Marketplace
+              </PremiumButton>
+            </Link>
+            <PremiumButton onClick={() => setShowVideoUpload(true)} variant="secondary" leftIcon={<Video className="w-4 h-4" />}>
               Upload Video
-            </Button>
+            </PremiumButton>
             <Link to={createPageUrl('AffiliateGoLive')}>
-              <Button className="bg-red-600 hover:bg-red-700">
-                <Radio className="w-4 h-4 mr-2" />
+              <PremiumButton variant="premium" leftIcon={<Radio className="w-4 h-4" />} className="bg-gradient-to-r from-red-500 to-red-600">
                 Go Live
-              </Button>
+              </PremiumButton>
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-400/70 text-sm">Total Earnings</p>
-                  <p className="text-2xl font-bold text-green-300">${totalEarnings.toFixed(2)}</p>
-                </div>
-                <DollarSign className="w-10 h-10 text-green-500" />
+          <GlassCard glowColor="green" glow className="!p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-400/70 text-sm">Total Earnings</p>
+                <p className="text-2xl font-bold text-emerald-300">${totalEarnings.toFixed(2)}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-3 bg-emerald-500/20 rounded-xl">
+                <DollarSign className="w-6 h-6 text-emerald-400" />
+              </div>
+            </div>
+          </GlassCard>
 
-          <Card className="bg-stone-800/30 border-amber-600/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-amber-400/70 text-sm">Pending Payout</p>
-                  <p className="text-2xl font-bold text-amber-100">${pendingPayout.toFixed(2)}</p>
-                </div>
-                <Wallet className="w-10 h-10 text-amber-500" />
+          <GlassCard glowColor="amber" className="!p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-400/70 text-sm">Pending Payout</p>
+                <p className="text-2xl font-bold text-white">${pendingPayout.toFixed(2)}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-3 bg-amber-500/20 rounded-xl">
+                <Wallet className="w-6 h-6 text-amber-400" />
+              </div>
+            </div>
+          </GlassCard>
 
-          <Card className="bg-stone-800/30 border-amber-600/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-amber-400/70 text-sm">Total Sales</p>
-                  <p className="text-2xl font-bold text-amber-100">${totalSales.toFixed(2)}</p>
-                </div>
-                <ShoppingBag className="w-10 h-10 text-blue-500" />
+          <GlassCard glowColor="blue" className="!p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-400/70 text-sm">Total Sales</p>
+                <p className="text-2xl font-bold text-white">${totalSales.toFixed(2)}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-3 bg-blue-500/20 rounded-xl">
+                <ShoppingBag className="w-6 h-6 text-blue-400" />
+              </div>
+            </div>
+          </GlassCard>
 
-          <Card className="bg-stone-800/30 border-amber-600/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-amber-400/70 text-sm">Conversions</p>
-                  <p className="text-2xl font-bold text-amber-100">{confirmedSales}</p>
-                </div>
-                <TrendingUp className="w-10 h-10 text-purple-500" />
+          <GlassCard glowColor="purple" className="!p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-400/70 text-sm">Conversions</p>
+                <p className="text-2xl font-bold text-white">{confirmedSales}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-3 bg-purple-500/20 rounded-xl">
+                <TrendingUp className="w-6 h-6 text-purple-400" />
+              </div>
+            </div>
+          </GlassCard>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl mb-6">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="campaigns" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Browse Campaigns
-            </TabsTrigger>
-            <TabsTrigger value="my-campaigns" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              My Campaigns ({myCampaigns.length})
-            </TabsTrigger>
-            <TabsTrigger value="videos" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              My Videos ({myVideos.length})
-            </TabsTrigger>
-            <TabsTrigger value="streams" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              My Streams
-            </TabsTrigger>
-            <TabsTrigger value="payouts" className="data-[state=active]:bg-green-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Payouts
-            </TabsTrigger>
-          </TabsList>
+          <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1.5 rounded-2xl mb-6 overflow-x-auto">
+            <TabsList className="bg-transparent p-0 gap-1 flex-nowrap">
+              <TabsTrigger value="dashboard" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="campaigns" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                Browse Campaigns
+              </TabsTrigger>
+              <TabsTrigger value="my-campaigns" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                My Campaigns ({myCampaigns.length})
+              </TabsTrigger>
+              <TabsTrigger value="videos" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                My Videos ({myVideos.length})
+              </TabsTrigger>
+              <TabsTrigger value="streams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                My Streams
+              </TabsTrigger>
+              <TabsTrigger value="payouts" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-xl px-4 py-2 text-white/60 whitespace-nowrap">
+                Payouts
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="dashboard">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
