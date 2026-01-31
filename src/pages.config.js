@@ -102,6 +102,8 @@ import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import AffiliateMarketplace from './pages/AffiliateMarketplace';
+import GamingSetup from './pages/GamingSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -161,6 +163,8 @@ export const PAGES = {
     "WatchLater": WatchLater,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "AffiliateMarketplace": AffiliateMarketplace,
+    "GamingSetup": GamingSetup,
 }
 
 export const pagesConfig = {
