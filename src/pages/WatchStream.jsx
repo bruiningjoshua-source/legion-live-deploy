@@ -53,7 +53,7 @@ import EnhancedChat from '@/components/chat/EnhancedChat';
 import AIModerationBadge from '@/components/moderation/AIModerationBadge';
 import BigoActionBar from '@/components/stream/BigoActionBar';
 import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
-import SnapchatLensFilters from '@/components/stream/SnapchatLensFilters';
+import PremiumLensUI from '@/components/stream/PremiumLensUI';
 
 import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
@@ -680,14 +680,14 @@ export default function WatchStream() {
         <div 
           className="absolute inset-0 z-0"
           style={{
-            background: `linear-gradient(135deg, ${activeBackground.colors[0]}, ${activeBackground.colors[1]})`
+            background: `linear-gradient(${activeBackground.angle || 135}deg, ${activeBackground.colors?.join(', ')})`
           }}
         />
       )}
-      {activeBackground && activeBackground.type === 'color' && (
+      {activeBackground && activeBackground.type === 'solid' && (
         <div 
           className="absolute inset-0 z-0"
-          style={{ backgroundColor: activeBackground.value }}
+          style={{ backgroundColor: activeBackground.color }}
         />
       )}
 
@@ -1020,13 +1020,13 @@ export default function WatchStream() {
       {/* Creator Controls - Only for Stream Owner */}
       {user?.email === creator?.user_email && (
         <>
-          {/* Host Controls - Snapchat-style lens filters */}
+          {/* Host Controls - Premium lens filters */}
           <div className="absolute top-20 left-4 z-20 flex gap-2">
-            <SnapchatLensFilters 
+            <PremiumLensUI 
               videoRef={videoRef}
               onMirrorChange={setIsMirrored}
               initialMirror={isMirrored}
-              onLensChange={setActiveLens}
+              onEffectChange={setActiveLens}
               onBackgroundChange={setActiveBackground}
             />
             <Button
