@@ -34,6 +34,8 @@ import {
   VIRTUAL_BACKGROUNDS,
   PARTICLE_EFFECTS
 } from './PremiumARProcessor';
+import { useMediaPipe, mediaPipeManager } from './MediaPipeProcessor';
+import AREffectOverlay from './AREffectOverlay';
 
 // ============================================
 // MAIN COMPONENT
@@ -41,12 +43,16 @@ import {
 
 export default function PremiumLensUI({ 
   videoRef, 
+  canvasRef,
   onFilterChange,
   onBeautyChange,
   onEffectChange,
   onBackgroundChange,
   onMirrorChange,
-  initialMirror = true 
+  onSettingsChange,
+  initialMirror = true,
+  faceMeshEnabled = true,
+  segmentationEnabled = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('filters');
@@ -68,6 +74,32 @@ export default function PremiumLensUI({
   const [zoom, setZoom] = useState(100);
 
   const fileInputRef = useRef(null);
+
+  // MediaPipe integration for face mesh tracking
+  const { 
+    isReady: mediaPipeReady, 
+    isProcessing: mediaPipeProcessing,
+    faceLandmarks,
+    startProcessing: startMediaPipe,
+    stopProcessing: stopMediaPipe,
+  } = useMediaPipe(videoRef, canvasRef, {
+    faceMeshEnabled: faceMeshEnabled && selectedEffect !== 'none',
+    segmentationEnabled: segmentationEnabled && selectedBackground !== 'none',
+    backgroundType: currentBackground?.type,
+    backgroundValue: currentBackground?.type === 'solid' ? currentBackground.color :
+                     currentBackground?.type === 'gradient' ? { colors: currentBackground.colors, angle: currentBackground.angle } :
+                     currentBackground?.type === 'image' ? currentBackground.url :
+                     currentBackground?.type === 'blur' ? currentBackground.intensity : null,
+  });
+
+  // Start/stop MediaPipe based on effect selection
+  useEffect(() => {
+    if (mediaPipeReady && (selectedEffect !== 'none' || (segmentationEnabled && selectedBackground !== 'none'))) {
+      startMediaPipe();
+    } else {
+      stopMediaPipe();
+    }
+  }, [mediaPipeReady, selectedEffect, selectedBackground, segmentationEnabled, startMediaPipe, stopMediaPipe]);
 
   // Get current selections
   const currentFilter = PREMIUM_FILTERS.find(f => f.id === selectedFilter) || PREMIUM_FILTERS[0];
@@ -224,13 +256,23 @@ export default function PremiumLensUI({
     image: VIRTUAL_BACKGROUNDS.filter(b => b.type === 'image'),
   };
 
+  // Get video dimensions for AR overlay
+  const videoWidth = videoRef?.current?.videoWidth || 640;
+  const videoHeight = videoRef?.current?.videoHeight || 480;
+
   return (
     <>
-      {/* AR Effect Overlay */}
-      <AREffectRenderer effect={currentEffect} />
+      {/* AR Effect Overlay - Now with face mesh tracking */}
+      <AREffectOverlay 
+        effect={currentEffect}
+        faceLandmarks={faceLandmarks}
+        videoWidth={videoWidth}
+        videoHeight={videoHeight}
+        isMirrored={mirrorEnabled}
+      />
       
       {/* Background Layer */}
-      <BackgroundRenderer background={currentBackground} />
+      <BackgroundRenderer background={currentBackground} segmentationEnabled={segmentationEnabled} />
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
@@ -829,22 +871,36 @@ function AROverlayElement({ element, effectId }) {
 // BACKGROUND RENDERER
 // ============================================
 
-function BackgroundRenderer({ background }) {
-  // NOTE: Virtual backgrounds require AI-powered person segmentation to work properly.
-  // Without segmentation, backgrounds appear BEHIND the video (not replacing it).
-  // This is a UI indicator only - actual background replacement needs MediaPipe/TensorFlow.
-  
-  if (!background || background.type === 'none' || background.type === 'blur') {
+function BackgroundRenderer({ background, segmentationEnabled }) {
+  if (!background || background.type === 'none') {
     return null;
   }
 
-  // Show a subtle indicator that background is "selected" but explain limitation
+  // If segmentation is enabled, MediaPipe handles the background replacement
+  // We just show a status indicator
+  if (segmentationEnabled) {
+    return (
+      <div className="absolute bottom-4 left-4 z-30 pointer-events-none">
+        <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/70 flex items-center gap-2">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span>{background.icon}</span>
+          <span>AI Background Active</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Without segmentation, show indicator that it needs to be enabled
+  if (background.type === 'blur') {
+    return null; // Blur is applied via CSS filter
+  }
+
   return (
     <div className="absolute bottom-4 left-4 z-30 pointer-events-none">
       <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/70 flex items-center gap-2">
         <span>{background.icon}</span>
         <span>Background: {background.name}</span>
-        <span className="text-amber-400/80">(requires green screen)</span>
+        <span className="text-amber-400/80">(enable AI segmentation in settings)</span>
       </div>
     </div>
   );
