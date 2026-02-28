@@ -31,7 +31,7 @@ import {
   Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import AgoraService from '@/components/stream/AgoraService';
+import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterChat from '@/components/stream/BroadcasterChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
@@ -89,7 +89,7 @@ export default function GoLive() {
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [streamStats, setStreamStats] = useState(null);
-  const [agoraToken, setAgoraToken] = useState(null);
+  const [zegoToken, setZegoToken] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
   const [chatMessages, setChatMessages] = useState([]);
   const [activeEffect, setActiveEffect] = useState(null);
@@ -197,7 +197,7 @@ export default function GoLive() {
 
   // Monitor stream quality
   React.useEffect(() => {
-    const unsubscribe = AgoraService.onQualityChange((stats) => {
+    const unsubscribe = ZegoService.onQualityChange((stats) => {
       setStreamStats(stats);
     });
     return () => unsubscribe?.();
@@ -309,32 +309,32 @@ export default function GoLive() {
         pk_opponent_id: pkOpponent || null
       });
 
-      // Initialize Agora - App ID fetched from token response
-      const uid = Math.floor(Math.random() * 1000000);
-      console.log('[GoLive] Requesting Agora token for channel:', stream.id);
+      // Initialize Zegocloud
+      const odescription = user.email.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32);
+      console.log('[GoLive] Requesting Zego token for room:', stream.id);
       
-      const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
-        channelName: stream.id,
-        uid: uid,
+      const tokenResponse = await base44.functions.invoke('generateZegoToken', {
+        roomId: stream.id,
+        userId: odescription,
         role: 'host'
       });
       
       console.log('[GoLive] Token received:', tokenResponse.data);
       
-      const AGORA_APP_ID = tokenResponse.data?.appId || '497c36af191647579fb65a825dd22b42';
-      await AgoraService.initialize(AGORA_APP_ID);
+      const ZEGO_APP_ID = tokenResponse.data?.appId;
+      await ZegoService.initialize(ZEGO_APP_ID);
       
-      // Join the channel as host
+      // Login to room
       const token = tokenResponse.data?.token || '';
-      await AgoraService.joinChannel(token, stream.id, uid, 'host');
-      console.log('[GoLive] Joined channel as host');
+      await ZegoService.loginRoom(stream.id, odescription, user.full_name || 'Host', token);
+      console.log('[GoLive] Logged into room as host');
       
-      // Create and publish tracks
-      await AgoraService.createLocalTracks();
-      await AgoraService.publishTracks();
-      console.log('[GoLive] Tracks published successfully');
+      // Create and publish stream
+      await ZegoService.createLocalStream();
+      await ZegoService.startPublishing(stream.id);
+      console.log('[GoLive] Stream published successfully');
 
-      setAgoraToken(token);
+      setZegoToken(token);
 
       // Update creator to live status
       await base44.entities.Creator.update(creatorId, {
@@ -554,7 +554,7 @@ export default function GoLive() {
                 <div className="absolute top-20 left-4 right-4 z-10">
                   <StreamQualityMonitor 
                     stats={streamStats}
-                    onQualityChange={(quality) => AgoraService.setVideoQuality(quality)}
+                    onQualityChange={(quality) => ZegoService.setVideoQuality(quality)}
                   />
                 </div>
               )}

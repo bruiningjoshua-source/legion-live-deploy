@@ -40,7 +40,7 @@ import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import ModerationDashboard from '@/components/moderation/ModerationDashboard';
 import MultiPanelView from '@/components/stream/MultiPanelView';
 import TipButton from '@/components/stream/TipButton';
-import AgoraService from '@/components/stream/AgoraService';
+import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
@@ -469,9 +469,9 @@ export default function WatchStream() {
       }
       
       try {
-        await AgoraService.leave();
+        await ZegoService.leave();
       } catch (e) {
-        console.error('[EndStream] Agora leave error:', e);
+        console.error('[EndStream] Zego leave error:', e);
       }
 
       console.log('[EndStream] Stream ended successfully');
@@ -487,56 +487,54 @@ export default function WatchStream() {
 
   const walletBalance = wallet?.denarii_balance || 0;
 
-  // Initialize Agora for viewers
+  // Initialize Zegocloud for viewers
   React.useEffect(() => {
-    const initAgoraViewer = async () => {
+    const initZegoViewer = async () => {
       if (stream?.status === 'live' && user?.email !== creator?.user_email) {
         try {
-          console.log('[WatchStream] Initializing Agora for viewer...');
+          console.log('[WatchStream] Initializing Zegocloud for viewer...');
           
-          // Get Agora token for viewer
-          let viewerUid = Math.floor(Math.random() * 1000000);
-          const tokenResponse = await base44.functions.invoke('generateAgoraToken', {
-            channelName: streamId,
-            uid: viewerUid,
+          // Get Zego token for viewer
+          const viewerUserId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Math.floor(Math.random() * 1000000)}`;
+          const tokenResponse = await base44.functions.invoke('generateZegoToken', {
+            roomId: streamId,
+            userId: viewerUserId,
             role: 'audience'
           });
           
           console.log('[WatchStream] Token response:', tokenResponse.data);
           
-          // Use App ID from env or response
-          const AGORA_APP_ID = tokenResponse.data?.appId || '497c36af191647579fb65a825dd22b42';
-          await AgoraService.initialize(AGORA_APP_ID);
+          const ZEGO_APP_ID = tokenResponse.data?.appId;
+          await ZegoService.initialize(ZEGO_APP_ID);
           
           const token = tokenResponse.data?.token || '';
-          viewerUid = tokenResponse.data?.uid || viewerUid;
 
-          // Join channel as viewer (audience role)
-          await AgoraService.joinChannel(token, streamId, viewerUid, 'audience');
+          // Login to room as viewer
+          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', token);
 
           // Monitor stream quality
-          AgoraService.onQualityChange((stats) => {
+          ZegoService.onQualityChange((stats) => {
             setStreamStats(stats);
           });
 
-          // Get remote users after short delay
+          // Get remote streams after short delay
           setTimeout(() => {
-            setRemoteUsers(AgoraService.getRemoteUsers());
+            setRemoteUsers(ZegoService.getRemoteStreams());
           }, 1000);
           
           setLiveStream(true);
           console.log('[WatchStream] Joined stream as viewer successfully');
         } catch (error) {
-          console.error('[WatchStream] Failed to join Agora stream:', error);
+          console.error('[WatchStream] Failed to join Zegocloud stream:', error);
           setLiveStream(true); // Fallback to basic viewing
         }
       }
     };
 
-    initAgoraViewer();
+    initZegoViewer();
 
     return () => {
-      AgoraService.leave().catch(e => console.error('[WatchStream] Leave error:', e));
+      ZegoService.leave().catch(e => console.error('[WatchStream] Leave error:', e));
     };
   }, [stream?.status, streamId, user?.email, creator?.user_email]);
 
