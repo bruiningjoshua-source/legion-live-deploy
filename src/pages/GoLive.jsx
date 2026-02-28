@@ -389,13 +389,16 @@ export default function GoLive() {
       window.location.href = createPageUrl(`WatchStream?id=${stream.id}`);
     },
     onError: (error) => {
-      console.error('Go live failed:', error);
-      if (error.message.includes('sign in')) {
+      console.error('[GoLive] Go live failed:', error);
+      // Clean up any partial state
+      ZegoService.leave().catch(e => console.error('[GoLive] Cleanup failed:', e));
+      
+      if (error.message?.includes('sign in')) {
         if (window.confirm('You need to sign in to go live. Sign in now?')) {
           base44.auth.redirectToLogin(window.location.href);
         }
       } else {
-        alert(error.message);
+        alert('Failed to go live: ' + (error.message || 'Unknown error'));
       }
     }
   });
