@@ -1,17 +1,15 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion } from 'framer-motion';
 import { 
   Home, 
   Compass,
   Film,
   User,
-  Plus,
   Radio
 } from 'lucide-react';
 
-export default function BottomNav() {
+const BottomNav = memo(function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -44,70 +42,47 @@ export default function BottomNav() {
           if (item.highlight) {
             return (
               <Link key={item.key} to={item.path} className="flex items-center justify-center -mt-6">
-                <motion.div 
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative"
-                >
-                  {/* Outer glow ring */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur opacity-60" />
+                <div className="relative active:scale-95 transition-transform">
+                  {/* Outer glow */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur opacity-50" />
                   
                   {/* Main button */}
-                  <div className="relative w-16 h-16 bg-gradient-to-br from-red-500 via-rose-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-500/50 border border-red-400/40">
-                    <Icon className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 via-rose-500 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl border border-red-400/40">
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
                     
-                    {/* Live pulse indicator */}
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-black" />
+                    {/* Live indicator */}
+                    <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-green-500 border-2 border-black" />
                     </span>
                   </div>
-                </motion.div>
+                </div>
               </Link>
             );
           }
           
           return (
-            <Link key={item.key} to={item.path} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0">
-              <motion.div 
-                whileTap={{ scale: 0.9 }}
-                className="flex flex-col items-center gap-1"
-              >
-                <motion.div 
-                  className={`p-2 rounded-xl transition-all duration-300 ${
-                    isActive 
-                      ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 shadow-lg shadow-amber-500/10' 
-                      : 'hover:bg-white/5'
-                  }`}
-                  animate={isActive ? { scale: [1, 1.05, 1] } : {}}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Icon className={`w-5 h-5 transition-all duration-300 ${
-                    isActive 
-                      ? 'text-amber-400 drop-shadow-lg' 
-                      : 'text-white/40 group-hover:text-white/60'
+            <Link key={item.key} to={item.path} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0 active:scale-95 transition-transform">
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-colors ${
+                  isActive ? 'bg-amber-500/15' : ''
+                }`}>
+                  <Icon className={`w-5 h-5 transition-colors ${
+                    isActive ? 'text-amber-400' : 'text-white/40'
                   }`} />
-                </motion.div>
-                <span className={`text-[10px] font-semibold tracking-wide transition-colors duration-300 ${
+                </div>
+                <span className={`text-[9px] sm:text-[10px] font-semibold ${
                   isActive ? 'text-amber-400' : 'text-white/40'
                 }`}>
                   {item.label}
                 </span>
-                
-                {/* Active indicator dot */}
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeIndicator"
-                    className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-400"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  />
-                )}
-              </motion.div>
+              </div>
             </Link>
           );
         })}
       </div>
     </nav>
   );
-}
+});
+
+export default BottomNav;
