@@ -28,9 +28,8 @@ class ZegoStreamingService {
 
       this.appId = parseInt(appId);
       
-      // Create Zego engine with correct server URL for your region
-      // Using the default server - Zegocloud will auto-route to nearest server
-      this.engine = new ZegoExpressEngine(this.appId, 'wss://webliveroom-api.zego.im/ws');
+      // Create Zego engine - only pass appId, Zegocloud SDK handles server auto-routing
+      this.engine = new ZegoExpressEngine(this.appId);
       
       console.log('[Zego] Engine created with appId:', this.appId);
       
