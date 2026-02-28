@@ -28,12 +28,15 @@ class ZegoStreamingService {
 
       this.appId = parseInt(appId);
       
-      // Create Zego engine
+      // Create Zego engine with correct server URL for your region
+      // Using the default server - Zegocloud will auto-route to nearest server
       this.engine = new ZegoExpressEngine(this.appId, 'wss://webliveroom-api.zego.im/ws');
+      
+      console.log('[Zego] Engine created with appId:', this.appId);
       
       // Set up event handlers
       this.engine.on('roomStateUpdate', (roomID, state, errorCode, extendedData) => {
-        console.log(`[Zego] Room state: ${state}, error: ${errorCode}`);
+        console.log(`[Zego] Room state: ${state}, error: ${errorCode}`, extendedData);
       });
 
       this.engine.on('roomStreamUpdate', async (roomID, updateType, streamList) => {
@@ -86,12 +89,15 @@ class ZegoStreamingService {
       this.roomId = roomId;
       this.userId = userId;
 
+      console.log('[Zego] Attempting login - roomId:', roomId, 'userId:', userId, 'token length:', token?.length);
+
+      // Login to room with token
       const result = await this.engine.loginRoom(roomId, token, {
         userID: userId,
         userName: userName || userId
       }, { userUpdate: true });
 
-      console.log(`[Zego] Logged into room ${roomId} as ${userId}`);
+      console.log(`[Zego] Logged into room ${roomId} as ${userId}`, result);
       return result;
     } catch (error) {
       console.error('[Zego] Login failed:', error);
@@ -103,23 +109,22 @@ class ZegoStreamingService {
     try {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
-      const constraints = {
-        camera: {
-          video: true,
-          audio: true,
-          videoQuality: isMobile ? 2 : 3, // 2 = 480p, 3 = 720p, 4 = 1080p
-          width: isMobile ? 540 : 720,
-          height: isMobile ? 960 : 1280,
-          bitrate: isMobile ? 800 : 1500,
-          frameRate: isMobile ? 24 : 30,
-          facingMode: 'user',
-          ...videoConfig
-        }
-      };
+      console.log('[Zego] Creating local stream, isMobile:', isMobile);
 
-      this.localStream = await this.engine.createStream(constraints);
-      console.log('[Zego] Local stream created');
+      // Use simpler constraints that work across browsers
+      this.localStream = await this.engine.createStream({
+        camera: {
+          video: {
+            width: isMobile ? 480 : 720,
+            height: isMobile ? 854 : 1280,
+            frameRate: isMobile ? 24 : 30,
+            bitRate: isMobile ? 600 : 1200
+          },
+          audio: true
+        }
+      });
       
+      console.log('[Zego] Local stream created successfully');
       return this.localStream;
     } catch (error) {
       console.error('[Zego] Failed to create local stream:', error);
