@@ -311,28 +311,57 @@ export default function GoLive() {
 
       // Initialize Zegocloud
       const odescription = user.email.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32);
-      console.log('[GoLive] Requesting Zego token for room:', stream.id);
+      console.log('[GoLive] Requesting Zego token for room:', stream.id, 'userId:', odescription);
       
-      const tokenResponse = await base44.functions.invoke('generateZegoToken', {
-        roomId: stream.id,
-        userId: odescription,
-        role: 'host'
-      });
-      
-      console.log('[GoLive] Token received:', tokenResponse.data);
+      let tokenResponse;
+      try {
+        tokenResponse = await base44.functions.invoke('generateZegoToken', {
+          roomId: stream.id,
+          userId: odescription,
+          role: 'host'
+        });
+        console.log('[GoLive] Token response:', tokenResponse);
+      } catch (tokenError) {
+        console.error('[GoLive] Token request failed:', tokenError);
+        throw new Error('Failed to get streaming token: ' + tokenError.message);
+      }
       
       const ZEGO_APP_ID = tokenResponse.data?.appId;
-      await ZegoService.initialize(ZEGO_APP_ID);
+      const token = tokenResponse.data?.token;
+      
+      if (!ZEGO_APP_ID || !token) {
+        console.error('[GoLive] Invalid token response:', tokenResponse.data);
+        throw new Error('Invalid token response from server');
+      }
+      
+      console.log('[GoLive] Initializing Zego with appId:', ZEGO_APP_ID);
+      
+      try {
+        await ZegoService.initialize(ZEGO_APP_ID);
+        console.log('[GoLive] Zego initialized');
+      } catch (initError) {
+        console.error('[GoLive] Zego init failed:', initError);
+        throw new Error('Failed to initialize streaming: ' + initError.message);
+      }
       
       // Login to room
-      const token = tokenResponse.data?.token || '';
-      await ZegoService.loginRoom(stream.id, odescription, user.full_name || 'Host', token);
-      console.log('[GoLive] Logged into room as host');
+      try {
+        await ZegoService.loginRoom(stream.id, odescription, user.full_name || 'Host', token);
+        console.log('[GoLive] Logged into room as host');
+      } catch (loginError) {
+        console.error('[GoLive] Room login failed:', loginError);
+        throw new Error('Failed to join room: ' + loginError.message);
+      }
       
       // Create and publish stream
-      await ZegoService.createLocalStream();
-      await ZegoService.startPublishing(stream.id);
-      console.log('[GoLive] Stream published successfully');
+      try {
+        await ZegoService.createLocalStream();
+        await ZegoService.startPublishing(stream.id);
+        console.log('[GoLive] Stream published successfully');
+      } catch (publishError) {
+        console.error('[GoLive] Stream publish failed:', publishError);
+        throw new Error('Failed to start broadcasting: ' + publishError.message);
+      }
 
       setZegoToken(token);
 
