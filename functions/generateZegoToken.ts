@@ -1,98 +1,98 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createHmac } from "node:crypto";
+import { randomBytes, createCipheriv } from "node:crypto";
 
-// Zegocloud token generation - Token04 format
-// Reference: https://docs.zegocloud.com/article/7646
+// Zegocloud token generation - Token04 format with AES-256-GCM
+// Based on official Zegocloud implementation: https://github.com/zegoim/zego_server_assistant
 
-function makeRandomIv() {
-  const str = '0123456789abcdefghijklmnopqrstuvwxyz';
-  const result = [];
-  for (let i = 0; i < 16; i++) {
-    const r = Math.floor(Math.random() * str.length);
-    result.push(str.charAt(r));
+function makeNonce() {
+  // Generate int32 range random number
+  const min = -Math.pow(2, 31);
+  const max = Math.pow(2, 31) - 1;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function aesGcmEncrypt(plainText, key) {
+  // Key must be 32 bytes for AES-256
+  if (key.length !== 32) {
+    throw new Error('Secret must be exactly 32 bytes');
   }
-  return result.join('');
+  
+  // Random 12-byte nonce for GCM
+  const nonce = randomBytes(12);
+  
+  // Create cipher with AES-256-GCM
+  const cipher = createCipheriv('aes-256-gcm', Buffer.from(key, 'utf8'), nonce);
+  cipher.setAutoPadding(true);
+  
+  // Encrypt
+  const encrypted = cipher.update(plainText, 'utf8');
+  const final = cipher.final();
+  const authTag = cipher.getAuthTag();
+  
+  // Combine encrypted data with auth tag
+  const encryptBuf = Buffer.concat([encrypted, final, authTag]);
+  
+  return { encryptBuf, nonce };
 }
 
-function getAlgorithmKey(serverSecret) {
-  // Use first 16 bytes of secret as key
-  return serverSecret.substring(0, 16);
-}
-
-async function aesEncrypt(plainText, key, iv) {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(key);
-  const ivData = encoder.encode(iv);
-  const plainData = encoder.encode(plainText);
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-CBC' },
-    false,
-    ['encrypt']
-  );
-  
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-CBC', iv: ivData },
-    cryptoKey,
-    plainData
-  );
-  
-  return new Uint8Array(encrypted);
-}
-
-async function generateToken04(appId, userId, serverSecret, effectiveTimeInSeconds, payload) {
+function generateToken04(appId, userId, secret, effectiveTimeInSeconds, payload) {
   if (!appId || typeof appId !== 'number') {
     throw new Error('appId must be a number');
   }
-  if (!userId || typeof userId !== 'string') {
-    throw new Error('userId must be a string');
+  if (!userId || typeof userId !== 'string' || userId.length > 64) {
+    throw new Error('userId must be a string with max 64 characters');
   }
-  if (!serverSecret || typeof serverSecret !== 'string' || serverSecret.length !== 32) {
-    throw new Error('serverSecret must be a 32 character string');
+  if (!secret || typeof secret !== 'string' || secret.length !== 32) {
+    throw new Error('secret must be a 32 byte string');
+  }
+  if (!(effectiveTimeInSeconds > 0)) {
+    throw new Error('effectiveTimeInSeconds must be positive');
   }
   
+  const VERSION_FLAG = '04';
   const createTime = Math.floor(Date.now() / 1000);
-  const expireTime = createTime + effectiveTimeInSeconds;
-  const nonce = Math.floor(Math.random() * 2147483647);
   
   const tokenInfo = {
     app_id: appId,
     user_id: userId,
-    nonce: nonce,
+    nonce: makeNonce(),
     ctime: createTime,
-    expire: expireTime,
+    expire: createTime + effectiveTimeInSeconds,
     payload: payload || ''
   };
   
   const plainText = JSON.stringify(tokenInfo);
-  const iv = makeRandomIv();
-  const key = getAlgorithmKey(serverSecret);
+  console.log('[ZegoToken] Token info:', plainText);
   
-  const encryptedBuf = await aesEncrypt(plainText, key, iv);
+  // Encrypt with AES-256-GCM
+  const { encryptBuf, nonce } = aesGcmEncrypt(plainText, secret);
   
-  // Combine: expireTime(8) + ivLength(2) + iv(16) + encryptedLength(2) + encrypted
-  const ivBytes = new TextEncoder().encode(iv);
-  const resultLen = 8 + 2 + ivBytes.length + 2 + encryptedBuf.length;
-  const result = new Uint8Array(resultLen);
+  // Build token binary:
+  // expireTime (8 bytes) + nonceLength (2 bytes) + nonce (12 bytes) + 
+  // encryptLength (2 bytes) + encrypted data + mode (1 byte)
   
-  // Write expire time (big-endian, 8 bytes for larger numbers but only using 4)
-  const view = new DataView(result.buffer);
-  view.setUint32(0, 0);
-  view.setUint32(4, expireTime);
+  const b1 = Buffer.alloc(8); // expire time
+  const b2 = Buffer.alloc(2); // nonce length
+  const b3 = Buffer.alloc(2); // encrypt length
+  const b4 = Buffer.alloc(1); // encryption mode (1 = GCM)
   
-  // Write IV length and IV
-  view.setUint16(8, ivBytes.length);
-  result.set(ivBytes, 10);
+  // Write expire time as BigInt64BE
+  b1.writeBigInt64BE(BigInt(tokenInfo.expire), 0);
   
-  // Write encrypted length and encrypted data
-  view.setUint16(10 + ivBytes.length, encryptedBuf.length);
-  result.set(encryptedBuf, 12 + ivBytes.length);
+  // Write nonce length
+  b2.writeUInt16BE(nonce.length, 0);
   
-  // Base64 encode and add version prefix
-  const base64 = btoa(String.fromCharCode(...result));
-  return '04' + base64;
+  // Write encrypted data length
+  b3.writeUInt16BE(encryptBuf.length, 0);
+  
+  // Write encryption mode (1 = GCM)
+  b4.writeUInt8(1, 0);
+  
+  // Combine all parts
+  const buf = Buffer.concat([b1, b2, nonce, b3, encryptBuf, b4]);
+  
+  // Return version + base64
+  return VERSION_FLAG + buf.toString('base64');
 }
 
 Deno.serve(async (req) => {
