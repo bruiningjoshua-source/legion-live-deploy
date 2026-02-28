@@ -4,91 +4,80 @@ import { motion } from 'framer-motion';
 import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2 } from 'lucide-react';
 import GlassCard from '@/components/shared/GlassCard';
 
-// Denarii Crypto Trajectory: Current baseline $0.001/Denarii, targeting $0.01 in 6 months
-// Early adopters get maximum value before crypto launch
-const CURRENT_DENARII_VALUE_USD = 0.001; // Will increase to $0.01 at crypto launch
+// Currency ratio: 200 coins per $1 USD
+const COINS_PER_DOLLAR = 200;
 
 const packages = [
   {
     id: 'starter',
     name: 'Recruit\'s Pouch',
-    denarii: 2000,
-    bonus: 500,
+    denarii: 200,        // $0.99 × 200 = 198, rounded to 200
+    bonus: 50,
     bonusPercent: 25,
     price: 0.99,
     icon: '🪙',
     popular: false,
     color: 'from-stone-600 to-stone-700',
     border: 'border-stone-500',
-    usdPerDenarii: 0.000396,
-    value: 'Early adopter rate',
-    futureValue: '$25 at crypto launch'
+    value: 'Starter pack'
   },
   {
     id: 'basic',
     name: 'Soldier\'s Chest',
-    denarii: 12000,
-    bonus: 3000,
+    denarii: 1000,       // $4.99 × 200 = 998, rounded to 1000
+    bonus: 250,
     bonusPercent: 25,
     price: 4.99,
     icon: '💰',
     popular: false,
     color: 'from-green-700 to-green-800',
     border: 'border-green-500',
-    usdPerDenarii: 0.000333,
-    value: 'Great starter',
-    futureValue: '$150 at crypto launch'
+    value: 'Great starter'
   },
   {
     id: 'popular',
     name: 'Centurion\'s Treasury',
-    denarii: 30000,
-    bonus: 10000,
+    denarii: 2000,       // $9.99 × 200 = 1998, rounded to 2000
+    bonus: 660,
     bonusPercent: 33,
     price: 9.99,
     icon: '⚔️',
     popular: true,
     color: 'from-amber-600 to-amber-700',
     border: 'border-amber-400',
-    usdPerDenarii: 0.00025,
-    value: '33% bonus + best value',
-    futureValue: '$400 at crypto launch'
+    value: '33% bonus + best value'
   },
   {
     id: 'premium',
     name: 'Praetor\'s Vault',
-    denarii: 80000,
-    bonus: 30000,
+    denarii: 5000,       // $24.99 × 200 = 4998, rounded to 5000
+    bonus: 1850,
     bonusPercent: 37,
     price: 24.99,
     icon: '🏛️',
     popular: false,
     color: 'from-purple-700 to-purple-800',
     border: 'border-purple-500',
-    usdPerDenarii: 0.000227,
-    value: '37% bonus savings',
-    futureValue: '$1,100 at crypto launch'
+    value: '37% bonus savings'
   },
   {
     id: 'elite',
     name: 'Senator\'s Fortune',
-    denarii: 200000,
-    bonus: 80000,
+    denarii: 10000,      // $49.99 × 200 = 9998, rounded to 10000
+    bonus: 4000,
     bonusPercent: 40,
     price: 49.99,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-700',
     border: 'border-rose-400',
-    usdPerDenarii: 0.000178,
-    value: '40% bonus + VIP status',
-    futureValue: '$2,800 at crypto launch'
+    value: '40% bonus + VIP status'
   },
   {
     id: 'ultimate',
     name: 'Emperor\'s Legacy',
-    denarii: 500000,
-    bonus: 250000,
+    denarii: 20000,      // $99.99 × 200 = 19998, rounded to 20000
+    bonus: 10000,
     bonusPercent: 50,
     price: 99.99,
     icon: '✨',
@@ -96,9 +85,7 @@ const packages = [
     color: 'from-amber-500 via-rose-500 to-purple-600',
     border: 'border-amber-300',
     premium: true,
-    usdPerDenarii: 0.000133,
-    value: '50% LEGENDARY bonus',
-    futureValue: '$7,500 at crypto launch'
+    value: '50% LEGENDARY bonus'
   }
 ];
 
@@ -128,39 +115,12 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </div>
       </GlassCard>
 
-      {/* Crypto Launch Notice */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 via-purple-500/30 to-pink-500/30 animate-pulse" />
-        <div className="relative bg-black/40 backdrop-blur-sm border border-amber-500/40 rounded-2xl p-5">
-          <p className="text-white font-bold text-center">
-            🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-purple-200">CRYPTO LAUNCH IN 6 MONTHS</span>
-          </p>
-          <p className="text-white/60 text-center text-sm mt-2">
-            Denarii converting to blockchain token at <span className="text-green-400 font-bold">10x</span> current value!
-          </p>
-          <div className="flex items-center justify-center gap-3 mt-3 text-xs">
-            <span className="px-3 py-1 rounded-full bg-white/10 text-white/70">Current: $0.001</span>
-            <span className="text-amber-400">→</span>
-            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/30 to-purple-500/30 text-amber-200 font-bold">Launch: $0.01</span>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Currency Exchange Info */}
       <div className="flex flex-col items-center justify-center gap-3 text-sm">
         <div className="flex items-center gap-4 bg-white/5 rounded-full px-6 py-2">
           <div className="flex items-center gap-2 text-white/80">
             <span className="text-lg">🪙</span>
-            <span>1 Denarii = 100 As</span>
-          </div>
-          <div className="w-px h-4 bg-white/20" />
-          <div className="flex items-center gap-2 text-white/80">
-            <span className="text-lg">🥈</span>
-            <span>1 Sestertius = 4 As</span>
+            <span>200 Denarii = $1 USD</span>
           </div>
         </div>
         <p className="text-white/40 text-xs">Buy more, save more • Larger packages = better value</p>
@@ -234,16 +194,13 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
                         +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
                       </motion.div>
                       <p className="text-xs text-green-200/90 font-semibold">{pkg.value}</p>
-                      {pkg.futureValue && (
-                        <p className="text-xs text-purple-200/80">📈 {pkg.futureValue}</p>
-                      )}
                     </div>
                   )}
                 </div>
 
-                {/* Value per denarii */}
+                {/* Total value */}
                 <p className="text-white/40 text-xs text-center mb-4">
-                  ${(pkg.usdPerDenarii * 100).toFixed(3)}/100 Denarii
+                  Total: {(pkg.denarii + pkg.bonus).toLocaleString()} Denarii
                 </p>
 
                 {/* Price Button */}
