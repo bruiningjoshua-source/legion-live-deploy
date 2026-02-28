@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { randomBytes, createCipheriv } from "node:crypto";
+import { Buffer } from "node:buffer";
 
 // Zegocloud token generation - Token04 format with AES-256-GCM
 // Based on official Zegocloud implementation: https://github.com/zegoim/zego_server_assistant
