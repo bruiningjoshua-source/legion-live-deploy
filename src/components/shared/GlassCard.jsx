@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 
-export default function GlassCard({ 
+const GlassCard = memo(function GlassCard({ 
   children, 
   className = '',
   hover = true,
@@ -49,12 +49,12 @@ export default function GlassCard({
   if (animate) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ 
-          duration: 0.5, 
-          delay,
-          ease: [0.25, 0.46, 0.45, 0.94]
+          duration: 0.35, 
+          delay: Math.min(delay, 0.3), // Cap delay for faster perceived loading
+          ease: 'easeOut'
         }}
         className={cardClasses}
         {...props}
@@ -69,4 +69,6 @@ export default function GlassCard({
       {children}
     </div>
   );
-}
+});
+
+export default GlassCard;

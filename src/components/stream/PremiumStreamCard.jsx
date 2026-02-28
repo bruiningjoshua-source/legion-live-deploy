@@ -8,26 +8,25 @@ import ViewerCount from '@/components/shared/ViewerCount';
 import AvatarWithStatus from '@/components/shared/AvatarWithStatus';
 import { cn } from "@/lib/utils";
 
-const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, index = 0 }) {
-  const streamTypes = {
-    solo: { badge: 'live', glow: 'shadow-red-500/30' },
-    multi_panel: { badge: 'panel', glow: 'shadow-purple-500/30' },
-    pk_battle: { badge: 'pk', glow: 'shadow-orange-500/30' }
-  };
+const STREAM_TYPES = {
+  solo: { badge: 'live', glow: 'shadow-red-500/30' },
+  multi_panel: { badge: 'panel', glow: 'shadow-purple-500/30' },
+  pk_battle: { badge: 'pk', glow: 'shadow-orange-500/30' }
+};
 
-  const config = streamTypes[stream.stream_type] || streamTypes.solo;
+const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, index = 0 }) {
+  const config = STREAM_TYPES[stream.stream_type] || STREAM_TYPES.solo;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.4, 
-        delay: index * 0.05,
-        ease: [0.25, 0.46, 0.45, 0.94]
+        duration: 0.3, 
+        delay: Math.min(index * 0.03, 0.2), // Cap delay
+        ease: 'easeOut'
       }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      className="group"
+      className="group hover:-translate-y-1 hover:scale-[1.02] transition-transform duration-200"
     >
       <Link to={createPageUrl(`WatchStream?id=${stream.id}`)}>
         <div className={cn(
