@@ -101,7 +101,10 @@ export default function Layout({ children, currentPageName }) {
     retry: 1
   });
 
+  // Disable heavy animations on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const needsAnimatedBg = !['GoLive', 'WatchStream'].includes(currentPageName);
+  const optimizedParticles = isMobile ? 'low' : particleIntensity;
 
   const globalStyles = `
     :root {
@@ -200,8 +203,8 @@ export default function Layout({ children, currentPageName }) {
             {needsAnimatedBg ? (
               <AnimatedBackground 
                 theme={currentTheme} 
-                intensity={particleIntensity}
-                showParticles={particleIntensity !== 'off'}
+                intensity={optimizedParticles}
+                showParticles={optimizedParticles !== 'off'}
               >
                 <div className="min-h-screen">
                   <div className="fixed bottom-24 right-4 z-40">
