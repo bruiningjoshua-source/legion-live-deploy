@@ -5,7 +5,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -13,11 +13,14 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught:', error?.message, error?.stack, errorInfo?.componentStack);
+    console.error('ErrorBoundary caught:', error?.message, error?.stack);
+    this.setState({ errorInfo });
   }
 
   render() {
     if (this.state.hasError) {
+      const errorMessage = this.state.error?.message || 'Unknown error';
+      
       return (
         <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
@@ -25,8 +28,11 @@ class ErrorBoundary extends React.Component {
               <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
             <h2 className="text-2xl font-bold text-amber-100 mb-2">Something went wrong</h2>
-            <p className="text-amber-400/70 mb-6">
+            <p className="text-amber-400/70 mb-4">
               We encountered an unexpected error. Please try refreshing the page.
+            </p>
+            <p className="text-red-400/60 text-xs mb-6 bg-red-900/20 p-2 rounded break-all">
+              {errorMessage}
             </p>
             <Button
               onClick={() => window.location.reload()}
