@@ -28,12 +28,10 @@ class ZegoStreamingService {
 
       this.appId = parseInt(appId);
       
-      // Create Zego engine with correct server URL format
-      // Server format: wss://webliveroom{appId}-api.zegocloud.com/ws
-      const server = `wss://webliveroom${this.appId}-api.zegocloud.com/ws`;
-      this.engine = new ZegoExpressEngine(this.appId, server);
+      // Create Zego engine - pass appId only, SDK handles server automatically
+      this.engine = new ZegoExpressEngine(this.appId);
       
-      console.log('[Zego] Engine created with appId:', this.appId, 'server:', server);
+      console.log('[Zego] Engine created with appId:', this.appId);
       
       // Set up event handlers
       this.engine.on('roomStateUpdate', (roomID, state, errorCode, extendedData) => {
