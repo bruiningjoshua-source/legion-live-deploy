@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 
 const PRESET_THEMES = {
@@ -34,7 +34,7 @@ const PRESET_THEMES = {
   }
 };
 
-export default function AnimatedBackground({ 
+const AnimatedBackground = memo(function AnimatedBackground({ 
   theme = 'roman', 
   intensity = 'medium',
   showParticles = true,
@@ -42,19 +42,28 @@ export default function AnimatedBackground({
   className = ''
 }) {
   const canvasRef = useRef(null);
-  const currentTheme = PRESET_THEMES[theme] || PRESET_THEMES.roman;
+  const animationRef = useRef(null);
+  const currentTheme = useMemo(() => PRESET_THEMES[theme] || PRESET_THEMES.roman, [theme]);
   
-  const particleCount = intensity === 'low' ? 15 : intensity === 'high' ? 40 : 25;
+  // Reduced particle count for better mobile performance
+  const particleCount = useMemo(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (intensity === 'off' || !showParticles) return 0;
+    if (isMobile) return intensity === 'low' ? 8 : intensity === 'high' ? 18 : 12;
+    return intensity === 'low' ? 15 : intensity === 'high' ? 35 : 22;
+  }, [intensity, showParticles]);
 
   useEffect(() => {
-    if (!showParticles) return;
+    if (!showParticles || particleCount === 0) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const ctx = canvas.getContext('2d');
-    let animationId;
+    const ctx = canvas.getContext('2d', { alpha: true });
     let particles = [];
+    let lastTime = 0;
+    const targetFPS = 30; // Cap FPS for performance
+    const frameInterval = 1000 / targetFPS;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -106,26 +115,38 @@ export default function AnimatedBackground({
       }
     };
 
-    const animate = () => {
+    const animate = (currentTime) => {
+      animationRef.current = requestAnimationFrame(animate);
+      
+      // Throttle to target FPS
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime < frameInterval) return;
+      lastTime = currentTime - (deltaTime % frameInterval);
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-      
-      animationId = requestAnimationFrame(animate);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
     };
 
     resize();
     init();
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
-    window.addEventListener('resize', resize);
+    // Debounced resize handler
+    let resizeTimeout;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resize, 150);
+    };
+    window.addEventListener('resize', debouncedResize);
     
     return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', debouncedResize);
     };
   }, [theme, particleCount, showParticles, currentTheme.colors]);
 
@@ -134,36 +155,30 @@ export default function AnimatedBackground({
       {/* Base gradient */}
       <div className={`fixed inset-0 bg-gradient-to-b ${currentTheme.gradient} -z-20`} />
       
-      {/* Animated mesh gradient */}
+      {/* Optimized CSS-based gradient animation */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full blur-[120px] opacity-20"
-          style={{ background: currentTheme.colors[0] }}
-          animate={{
-            x: ['-10%', '60%', '-10%'],
-            y: ['-20%', '40%', '-20%'],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        <div 
+          className="absolute w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] rounded-full blur-[80px] opacity-15 animate-blob-1"
+          style={{ background: currentTheme.colors[0], willChange: 'transform' }}
         />
-        <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-15"
-          style={{ background: currentTheme.colors[1] }}
-          animate={{
-            x: ['80%', '20%', '80%'],
-            y: ['60%', '10%', '60%'],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+        <div 
+          className="absolute w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] rounded-full blur-[60px] opacity-12 animate-blob-2"
+          style={{ background: currentTheme.colors[1], willChange: 'transform' }}
         />
-        <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full blur-[80px] opacity-10"
-          style={{ background: currentTheme.colors[2] }}
-          animate={{
-            x: ['30%', '70%', '30%'],
-            y: ['80%', '30%', '80%'],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        <div 
+          className="absolute w-[35vw] h-[35vw] max-w-[300px] max-h-[300px] rounded-full blur-[50px] opacity-10 animate-blob-3"
+          style={{ background: currentTheme.colors[2], willChange: 'transform' }}
         />
       </div>
+      
+      <style>{`
+        @keyframes blob1 { 0%, 100% { transform: translate(10%, 10%); } 50% { transform: translate(60%, 40%); } }
+        @keyframes blob2 { 0%, 100% { transform: translate(70%, 60%); } 50% { transform: translate(20%, 20%); } }
+        @keyframes blob3 { 0%, 100% { transform: translate(30%, 70%); } 50% { transform: translate(60%, 30%); } }
+        .animate-blob-1 { animation: blob1 25s ease-in-out infinite; }
+        .animate-blob-2 { animation: blob2 30s ease-in-out infinite; }
+        .animate-blob-3 { animation: blob3 22s ease-in-out infinite; }
+      `}</style>
       
       {/* Particle canvas */}
       {showParticles && (
@@ -180,4 +195,6 @@ export default function AnimatedBackground({
       </div>
     </div>
   );
-}
+});
+
+export default AnimatedBackground;
