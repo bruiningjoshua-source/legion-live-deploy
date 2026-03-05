@@ -1,18 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, Wifi, Signal, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, Wifi, Signal, Zap, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+/**
+ * StreamQualityMonitor — displays live stats from ZegoService
+ * stats shape: { videoBitrate, audioBitrate, videoResolution, networkQuality, latency, packetLoss, fps, rtt }
+ */
 export default function StreamQualityMonitor({ stats, onQualityChange }) {
-  const [quality, setQuality] = useState('720p');
+  const [quality, setQuality] = useState(stats?.videoResolution || '720p');
 
-  const getNetworkColor = (quality) => {
-    const levels = { 1: 'text-red-500', 2: 'text-orange-500', 3: 'text-yellow-500', 4: 'text-amber-400', 5: 'text-green-500', 6: 'text-green-400' };
-    return levels[quality] || 'text-green-400';
+  if (!stats) return null;
+
+  const QUALITY_MAP = {
+    excellent: { label: 'Excellent', color: 'text-green-400', bars: 3 },
+    good:      { label: 'Good',      color: 'text-blue-400',  bars: 3 },
+    fair:      { label: 'Fair',      color: 'text-amber-400', bars: 2 },
+    poor:      { label: 'Poor',      color: 'text-red-400',   bars: 1 },
   };
 
-  const getSignalBars = (quality) => {
-    return Math.min(Math.ceil(quality / 2), 3);
-  };
+  const nq = QUALITY_MAP[stats.networkQuality] || QUALITY_MAP.good;
 
   return (
     <motion.div
@@ -23,20 +29,24 @@ export default function StreamQualityMonitor({ stats, onQualityChange }) {
       {/* Network Quality */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wifi className={`w-4 h-4 ${getNetworkColor(stats.networkQuality)}`} />
+          <Wifi className={`w-4 h-4 ${nq.color}`} />
           <span className="text-amber-200 text-sm font-semibold">Network</span>
         </div>
-        <div className="flex gap-1">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className={`w-1 h-3 rounded-sm transition-colors ${
-                i < getSignalBars(stats.networkQuality)
-                  ? getNetworkColor(stats.networkQuality).replace('text-', 'bg-')
-                  : 'bg-stone-700'
-              }`}
-            />
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-0.5 items-end">
+            {[1, 2, 3].map(i => (
+              <div
+                key={i}
+                className={`w-1 rounded-sm transition-colors ${
+                  i <= nq.bars
+                    ? nq.color.replace('text-', 'bg-')
+                    : 'bg-stone-700'
+                }`}
+                style={{ height: `${8 + i * 3}px` }}
+              />
+            ))}
+          </div>
+          <span className={`text-xs font-medium ${nq.color}`}>{nq.label}</span>
         </div>
       </div>
 
@@ -46,7 +56,7 @@ export default function StreamQualityMonitor({ stats, onQualityChange }) {
           <Zap className="w-3 h-3" />
           Video Bitrate
         </div>
-        <span className="text-amber-100 font-mono">{Math.round(stats.videoBitrate / 1000)}kbps</span>
+        <span className="text-amber-100 font-mono">{stats.videoBitrate || 0} kbps</span>
       </div>
 
       {/* Audio Bitrate */}
@@ -55,23 +65,38 @@ export default function StreamQualityMonitor({ stats, onQualityChange }) {
           <Signal className="w-3 h-3" />
           Audio Bitrate
         </div>
-        <span className="text-amber-100 font-mono">{Math.round(stats.audioBitrate / 1000)}kbps</span>
+        <span className="text-amber-100 font-mono">{stats.audioBitrate || 0} kbps</span>
       </div>
 
-      {/* Resolution */}
+      {/* FPS */}
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2 text-amber-300">
           <Activity className="w-3 h-3" />
-          Resolution
+          FPS
         </div>
-        <span className="text-amber-100 font-mono">{stats.videoResolution}</span>
+        <span className="text-amber-100 font-mono">{stats.fps || 0}</span>
       </div>
 
       {/* Latency */}
       <div className="flex items-center justify-between text-xs">
-        <span className="text-amber-300">Latency</span>
-        <span className="text-amber-100 font-mono">{stats.latency}ms</span>
+        <div className="flex items-center gap-2 text-amber-300">
+          <Clock className="w-3 h-3" />
+          Latency
+        </div>
+        <span className={`font-mono ${stats.latency > 200 ? 'text-red-400' : stats.latency > 100 ? 'text-amber-400' : 'text-amber-100'}`}>
+          {stats.latency || 0} ms
+        </span>
       </div>
+
+      {/* Packet Loss */}
+      {stats.packetLoss > 0 && (
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-amber-300">Packet Loss</span>
+          <span className={`font-mono ${stats.packetLoss > 5 ? 'text-red-400' : 'text-amber-100'}`}>
+            {(stats.packetLoss || 0).toFixed(1)}%
+          </span>
+        </div>
+      )}
 
       {/* Quality Selector */}
       <div className="pt-2 border-t border-amber-600/20">
