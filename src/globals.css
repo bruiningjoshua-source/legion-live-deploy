@@ -273,3 +273,32 @@ video::-webkit-media-controls {
 .animate-glow {
   animation: glow-pulse 2s ease-in-out infinite;
 }
+
+/* ── Theme CSS Variables (moved from Layout.js inline <style>) ── */
+:root {
+  --background: 15 15 18;
+  --foreground: 245 245 250;
+  --card: 22 22 28;
+  --card-foreground: 245 245 250;
+  --popover: 22 22 28;
+  --popover-foreground: 245 245 250;
+  --primary: 217 119 6;
+  --primary-foreground: 255 255 255;
+  --secondary: 35 35 42;
+  --secondary-foreground: 245 245 250;
+  --muted: 35 35 42;
+  --muted-foreground: 140 140 150;
+  --accent: 35 35 42;
+  --accent-foreground: 245 245 250;
+  --destructive: 220 38 38;
+  --destructive-foreground: 255 255 255;
+  --border: 45 45 55;
+  --input: 35 35 42;
+  --ring: 217 119 6;
+  --radius: 0.75rem;
+}
+
+body {
+  background: transparent;
+  color: #f5f5fa;
+}

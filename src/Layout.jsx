@@ -106,39 +106,7 @@ export default function Layout({ children, currentPageName }) {
   const needsAnimatedBg = !['GoLive', 'WatchStream'].includes(currentPageName);
   const optimizedParticles = isMobile ? 'low' : particleIntensity;
 
-  const globalStyles = `
-    :root {
-      --background: 15 15 18;
-      --foreground: 245 245 250;
-      --card: 22 22 28;
-      --card-foreground: 245 245 250;
-      --popover: 22 22 28;
-      --popover-foreground: 245 245 250;
-      --primary: 217 119 6;
-      --primary-foreground: 255 255 255;
-      --secondary: 35 35 42;
-      --secondary-foreground: 245 245 250;
-      --muted: 35 35 42;
-      --muted-foreground: 140 140 150;
-      --accent: 35 35 42;
-      --accent-foreground: 245 245 250;
-      --destructive: 220 38 38;
-      --destructive-foreground: 255 255 255;
-      --border: 45 45 55;
-      --input: 35 35 42;
-      --ring: 217 119 6;
-      --radius: 0.75rem;
-    }
-    body { background: transparent; color: #f5f5fa; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #16161c; }
-    ::-webkit-scrollbar-thumb { background: #3a3a48; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4a4a58; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); } 50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.35); } }
-    .animate-float { animation: float 3s ease-in-out infinite; }
-    .animate-glow { animation: glow 2s ease-in-out infinite; }
-  `;
+  // CSS variables and animations are now in globals.css
 
   const handleTutorialComplete = () => {
     localStorage.setItem('legion_tutorial_completed', 'true');
@@ -165,7 +133,7 @@ export default function Layout({ children, currentPageName }) {
         />
       )}
       
-      <style>{globalStyles}</style>
+      {/* Theme variables are now in globals.css */}
       
       <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       
