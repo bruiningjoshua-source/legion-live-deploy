@@ -30,6 +30,9 @@ export default function Layout({ children, currentPageName }) {
   const [particleIntensity, setParticleIntensity] = useState(() => localStorage.getItem('legion_particles') || 'medium');
   const [animatedBg, setAnimatedBg] = useState(() => localStorage.getItem('legion_animated_bg') !== 'false');
 
+  // Preserve scroll positions across navigation for native-like back stack
+  useScrollPreservation();
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
