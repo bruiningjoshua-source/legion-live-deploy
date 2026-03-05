@@ -28,8 +28,8 @@ class ZegoStreamingService {
 
       this.appId = parseInt(appId);
       
-      // Create Zego engine - pass appId only, SDK handles server automatically
-      this.engine = new ZegoExpressEngine(this.appId);
+      // Create Zego engine with explicit server URLs
+      this.engine = new ZegoExpressEngine(this.appId, 'wss://webliveroom773960930-api.coolzcloud.com/ws');
       
       console.log('[Zego] Engine created with appId:', this.appId);
       
