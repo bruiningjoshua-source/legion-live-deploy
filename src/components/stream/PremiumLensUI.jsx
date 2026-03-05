@@ -761,7 +761,7 @@ function AREffectRenderer({ effect }) {
   // Get particle config if effect has particles
   const particleConfig = effect?.elements?.find(e => e.type === 'particles');
   const particleType = particleConfig?.effect;
-  const particleData = particleType ? PARTICLE_EFFECTS[particleType] : null;
+  const particleData = null; // Particle effects not loaded in simplified mode
 
   // Animate particles
   useEffect(() => {
