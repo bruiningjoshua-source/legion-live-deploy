@@ -1,46 +1,59 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
-// Stores scroll positions per route path
-const scrollPositions = new Map();
+// Shared scroll position map — exported so BottomNav can also use it
+export const scrollPositions = new Map();
+
+// Bottom tab root paths for independent stack detection
+const BOTTOM_TAB_ROOTS = [
+  createPageUrl('Home'),
+  createPageUrl('Explore'),
+  createPageUrl('GoLive'),
+  createPageUrl('TheAmphitheatre'),
+  createPageUrl('Profile'),
+].map(p => p.split('?')[0]);
+
+export function isBottomTabRoot(pathname) {
+  return BOTTOM_TAB_ROOTS.includes(pathname);
+}
 
 export default function useScrollPreservation() {
   const location = useLocation();
   const prevPathRef = useRef(location.pathname);
-
-  // Save scroll position before navigating away
-  const saveScroll = useCallback(() => {
-    scrollPositions.set(prevPathRef.current, window.scrollY);
-  }, []);
+  const isRestoringRef = useRef(false);
 
   useEffect(() => {
-    // Save the previous page's scroll position
-    if (prevPathRef.current !== location.pathname) {
-      scrollPositions.set(prevPathRef.current, window.scrollY);
-      prevPathRef.current = location.pathname;
+    const prevPath = prevPathRef.current;
+    const nextPath = location.pathname;
+
+    if (prevPath !== nextPath) {
+      // Save previous page's scroll position
+      scrollPositions.set(prevPath, window.scrollY);
+      prevPathRef.current = nextPath;
     }
 
-    // Restore scroll position for the new page (if we have one saved)
-    const saved = scrollPositions.get(location.pathname);
-    if (saved !== undefined) {
-      // Use requestAnimationFrame to ensure DOM has rendered
+    // Restore or reset scroll
+    const saved = scrollPositions.get(nextPath);
+    isRestoringRef.current = true;
+
+    // Double-rAF ensures the DOM has fully painted before restoring scroll
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        window.scrollTo(0, saved);
+        if (saved !== undefined) {
+          window.scrollTo(0, saved);
+        } else {
+          window.scrollTo(0, 0);
+        }
+        isRestoringRef.current = false;
       });
-    } else {
-      // New page - scroll to top
-      window.scrollTo(0, 0);
-    }
+    });
   }, [location.pathname]);
 
-  // Also save on beforeunload
+  // Persist on beforeunload
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      scrollPositions.set(location.pathname, window.scrollY);
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    const handler = () => scrollPositions.set(location.pathname, window.scrollY);
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
   }, [location.pathname]);
-
-  return { saveScroll };
 }
