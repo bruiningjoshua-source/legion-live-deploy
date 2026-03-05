@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
@@ -59,16 +59,20 @@ Deno.serve(async (req) => {
             expiryDate.setFullYear(expiryDate.getFullYear() + 1);
           }
 
-          // Create or update creator subscription
+          // Create or update creator subscription - match by user_email too
           const existingSubs = await base44.asServiceRole.entities.CreatorSubscription.filter(
             { creator_id: creatorId, status: 'active' },
             null,
             1
           );
 
+          // Also store user_email from session
+          const userEmail = metadata.user_email || session.customer_email || '';
+
           if (existingSubs[0]) {
             await base44.asServiceRole.entities.CreatorSubscription.update(existingSubs[0].id, {
               plan_type: planType,
+              user_email: userEmail,
               stripe_subscription_id: session.subscription || session.payment_intent,
               stripe_customer_id: session.customer,
               start_date: startDate.toISOString(),
@@ -78,6 +82,7 @@ Deno.serve(async (req) => {
           } else {
             await base44.asServiceRole.entities.CreatorSubscription.create({
               creator_id: creatorId,
+              user_email: userEmail,
               plan_type: planType,
               status: 'active',
               stripe_subscription_id: session.subscription || session.payment_intent,

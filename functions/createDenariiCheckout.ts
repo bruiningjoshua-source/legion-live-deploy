@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'google_pay', 'apple_pay'],
+      payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
