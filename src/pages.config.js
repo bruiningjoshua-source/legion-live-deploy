@@ -113,6 +113,7 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import Podcasts from './pages/Podcasts';
 import __Layout from './Layout.jsx';
 
 
@@ -183,6 +184,7 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "Podcasts": Podcasts,
 }
 
 export const pagesConfig = {
