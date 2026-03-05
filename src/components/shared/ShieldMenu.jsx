@@ -185,7 +185,7 @@ export default function ShieldMenu({ isOpen, onClose }) {
                             {section.items.map((item) => {
                               const ItemIcon = item.icon;
                               return (
-                                <Link key={item.path} to={createPageUrl(item.path)} onClick={onClose}>
+                                <button key={item.path} onClick={() => handleNavigate(createPageUrl(item.path))} className="w-full text-left">
                                   <motion.div
                                     whileHover={{ x: 4 }}
                                     className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5"
@@ -193,7 +193,7 @@ export default function ShieldMenu({ isOpen, onClose }) {
                                     <ItemIcon className="w-4 h-4" />
                                     <span className="text-sm">{item.name}</span>
                                   </motion.div>
-                                </Link>
+                                </button>
                               );
                             })}
                           </div>
