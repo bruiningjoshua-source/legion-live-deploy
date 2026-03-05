@@ -28,7 +28,7 @@ class ZegoStreamingService {
 
       this.appId = parseInt(appId);
       
-      // Create Zego engine with explicit server URLs
+      // Create Zego engine with explicit server URLs for pure RTC
       this.engine = new ZegoExpressEngine(this.appId, 'wss://webliveroom773960930-api.coolzcloud.com/ws');
       
       console.log('[Zego] Engine created with appId:', this.appId);
