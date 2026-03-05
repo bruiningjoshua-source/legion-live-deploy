@@ -31,21 +31,38 @@ Deno.serve(async (req) => {
       
       // Mark as ended if stream is older than threshold
       if (streamAge > staleThreshold) {
+        const durationMin = Math.floor(streamAge / 60000);
         await base44.asServiceRole.entities.Stream.update(stream.id, {
           status: 'ended',
-          duration_minutes: Math.floor(streamAge / 60000)
+          duration_minutes: durationMin,
+          viewer_count: 0
         });
 
         // Update creator status
         if (stream.creator_id) {
-          await base44.asServiceRole.entities.Creator.update(stream.creator_id, {
-            is_live: false,
-            current_stream_id: null
-          });
+          try {
+            await base44.asServiceRole.entities.Creator.update(stream.creator_id, {
+              is_live: false,
+              current_stream_id: null
+            });
+          } catch (e) {
+            console.warn('[cleanupStaleStreams] Failed to update creator:', stream.creator_id, e.message);
+          }
         }
 
+        // Post system end message in chat
+        try {
+          await base44.asServiceRole.entities.ChatMessage.create({
+            stream_id: stream.id,
+            sender_email: 'system',
+            sender_name: 'System',
+            message: 'This stream was automatically ended due to inactivity.',
+            message_type: 'system'
+          });
+        } catch (e) {}
+
         cleanedCount++;
-        console.log('[cleanupStaleStreams] Ended stale stream:', stream.id, 'Age:', Math.floor(streamAge / 60000), 'minutes');
+        console.log('[cleanupStaleStreams] Ended stale stream:', stream.id, 'Age:', durationMin, 'minutes');
       }
     }
 
