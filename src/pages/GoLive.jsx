@@ -33,7 +33,7 @@ import {
 import { motion } from 'framer-motion';
 import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
-import BroadcasterChat from '@/components/stream/BroadcasterChat';
+import BulletChat from '@/components/stream/BulletChat';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import PremiumLensUI from '@/components/stream/PremiumLensUI';
@@ -619,7 +619,7 @@ export default function GoLive() {
               </div>
 
               {/* Broadcaster Chat */}
-              <BroadcasterChat messages={chatMessages} />
+              <BulletChat messages={chatMessages} onSendMessage={() => {}} isAuthenticated={!!user} />
             </div>
           </div>
         )}
