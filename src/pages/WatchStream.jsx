@@ -324,12 +324,30 @@ export default function WatchStream() {
         await base44.entities.Follow.create({ follower_email: user.email, following_creator_id: creator.id });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['follow-status']);
-      queryClient.invalidateQueries(['creator', creator?.id]);
+    onMutate: async () => {
+      // Optimistic update — toggle follow state instantly
+      await queryClient.cancelQueries({ queryKey: ['follow-status', user?.email, creator?.id] });
+      const prev = queryClient.getQueryData(['follow-status', user?.email, creator?.id]);
+      queryClient.setQueryData(['follow-status', user?.email, creator?.id], !isFollowing);
+      // Optimistic follower count
+      if (creator) {
+        queryClient.setQueryData(['creator', creator.id], old => old ? {
+          ...old,
+          follower_count: (old.follower_count || 0) + (isFollowing ? -1 : 1)
+        } : old);
+      }
+      return { prev };
     },
-    onError: (error) => {
+    onError: (error, _vars, context) => {
+      // Rollback on failure
+      if (context?.prev !== undefined) {
+        queryClient.setQueryData(['follow-status', user?.email, creator?.id], context.prev);
+      }
       if (error.message?.includes('sign in')) base44.auth.redirectToLogin();
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['follow-status'] });
+      queryClient.invalidateQueries({ queryKey: ['creator', creator?.id] });
     }
   });
 
