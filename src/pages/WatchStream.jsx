@@ -290,7 +290,10 @@ export default function WatchStream() {
   // ─── Mutations ────────────────────────
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData) => {
+      if (!user) throw new Error('Please sign in to chat');
+      if (stream?.status !== 'live' && !isBroadcaster) throw new Error('Stream has ended');
       const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
+      if (!messageContent?.trim()) throw new Error('Empty message');
       try {
         const modResult = await base44.functions.invoke('aiModerateContent', {
           content_type: 'chat_message', content: messageContent,
