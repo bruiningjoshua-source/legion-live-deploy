@@ -415,21 +415,66 @@ export default function WatchStream() {
   const endStreamMutation = useMutation({
     mutationFn: async () => {
       if (user?.email !== creator?.user_email) throw new Error('Unauthorized');
+
+      const durationMin = Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000);
+
+      // 1. End the stream record
       await base44.entities.Stream.update(stream.id, {
-        status: 'ended', duration_minutes: Math.floor((new Date() - new Date(stream.created_date)) / 60000)
+        status: 'ended',
+        duration_minutes: durationMin,
+        viewer_count: 0
       });
+
+      // 2. Reset creator live status
       await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null });
+
+      // 3. Finalize PK battle
       if (stream.stream_type === 'pk_battle' && pkBattle) {
+        const hostWon = (pkBattle.host_score || 0) > (pkBattle.opponent_score || 0);
         await base44.entities.PKBattle.update(pkBattle.id, {
-          status: 'completed', ended_at: new Date().toISOString(),
-          winner_creator_id: pkBattle.host_score > pkBattle.opponent_score ? pkBattle.host_creator_id : pkBattle.opponent_creator_id
+          status: 'completed',
+          ended_at: new Date().toISOString(),
+          winner_creator_id: hostWon ? pkBattle.host_creator_id : pkBattle.opponent_creator_id
         });
+        // Update W/L records
+        if (hostWon) {
+          await base44.entities.Creator.update(pkBattle.host_creator_id, { pk_wins: (creator.pk_wins || 0) + 1 });
+        } else {
+          await base44.entities.Creator.update(pkBattle.host_creator_id, { pk_losses: (creator.pk_losses || 0) + 1 });
+        }
       }
-      if (liveStream && typeof liveStream !== 'boolean') liveStream.getTracks().forEach(t => t.stop());
-      try { await ZegoService.leave(); } catch (e) {}
+
+      // 4. Finalize broadcaster earnings for this session
+      try {
+        const earnings = await base44.entities.BroadcasterEarnings.filter({ creator_id: creator.id, stream_id: stream.id }, null, 1);
+        if (earnings[0]) {
+          await base44.entities.BroadcasterEarnings.update(earnings[0].id, {
+            session_end_time: new Date().toISOString(),
+            session_duration_minutes: durationMin,
+            session_peak_viewers: stream.peak_viewers || 0
+          });
+        }
+      } catch (e) { console.error('[EndStream] Earnings finalize error:', e); }
+
+      // 5. Stop local media tracks
+      if (liveStream && typeof liveStream !== 'boolean') {
+        liveStream.getTracks().forEach(t => t.stop());
+      }
+
+      // 6. Leave Zego room
+      try { await ZegoService.leave(); } catch (e) { console.warn('[EndStream] Zego leave error:', e); }
+
+      // 7. Post system chat message
+      try {
+        await base44.entities.ChatMessage.create({
+          stream_id: streamId, sender_email: 'system', sender_name: 'System',
+          message: `${creator.display_name || 'The host'} ended the stream. Thanks for watching!`,
+          message_type: 'system'
+        });
+      } catch (e) {}
     },
     onSuccess: () => { navigate(createPageUrl('Profile')); },
-    onError: (error) => alert(error.message)
+    onError: (error) => alert(error.message || 'Failed to end stream')
   });
 
   // ─── Reaction handler ─────────────────
