@@ -154,6 +154,31 @@ export default function WatchStream() {
   const isBroadcaster = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
 
+  // ─── Broadcaster: warn on tab close & cleanup ───
+  useEffect(() => {
+    if (!isBroadcaster || !stream?.id) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = 'You are live! Closing this tab will end your stream.';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isBroadcaster, stream?.id]);
+
+  // ─── Viewer: update viewer count on join/leave ───
+  useEffect(() => {
+    if (!stream?.id || isBroadcaster || !user) return;
+    base44.entities.Stream.update(stream.id, {
+      viewer_count: (stream.viewer_count || 0) + 1,
+      peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1)
+    }).catch(() => {});
+    return () => {
+      base44.entities.Stream.update(stream.id, {
+        viewer_count: Math.max(0, (stream.viewer_count || 1) - 1)
+      }).catch(() => {});
+    };
+  }, [stream?.id, isBroadcaster, user?.email]);
+
   // ─── Chat sync ─────────────────────────
   useEffect(() => {
     if (initialMessages?.length) setChatMessages(initialMessages);
