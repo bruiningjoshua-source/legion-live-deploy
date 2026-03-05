@@ -89,6 +89,12 @@ const expandableSections = [
 
 export default function ShieldMenu({ isOpen, onClose }) {
   const [expandedSection, setExpandedSection] = useState(null);
+  const navigate = useNavigate();
+
+  const handleNavigate = (path) => {
+    onClose();
+    navigate(path);
+  };
 
   const toggleSection = (title) => {
     setExpandedSection(expandedSection === title ? null : title);
