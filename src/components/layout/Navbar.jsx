@@ -85,9 +85,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {mainNavLinks.map(link => {
             const Icon = link.icon;
             return (
-              <Link
+              <button
                 key={link.path}
-                to={link.path}
+                onClick={() => navigate(link.path)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                   isActive(link.path)
                     ? 'bg-white text-black'
@@ -96,7 +96,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
               >
                 <Icon className="w-4 h-4" />
                 <span className="text-sm font-medium">{link.name}</span>
-              </Link>
+              </button>
             );
           })}
         </div>
