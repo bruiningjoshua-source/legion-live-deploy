@@ -57,17 +57,17 @@ export default function CreatorMonetization() {
   });
 
   const { data: subscription } = useQuery({
-    queryKey: ['creator-subscription', creator?.id],
+    queryKey: ['creator-subscription', user?.email],
     queryFn: async () => {
-      if (!creator?.id) return null;
+      if (!user?.email) return null;
       const subs = await base44.entities.CreatorSubscription.filter(
-        { creator_id: creator.id, status: 'active' },
+        { user_email: user.email, status: 'active' },
         '-created_date',
         1
       );
       return subs[0] || null;
     },
-    enabled: !!creator?.id
+    enabled: !!user?.email
   });
 
   const { data: subscribers = [] } = useQuery({
@@ -453,7 +453,7 @@ export default function CreatorMonetization() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="tips">
+              <TabsContent value="recent-tips">
                 <Card className="bg-stone-800/30 border-amber-600/20">
                   <CardHeader>
                     <CardTitle className="text-amber-100">Recent Tips</CardTitle>
@@ -470,7 +470,7 @@ export default function CreatorMonetization() {
                               {tip.message && <p className="text-amber-400/70 text-sm">"{tip.message}"</p>}
                             </div>
                             <div className="text-right">
-                              <p className="text-green-400 font-bold text-lg">${tip.amount_usd.toFixed(2)}</p>
+                              <p className="text-green-400 font-bold text-lg">${(tip.amount_usd || 0).toFixed(2)}</p>
                               <p className="text-amber-400/60 text-xs">
                                 {new Date(tip.created_date).toLocaleDateString()}
                               </p>

@@ -170,14 +170,20 @@ export default function WatchStream() {
 
   const [chatMessages, setChatMessages] = useState([]);
 
-  useQuery({
+  const { data: initialMessages } = useQuery({
     queryKey: ['chat-messages', streamId],
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
     enabled: !!streamId,
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
-    onSuccess: (data) => setChatMessages(data || [])
   });
+
+  // Sync initial messages
+  useEffect(() => {
+    if (initialMessages?.length) {
+      setChatMessages(initialMessages);
+    }
+  }, [initialMessages]);
 
   // Real-time chat subscription
   useEffect(() => {
