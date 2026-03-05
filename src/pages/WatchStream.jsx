@@ -306,12 +306,31 @@ export default function WatchStream() {
       });
       return { gift, quantity };
     },
-    onSuccess: ({ gift, quantity }) => {
-      queryClient.invalidateQueries(['wallet']);
+    onMutate: async ({ gift, quantity }) => {
+      // Optimistic wallet deduction
+      const totalCost = (gift.cost_denarii || 0) * quantity;
+      await queryClient.cancelQueries({ queryKey: ['wallet', user?.email] });
+      const prevWallet = queryClient.getQueryData(['wallet', user?.email]);
+      if (prevWallet) {
+        queryClient.setQueryData(['wallet', user?.email], {
+          ...prevWallet,
+          denarii_balance: (prevWallet.denarii_balance || 0) - totalCost
+        });
+      }
       setShowGiftPanel(false);
       setGiftAnimation({ gift, sender: user.full_name || 'Anonymous', quantity });
+      return { prevWallet };
     },
-    onError: (error) => alert(error.message || 'Gift failed.')
+    onError: (error, _vars, context) => {
+      // Rollback wallet on failure
+      if (context?.prevWallet) {
+        queryClient.setQueryData(['wallet', user?.email], context.prevWallet);
+      }
+      alert(error.message || 'Gift failed.');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    }
   });
 
   const followMutation = useMutation({
