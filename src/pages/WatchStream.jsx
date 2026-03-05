@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
@@ -36,6 +36,7 @@ export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
   const streamId = urlParams.get('id');
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Core state
   const [showGiftPanel, setShowGiftPanel] = useState(false);
@@ -342,7 +343,7 @@ export default function WatchStream() {
       if (liveStream && typeof liveStream !== 'boolean') liveStream.getTracks().forEach(t => t.stop());
       try { await ZegoService.leave(); } catch (e) {}
     },
-    onSuccess: () => { window.location.href = createPageUrl('Profile'); },
+    onSuccess: () => { navigate(createPageUrl('Profile')); },
     onError: (error) => alert(error.message)
   });
 
@@ -432,7 +433,7 @@ export default function WatchStream() {
                 onInviteToPanel={(p) => setPanelParticipants(prev => [...prev, p || user])}
                 onRemoveFromPanel={(p) => setPanelParticipants(prev => prev.filter(x => x.user_email !== p?.user_email))}
                 onMuteAudio={() => {}} onEndCamera={() => {}}
-                onLeaveCall={() => { window.location.href = createPageUrl('Explore'); }}
+                onLeaveCall={() => { navigate(createPageUrl('Explore')); }}
                 isHost={isBroadcaster} maxParticipants={8}
               />
             </div>
@@ -479,7 +480,7 @@ export default function WatchStream() {
             creator={creator} stream={stream}
             isFollowing={isFollowing}
             onFollowClick={() => followMutation.mutate()}
-            onClose={() => { window.location.href = createPageUrl('Home'); }}
+            onClose={() => { navigate(createPageUrl('Home')); }}
             viewerCount={stream.viewer_count || 0}
           />
 
