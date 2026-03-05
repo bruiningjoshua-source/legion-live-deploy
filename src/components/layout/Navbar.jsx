@@ -41,6 +41,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
     { name: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film },
     { name: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
     { name: 'Shop', path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
+    { name: 'Podcasts', path: createPageUrl('Podcasts'), icon: Headphones },
   ];
 
   const isActive = (path) => location.pathname === path;
