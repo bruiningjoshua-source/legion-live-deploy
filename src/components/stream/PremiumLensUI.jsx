@@ -18,7 +18,8 @@ import {
   Contrast,
   Droplets,
   Thermometer,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 // Import AR data directly to avoid circular dependencies
