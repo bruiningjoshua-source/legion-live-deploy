@@ -240,8 +240,18 @@ export default function GoLive() {
         throw new Error('Please sign in to go live');
       }
       
-      if (!hasPermissions) {
+      if (!hasPermissions || !cameraStream) {
         throw new Error('Camera and microphone permissions are required to go live');
+      }
+
+      // Prevent double-tap: check if we're already live
+      if (creator?.is_live && creator?.current_stream_id) {
+        const existing = await base44.entities.Stream.filter({ id: creator.current_stream_id, status: 'live' }, null, 1);
+        if (existing.length > 0) {
+          // Already have a live stream — just navigate to it
+          navigate(createPageUrl(`WatchStream?id=${existing[0].id}`));
+          return existing[0];
+        }
       }
 
       let creatorId = creator?.id;
