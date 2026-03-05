@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import { RtcTokenBuilder, RtcRole } from 'npm:agora-access-token@2.0.4';
 
 Deno.serve(async (req) => {
