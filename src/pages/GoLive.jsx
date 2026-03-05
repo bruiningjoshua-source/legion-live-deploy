@@ -398,10 +398,21 @@ export default function GoLive() {
       console.log('[GoLive] Stream created successfully:', stream.id);
       navigate(createPageUrl(`WatchStream?id=${stream.id}`));
     },
-    onError: (error) => {
+    onError: async (error) => {
       console.error('[GoLive] Go live failed:', error);
-      // Clean up any partial state
-      ZegoService.leave().catch(e => console.error('[GoLive] Cleanup failed:', e));
+      // Clean up any partial Zego state
+      ZegoService.leave().catch(e => console.error('[GoLive] Zego cleanup failed:', e));
+
+      // If a stream was partially created, mark it ended
+      if (creator?.id) {
+        try {
+          const staleStreams = await base44.entities.Stream.filter({ creator_id: creator.id, status: 'live' }, '-created_date', 5);
+          for (const s of staleStreams) {
+            await base44.entities.Stream.update(s.id, { status: 'ended', viewer_count: 0 });
+          }
+          await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null });
+        } catch (cleanupErr) { console.error('[GoLive] DB cleanup failed:', cleanupErr); }
+      }
       
       if (error.message?.includes('sign in')) {
         if (window.confirm('You need to sign in to go live. Sign in now?')) {
