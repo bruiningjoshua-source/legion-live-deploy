@@ -93,6 +93,7 @@ import PlatformAnalytics from './pages/PlatformAnalytics';
 import PlaylistView from './pages/PlaylistView';
 import Playlists from './pages/Playlists';
 import PodcastStudio from './pages/PodcastStudio';
+import Podcasts from './pages/Podcasts';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import Quests from './pages/Quests';
@@ -113,7 +114,6 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import Podcasts from './pages/Podcasts';
 import __Layout from './Layout.jsx';
 
 
@@ -164,6 +164,7 @@ export const PAGES = {
     "PlaylistView": PlaylistView,
     "Playlists": Playlists,
     "PodcastStudio": PodcastStudio,
+    "Podcasts": Podcasts,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
     "Quests": Quests,
@@ -184,7 +185,6 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "Podcasts": Podcasts,
 }
 
 export const pagesConfig = {
