@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
-import { Drawer, DrawerContent, DrawerOverlay, DrawerPortal } from "@/components/ui/drawer"
+import { Drawer, DrawerContent } from "@/components/ui/drawer"
 
 import { cn } from "@/lib/utils"
 
@@ -17,95 +17,6 @@ function useIsMobile() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return isMobile
-}
-
-// Desktop: standard Radix select. Mobile: drawer-based select.
-const Select = React.forwardRef(function SelectWrapper(props, ref) {
-  const isMobile = useIsMobile()
-  if (isMobile) {
-    return <MobileSelect {...props} />
-  }
-  return <SelectPrimitive.Root {...props} />
-})
-
-function MobileSelect({ children, value, onValueChange, defaultValue, ...props }) {
-  const [open, setOpen] = React.useState(false)
-  const currentValue = value || defaultValue
-
-  // Extract trigger and content from children
-  let triggerChild = null
-  let items = []
-  let placeholder = ''
-
-  React.Children.forEach(children, child => {
-    if (!child) return
-    if (child.type === SelectTrigger) {
-      triggerChild = child
-      React.Children.forEach(child.props.children, tc => {
-        if (tc?.type === SelectValue) {
-          placeholder = tc.props.placeholder || ''
-        }
-      })
-    }
-    if (child.type === SelectContent) {
-      // Recursively extract SelectItems
-      const extractItems = (node) => {
-        React.Children.forEach(node, n => {
-          if (!n || !n.props) return
-          if (n.type === SelectItem) {
-            items.push({ value: n.props.value, label: n.props.children, disabled: n.props.disabled })
-          }
-          if (n.props?.children) extractItems(n.props.children)
-        })
-      }
-      extractItems(child.props.children)
-    }
-  })
-
-  // Find display label
-  const selectedLabel = items.find(i => i.value === currentValue)?.label || placeholder
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={cn(
-          "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-          triggerChild?.props?.className
-        )}
-      >
-        <span className={!currentValue ? 'text-muted-foreground' : ''}>{selectedLabel}</span>
-        <ChevronDown className="h-4 w-4 opacity-50" />
-      </button>
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="bg-stone-900 border-white/10 max-h-[60vh]">
-          <div className="px-2 py-3 overflow-y-auto">
-            {items.map(item => (
-              <button
-                key={item.value}
-                disabled={item.disabled}
-                onClick={() => {
-                  onValueChange?.(item.value)
-                  setOpen(false)
-                }}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm transition-colors",
-                  item.value === currentValue
-                    ? "bg-amber-500/20 text-amber-300"
-                    : "text-white hover:bg-white/10",
-                  item.disabled && "opacity-50 pointer-events-none"
-                )}
-              >
-                <span>{item.label}</span>
-                {item.value === currentValue && <Check className="h-4 w-4 text-amber-400" />}
-              </button>
-            ))}
-          </div>
-        </DrawerContent>
-      </Drawer>
-    </>
-  )
 }
 
 const SelectGroup = SelectPrimitive.Group
@@ -146,8 +57,7 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ))
-SelectScrollDownButton.displayName =
-  SelectPrimitive.ScrollDownButton.displayName
+SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
 
 const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
@@ -206,6 +116,93 @@ const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => (
     {...props} />
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+
+// Mobile drawer-based select
+function MobileSelect({ children, value, onValueChange, defaultValue }) {
+  const [open, setOpen] = React.useState(false)
+  const currentValue = value || defaultValue
+
+  let triggerChild = null
+  let items = []
+  let placeholder = ''
+
+  React.Children.forEach(children, child => {
+    if (!child) return
+    if (child.type === SelectTrigger) {
+      triggerChild = child
+      React.Children.forEach(child.props.children, tc => {
+        if (tc?.type === SelectValue) {
+          placeholder = tc.props.placeholder || ''
+        }
+      })
+    }
+    if (child.type === SelectContent) {
+      const extractItems = (node) => {
+        React.Children.forEach(node, n => {
+          if (!n || !n.props) return
+          if (n.type === SelectItem) {
+            items.push({ value: n.props.value, label: n.props.children, disabled: n.props.disabled })
+          }
+          if (n.props?.children) extractItems(n.props.children)
+        })
+      }
+      extractItems(child.props.children)
+    }
+  })
+
+  const selectedLabel = items.find(i => i.value === currentValue)?.label || placeholder
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={cn(
+          "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          triggerChild?.props?.className
+        )}
+      >
+        <span className={!currentValue ? 'text-muted-foreground' : ''}>{selectedLabel}</span>
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      </button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="bg-stone-900 border-white/10 max-h-[60vh]">
+          <div className="px-2 py-3 overflow-y-auto">
+            {items.map(item => (
+              <button
+                key={item.value}
+                disabled={item.disabled}
+                onClick={() => {
+                  onValueChange?.(item.value)
+                  setOpen(false)
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm transition-colors",
+                  item.value === currentValue
+                    ? "bg-amber-500/20 text-amber-300"
+                    : "text-white hover:bg-white/10",
+                  item.disabled && "opacity-50 pointer-events-none"
+                )}
+              >
+                <span>{item.label}</span>
+                {item.value === currentValue && <Check className="h-4 w-4 text-amber-400" />}
+              </button>
+            ))}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
+  )
+}
+
+// Wrapper: uses drawer on mobile, standard Radix select on desktop
+function Select(props) {
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return <MobileSelect {...props} />
+  }
+  return <SelectPrimitive.Root {...props} />
+}
 
 export {
   Select,
