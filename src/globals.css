@@ -31,6 +31,32 @@ html {
   color: #fef3c7;
 }
 
+/* Disable text selection on UI elements for mobile app feel */
+button, a, nav, label, svg, [role="tab"], [role="button"], [role="menuitem"],
+.select-none-ui {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Keep text selection enabled for content areas */
+.select-text-content,
+[data-selectable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Mobile text size: ensure text-xs is at least 14px */
+@media (max-width: 767px) {
+  .text-xs {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+  .text-\[10px\] {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+}
+
 /* Mirror effect for camera preview */
 video.mirror {
   transform: scaleX(-1) !important;

@@ -18,10 +18,12 @@ import {
   Palette,
   Sparkles,
   Zap,
-  Monitor
+  Monitor,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import DeleteAccountModal from '@/components/settings/DeleteAccountModal';
 
 const THEMES = [
   { id: 'roman', name: 'Roman Gold', colors: ['#d97706', '#f59e0b', '#fbbf24'], icon: '🏛️' },
@@ -33,6 +35,8 @@ const THEMES = [
 ];
 
 export default function Settings() {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [notifications, setNotifications] = useState({
     liveAlerts: true,
     giftAlerts: true,
@@ -379,11 +383,30 @@ export default function Settings() {
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
+                <Button
+                  onClick={() => setShowDeleteModal(true)}
+                  variant="outline"
+                  className="w-full border-red-600/50 text-red-500 hover:bg-red-900/40 hover:text-red-300"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Account
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
         </div>
       </div>
+
+      <DeleteAccountModal
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        userEmail={user?.email}
+        onConfirm={async () => {
+          toast.success('Account deletion request submitted. Your account will be removed within 24 hours.');
+          setShowDeleteModal(false);
+          await base44.auth.logout();
+        }}
+      />
     </div>
   );
 }

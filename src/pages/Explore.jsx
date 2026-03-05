@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ const streamTypes = [
 ];
 
 export default function Explore() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('streams');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -123,8 +125,14 @@ export default function Explore() {
     });
   }, [creators, searchQuery, selectedCategory]);
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['streams-explore'] });
+    await queryClient.invalidateQueries({ queryKey: ['creators-explore'] });
+  }, [queryClient]);
+
   return (
     <div className="min-h-screen pt-20 pb-24">
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div 
@@ -277,6 +285,7 @@ export default function Explore() {
           </TabsContent>
         </Tabs>
       </div>
+      </PullToRefresh>
     </div>
   );
 }

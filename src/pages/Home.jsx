@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -74,6 +75,12 @@ const TAB_ITEMS = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('personalized');
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['streams-live'] });
+    await queryClient.invalidateQueries({ queryKey: ['creators-home'] });
+  }, [queryClient]);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -115,6 +122,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pt-20 pb-24">
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Hero Header - Optimized with CSS animations */}
         <div className="text-center mb-8 sm:mb-12">
@@ -213,6 +221,7 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
+      </PullToRefresh>
     </div>
   );
 }

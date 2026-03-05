@@ -25,6 +25,7 @@ import {
   ShoppingBag,
   BarChart3,
   DollarSign,
+  ChevronLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
@@ -43,6 +44,10 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
   const isActive = (path) => location.pathname === path;
 
+  // Show back button on child routes (not main tabs)
+  const mainPaths = [createPageUrl('Home'), createPageUrl('Explore'), createPageUrl('Profile')];
+  const showBackButton = !mainPaths.includes(location.pathname);
+
   const handleLogout = async () => {
     await base44.auth.logout();
   };
@@ -50,8 +55,16 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Logo + Shield Menu */}
+        {/* Logo + Shield Menu + Back Button */}
         <div className="flex items-center gap-2">
+          {showBackButton && (
+            <button
+              onClick={() => window.history.back()}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors lg:hidden"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
           <button 
             onClick={onOpenShieldMenu}
             className="text-2xl hover:scale-110 transition-transform cursor-pointer"
