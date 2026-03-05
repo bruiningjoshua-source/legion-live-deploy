@@ -390,7 +390,7 @@ export default function WatchStream() {
   // ─── RENDER ───────────────────────────
   return (
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
-      <style>{`body,html{overflow:hidden!important;position:fixed!important;width:100vw!important;height:100vh!important;margin:0!important;padding:0!important}`}</style>
+      {/* Fullscreen lock styles are applied via className on the root div */}
 
       {/* ── Gift Animation ── */}
       <AnimatePresence>

@@ -405,12 +405,7 @@ export default function GoLive() {
 
   return (
     <>
-      {hasPermissions && (
-        <style>{`
-          body, html { overflow: hidden !important; }
-          nav, .bottom-nav { display: none !important; }
-        `}</style>
-      )}
+      {/* Fullscreen mode handled by Layout hiding nav on GoLive/WatchStream */}
       <div className={hasPermissions ? "fixed inset-0 w-screen h-screen z-50 bg-black" : "min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12"}>
         <div className={hasPermissions ? "w-full h-full" : "max-w-3xl mx-auto px-4"}>
         {/* Header - Only show when not in camera preview */}
