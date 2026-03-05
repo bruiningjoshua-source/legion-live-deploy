@@ -381,6 +381,17 @@ export default function GoLive() {
         });
       }
 
+      // Post system welcome message
+      try {
+        await base44.entities.ChatMessage.create({
+          stream_id: stream.id,
+          sender_email: 'system',
+          sender_name: 'System',
+          message: `${user.full_name || 'The host'} started a live stream!`,
+          message_type: 'system'
+        });
+      } catch (e) {}
+
       return stream;
     },
     onSuccess: (stream) => {
