@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -105,8 +105,9 @@ export default function GoLive() {
     adaptiveEnabled: true,
     lowPowerMode: false,
   });
-  const videoPreviewRef = React.useRef(null);
-  const arCanvasRef = React.useRef(null);
+  const videoPreviewRef = useRef(null);
+  const arCanvasRef = useRef(null);
+  const navigate = useNavigate();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -143,7 +144,7 @@ export default function GoLive() {
   const isSubscribed = hostSubscription?.status === 'active';
 
   // Auto-request camera permissions on page load
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && !hasPermissions && !cameraStream) {
       requestCameraPermissions();
     }
@@ -157,58 +158,33 @@ export default function GoLive() {
     })
   });
 
-  React.useEffect(() => {
-    // Attach stream to video element when it becomes available
+  useEffect(() => {
     if (cameraStream && videoPreviewRef.current) {
       videoPreviewRef.current.srcObject = cameraStream;
       videoPreviewRef.current.muted = true;
       videoPreviewRef.current.playsInline = true;
-      
-      // Ensure video plays on mobile
       const playVideo = async () => {
-        try {
-          await videoPreviewRef.current.play();
-        } catch (e) {
-          console.log('Play blocked, retrying...', e);
-          setTimeout(() => playVideo(), 500);
-        }
+        try { await videoPreviewRef.current.play(); }
+        catch (e) { console.log('Play blocked, retrying...', e); setTimeout(playVideo, 500); }
       };
       playVideo();
     }
   }, [cameraStream]);
 
-  React.useEffect(() => {
-    // Apply mirror effect immediately
+  useEffect(() => {
     if (videoPreviewRef.current) {
-      if (isMirrored) {
-        videoPreviewRef.current.style.transform = 'scaleX(-1)';
-      } else {
-        videoPreviewRef.current.style.transform = 'scaleX(1)';
-      }
+      videoPreviewRef.current.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
     }
-  }, [isMirrored]);
+  }, [isMirrored, cameraStream]);
 
-  React.useEffect(() => {
-    // Apply initial mirror on mount
-    if (videoPreviewRef.current && isMirrored) {
-      videoPreviewRef.current.style.transform = 'scaleX(-1)';
-    }
-  }, [cameraStream]);
-
-  // Monitor stream quality
-  React.useEffect(() => {
-    const unsubscribe = ZegoService.onQualityChange((stats) => {
-      setStreamStats(stats);
-    });
+  useEffect(() => {
+    const unsubscribe = ZegoService.onQualityChange((stats) => setStreamStats(stats));
     return () => unsubscribe?.();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
-      // Cleanup camera stream on unmount
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-      }
+      if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     };
   }, [cameraStream]);
 
@@ -386,7 +362,7 @@ export default function GoLive() {
     },
     onSuccess: (stream) => {
       console.log('[GoLive] Stream created successfully:', stream.id);
-      window.location.href = createPageUrl(`WatchStream?id=${stream.id}`);
+      navigate(createPageUrl(`WatchStream?id=${stream.id}`));
     },
     onError: (error) => {
       console.error('[GoLive] Go live failed:', error);
@@ -541,7 +517,7 @@ export default function GoLive() {
                     setCameraStream(null);
                     setHasPermissions(false);
                   }
-                  window.location.href = createPageUrl('Home');
+                  navigate(createPageUrl('Home'));
                 }}
                 className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
               >
@@ -665,7 +641,7 @@ export default function GoLive() {
                     </div>
                     <Button 
                       size="sm"
-                      onClick={() => window.location.href = createPageUrl('CreatorMonetization')}
+                      onClick={() => navigate(createPageUrl('CreatorMonetization'))}
                       className="bg-amber-600 hover:bg-amber-700 text-xs"
                     >
                       Unlock $5/mo
