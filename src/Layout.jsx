@@ -16,6 +16,7 @@ import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
+import useScrollPreservation from '@/components/navigation/useScrollPreservation';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
