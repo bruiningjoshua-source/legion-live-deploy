@@ -72,6 +72,12 @@ export default function WatchStream() {
   const videoRef = useRef(null);
   const arCanvasRef = useRef(null);
 
+  // Lock body scroll for fullscreen streaming
+  useEffect(() => {
+    document.body.classList.add('fullscreen-lock');
+    return () => document.body.classList.remove('fullscreen-lock');
+  }, []);
+
   // ─── Data queries ─────────────────────────
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -390,7 +396,7 @@ export default function WatchStream() {
   // ─── RENDER ───────────────────────────
   return (
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
-      {/* Fullscreen lock styles are applied via className on the root div */}
+
 
       {/* ── Gift Animation ── */}
       <AnimatePresence>
