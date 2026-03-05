@@ -207,18 +207,18 @@ export default function ShieldMenu({ isOpen, onClose }) {
               <div className="h-px bg-white/10 my-3" />
 
               {/* Bottom Items */}
-              <Link to={createPageUrl('Wallet')} onClick={onClose}>
+              <button onClick={() => handleNavigate(createPageUrl('Wallet'))} className="w-full text-left">
                 <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5">
                   <Wallet className="w-5 h-5 text-emerald-400" />
                   <span className="text-white/80 font-medium">Wallet</span>
                 </motion.div>
-              </Link>
-              <Link to={createPageUrl('Settings')} onClick={onClose}>
+              </button>
+              <button onClick={() => handleNavigate(createPageUrl('Settings'))} className="w-full text-left">
                 <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5">
                   <Settings className="w-5 h-5 text-white/40" />
                   <span className="text-white/80 font-medium">Settings</span>
                 </motion.div>
-              </Link>
+              </button>
             </div>
 
             {/* Go Live Button */}
