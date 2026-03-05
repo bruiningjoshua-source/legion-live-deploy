@@ -469,7 +469,7 @@ export default function WatchStream() {
         });
       }
 
-      // Stop camera stream and leave Agora
+      // Stop camera stream and leave Zego
       if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
       }
@@ -1153,7 +1153,7 @@ export default function WatchStream() {
             isOpen={showModerationPanel}
             onClose={() => setShowModerationPanel(false)}
             streamId={streamId}
-            viewers={[]} // Would be populated from Agora/stream data
+            viewers={[]} // Populated from Zego room events
             moderators={moderators}
             kickedUsers={kickedUsers}
             chatMuted={chatMuted}
