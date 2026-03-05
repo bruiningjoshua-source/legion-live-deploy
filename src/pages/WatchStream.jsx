@@ -255,6 +255,21 @@ export default function WatchStream() {
         reply_to_content: messageData.reply_to_content || null, reply_to_sender: messageData.reply_to_sender || null
       });
     },
+    onMutate: (messageData) => {
+      // Optimistic: immediately show the message in the chat
+      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
+      const optimisticMsg = {
+        id: `optimistic-${Date.now()}`,
+        stream_id: streamId,
+        sender_email: user.email,
+        sender_name: user.full_name || 'Anonymous',
+        message: messageContent,
+        message_type: messageData.message_type || 'text',
+        vip_level: wallet?.vip_level || 0,
+        created_date: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, optimisticMsg]);
+    },
     onError: (error) => alert(error.message || 'Unable to send message.')
   });
 
