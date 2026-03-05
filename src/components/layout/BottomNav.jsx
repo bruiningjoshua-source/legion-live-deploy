@@ -1,5 +1,5 @@
-import React, { memo, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { memo, useRef, useCallback } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
   Home, 
@@ -9,8 +9,20 @@ import {
   Radio
 } from 'lucide-react';
 
+// Persist scroll positions per tab path
+const tabScrollPositions = {};
+
+const TAB_PATHS = [
+  createPageUrl('Home'),
+  createPageUrl('Explore'),
+  createPageUrl('GoLive'),
+  createPageUrl('TheAmphitheatre'),
+  createPageUrl('Profile'),
+];
+
 const BottomNav = memo(function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const navItems = [
@@ -25,6 +37,28 @@ const BottomNav = memo(function BottomNav() {
     const pathPart = itemPath.split('?')[0];
     return currentPath === pathPart || currentPath.startsWith(pathPart + '/');
   };
+
+  const handleTabPress = useCallback((targetPath, e) => {
+    e.preventDefault();
+    const targetClean = targetPath.split('?')[0];
+    const currentClean = currentPath.split('?')[0];
+
+    // Save current scroll position
+    tabScrollPositions[currentClean] = window.scrollY;
+
+    if (currentClean === targetClean) {
+      // Already on this tab — scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Navigate to the tab
+      navigate(targetPath);
+      // Restore saved scroll position after render
+      requestAnimationFrame(() => {
+        const saved = tabScrollPositions[targetClean];
+        window.scrollTo(0, saved || 0);
+      });
+    }
+  }, [currentPath, navigate]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 safe-area-bottom">
@@ -41,7 +75,7 @@ const BottomNav = memo(function BottomNav() {
           
           if (item.highlight) {
             return (
-              <Link key={item.key} to={item.path} className="flex items-center justify-center -mt-6">
+              <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-6">
                 <div className="relative active:scale-95 transition-transform">
                   {/* Outer glow */}
                   <div className="absolute -inset-1 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur opacity-50" />
@@ -57,12 +91,12 @@ const BottomNav = memo(function BottomNav() {
                     </span>
                   </div>
                 </div>
-              </Link>
+              </a>
             );
           }
           
           return (
-            <Link key={item.key} to={item.path} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0 active:scale-95 transition-transform">
+            <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0 active:scale-95 transition-transform">
               <div className="flex flex-col items-center gap-0.5 sm:gap-1">
                 <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-colors ${
                   isActive ? 'bg-amber-500/15' : ''
@@ -77,7 +111,7 @@ const BottomNav = memo(function BottomNav() {
                   {item.label}
                 </span>
               </div>
-            </Link>
+            </a>
           );
         })}
       </div>
