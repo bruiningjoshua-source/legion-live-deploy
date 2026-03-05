@@ -145,11 +145,6 @@ export default function Home() {
           </div>
         </div>
         
-        <style>{`
-          @keyframes gradient-x { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-          .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 4s ease infinite; }
-        `}</style>
-
         {/* Platform Quick Access - Optimized */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12 max-w-5xl mx-auto">
           {QUICK_ACCESS_ITEMS.map((item, i) => (

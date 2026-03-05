@@ -274,6 +274,17 @@ video::-webkit-media-controls {
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
+/* ── Gradient text animation (moved from Home page inline style) ── */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
+}
+
 /* ── Theme CSS Variables (moved from Layout.js inline <style>) ── */
 :root {
   --background: 15 15 18;
