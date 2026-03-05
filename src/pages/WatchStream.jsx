@@ -1,92 +1,56 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { 
-  Heart, 
-  Share2, 
-  Users, 
-  Eye, 
-  Crown, 
-  Gift, 
-  MessageCircle,
-  MoreVertical,
-  Flag,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Radio,
-  Shield,
-  StopCircle,
-  Sparkles,
-  X
-} from 'lucide-react';
+import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import StreamChat from '@/components/stream/StreamChat';
+
+import BulletChat from '@/components/stream/BulletChat';
+import FloatingHearts from '@/components/stream/FloatingHearts';
+import ViewerTopBar from '@/components/stream/ViewerTopBar';
+import StreamActionBar from '@/components/stream/StreamActionBar';
 import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
+import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
+import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
 import AlertNotifications from '@/components/moderation/AlertNotifications';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
-import ModerationDashboard from '@/components/moderation/ModerationDashboard';
-import MultiPanelView from '@/components/stream/MultiPanelView';
-import TipButton from '@/components/stream/TipButton';
+import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
-import DirectTipButton from '@/components/stream/DirectTipButton';
-
-import EndStreamDialog from '@/components/stream/EndStreamDialog';
-import LiveChatOverlay from '@/components/stream/LiveChatOverlay';
-import BigoStyleChat from '@/components/stream/BigoStyleChat';
-import EnhancedChat from '@/components/chat/EnhancedChat';
-import AIModerationBadge from '@/components/moderation/AIModerationBadge';
-import BigoActionBar from '@/components/stream/BigoActionBar';
-import BigoCreatorInfo from '@/components/stream/BigoCreatorInfo';
+import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 import PremiumLensUI from '@/components/stream/PremiumLensUI';
 import StreamingSettings from '@/components/stream/StreamingSettings';
-
-import MultiPanelGrid from '@/components/stream/MultiPanelGrid';
-import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
+import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
+import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
-import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
-import StreamInteractionWidgets from '@/components/stream/StreamInteractionWidgets';
-import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
-import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
-import { ProductOverlay, QuickReactionOverlay, FloatingReaction, GoalProgressOverlay, CoStreamInviteOverlay } from '@/components/stream/InteractiveOverlays';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
 import MultiStreamManager from '@/components/stream/MultiStreamManager';
 import StreamOverlayEditor from '@/components/stream/StreamOverlayEditor';
-import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
   const streamId = urlParams.get('id');
   const queryClient = useQueryClient();
 
+  // Core state
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [streamStats, setStreamStats] = useState(null);
-  const [remoteUsers, setRemoteUsers] = useState([]);
-  const videoRef = React.useRef(null);
   const [liveStream, setLiveStream] = useState(null);
-  const [showModeration, setShowModeration] = useState(false);
+  const [streamStats, setStreamStats] = useState(null);
   const [isMirrored, setIsMirrored] = useState(true);
+  const [floatingReactions, setFloatingReactions] = useState([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
 
+  // Broadcaster state
   const [showModerationPanel, setShowModerationPanel] = useState(false);
   const [moderators, setModerators] = useState([]);
   const [kickedUsers, setKickedUsers] = useState([]);
@@ -95,47 +59,35 @@ export default function WatchStream() {
   const [activeLens, setActiveLens] = useState(null);
   const [activeBackground, setActiveBackground] = useState(null);
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
-  const [floatingReactions, setFloatingReactions] = useState([]);
-  const [activeProduct, setActiveProduct] = useState(null);
-  const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
   const [showMultiStream, setShowMultiStream] = useState(false);
   const [showOverlayEditor, setShowOverlayEditor] = useState(false);
   const [streamOverlays, setStreamOverlays] = useState([]);
-  
-  // Streaming quality settings
   const [streamSettings, setStreamSettings] = useState({
-    resolution: '720p',
-    bitrate: 'auto',
-    frameRate: 30,
-    arComplexity: 'medium',
-    faceMeshEnabled: true,
-    segmentationEnabled: false,
-    adaptiveEnabled: true,
-    lowPowerMode: false,
+    resolution: '720p', bitrate: 'auto', frameRate: 30,
+    arComplexity: 'medium', faceMeshEnabled: true, segmentationEnabled: false,
+    adaptiveEnabled: true, lowPowerMode: false,
   });
+
+  const videoRef = useRef(null);
   const arCanvasRef = useRef(null);
 
+  // ─── Data queries ─────────────────────────
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+    staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false
   });
 
   const { data: stream, isLoading: streamLoading } = useQuery({
     queryKey: ['stream', streamId],
     queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
-    enabled: !!streamId,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false
+    enabled: !!streamId, staleTime: 30 * 1000, refetchOnWindowFocus: false
   });
 
   const { data: creator } = useQuery({
     queryKey: ['creator', stream?.creator_id],
     queryFn: () => base44.entities.Creator.filter({ id: stream.creator_id }, null, 1).then(r => r[0]),
-    enabled: !!stream?.creator_id,
-    staleTime: 2 * 60 * 1000,
-    refetchOnWindowFocus: false
+    enabled: !!stream?.creator_id, staleTime: 2 * 60 * 1000, refetchOnWindowFocus: false
   });
 
   const { data: opponentCreator } = useQuery({
@@ -153,8 +105,7 @@ export default function WatchStream() {
   const { data: gifts = [] } = useQuery({
     queryKey: ['gifts'],
     queryFn: () => base44.entities.Gift.filter({ is_active: true }, 'sort_order', 50),
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false
+    staleTime: 10 * 60 * 1000, refetchOnWindowFocus: false
   });
 
   const { data: wallet } = useQuery({
@@ -163,1037 +114,613 @@ export default function WatchStream() {
       const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
       return wallets[0] || { denarii_balance: 0, as_balance: 0 };
     },
-    enabled: !!user?.email,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false
+    enabled: !!user?.email, staleTime: 60 * 1000, refetchOnWindowFocus: false
   });
-
-  const [chatMessages, setChatMessages] = useState([]);
 
   const { data: initialMessages } = useQuery({
     queryKey: ['chat-messages', streamId],
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
-    enabled: !!streamId,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
+    enabled: !!streamId, staleTime: 30 * 1000, refetchOnWindowFocus: false,
   });
-
-  // Sync initial messages
-  useEffect(() => {
-    if (initialMessages?.length) {
-      setChatMessages(initialMessages);
-    }
-  }, [initialMessages]);
-
-  // Real-time chat subscription
-  useEffect(() => {
-    if (!streamId) return;
-    
-    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data.stream_id === streamId) {
-        if (event.type === 'create') {
-          setChatMessages(prev => [...prev, event.data]);
-        }
-      }
-    });
-
-    return unsubscribe;
-  }, [streamId]);
 
   const { data: isFollowing } = useQuery({
     queryKey: ['follow-status', user?.email, creator?.id],
     queryFn: async () => {
       if (!user?.email || !creator?.id) return false;
-      const follows = await base44.entities.Follow.filter({ 
-        follower_email: user.email, 
-        following_creator_id: creator.id 
-      }, null, 1);
+      const follows = await base44.entities.Follow.filter({ follower_email: user.email, following_creator_id: creator.id }, null, 1);
       return follows.length > 0;
     },
-    enabled: !!user?.email && !!creator?.id,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+    enabled: !!user?.email && !!creator?.id, staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false
   });
 
-  const { data: mutedUsers = [] } = useQuery({
-    queryKey: ['muted-users', streamId],
-    queryFn: () => base44.entities.ModerationAction.filter({ 
-      stream_id: streamId, 
-      action_type: 'mute_chat' 
-    }, '-created_date', 100),
-    enabled: !!streamId,
-    staleTime: 10 * 1000
-  });
-
-  const sendMessageMutation = useMutation({
-    mutationFn: async (messageData) => {
-      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
-      
-      // AI moderation check
-      try {
-        const modResult = await base44.functions.invoke('aiModerateContent', {
-          content_type: 'chat_message',
-          content: messageContent,
-          stream_id: streamId,
-          user_email: user.email,
-          user_name: user.full_name || 'Anonymous'
-        });
-
-        if (!modResult.data?.approved) {
-          throw new Error(modResult.data?.reason || 'Message blocked by moderation');
-        }
-      } catch (modError) {
-        if (modError.message?.includes('blocked') || modError.message?.includes('banned')) {
-          throw modError;
-        }
-        // Continue if moderation fails (fail open)
-        console.warn('Moderation check failed, continuing:', modError);
-      }
-
-      return base44.entities.ChatMessage.create({
-        stream_id: streamId,
-        sender_email: user.email,
-        sender_name: user.full_name || 'Anonymous',
-        message: messageContent,
-        message_type: messageData.message_type || 'text',
-        vip_level: wallet?.vip_level || 0,
-        mentions: messageData.mentions || [],
-        reply_to_id: messageData.reply_to_id || null,
-        reply_to_content: messageData.reply_to_content || null,
-        reply_to_sender: messageData.reply_to_sender || null
-      });
-    },
-    onSuccess: () => queryClient.invalidateQueries(['chat-messages', streamId]),
-    onError: (error) => {
-      console.error('Failed to send message:', error);
-      alert(error.message || 'Unable to send message. Please try again.');
-    }
-  });
-
-  // Check if creator has monetization enabled
   const { data: creatorSubscription } = useQuery({
     queryKey: ['creator-monetization', creator?.user_email],
     queryFn: async () => {
       if (!creator?.user_email) return null;
-      const subs = await base44.entities.CreatorSubscription.filter({ 
-        user_email: creator.user_email, 
-        status: 'active' 
-      }, '-created_date', 1);
+      const subs = await base44.entities.CreatorSubscription.filter({ user_email: creator.user_email, status: 'active' }, '-created_date', 1);
       return subs[0] || null;
     },
-    enabled: !!creator?.user_email,
-    staleTime: 5 * 60 * 1000
+    enabled: !!creator?.user_email, staleTime: 5 * 60 * 1000
   });
 
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || user?.role === 'admin';
-
-  const sendGiftMutation = useMutation({
-    mutationFn: async ({ gift, quantity }) => {
-      if (!user || !wallet) {
-        throw new Error('Please sign in to send gifts');
-      }
-
-      // Check if creator can receive gifts (has monetization subscription)
-      if (!creatorCanReceiveGifts) {
-        throw new Error('This creator has not enabled monetization yet');
-      }
-      
-      const totalCost = (gift.cost_denarii || gift.cost_as || 0) * quantity;
-      
-      if (totalCost > (wallet.denarii_balance || 0)) {
-        throw new Error('Insufficient balance. Please top up your wallet.');
-      }
-      
-      // Create transaction
-      await base44.entities.GiftTransaction.create({
-        sender_email: user.email,
-        receiver_creator_id: creator.id,
-        stream_id: streamId,
-        gift_id: gift.id,
-        gift_name: gift.name,
-        quantity,
-        total_as_value: totalCost,
-        is_pk_gift: stream.stream_type === 'pk_battle'
-      });
-
-      // Update wallet - deduct denarii directly
-      await base44.entities.Wallet.update(wallet.id, {
-        denarii_balance: (wallet.denarii_balance || 0) - totalCost
-      });
-
-      // Creator earnings: 50% (50% platform fee)
-      const creatorEarning = totalCost * 0.50;
-      const earningInDenarii = Math.floor(creatorEarning);
-
-      // Update creator earnings
-      await base44.entities.Creator.update(creator.id, {
-        total_earnings_denarii: (creator.total_earnings_denarii || 0) + earningInDenarii
-      });
-
-      // Update real-time broadcaster earnings tracker
-      try {
-        const existingEarnings = await base44.entities.BroadcasterEarnings.filter({ 
-          creator_id: creator.id 
-        }, null, 1);
-        
-        if (existingEarnings[0]) {
-          await base44.entities.BroadcasterEarnings.update(existingEarnings[0].id, {
-            session_earnings_denarii: (existingEarnings[0].session_earnings_denarii || 0) + earningInDenarii,
-            session_gifts_count: (existingEarnings[0].session_gifts_count || 0) + quantity,
-            total_earnings_denarii: (existingEarnings[0].total_earnings_denarii || 0) + earningInDenarii,
-            total_gifts_received: (existingEarnings[0].total_gifts_received || 0) + quantity,
-            last_gift_at: new Date().toISOString()
-          });
-        } else {
-          await base44.entities.BroadcasterEarnings.create({
-            creator_id: creator.id,
-            user_email: creator.user_email,
-            stream_id: streamId,
-            session_earnings_denarii: earningInDenarii,
-            session_gifts_count: quantity,
-            total_earnings_denarii: earningInDenarii,
-            total_gifts_received: quantity,
-            session_start_time: new Date().toISOString(),
-            last_gift_at: new Date().toISOString()
-          });
-        }
-      } catch (e) {
-        console.error('Failed to update broadcaster earnings:', e);
-      }
-
-      // Add chat message
-      await base44.entities.ChatMessage.create({
-        stream_id: streamId,
-        sender_email: user.email,
-        sender_name: user.full_name || 'Anonymous',
-        message: `sent ${quantity > 1 ? quantity + 'x ' : ''}${gift.name}`,
-        message_type: 'gift',
-        vip_level: wallet?.vip_level || 0,
-        gift_data: {
-          gift_name: gift.name,
-          gift_icon: gift.icon,
-          quantity
-        }
-      });
-
-      // Update stream stats
-      await base44.entities.Stream.update(stream.id, {
-        total_gifts_received: (stream.total_gifts_received || 0) + quantity,
-        total_denarii_earned: (stream.total_denarii_earned || 0) + earningInDenarii
-      });
-
-      return { gift, quantity };
-    },
-    onSuccess: ({ gift, quantity }) => {
-      queryClient.invalidateQueries(['wallet']);
-      queryClient.invalidateQueries(['chat-messages', streamId]);
-      setShowGiftPanel(false);
-      
-      // Single animation per gift batch (even for bundles)
-      setGiftAnimation({ 
-        gift, 
-        sender: user.full_name || 'Anonymous',
-        quantity
-      });
-    },
-    onError: (error) => {
-      console.error('Gift send failed:', error);
-      alert(error.message || 'Unable to send gift. Please try again.');
-    }
-  });
-
-  const followMutation = useMutation({
-    mutationFn: async () => {
-      if (!user) {
-        throw new Error('Please sign in to follow creators');
-      }
-      
-      if (isFollowing) {
-        const follows = await base44.entities.Follow.filter({
-          follower_email: user.email,
-          following_creator_id: creator.id
-        }, null, 1);
-        if (follows[0]) await base44.entities.Follow.delete(follows[0].id);
-      } else {
-        await base44.entities.Follow.create({
-          follower_email: user.email,
-          following_creator_id: creator.id
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['follow-status']);
-      queryClient.invalidateQueries(['creator', creator.id]);
-    },
-    onError: (error) => {
-      console.error('Follow action failed:', error);
-      if (error.message.includes('sign in')) {
-        base44.auth.redirectToLogin();
-      } else {
-        alert('Unable to update follow status. Please try again.');
-      }
-    }
-  });
-
-  const endStreamMutation = useMutation({
-    mutationFn: async () => {
-      // Security check: Only creator can end their own stream
-      if (user?.email !== creator?.user_email) {
-        throw new Error('Unauthorized: Only the stream creator can end the broadcast');
-      }
-
-      console.log('[EndStream] Ending stream:', stream.id);
-
-      // Update stream status to ended
-      await base44.entities.Stream.update(stream.id, {
-        status: 'ended',
-        duration_minutes: Math.floor((new Date() - new Date(stream.created_date)) / 60000)
-      });
-
-      // Update creator status - CRITICAL: Reset is_live
-      await base44.entities.Creator.update(creator.id, {
-        is_live: false,
-        current_stream_id: null
-      });
-
-      console.log('[EndStream] Creator status reset for:', creator.id);
-
-      // End any active PK battles
-      if (stream.stream_type === 'pk_battle' && pkBattle) {
-        await base44.entities.PKBattle.update(pkBattle.id, {
-          status: 'completed',
-          ended_at: new Date().toISOString(),
-          winner_creator_id: pkBattle.host_score > pkBattle.opponent_score 
-            ? pkBattle.host_creator_id 
-            : pkBattle.opponent_creator_id
-        });
-      }
-
-      // Stop camera stream and leave Zego
-      if (liveStream && typeof liveStream !== 'boolean') {
-        liveStream.getTracks().forEach(track => track.stop());
-      }
-      
-      try {
-        await ZegoService.leave();
-      } catch (e) {
-        console.error('[EndStream] Zego leave error:', e);
-      }
-
-      console.log('[EndStream] Stream ended successfully');
-    },
-    onSuccess: () => {
-      window.location.href = createPageUrl('Profile');
-    },
-    onError: (error) => {
-      console.error('[EndStream] Error:', error);
-      alert(error.message);
-    }
-  });
-
+  const isBroadcaster = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
 
-  // Initialize Zegocloud for viewers
-  React.useEffect(() => {
+  // ─── Chat sync ─────────────────────────
+  useEffect(() => {
+    if (initialMessages?.length) setChatMessages(initialMessages);
+  }, [initialMessages]);
+
+  useEffect(() => {
+    if (!streamId) return;
+    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
+      if (event.data.stream_id === streamId && event.type === 'create') {
+        setChatMessages(prev => [...prev, event.data]);
+      }
+    });
+    return unsubscribe;
+  }, [streamId]);
+
+  // ─── Zego viewer init ─────────────────
+  useEffect(() => {
     const initZegoViewer = async () => {
-      if (stream?.status === 'live' && user?.email !== creator?.user_email) {
+      if (stream?.status === 'live' && !isBroadcaster) {
         try {
-          console.log('[WatchStream] Initializing Zegocloud for viewer...');
-          
-          // Get Zego token for viewer
           const viewerUserId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Math.floor(Math.random() * 1000000)}`;
           const tokenResponse = await base44.functions.invoke('generateZegoToken', {
-            roomId: streamId,
-            userId: viewerUserId,
-            role: 'audience'
+            roomId: streamId, userId: viewerUserId, role: 'audience'
           });
-          
-          console.log('[WatchStream] Token response:', tokenResponse.data);
-          
           const ZEGO_APP_ID = tokenResponse.data?.appId;
           await ZegoService.initialize(ZEGO_APP_ID);
-          
-          const token = tokenResponse.data?.token || '';
-
-          // Login to room as viewer
-          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', token);
-
-          // Monitor stream quality
-          ZegoService.onQualityChange((stats) => {
-            setStreamStats(stats);
-          });
-
-          // Get remote streams after short delay
-          setTimeout(() => {
-            setRemoteUsers(ZegoService.getRemoteStreams());
-          }, 1000);
-          
+          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', tokenResponse.data?.token || '');
+          ZegoService.onQualityChange((stats) => setStreamStats(stats));
+          setTimeout(() => ZegoService.getRemoteStreams(), 1000);
           setLiveStream(true);
-          console.log('[WatchStream] Joined stream as viewer successfully');
         } catch (error) {
-          console.error('[WatchStream] Failed to join Zegocloud stream:', error);
-          setLiveStream(true); // Fallback to basic viewing
+          console.error('[WatchStream] Failed to join:', error);
+          setLiveStream(true);
         }
       }
     };
-
     initZegoViewer();
+    return () => { ZegoService.leave().catch(() => {}); };
+  }, [stream?.status, streamId, isBroadcaster]);
 
-    return () => {
-      ZegoService.leave().catch(e => console.error('[WatchStream] Leave error:', e));
-    };
-  }, [stream?.status, streamId, user?.email, creator?.user_email]);
-
-  // Optimize video performance for portrait streaming (creator view)
-  React.useEffect(() => {
-    const initLiveStream = async () => {
-      if (stream?.status === 'live' && user?.email === creator?.user_email) {
-        // Only get camera stream if you're the creator
+  // ─── Creator camera init ──────────────
+  useEffect(() => {
+    const initCamera = async () => {
+      if (stream?.status === 'live' && isBroadcaster) {
         try {
-          const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                          video: { 
-                            facingMode: 'user'
-                          },
-                          audio: {
-                            echoCancellation: true,
-                            noiseSuppression: true,
-                            autoGainControl: true
-                          }
-                        });
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          });
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
             videoRef.current.muted = false;
             videoRef.current.playsInline = true;
-
-            // Force play for mobile
             const playAttempt = async () => {
-              try {
-                await videoRef.current.play();
-              } catch (e) {
-                console.log('Play blocked, retrying...', e);
-                setTimeout(() => playAttempt(), 500);
-              }
+              try { await videoRef.current.play(); }
+              catch { setTimeout(playAttempt, 500); }
             };
             playAttempt();
           }
         } catch (error) {
           console.error('Camera access error:', error);
-          alert('Unable to access camera. Please ensure permissions are granted.');
         }
       }
     };
-    initLiveStream();
-
+    initCamera();
     return () => {
       if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(track => track.stop());
       }
     };
-    }, [stream?.status, user?.email, creator?.user_email]);
+  }, [stream?.status, isBroadcaster]);
 
-    // Apply mirror effect for creator's own video
-    React.useEffect(() => {
-    if (videoRef.current && user?.email === creator?.user_email) {
-      if (isMirrored) {
-        videoRef.current.style.transform = 'scaleX(-1)';
-      } else {
-        videoRef.current.style.transform = 'scaleX(1)';
+  // Mirror effect
+  useEffect(() => {
+    if (videoRef.current && isBroadcaster) {
+      videoRef.current.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+    }
+  }, [isMirrored, isBroadcaster]);
+
+  // ─── Mutations ────────────────────────
+  const sendMessageMutation = useMutation({
+    mutationFn: async (messageData) => {
+      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
+      try {
+        const modResult = await base44.functions.invoke('aiModerateContent', {
+          content_type: 'chat_message', content: messageContent,
+          stream_id: streamId, user_email: user.email, user_name: user.full_name || 'Anonymous'
+        });
+        if (!modResult.data?.approved) throw new Error(modResult.data?.reason || 'Message blocked');
+      } catch (modError) {
+        if (modError.message?.includes('blocked') || modError.message?.includes('banned')) throw modError;
       }
-    }
-    }, [isMirrored, user?.email, creator?.user_email]);
+      return base44.entities.ChatMessage.create({
+        stream_id: streamId, sender_email: user.email,
+        sender_name: user.full_name || 'Anonymous', message: messageContent,
+        message_type: messageData.message_type || 'text', vip_level: wallet?.vip_level || 0,
+        mentions: messageData.mentions || [], reply_to_id: messageData.reply_to_id || null,
+        reply_to_content: messageData.reply_to_content || null, reply_to_sender: messageData.reply_to_sender || null
+      });
+    },
+    onError: (error) => alert(error.message || 'Unable to send message.')
+  });
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
+  const sendGiftMutation = useMutation({
+    mutationFn: async ({ gift, quantity }) => {
+      if (!user || !wallet) throw new Error('Please sign in to send gifts');
+      if (!creatorCanReceiveGifts) throw new Error('Creator has not enabled monetization');
+      const totalCost = (gift.cost_denarii || 0) * quantity;
+      if (totalCost > (wallet.denarii_balance || 0)) throw new Error('Insufficient balance.');
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      videoRef.current?.requestFullscreen?.() || 
-      videoRef.current?.webkitRequestFullscreen?.();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-      setIsFullscreen(false);
-    }
-  };
+      await base44.entities.GiftTransaction.create({
+        sender_email: user.email, receiver_creator_id: creator.id, stream_id: streamId,
+        gift_id: gift.id, gift_name: gift.name, quantity, total_as_value: totalCost,
+        is_pk_gift: stream.stream_type === 'pk_battle'
+      });
+      await base44.entities.Wallet.update(wallet.id, { denarii_balance: (wallet.denarii_balance || 0) - totalCost });
 
-  React.useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-    };
+      const creatorEarning = Math.floor(totalCost * 0.50);
+      await base44.entities.Creator.update(creator.id, { total_earnings_denarii: (creator.total_earnings_denarii || 0) + creatorEarning });
+
+      try {
+        const existing = await base44.entities.BroadcasterEarnings.filter({ creator_id: creator.id }, null, 1);
+        if (existing[0]) {
+          await base44.entities.BroadcasterEarnings.update(existing[0].id, {
+            session_earnings_denarii: (existing[0].session_earnings_denarii || 0) + creatorEarning,
+            session_gifts_count: (existing[0].session_gifts_count || 0) + quantity,
+            total_earnings_denarii: (existing[0].total_earnings_denarii || 0) + creatorEarning,
+            total_gifts_received: (existing[0].total_gifts_received || 0) + quantity,
+            last_gift_at: new Date().toISOString()
+          });
+        } else {
+          await base44.entities.BroadcasterEarnings.create({
+            creator_id: creator.id, user_email: creator.user_email, stream_id: streamId,
+            session_earnings_denarii: creatorEarning, session_gifts_count: quantity,
+            total_earnings_denarii: creatorEarning, total_gifts_received: quantity,
+            session_start_time: new Date().toISOString(), last_gift_at: new Date().toISOString()
+          });
+        }
+      } catch (e) { console.error('BroadcasterEarnings update failed:', e); }
+
+      await base44.entities.ChatMessage.create({
+        stream_id: streamId, sender_email: user.email, sender_name: user.full_name || 'Anonymous',
+        message: `sent ${quantity > 1 ? quantity + 'x ' : ''}${gift.name}`, message_type: 'gift',
+        vip_level: wallet?.vip_level || 0, gift_data: { gift_name: gift.name, gift_icon: gift.icon, quantity }
+      });
+      await base44.entities.Stream.update(stream.id, {
+        total_gifts_received: (stream.total_gifts_received || 0) + quantity,
+        total_denarii_earned: (stream.total_denarii_earned || 0) + Math.floor(totalCost * 0.50)
+      });
+      return { gift, quantity };
+    },
+    onSuccess: ({ gift, quantity }) => {
+      queryClient.invalidateQueries(['wallet']);
+      setShowGiftPanel(false);
+      setGiftAnimation({ gift, sender: user.full_name || 'Anonymous', quantity });
+    },
+    onError: (error) => alert(error.message || 'Gift failed.')
+  });
+
+  const followMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Please sign in');
+      if (isFollowing) {
+        const follows = await base44.entities.Follow.filter({ follower_email: user.email, following_creator_id: creator.id }, null, 1);
+        if (follows[0]) await base44.entities.Follow.delete(follows[0].id);
+      } else {
+        await base44.entities.Follow.create({ follower_email: user.email, following_creator_id: creator.id });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['follow-status']);
+      queryClient.invalidateQueries(['creator', creator?.id]);
+    },
+    onError: (error) => {
+      if (error.message?.includes('sign in')) base44.auth.redirectToLogin();
+    }
+  });
+
+  const endStreamMutation = useMutation({
+    mutationFn: async () => {
+      if (user?.email !== creator?.user_email) throw new Error('Unauthorized');
+      await base44.entities.Stream.update(stream.id, {
+        status: 'ended', duration_minutes: Math.floor((new Date() - new Date(stream.created_date)) / 60000)
+      });
+      await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null });
+      if (stream.stream_type === 'pk_battle' && pkBattle) {
+        await base44.entities.PKBattle.update(pkBattle.id, {
+          status: 'completed', ended_at: new Date().toISOString(),
+          winner_creator_id: pkBattle.host_score > pkBattle.opponent_score ? pkBattle.host_creator_id : pkBattle.opponent_creator_id
+        });
+      }
+      if (liveStream && typeof liveStream !== 'boolean') liveStream.getTracks().forEach(t => t.stop());
+      try { await ZegoService.leave(); } catch (e) {}
+    },
+    onSuccess: () => { window.location.href = createPageUrl('Profile'); },
+    onError: (error) => alert(error.message)
+  });
+
+  // ─── Reaction handler ─────────────────
+  const handleDoubleTapLike = useCallback(() => {
+    const emojis = ['❤️', '🔥', '💜', '✨', '🌟'];
+    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+    setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji }]);
+    if (!isFollowing) followMutation.mutate();
+  }, [isFollowing]);
+
+  // Clean up old reactions
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFloatingReactions(prev => prev.filter(r => Date.now() - r.id < 3500));
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
+  // ─── Loading / Error ──────────────────
   if (streamLoading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-amber-100">Loading stream...</p>
-        </div>
+        <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!stream) {
     return (
-      <div className="fixed inset-0 bg-stone-950 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center">
           <Radio className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-amber-100 mb-2">Stream Not Found</h1>
-          <p className="text-amber-400/70 mb-6">This stream has ended or doesn't exist</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Stream Not Found</h1>
+          <p className="text-white/50 mb-6">This stream has ended or doesn't exist</p>
           <Link to={createPageUrl('Home')}>
-            <Button className="bg-amber-600 hover:bg-amber-700">
-              Back to Home
-            </Button>
+            <Button className="bg-amber-600 hover:bg-amber-700">Back to Home</Button>
           </Link>
         </div>
       </div>
     );
   }
 
+  // ─── RENDER ───────────────────────────
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
-      <style>{`
-        body, html { 
-          overflow: hidden !important; 
-          position: fixed !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-      `}</style>
+    <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
+      <style>{`body,html{overflow:hidden!important;position:fixed!important;width:100vw!important;height:100vh!important;margin:0!important;padding:0!important}`}</style>
 
-      {/* Alert Notifications for Admins */}
-      <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
-
-      {/* Gift Animation - Single animation per gift batch */}
+      {/* ── Gift Animation ── */}
       <AnimatePresence>
         {giftAnimation && (
-          <GiftAnimation 
-            gift={giftAnimation.gift}
-            sender={giftAnimation.sender}
-            quantity={giftAnimation.quantity}
-            onComplete={() => setGiftAnimation(null)}
+          <GiftAnimation
+            gift={giftAnimation.gift} sender={giftAnimation.sender}
+            quantity={giftAnimation.quantity} onComplete={() => setGiftAnimation(null)}
           />
         )}
       </AnimatePresence>
 
-      {/* Background Layer - Behind video as backdrop */}
-      {activeBackground && activeBackground.type === 'image' && (
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${activeBackground.url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
-      )}
-      {activeBackground && activeBackground.type === 'gradient' && (
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            background: `linear-gradient(${activeBackground.angle || 135}deg, ${activeBackground.colors?.join(', ')})`
-          }}
-        />
-      )}
-      {activeBackground && activeBackground.type === 'solid' && (
-        <div 
-          className="absolute inset-0 z-0"
-          style={{ backgroundColor: activeBackground.color }}
-        />
-      )}
+      {/* ── Video Layer ── 9:16 portrait */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black">
+        {activeBackground?.type === 'image' && (
+          <div className="absolute inset-0 z-0" style={{ backgroundImage: `url(${activeBackground.url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        )}
+        {activeBackground?.type === 'gradient' && (
+          <div className="absolute inset-0 z-0" style={{ background: `linear-gradient(${activeBackground.angle || 135}deg, ${activeBackground.colors?.join(', ')})` }} />
+        )}
 
-      {/* Fullscreen Mobile-Optimized Video */}
-      <div className="absolute inset-0 overflow-hidden" style={{ width: '100%', height: '100%', zIndex: 1, backgroundColor: activeBackground ? 'transparent' : '#000' }}>
-        {/* Hidden canvas for AR/segmentation processing */}
         <canvas ref={arCanvasRef} className="hidden" />
-        
-        <video
-          ref={videoRef}
-          className="w-full h-full"
-          style={{ 
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            backgroundColor: 'transparent',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            zIndex: 1,
-            maxWidth: '100%',
-            maxHeight: '100%'
-          }}
-          autoPlay
-          playsInline
-          muted={isMuted}
-          poster={stream.thumbnail_url}
-          controls={false}
-          preload="auto"
-          webkit-playsinline="true"
-          x5-playsinline="true"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="true"
-        >
-          Your browser does not support video playback.
-        </video>
-        
-        {/* Multi-Panel Layout - Discord Style */}
-        {stream.stream_type === 'multi_panel' && (
-          <div className="absolute inset-0 z-10">
-            <DiscordStylePanel 
-              hostStream={stream}
-              hostCreator={creator}
-              currentUser={user}
-              panelParticipants={panelParticipants}
-              onInviteToPanel={(participant) => {
-                setPanelParticipants(prev => [...prev, participant || user]);
-              }}
-              onRemoveFromPanel={(participant) => {
-                setPanelParticipants(prev => prev.filter(p => p.user_email !== participant?.user_email));
-              }}
-              onMuteAudio={(participant) => {
-                console.log('Mute audio for:', participant?.display_name);
-              }}
-              onEndCamera={(participant) => {
-                console.log('End camera for:', participant?.display_name);
-              }}
-              onLeaveCall={() => {
-                window.location.href = createPageUrl('Explore');
-              }}
-              isHost={user?.email === creator?.user_email}
-              maxParticipants={8}
-            />
-          </div>
-        )}
 
-                {!liveStream && (
-                <div className="absolute inset-0 flex items-center justify-center bg-stone-900/80">
-                <div className="text-center">
-                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-amber-100">Connecting to live stream...</p>
-                </div>
-                </div>
-                )}
-
-                {/* PK Battle Overlay */}
-                {stream.stream_type === 'pk_battle' && (
-                <div className="absolute inset-0 pointer-events-none">
-                <PKBattleOverlay
-                hostCreator={creator}
-                opponentCreator={opponentCreator}
-                hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
-                opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
-                timeRemaining={pkBattle ? 300 : 0}
-                status={pkBattle?.status || 'pending'}
-                />
-                </div>
-                )}
-      </div>
-
-      {/* Exit Button - Top Left (for all users) */}
-      <button
-        onClick={() => {
-          if (user?.email === creator?.user_email) {
-            setShowEndDialog(true);
-          } else {
-            window.location.href = createPageUrl('Home');
-          }
-        }}
-        className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Bigo-Style Creator Info - Top Left (shifted) */}
-      {user?.email === creator?.user_email ? (
-        <div className="absolute top-4 left-16 z-20">
-          <BroadcasterTopBar
-            stream={stream}
-            viewerCount={stream.viewer_count || 0}
-            onUpdateStream={async (updates) => {
-              await base44.entities.Stream.update(stream.id, updates);
-              queryClient.invalidateQueries(['stream', streamId]);
-            }}
+        {/* 9:16 video container */}
+        <div className="relative w-full h-full" style={{ maxWidth: 'calc(100vh * 9 / 16)' }}>
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            autoPlay playsInline muted={isMuted}
+            poster={stream.thumbnail_url}
+            controls={false} preload="auto"
+            onDoubleClick={handleDoubleTapLike}
           />
-        </div>
-      ) : (
-        <div className="absolute top-4 left-16 z-20">
-          <BigoCreatorInfo
-            creator={creator}
-            stream={stream}
-            isFollowing={isFollowing}
-            onFollowClick={() => followMutation.mutate()}
-            viewerCount={stream.viewer_count || 0}
-          />
-        </div>
-      )}
 
-      {/* Viewer Wallet - Top Right */}
-      {wallet && user?.email !== creator?.user_email && (
-        <div className="absolute top-4 right-3 z-20">
-          <ViewerWallet 
-            denariiBalance={wallet.denarii_balance || 0}
-            asBalance={wallet.as_balance || 0}
-          />
-        </div>
-      )}
-
-      {/* Enhanced Chat - Bottom Left with reactions, replies, mentions */}
-      <EnhancedChat
-        streamId={streamId}
-        messages={chatMessages}
-        onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-        currentUser={user}
-        isAuthenticated={!!user}
-        disabled={sendMessageMutation.isPending}
-        isHost={user?.email === creator?.user_email}
-        recentChatters={chatMessages.reduce((acc, msg) => {
-          if (!acc.find(u => u.sender_email === msg.sender_email)) {
-            acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
-          }
-          return acc;
-        }, [])}
-      />
-
-      {/* AI Moderation Badge - Shows moderation status */}
-      <div className="absolute top-20 right-4 z-20">
-        <AIModerationBadge status="active" />
-      </div>
-
-      {/* Stream Interaction Widgets - Polls, Q&A, Tipping Goals */}
-      {stream && user && (
-        <div className="absolute top-36 right-4 z-20 w-72 space-y-3">
-          <StreamInteractionWidgets
-            streamId={streamId}
-            creatorId={creator?.id}
-            isHost={user.email === creator?.user_email}
-            userEmail={user.email}
-            userName={user.full_name}
-          />
-          
-          {/* Gift Leaderboard - Compact */}
-          <div onClick={() => setShowExpandedLeaderboard(true)} className="cursor-pointer">
-            <GiftLeaderboard streamId={streamId} compact />
-          </div>
-        </div>
-      )}
-
-      {/* Interactive Overlays */}
-      {activeProduct && (
-        <ProductOverlay 
-          product={activeProduct} 
-          position="bottom-left"
-          onClose={() => setActiveProduct(null)}
-        />
-      )}
-
-      {/* Floating Reactions */}
-      {floatingReactions.map(r => (
-        <FloatingReaction 
-          key={r.id} 
-          emoji={r.emoji} 
-          onComplete={() => setFloatingReactions(prev => prev.filter(x => x.id !== r.id))}
-        />
-      ))}
-
-      {/* Quick Reactions Bar */}
-      {user && (
-        <div className="absolute bottom-32 left-4 z-20">
-          <QuickReactionOverlay 
-            onReact={(emoji) => {
-              setFloatingReactions(prev => [...prev, { id: Date.now(), emoji }]);
-            }}
-          />
-        </div>
-      )}
-
-      {/* Co-Stream Panel */}
-      <AnimatePresence>
-        {showCoStreamPanel && (
-          <CoStreamPanel
-            streamId={streamId}
-            hostCreator={creator}
-            currentUser={user}
-            isHost={user?.email === creator?.user_email}
-            onClose={() => setShowCoStreamPanel(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Expanded Gift Leaderboard */}
-      <AnimatePresence>
-        {showExpandedLeaderboard && (
-          <ExpandedGiftLeaderboard
-            streamId={streamId}
-            onClose={() => setShowExpandedLeaderboard(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Multi-Stream Manager (Host Only) */}
-      <AnimatePresence>
-        {showMultiStream && user?.email === creator?.user_email && (
-          <MultiStreamManager
-            isLive={stream?.status === 'live'}
-            onClose={() => setShowMultiStream(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Stream Overlay Editor (Host Only) */}
-      <AnimatePresence>
-        {showOverlayEditor && user?.email === creator?.user_email && (
-          <StreamOverlayEditor
-            overlays={streamOverlays}
-            onUpdate={setStreamOverlays}
-            onClose={() => setShowOverlayEditor(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Render Stream Overlays */}
-      {streamOverlays.filter(o => o.visible).map(overlay => (
-        <div
-          key={overlay.id}
-          className={`absolute z-30 ${
-            overlay.position === 'top-left' ? 'top-24 left-4' :
-            overlay.position === 'top-center' ? 'top-24 left-1/2 -translate-x-1/2' :
-            overlay.position === 'top-right' ? 'top-24 right-4' :
-            overlay.position === 'center-left' ? 'top-1/2 left-4 -translate-y-1/2' :
-            overlay.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
-            overlay.position === 'center-right' ? 'top-1/2 right-4 -translate-y-1/2' :
-            overlay.position === 'bottom-left' ? 'bottom-32 left-4' :
-            overlay.position === 'bottom-center' ? 'bottom-32 left-1/2 -translate-x-1/2' :
-            'bottom-32 right-20'
-          }`}
-        >
-          {overlay.type === 'text' && (
-            <div className="bg-black/70 backdrop-blur-xl px-4 py-2 rounded-xl text-white">
-              {overlay.content}
+          {/* Multi-Panel overlay */}
+          {stream.stream_type === 'multi_panel' && (
+            <div className="absolute inset-0 z-10">
+              <DiscordStylePanel
+                hostStream={stream} hostCreator={creator} currentUser={user}
+                panelParticipants={panelParticipants}
+                onInviteToPanel={(p) => setPanelParticipants(prev => [...prev, p || user])}
+                onRemoveFromPanel={(p) => setPanelParticipants(prev => prev.filter(x => x.user_email !== p?.user_email))}
+                onMuteAudio={() => {}} onEndCamera={() => {}}
+                onLeaveCall={() => { window.location.href = createPageUrl('Explore'); }}
+                isHost={isBroadcaster} maxParticipants={8}
+              />
             </div>
           )}
-          {overlay.type === 'product' && (
-            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-black/80 backdrop-blur-xl rounded-xl p-3 border border-pink-500/30 hover:border-pink-500/60 transition-colors">
-              <p className="text-white font-medium text-sm">{overlay.productName}</p>
-              <p className="text-emerald-400 font-bold">{overlay.productPrice}</p>
-            </a>
-          )}
-          {overlay.type === 'cta' && (
-            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold text-sm hover:from-amber-400 hover:to-orange-400 transition-colors">
-              {overlay.content}
-            </a>
-          )}
-          {overlay.type === 'image' && overlay.content && (
-            <img src={overlay.content} alt="" className="max-w-48 max-h-32 rounded-xl" />
+
+          {/* PK Battle */}
+          {stream.stream_type === 'pk_battle' && (
+            <div className="absolute inset-0 pointer-events-none z-10">
+              <PKBattleOverlay
+                hostCreator={creator} opponentCreator={opponentCreator}
+                hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
+                opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
+                timeRemaining={pkBattle ? 300 : 0} status={pkBattle?.status || 'pending'}
+              />
+            </div>
           )}
         </div>
-      ))}
 
-      {/* Quality Monitor - Viewer View */}
-      {streamStats && user?.email !== creator?.user_email && (
-        <div className="absolute bottom-32 left-4 z-20 w-64">
-          <StreamQualityMonitor 
-            stats={streamStats}
-            onQualityChange={(quality) => {
-              // Quality display for viewers (read-only)
-            }}
-          />
-        </div>
-      )}
+        {/* Loading overlay */}
+        {!liveStream && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-5">
+            <div className="text-center">
+              <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-white/70 text-sm">Connecting to stream...</p>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Bigo-Style Action Bar - Right side vertical */}
-      <BigoActionBar
-        onGiftClick={() => {
-          if (!creatorCanReceiveGifts) {
-            alert('This creator has not enabled monetization. They can broadcast for free but cannot receive gifts yet.');
-            return;
-          }
-          setShowGiftPanel(true);
-        }}
-        onLikeClick={() => followMutation.mutate()}
-        onShareClick={() => {
-          if (navigator.share) {
-            navigator.share({ title: stream.title, url: window.location.href });
-          }
-        }}
-        onCommentClick={() => {}}
-        isLiked={isFollowing}
-        likeCount={creator?.follower_count || 0}
-        giftDisabled={!creatorCanReceiveGifts}
-      />
+      {/* ── Gradient overlays for UI readability ── */}
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 pointer-events-none" />
 
-      {/* Broadcaster Wallet - Only for Stream Owner */}
-      {user?.email === creator?.user_email && (
-        <BroadcasterWallet 
-          totalEarnings={creator?.total_earnings_denarii || 0}
-          sessionEarnings={stream?.total_denarii_earned || 0}
-          giftsReceived={stream?.total_gifts_received || 0}
-          creatorId={creator?.id}
-        />
-      )}
+      {/* ── Floating Hearts (double-tap reactions) ── */}
+      <FloatingHearts reactions={floatingReactions} />
 
-      {/* Creator Controls - Only for Stream Owner */}
-      {user?.email === creator?.user_email && (
+      {/* ══════════════════════════════════════════ */}
+      {/* ── VIEWER UI ── */}
+      {/* ══════════════════════════════════════════ */}
+      {!isBroadcaster && (
         <>
-          {/* Host Controls - Premium lens filters with face mesh */}
-          <div className="absolute top-20 left-4 z-20 flex gap-2">
-            <PremiumLensUI 
-              videoRef={videoRef}
-              canvasRef={arCanvasRef}
-              onMirrorChange={setIsMirrored}
-              initialMirror={isMirrored}
-              onEffectChange={setActiveLens}
-              onBackgroundChange={setActiveBackground}
+          {/* Top bar: creator info, follow, viewer count */}
+          <ViewerTopBar
+            creator={creator} stream={stream}
+            isFollowing={isFollowing}
+            onFollowClick={() => followMutation.mutate()}
+            onClose={() => { window.location.href = createPageUrl('Home'); }}
+            viewerCount={stream.viewer_count || 0}
+          />
+
+          {/* Wallet badge */}
+          {wallet && (
+            <div className="absolute top-3 right-3 z-30">
+              <ViewerWallet denariiBalance={wallet.denarii_balance || 0} asBalance={wallet.as_balance || 0} />
+            </div>
+          )}
+
+          {/* Right-side action bar */}
+          <StreamActionBar
+            onGiftClick={() => {
+              if (!creatorCanReceiveGifts) {
+                alert('This creator has not enabled monetization yet.');
+                return;
+              }
+              setShowGiftPanel(true);
+            }}
+            onLikeClick={handleDoubleTapLike}
+            onShareClick={() => {
+              if (navigator.share) navigator.share({ title: stream.title, url: window.location.href });
+            }}
+            onChatToggle={() => setShowChat(!showChat)}
+            isLiked={isFollowing}
+            likeCount={creator?.follower_count || 0}
+            giftDisabled={!creatorCanReceiveGifts}
+            showChat={showChat}
+          />
+
+          {/* Gift leaderboard - compact, top right below wallet */}
+          <div className="absolute top-16 right-3 z-20 w-44" onClick={() => setShowExpandedLeaderboard(true)}>
+            <GiftLeaderboard streamId={streamId} compact />
+          </div>
+
+          {/* Bullet Chat - bottom left */}
+          {showChat && (
+            <BulletChat
+              messages={chatMessages}
+              onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+              currentUser={user}
+              isAuthenticated={!!user}
+              disabled={sendMessageMutation.isPending}
+              isHost={false}
+              recentChatters={chatMessages.reduce((acc, msg) => {
+                if (!acc.find(u => u.sender_email === msg.sender_email)) {
+                  acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
+                }
+                return acc;
+              }, [])}
+            />
+          )}
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════ */}
+      {/* ── BROADCASTER UI ── */}
+      {/* ══════════════════════════════════════════ */}
+      {isBroadcaster && (
+        <>
+          {/* Exit button */}
+          <button
+            onClick={() => setShowEndDialog(true)}
+            className="absolute top-3 left-3 z-30 w-10 h-10 bg-black/50 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Broadcaster top bar */}
+          <div className="absolute top-3 left-14 z-30">
+            <BroadcasterTopBar
+              stream={stream} viewerCount={stream.viewer_count || 0}
+              onUpdateStream={async (updates) => {
+                await base44.entities.Stream.update(stream.id, updates);
+                queryClient.invalidateQueries(['stream', streamId]);
+              }}
+            />
+          </div>
+
+          {/* Creator tools row */}
+          <div className="absolute top-16 left-3 z-20 flex gap-2 flex-wrap" style={{ maxWidth: '280px' }}>
+            <PremiumLensUI
+              videoRef={videoRef} canvasRef={arCanvasRef}
+              onMirrorChange={setIsMirrored} initialMirror={isMirrored}
+              onEffectChange={setActiveLens} onBackgroundChange={setActiveBackground}
               faceMeshEnabled={streamSettings.faceMeshEnabled}
               segmentationEnabled={streamSettings.segmentationEnabled}
             />
-            <StreamingSettings
-              onSettingsChange={setStreamSettings}
-              initialSettings={streamSettings}
-              isLive={stream?.status === 'live'}
-            />
-            <Button
-              onClick={() => setShowCoStreamPanel(true)}
-              size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
-              title="Co-Stream"
-            >
+            <StreamingSettings onSettingsChange={setStreamSettings} initialSettings={streamSettings} isLive={stream?.status === 'live'} />
+            <Button onClick={() => setShowCoStreamPanel(true)} size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
               <Users className="w-4 h-4" />
             </Button>
-            <Button
-              onClick={() => setShowMultiStream(true)}
-              size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
-              title="Multi-Stream to other platforms"
-            >
-              <Radio className="w-4 h-4" />
-            </Button>
-            <Button
-              onClick={() => setShowOverlayEditor(true)}
-              size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
-              title="Stream Overlays"
-            >
+            <Button onClick={() => setShowOverlayEditor(true)} size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
               <Sparkles className="w-4 h-4" />
             </Button>
-            <Button
-              onClick={() => setShowModerationPanel(true)}
-              size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0"
-            >
+            <Button onClick={() => setShowModerationPanel(true)} size="sm"
+              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
               <Shield className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Full Broadcast Control Panel - Bottom Center */}
+          {/* Broadcaster wallet */}
+          <BroadcasterWallet
+            totalEarnings={creator?.total_earnings_denarii || 0}
+            sessionEarnings={stream?.total_denarii_earned || 0}
+            giftsReceived={stream?.total_gifts_received || 0}
+            creatorId={creator?.id}
+          />
+
+          {/* Broadcast controls bottom */}
           <BroadcastControlPanel
             stream={stream}
             streamStats={{
               viewers: stream?.viewer_count || 0,
-              duration: stream?.created_date 
+              duration: stream?.created_date
                 ? `${Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000)}:${String(Math.floor(((Date.now() - new Date(stream.created_date).getTime()) % 60000) / 1000)).padStart(2, '0')}`
                 : '0:00',
               bitrate: streamStats?.bitrate || 0
             }}
             onToggleMic={(enabled) => {
-              if (liveStream && typeof liveStream !== 'boolean') {
-                liveStream.getAudioTracks().forEach(track => track.enabled = enabled);
-              }
+              if (liveStream && typeof liveStream !== 'boolean') liveStream.getAudioTracks().forEach(t => t.enabled = enabled);
             }}
             onToggleCamera={(enabled) => {
-              if (liveStream && typeof liveStream !== 'boolean') {
-                liveStream.getVideoTracks().forEach(track => track.enabled = enabled);
-              }
+              if (liveStream && typeof liveStream !== 'boolean') liveStream.getVideoTracks().forEach(t => t.enabled = enabled);
             }}
             onToggleScreenShare={async (enabled) => {
               if (enabled) {
                 try {
                   const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                  if (videoRef.current) {
-                    videoRef.current.srcObject = screenStream;
-                  }
-                } catch (e) {
-                  console.error('Screen share failed:', e);
-                }
-              } else if (liveStream && typeof liveStream !== 'boolean') {
-                if (videoRef.current) {
-                  videoRef.current.srcObject = liveStream;
-                }
+                  if (videoRef.current) videoRef.current.srcObject = screenStream;
+                } catch (e) { console.error('Screen share failed:', e); }
+              } else if (liveStream && typeof liveStream !== 'boolean' && videoRef.current) {
+                videoRef.current.srcObject = liveStream;
               }
             }}
             onFlipCamera={() => setIsMirrored(!isMirrored)}
             onEndStream={() => setShowEndDialog(true)}
-            onUpdateSettings={(settings) => {
-              console.log('Broadcast settings updated:', settings);
-            }}
+            onUpdateSettings={() => {}}
           />
 
-          {/* End Stream Dialog */}
-          <EndStreamDialog
-            isOpen={showEndDialog}
-            onConfirm={() => endStreamMutation.mutate()}
-            onCancel={() => setShowEndDialog(false)}
-            isPending={endStreamMutation.isPending}
+          {/* Bullet chat for broadcaster too */}
+          <BulletChat
+            messages={chatMessages}
+            onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+            currentUser={user} isAuthenticated={!!user}
+            disabled={sendMessageMutation.isPending} isHost={true}
+            recentChatters={chatMessages.reduce((acc, msg) => {
+              if (!acc.find(u => u.sender_email === msg.sender_email)) acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
+              return acc;
+            }, [])}
           />
 
-          {/* Moderation Panel */}
+          {/* End stream dialog */}
+          <EndStreamDialog isOpen={showEndDialog} onConfirm={() => endStreamMutation.mutate()} onCancel={() => setShowEndDialog(false)} isPending={endStreamMutation.isPending} />
+
+          {/* Moderation panel */}
           <ModerationPanel
-            isOpen={showModerationPanel}
-            onClose={() => setShowModerationPanel(false)}
-            streamId={streamId}
-            viewers={[]} // Populated from Zego room events
-            moderators={moderators}
-            kickedUsers={kickedUsers}
-            chatMuted={chatMuted}
-            onToggleChatMute={() => setChatMuted(!chatMuted)}
-            onAppointModerator={(viewer) => setModerators([...moderators, viewer])}
-            onRemoveModerator={(mod) => setModerators(moderators.filter(m => m.email !== mod.email))}
-            onKickViewer={(viewer) => setKickedUsers([...kickedUsers, viewer])}
+            isOpen={showModerationPanel} onClose={() => setShowModerationPanel(false)}
+            streamId={streamId} viewers={[]} moderators={moderators} kickedUsers={kickedUsers}
+            chatMuted={chatMuted} onToggleChatMute={() => setChatMuted(!chatMuted)}
+            onAppointModerator={(v) => setModerators([...moderators, v])}
+            onRemoveModerator={(m) => setModerators(moderators.filter(x => x.email !== m.email))}
+            onKickViewer={(v) => setKickedUsers([...kickedUsers, v])}
             onResetKicks={() => setKickedUsers([])}
-            onMuteViewerAudio={(viewer) => console.log('Mute audio:', viewer)}
-            onEndViewerCamera={(viewer) => console.log('End camera:', viewer)}
-            isHost={true}
+            onMuteViewerAudio={() => {}} onEndViewerCamera={() => {}} isHost={true}
           />
         </>
       )}
 
-      {/* Gift Panel Overlay */}
+      {/* ── Stream Overlays ── */}
+      {streamOverlays.filter(o => o.visible).map(overlay => (
+        <div key={overlay.id} className={`absolute z-30 ${
+          overlay.position === 'top-left' ? 'top-24 left-4' :
+          overlay.position === 'top-center' ? 'top-24 left-1/2 -translate-x-1/2' :
+          overlay.position === 'top-right' ? 'top-24 right-4' :
+          overlay.position === 'bottom-left' ? 'bottom-32 left-4' :
+          overlay.position === 'bottom-center' ? 'bottom-32 left-1/2 -translate-x-1/2' :
+          'bottom-32 right-20'
+        }`}>
+          {overlay.type === 'text' && <div className="bg-black/70 backdrop-blur-xl px-4 py-2 rounded-xl text-white">{overlay.content}</div>}
+          {overlay.type === 'product' && (
+            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-black/80 backdrop-blur-xl rounded-xl p-3 border border-pink-500/30">
+              <p className="text-white font-medium text-sm">{overlay.productName}</p>
+              <p className="text-emerald-400 font-bold">{overlay.productPrice}</p>
+            </a>
+          )}
+          {overlay.type === 'cta' && (
+            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold text-sm">
+              {overlay.content}
+            </a>
+          )}
+        </div>
+      ))}
+
+      {/* ── Admin alerts ── */}
+      <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
+
+      {/* ── Expanded leaderboard ── */}
+      <AnimatePresence>
+        {showExpandedLeaderboard && (
+          <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Co-Stream panel ── */}
+      <AnimatePresence>
+        {showCoStreamPanel && (
+          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Multi-Stream ── */}
+      <AnimatePresence>
+        {showMultiStream && isBroadcaster && (
+          <MultiStreamManager isLive={stream?.status === 'live'} onClose={() => setShowMultiStream(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Overlay Editor ── */}
+      <AnimatePresence>
+        {showOverlayEditor && isBroadcaster && (
+          <StreamOverlayEditor overlays={streamOverlays} onUpdate={setStreamOverlays} onClose={() => setShowOverlayEditor(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Gift Panel ── */}
       <AnimatePresence>
         {showGiftPanel && (
           <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-40"
-              onClick={() => setShowGiftPanel(false)}
-            />
-            {/* Gift Panel */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowGiftPanel(false)} />
             <div className="fixed bottom-0 left-0 right-0 z-50">
-              <GiftPanel 
-                gifts={gifts}
-                walletBalance={walletBalance}
+              <GiftPanel gifts={gifts} walletBalance={walletBalance}
                 onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
-                onClose={() => setShowGiftPanel(false)}
-              />
+                onClose={() => setShowGiftPanel(false)} />
             </div>
           </>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
