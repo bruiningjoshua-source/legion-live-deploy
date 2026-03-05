@@ -528,13 +528,26 @@ export default function WatchStream() {
     );
   }
 
-  if (!stream) {
+  if (!stream || streamEnded) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center">
           <Radio className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Stream Not Found</h1>
-          <p className="text-white/50 mb-6">This stream has ended or doesn't exist</p>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            {streamEnded ? 'Stream Has Ended' : 'Stream Not Found'}
+          </h1>
+          <p className="text-white/50 mb-2">
+            {streamEnded
+              ? `${creator?.display_name || 'The host'} ended this broadcast.`
+              : "This stream doesn't exist"}
+          </p>
+          {streamEnded && stream && (
+            <div className="flex items-center justify-center gap-4 text-white/40 text-sm mb-6">
+              {stream.duration_minutes > 0 && <span>{stream.duration_minutes} min</span>}
+              {stream.peak_viewers > 0 && <span>{stream.peak_viewers} peak viewers</span>}
+              {stream.total_gifts_received > 0 && <span>{stream.total_gifts_received} gifts</span>}
+            </div>
+          )}
           <Link to={createPageUrl('Home')}>
             <Button className="bg-amber-600 hover:bg-amber-700">Back to Home</Button>
           </Link>
