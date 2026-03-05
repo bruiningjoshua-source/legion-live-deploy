@@ -236,11 +236,10 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
               {mainNavLinks.map(link => {
                 const Icon = link.icon;
                 return (
-                  <Link
+                  <button
                     key={link.path}
-                    to={link.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    onClick={() => { setMobileMenuOpen(false); navigate(link.path); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
                       isActive(link.path)
                         ? 'bg-amber-600 text-white'
                         : 'text-amber-300 hover:bg-amber-800/20'
@@ -248,7 +247,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   >
                     <Icon className="w-5 h-5" />
                     {link.name}
-                  </Link>
+                  </button>
                 );
               })}
             </div>
