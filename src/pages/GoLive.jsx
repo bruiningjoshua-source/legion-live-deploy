@@ -530,11 +530,13 @@ export default function GoLive() {
               {/* Top Left - Exit Button */}
               <button
                 onClick={() => {
+                  if (goLiveMutation.isPending) return; // Don't exit while starting
                   if (cameraStream) {
                     cameraStream.getTracks().forEach(track => track.stop());
                     setCameraStream(null);
                     setHasPermissions(false);
                   }
+                  ZegoService.leave().catch(() => {});
                   navigate(createPageUrl('Home'));
                 }}
                 className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
