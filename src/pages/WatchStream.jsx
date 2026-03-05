@@ -198,6 +198,7 @@ export default function WatchStream() {
 
   // ─── Zego viewer init ─────────────────
   useEffect(() => {
+    let mounted = true;
     const initZegoViewer = async () => {
       if (stream?.status === 'live' && !isBroadcaster) {
         try {
@@ -205,21 +206,46 @@ export default function WatchStream() {
           const tokenResponse = await base44.functions.invoke('generateZegoToken', {
             roomId: streamId, userId: viewerUserId, role: 'audience'
           });
+          if (!mounted) return;
           const ZEGO_APP_ID = tokenResponse.data?.appId;
+          if (!ZEGO_APP_ID || !tokenResponse.data?.token) {
+            console.error('[WatchStream] Invalid token response');
+            setLiveStream(true);
+            return;
+          }
           await ZegoService.initialize(ZEGO_APP_ID);
-          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', tokenResponse.data?.token || '');
-          ZegoService.onQualityChange((stats) => setStreamStats(stats));
+          if (!mounted) return;
+          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', tokenResponse.data.token);
+          if (!mounted) return;
+
+          // Listen for room events (host ends stream)
+          ZegoService.onRoomEvent((event) => {
+            if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
+              queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
+            }
+            if (event.type === 'streamUpdate' && event.updateType === 'DELETE') {
+              // Host stopped publishing - stream ended
+              queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
+            }
+          });
+          ZegoService.onQualityChange((stats) => { if (mounted) setStreamStats(stats); });
           setTimeout(() => ZegoService.getRemoteStreams(), 1000);
           setLiveStream(true);
         } catch (error) {
           console.error('[WatchStream] Failed to join:', error);
-          setLiveStream(true);
+          if (mounted) setLiveStream(true);
         }
       }
     };
     initZegoViewer();
-    return () => { ZegoService.leave().catch(() => {}); };
+    return () => {
+      mounted = false;
+      ZegoService.leave().catch(() => {});
+    };
   }, [stream?.status, streamId, isBroadcaster]);
+
+  // ─── Viewer: detect stream ended and show end screen ───
+  const streamEnded = stream?.status === 'ended';
 
   // ─── Creator camera init ──────────────
   useEffect(() => {
