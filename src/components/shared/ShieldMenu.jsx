@@ -39,6 +39,8 @@ const mainItems = [
   { name: 'Videos', path: 'TheAmphitheatre', icon: Film, color: 'text-blue-400' },
   { name: 'Gaming Hub', path: 'TheGamingHub', icon: Gamepad2, color: 'text-purple-400' },
   { name: 'Marketplace', path: 'AffiliateMarketplace', icon: ShoppingBag, color: 'text-emerald-400' },
+  { name: 'Podcasts', path: 'Podcasts', icon: Headphones, color: 'text-orange-400' },
+  { name: 'Podcast Studio', path: 'PodcastStudio', icon: Mic, color: 'text-rose-400' },
 ];
 
 const expandableSections = [
