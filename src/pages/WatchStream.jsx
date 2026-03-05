@@ -330,8 +330,10 @@ export default function WatchStream() {
     mutationFn: async ({ gift, quantity }) => {
       if (!user || !wallet) throw new Error('Please sign in to send gifts');
       if (!creatorCanReceiveGifts) throw new Error('Creator has not enabled monetization');
+      if (stream?.status !== 'live') throw new Error('Stream has ended');
       const totalCost = (gift.cost_denarii || 0) * quantity;
       if (totalCost > (wallet.denarii_balance || 0)) throw new Error('Insufficient balance.');
+      if (quantity < 1 || quantity > 100) throw new Error('Invalid quantity');
 
       await base44.entities.GiftTransaction.create({
         sender_email: user.email, receiver_creator_id: creator.id, stream_id: streamId,
