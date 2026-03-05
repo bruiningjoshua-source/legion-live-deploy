@@ -33,7 +33,7 @@ import {
 import { motion } from 'framer-motion';
 import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
-import BulletChat from '@/components/stream/BulletChat';
+import BulletChat from '@/components/stream/BulletChat.jsx';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
 import PremiumLensUI from '@/components/stream/PremiumLensUI';
