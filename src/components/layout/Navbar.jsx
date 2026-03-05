@@ -26,6 +26,7 @@ import {
   BarChart3,
   DollarSign,
   ChevronLeft,
+  Headphones,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
