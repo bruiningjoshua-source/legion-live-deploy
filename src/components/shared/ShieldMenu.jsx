@@ -27,7 +27,9 @@ import {
   Star,
   HelpCircle,
   FileText,
-  Lock
+  Lock,
+  Headphones,
+  Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
