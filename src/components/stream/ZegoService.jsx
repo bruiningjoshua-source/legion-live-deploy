@@ -487,17 +487,19 @@ class ZegoStreamingService {
   // ─── TEARDOWN ──────────────────────────────────────────────────
 
   async leave() {
+    if (this._leaving) return; // Prevent concurrent leave calls
+    this._leaving = true;
     console.log('[Zego] Leaving — cleanup start');
 
     this._stopStatsMonitor();
 
     // Stop publishing
-    if (this.isPublishing) {
+    if (this.isPublishing && this.engine) {
       try { this.engine.stopPublishingStream(this.roomId || ''); } catch (e) {}
     }
 
     // Stop screen share
-    if (this.isScreenSharing) {
+    if (this.isScreenSharing && this.engine) {
       try { this.engine.stopPublishingStream((this.roomId || '') + '_screen'); } catch (e) {}
       if (this.screenStream) {
         try { this.engine.destroyStream(this.screenStream); } catch (e) {}
@@ -505,19 +507,21 @@ class ZegoStreamingService {
     }
 
     // Destroy local stream
-    if (this.localStream) {
+    if (this.localStream && this.engine) {
       try { this.engine.destroyStream(this.localStream); } catch (e) {}
     }
 
     // Stop all remote streams
-    for (const streamId of this.remoteStreams.keys()) {
-      try { this.engine.stopPlayingStream(streamId); } catch (e) {}
+    if (this.engine) {
+      for (const streamId of this.remoteStreams.keys()) {
+        try { this.engine.stopPlayingStream(streamId); } catch (e) {}
+      }
     }
     this.remoteStreams.clear();
     this.remoteUserMap.clear();
 
     // Leave room
-    if (this.roomId) {
+    if (this.roomId && this.engine) {
       try { await this.engine.logoutRoom(this.roomId); } catch (e) {}
     }
 
@@ -529,6 +533,7 @@ class ZegoStreamingService {
     this.userId = null;
     this.qualityCallbacks = [];
     this.roomEventCallbacks = [];
+    this._leaving = false;
 
     console.log('[Zego] Cleanup complete');
   }
