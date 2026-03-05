@@ -1,6 +1,7 @@
-import React, { memo, useRef, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { memo, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { scrollPositions } from '@/components/navigation/useScrollPreservation';
 import { 
   Home, 
   Compass,
@@ -8,17 +9,6 @@ import {
   User,
   Radio
 } from 'lucide-react';
-
-// Persist scroll positions per tab path
-const tabScrollPositions = {};
-
-const TAB_PATHS = [
-  createPageUrl('Home'),
-  createPageUrl('Explore'),
-  createPageUrl('GoLive'),
-  createPageUrl('TheAmphitheatre'),
-  createPageUrl('Profile'),
-];
 
 const BottomNav = memo(function BottomNav() {
   const location = useLocation();
@@ -43,20 +33,15 @@ const BottomNav = memo(function BottomNav() {
     const targetClean = targetPath.split('?')[0];
     const currentClean = currentPath.split('?')[0];
 
-    // Save current scroll position
-    tabScrollPositions[currentClean] = window.scrollY;
+    // Save current scroll position into the shared map
+    scrollPositions.set(currentClean, window.scrollY);
 
     if (currentClean === targetClean) {
       // Already on this tab — scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Navigate to the tab
-      navigate(targetPath);
-      // Restore saved scroll position after render
-      requestAnimationFrame(() => {
-        const saved = tabScrollPositions[targetClean];
-        window.scrollTo(0, saved || 0);
-      });
+      // Replace keeps the back stack shallow between tabs
+      navigate(targetPath, { replace: true });
     }
   }, [currentPath, navigate]);
 
