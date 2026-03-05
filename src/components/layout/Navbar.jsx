@@ -34,6 +34,7 @@ import NotificationBell from '@/components/social/NotificationBell';
 export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const mainNavLinks = [
     { name: 'Home', path: createPageUrl('Home'), icon: Home },
