@@ -181,6 +181,7 @@ export default function WatchStream() {
       mounted = false;
       zegoInitAttempted.current = false;
       ZegoService.leave().catch(() => {});
+      document.body.classList.remove('fullscreen-lock');
     };
   }, [stream?.status, streamId, isBroadcaster]);
 
