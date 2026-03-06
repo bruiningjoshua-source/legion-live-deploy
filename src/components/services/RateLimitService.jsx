@@ -48,11 +48,30 @@ class RateLimitService {
     return this.check(`follow:${userEmail}`, 20, 60000);
   }
 
+  /** Stream creation: max 3 per minute to prevent spam-creation */
+  checkStreamCreate(userEmail) {
+    return this.check(`stream:${userEmail}`, 3, 60000);
+  }
+
+  /** Wallet purchase: max 5 per minute */
+  checkPurchase(userEmail) {
+    return this.check(`purchase:${userEmail}`, 5, 60000);
+  }
+
   /** Reset all buckets for a user (on logout) */
   reset(userEmail) {
     Object.keys(this.buckets).forEach(key => {
       if (key.includes(userEmail)) delete this.buckets[key];
     });
+  }
+
+  /** Periodic cleanup of stale buckets to prevent memory leak */
+  cleanup() {
+    const now = Date.now();
+    for (const key of Object.keys(this.buckets)) {
+      this.buckets[key] = this.buckets[key].filter(ts => now - ts < 120000);
+      if (this.buckets[key].length === 0) delete this.buckets[key];
+    }
   }
 }
 

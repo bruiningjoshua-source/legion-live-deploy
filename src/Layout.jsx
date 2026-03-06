@@ -115,6 +115,12 @@ export default function Layout({ children, currentPageName }) {
         const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
         if (wallets.length > 0) return wallets[0];
         walletCreatingRef.current = true;
+        // Double-check after acquiring mutex (another query could have created it)
+        const recheck = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
+        if (recheck.length > 0) {
+          walletCreatingRef.current = false;
+          return recheck[0];
+        }
         const newWallet = await base44.entities.Wallet.create({ 
           user_email: user.email, 
           denarii_balance: 500,
@@ -126,7 +132,9 @@ export default function Layout({ children, currentPageName }) {
       } catch (error) {
         walletCreatingRef.current = false;
         console.error('Wallet fetch failed:', error);
-        return null;
+        // One more attempt to fetch in case create failed due to race
+        const fallback = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1).catch(() => []);
+        return fallback[0] || null;
       }
     },
     enabled: !!user?.email,

@@ -123,9 +123,13 @@ export default function WatchStream() {
     };
   }, [stream?.id, isBroadcaster, user?.email, stream?.status]);
 
-  // Chat sync
+  // Chat sync — only seed from initial fetch, don't overwrite live messages
+  const chatSeeded = useRef(false);
   useEffect(() => {
-    if (initialMessages?.length) setChatMessages(initialMessages);
+    if (initialMessages?.length && !chatSeeded.current) {
+      setChatMessages(initialMessages);
+      chatSeeded.current = true;
+    }
   }, [initialMessages]);
 
   useEffect(() => {
@@ -136,35 +140,42 @@ export default function WatchStream() {
   }, [streamId]);
 
   // Zego viewer init
+  const zegoInitAttempted = useRef(false);
   useEffect(() => {
     let mounted = true;
+    if (stream?.status !== 'live' || isBroadcaster || !streamId) return;
+    if (zegoInitAttempted.current) return;
+    zegoInitAttempted.current = true;
+
     const init = async () => {
-      if (stream?.status !== 'live' || isBroadcaster) return;
-      try {
-        const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
-        const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
-        if (!mounted) return;
-        const { appId, token } = res.data || {};
-        if (!appId || !token) { setLiveStream(true); return; }
-        await ZegoService.initialize(appId);
-        if (!mounted) return;
-        await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
-        if (!mounted) return;
-        ZegoService.onRoomEvent((event) => {
-          if ((event.type === 'roomState' && event.state === 'DISCONNECTED') || 
-              (event.type === 'streamUpdate' && event.updateType === 'DELETE')) {
-            queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
-          }
-        });
-        setTimeout(() => ZegoService.getRemoteStreams(), 1000);
-        setLiveStream(true);
-      } catch (error) {
-        console.error('[WatchStream] Join failed:', error);
-        if (mounted) setLiveStream(true);
-      }
+      const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
+      const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
+      if (!mounted) return;
+      const { appId, token } = res.data || {};
+      if (!appId || !token) { setLiveStream(true); return; }
+      await ZegoService.initialize(appId);
+      if (!mounted) return;
+      await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
+      if (!mounted) return;
+      ZegoService.onRoomEvent((event) => {
+        if ((event.type === 'roomState' && event.state === 'DISCONNECTED') || 
+            (event.type === 'streamUpdate' && event.updateType === 'DELETE')) {
+          queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
+        }
+      });
+      // Wait for remote stream list to populate
+      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 1500);
+      if (mounted) setLiveStream(true);
     };
-    init();
-    return () => { mounted = false; ZegoService.leave().catch(() => {}); };
+    init().catch(error => {
+      console.error('[WatchStream] Join failed:', error);
+      if (mounted) setLiveStream(true);
+    });
+    return () => {
+      mounted = false;
+      zegoInitAttempted.current = false;
+      ZegoService.leave().catch(() => {});
+    };
   }, [stream?.status, streamId, isBroadcaster]);
 
   // Broadcaster camera
