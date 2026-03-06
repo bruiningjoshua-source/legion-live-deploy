@@ -551,12 +551,20 @@ class ZegoStreamingService {
       }
     }
 
+    // Cancel any pending reconnect
+    if (this._reconnectTimeout) {
+      clearTimeout(this._reconnectTimeout);
+      this._reconnectTimeout = null;
+    }
+
     this.localStream = null;
     this.screenStream = null;
     this.isPublishing = false;
     this.isScreenSharing = false;
     this.roomId = null;
     this.userId = null;
+    this._lastToken = null;
+    this._lastUserName = null;
     this.qualityCallbacks = [];
     this.roomEventCallbacks = [];
     this._leaving = false;
