@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useCurrentUser, useLiveStreams, useCreators } from '@/components/hooks/useStreamData';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +17,6 @@ import {
   ShoppingBag,
   ArrowRight
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
@@ -82,30 +81,9 @@ export default function Home() {
     await queryClient.invalidateQueries({ queryKey: ['creators-home'] });
   }, [queryClient]);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1
-  });
-
-  const { data: streams = [], isLoading: streamsLoading } = useQuery({
-    queryKey: ['streams-live'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 30),
-    staleTime: 45 * 1000,
-    refetchInterval: 90 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1
-  });
-
-  const { data: creators = [] } = useQuery({
-    queryKey: ['creators-home'],
-    queryFn: () => base44.entities.Creator.list('-follower_count', 30),
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: 1
-  });
+  const { data: user } = useCurrentUser();
+  const { data: streams = [], isLoading: streamsLoading } = useLiveStreams();
+  const { data: creators = [] } = useCreators();
 
   // Memoize expensive computations
   const creatorMap = useMemo(() => {
