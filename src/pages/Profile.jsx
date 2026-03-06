@@ -42,6 +42,7 @@ import {
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import StreamCard from '@/components/stream/StreamCard';
 import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
 import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
@@ -265,7 +266,7 @@ export default function Profile() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{(creator?.follower_count || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
                 <p className="text-amber-400/60 text-sm">Followers</p>
               </div>
               <div className="bg-stone-800/50 rounded-xl p-4 text-center">
@@ -273,11 +274,11 @@ export default function Profile() {
                 <p className="text-amber-400/60 text-sm">Level</p>
               </div>
               <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{creator?.pk_wins || 0}</p>
+                <p className="text-2xl font-bold text-amber-100">{formatCount(creator?.pk_wins)}</p>
                 <p className="text-amber-400/60 text-sm">PK Wins</p>
               </div>
               <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{totalEarnings.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-amber-100">{formatCount(totalEarnings)}</p>
                 <p className="text-amber-400/60 text-sm">🪙 Earned</p>
               </div>
             </div>

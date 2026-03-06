@@ -25,6 +25,7 @@ import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import PremiumCreatorCard from '@/components/creator/PremiumCreatorCard';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
+import formatCount from '@/components/shared/FormatCount';
 
 const categories = [
   { value: 'all', label: 'All Categories' },
@@ -224,7 +225,7 @@ export default function Explore() {
               >
                 <Radio className="w-4 h-4 mr-2" />
                 Live Streams
-                <Badge className="ml-2 bg-red-500/80 text-white border-0 text-[10px] px-1.5">{streams.length}</Badge>
+                <Badge className="ml-2 bg-red-500/80 text-white border-0 text-[10px] px-1.5">{formatCount(streams.length)}</Badge>
               </TabsTrigger>
               <TabsTrigger 
                 value="creators"
@@ -232,7 +233,7 @@ export default function Explore() {
               >
                 <Users className="w-4 h-4 mr-2" />
                 Creators
-                <Badge className="ml-2 bg-amber-500/50 text-white border-0 text-[10px] px-1.5">{creators.length}</Badge>
+                <Badge className="ml-2 bg-amber-500/50 text-white border-0 text-[10px] px-1.5">{formatCount(creators.length)}</Badge>
               </TabsTrigger>
             </TabsList>
           </div>
