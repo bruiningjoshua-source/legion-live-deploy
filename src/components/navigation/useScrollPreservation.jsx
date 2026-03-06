@@ -25,37 +25,43 @@ export default function useScrollPreservation() {
   const prevPathRef = useRef(location.pathname);
   const isRestoringRef = useRef(false);
 
+  // Poll for navigation changes since we can't use React Router hooks here
   useEffect(() => {
-    const prevPath = prevPathRef.current;
-    const nextPath = location.pathname;
+    let currentPath = getPathname();
+    prevPathRef.current = currentPath;
 
-    if (prevPath !== nextPath) {
-      // Save previous page's scroll position
-      scrollPositions.set(prevPath, window.scrollY);
-      prevPathRef.current = nextPath;
-    }
+    const checkNavigation = () => {
+      const nextPath = getPathname();
+      if (currentPath !== nextPath) {
+        scrollPositions.set(currentPath, window.scrollY);
+        currentPath = nextPath;
+        prevPathRef.current = nextPath;
 
-    // Restore or reset scroll
-    const saved = scrollPositions.get(nextPath);
-    isRestoringRef.current = true;
+        const saved = scrollPositions.get(nextPath);
+        isRestoringRef.current = true;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, saved !== undefined ? saved : 0);
+            isRestoringRef.current = false;
+          });
+        });
+      }
+    };
 
-    // Double-rAF ensures the DOM has fully painted before restoring scroll
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (saved !== undefined) {
-          window.scrollTo(0, saved);
-        } else {
-          window.scrollTo(0, 0);
-        }
-        isRestoringRef.current = false;
-      });
-    });
-  }, [location.pathname]);
+    // Listen to popstate + use a short interval as fallback for programmatic navigation
+    window.addEventListener('popstate', checkNavigation);
+    const interval = setInterval(checkNavigation, 200);
+
+    return () => {
+      window.removeEventListener('popstate', checkNavigation);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Persist on beforeunload
   useEffect(() => {
-    const handler = () => scrollPositions.set(location.pathname, window.scrollY);
+    const handler = () => scrollPositions.set(getPathname(), window.scrollY);
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [location.pathname]);
+  }, []);
 }
