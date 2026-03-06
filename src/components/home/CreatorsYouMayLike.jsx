@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Crown, Radio, UserPlus, UserCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 
@@ -113,17 +112,11 @@ const CreatorsYouMayLike = memo(function CreatorsYouMayLike({ user }) {
   return (
     <div className="mb-8 sm:mb-12">
       <h2 className="text-white font-bold text-lg sm:text-xl mb-4">Creators You May Like</h2>
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-        {creators.map((creator, i) => (
-          <motion.div
-            key={creator.id}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.25 }}
-            className="snap-start"
-          >
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+        {creators.map((creator) => (
+          <div key={creator.id} className="snap-start">
             <CreatorMiniCard creator={creator} user={user} followSet={followSet} />
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Eye, Users } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ViewerCount({ 
   count = 0,
@@ -43,17 +42,7 @@ export default function ViewerCount({
       className
     )}>
       <Eye className={iconSizes[size]} />
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={count}
-          initial={animated ? { y: -10, opacity: 0 } : false}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 10, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {formatCount(count)}
-        </motion.span>
-      </AnimatePresence>
+      <span>{formatCount(count)}</span>
     </div>
   );
 }

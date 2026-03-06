@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 
 export default function LiveBadge({ 
@@ -63,14 +62,10 @@ export default function LiveBadge({
           config.dotColor
         )} />
         {pulse && (
-          <motion.span
-            animate={{ scale: [1, 1.8, 1], opacity: [1, 0, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className={cn(
-              'absolute inset-0 rounded-full',
-              config.dotColor
-            )}
-          />
+          <span className={cn(
+            'absolute inset-0 rounded-full animate-ping',
+            config.dotColor
+          )} />
         )}
       </span>
       <span className="text-white drop-shadow-sm">{config.text}</span>
