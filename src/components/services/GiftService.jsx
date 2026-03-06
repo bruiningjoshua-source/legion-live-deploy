@@ -24,7 +24,20 @@ class GiftService {
     if (user.email === creator.user_email) throw new Error(ERROR.SELF_ACTION);
 
     const totalCost = (gift.cost_denarii || 0) * quantity;
+    if (totalCost <= 0) throw new Error(ERROR.INVALID_INPUT);
     if (totalCost > (wallet.denarii_balance || 0)) throw new Error(ERROR.INSUFFICIENT_BALANCE);
+
+    // Re-fetch wallet to get latest balance (prevents double-spend from stale cache)
+    const freshWallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
+    const freshWallet = freshWallets[0];
+    if (!freshWallet || totalCost > (freshWallet.denarii_balance || 0)) {
+      throw new Error(ERROR.INSUFFICIENT_BALANCE);
+    }
+
+    // Deduct from sender FIRST (fail fast before recording transaction)
+    await base44.entities.Wallet.update(freshWallet.id, {
+      denarii_balance: (freshWallet.denarii_balance || 0) - totalCost,
+    });
 
     // Record transaction
     await base44.entities.GiftTransaction.create({
@@ -36,11 +49,6 @@ class GiftService {
       quantity,
       total_as_value: totalCost,
       is_pk_gift: stream.stream_type === 'pk_battle',
-    });
-
-    // Deduct from sender
-    await base44.entities.Wallet.update(wallet.id, {
-      denarii_balance: (wallet.denarii_balance || 0) - totalCost,
     });
 
     // Credit creator

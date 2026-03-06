@@ -17,6 +17,7 @@ class FollowService {
   /** Toggle follow state */
   async toggleFollow(userEmail, creatorId, currentlyFollowing) {
     if (!userEmail) throw new Error('Please sign in');
+    if (!creatorId) throw new Error('Invalid creator');
 
     if (currentlyFollowing) {
       const follows = await base44.entities.Follow.filter(
@@ -24,10 +25,16 @@ class FollowService {
       );
       if (follows[0]) await base44.entities.Follow.delete(follows[0].id);
     } else {
-      await base44.entities.Follow.create({
-        follower_email: userEmail,
-        following_creator_id: creatorId,
-      });
+      // Check for existing follow to prevent duplicate records from rapid taps
+      const existing = await base44.entities.Follow.filter(
+        { follower_email: userEmail, following_creator_id: creatorId }, null, 1
+      );
+      if (existing.length === 0) {
+        await base44.entities.Follow.create({
+          follower_email: userEmail,
+          following_creator_id: creatorId,
+        });
+      }
     }
   }
 }

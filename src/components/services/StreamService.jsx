@@ -41,17 +41,37 @@ class StreamService {
     });
 
     // Finalize PK battle if active
-    if (stream.stream_type === 'pk_battle' && pkBattle) {
-      const hostWon = (pkBattle.host_score || 0) > (pkBattle.opponent_score || 0);
+    if (stream.stream_type === 'pk_battle' && pkBattle && pkBattle.status !== 'completed') {
+      const hostScore = pkBattle.host_score || 0;
+      const opponentScore = pkBattle.opponent_score || 0;
+      const isTie = hostScore === opponentScore;
+      const hostWon = hostScore > opponentScore;
       await base44.entities.PKBattle.update(pkBattle.id, {
         status: 'completed',
         ended_at: new Date().toISOString(),
-        winner_creator_id: hostWon ? pkBattle.host_creator_id : pkBattle.opponent_creator_id,
+        winner_creator_id: isTie ? '' : (hostWon ? pkBattle.host_creator_id : pkBattle.opponent_creator_id),
       });
-      const pkField = hostWon ? 'pk_wins' : 'pk_losses';
-      await base44.entities.Creator.update(pkBattle.host_creator_id, {
-        [pkField]: (creator[pkField] || 0) + 1,
-      });
+      // Update PK win/loss for host (only if not a tie)
+      if (!isTie && pkBattle.host_creator_id) {
+        const pkField = hostWon ? 'pk_wins' : 'pk_losses';
+        await base44.entities.Creator.update(pkBattle.host_creator_id, {
+          [pkField]: (creator[pkField] || 0) + 1,
+        }).catch(e => console.error('[StreamService] PK host stat update failed:', e));
+      }
+      // Update PK win/loss for opponent (only if not a tie)
+      if (!isTie && pkBattle.opponent_creator_id) {
+        const opponentPkField = hostWon ? 'pk_losses' : 'pk_wins';
+        try {
+          const opponents = await base44.entities.Creator.filter({ id: pkBattle.opponent_creator_id }, null, 1);
+          if (opponents[0]) {
+            await base44.entities.Creator.update(opponents[0].id, {
+              [opponentPkField]: (opponents[0][opponentPkField] || 0) + 1,
+            });
+          }
+        } catch (e) {
+          console.error('[StreamService] PK opponent stat update failed:', e);
+        }
+      }
     }
 
     // Finalize broadcaster earnings
