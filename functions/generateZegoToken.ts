@@ -2,57 +2,32 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import { randomBytes, createCipheriv } from "node:crypto";
 import { Buffer } from "node:buffer";
 
-// Zegocloud token generation - Token04 format with AES-256-GCM
-// Based on official Zegocloud implementation: https://github.com/zegoim/zego_server_assistant
+// ─── Production ZegoCloud Token Generator (Token04 / AES-256-GCM) ───
 
 function makeNonce() {
-  // Generate int32 range random number
   const min = -Math.pow(2, 31);
   const max = Math.pow(2, 31) - 1;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function aesGcmEncrypt(plainText, key) {
-  // Key must be 32 bytes for AES-256
-  if (key.length !== 32) {
-    throw new Error('Secret must be exactly 32 bytes');
-  }
-  
-  // Random 12-byte nonce for GCM
+  if (key.length !== 32) throw new Error('Secret must be exactly 32 bytes');
   const nonce = randomBytes(12);
-  
-  // Create cipher with AES-256-GCM
   const cipher = createCipheriv('aes-256-gcm', Buffer.from(key, 'utf8'), nonce);
   cipher.setAutoPadding(true);
-  
-  // Encrypt
   const encrypted = cipher.update(plainText, 'utf8');
   const final = cipher.final();
   const authTag = cipher.getAuthTag();
-  
-  // Combine encrypted data with auth tag
-  const encryptBuf = Buffer.concat([encrypted, final, authTag]);
-  
-  return { encryptBuf, nonce };
+  return { encryptBuf: Buffer.concat([encrypted, final, authTag]), nonce };
 }
 
 function generateToken04(appId, userId, secret, effectiveTimeInSeconds, payload) {
-  if (!appId || typeof appId !== 'number') {
-    throw new Error('appId must be a number');
-  }
-  if (!userId || typeof userId !== 'string' || userId.length > 64) {
-    throw new Error('userId must be a string with max 64 characters');
-  }
-  if (!secret || typeof secret !== 'string' || secret.length !== 32) {
-    throw new Error('secret must be a 32 byte string');
-  }
-  if (!(effectiveTimeInSeconds > 0)) {
-    throw new Error('effectiveTimeInSeconds must be positive');
-  }
-  
-  const VERSION_FLAG = '04';
+  if (!appId || typeof appId !== 'number') throw new Error('appId must be a number');
+  if (!userId || typeof userId !== 'string' || userId.length > 64) throw new Error('userId invalid');
+  if (!secret || typeof secret !== 'string' || secret.length !== 32) throw new Error('secret must be 32 bytes');
+  if (!(effectiveTimeInSeconds > 0)) throw new Error('effectiveTimeInSeconds must be positive');
+
   const createTime = Math.floor(Date.now() / 1000);
-  
   const tokenInfo = {
     app_id: appId,
     user_id: userId,
@@ -61,40 +36,44 @@ function generateToken04(appId, userId, secret, effectiveTimeInSeconds, payload)
     expire: createTime + effectiveTimeInSeconds,
     payload: payload || ''
   };
-  
-  const plainText = JSON.stringify(tokenInfo);
-  console.log('[ZegoToken] Token info:', plainText);
-  
-  // Encrypt with AES-256-GCM
-  const { encryptBuf, nonce } = aesGcmEncrypt(plainText, secret);
-  
-  // Build token binary:
-  // expireTime (8 bytes) + nonceLength (2 bytes) + nonce (12 bytes) + 
-  // encryptLength (2 bytes) + encrypted data + mode (1 byte)
-  
-  const b1 = Buffer.alloc(8); // expire time
-  const b2 = Buffer.alloc(2); // nonce length
-  const b3 = Buffer.alloc(2); // encrypt length
-  const b4 = Buffer.alloc(1); // encryption mode (1 = GCM)
-  
-  // Write expire time as BigInt64BE
+
+  const { encryptBuf, nonce } = aesGcmEncrypt(JSON.stringify(tokenInfo), secret);
+
+  const b1 = Buffer.alloc(8);
+  const b2 = Buffer.alloc(2);
+  const b3 = Buffer.alloc(2);
+  const b4 = Buffer.alloc(1);
   b1.writeBigInt64BE(BigInt(tokenInfo.expire), 0);
-  
-  // Write nonce length
   b2.writeUInt16BE(nonce.length, 0);
-  
-  // Write encrypted data length
   b3.writeUInt16BE(encryptBuf.length, 0);
-  
-  // Write encryption mode (1 = GCM)
   b4.writeUInt8(1, 0);
-  
-  // Combine all parts
-  const buf = Buffer.concat([b1, b2, nonce, b3, encryptBuf, b4]);
-  
-  // Return version + base64
-  return VERSION_FLAG + buf.toString('base64');
+
+  return '04' + Buffer.concat([b1, b2, nonce, b3, encryptBuf, b4]).toString('base64');
 }
+
+// ─── Rate limiter: prevent token spam ───
+const tokenRequests = new Map(); // userId → { count, resetAt }
+const MAX_TOKENS_PER_MINUTE = 10;
+
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const record = tokenRequests.get(userId);
+  if (!record || now > record.resetAt) {
+    tokenRequests.set(userId, { count: 1, resetAt: now + 60000 });
+    return true;
+  }
+  record.count++;
+  if (record.count > MAX_TOKENS_PER_MINUTE) return false;
+  return true;
+}
+
+// Periodic cleanup of stale rate-limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of tokenRequests) {
+    if (now > val.resetAt) tokenRequests.delete(key);
+  }
+}, 120000);
 
 Deno.serve(async (req) => {
   try {
@@ -106,58 +85,72 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { roomId, userId, role } = await req.json();
+    const body = await req.json();
+    const { roomId, userId, role } = body;
 
     if (!roomId || !userId) {
       console.error('[ZegoToken] Missing params:', { roomId, userId, role });
-      return Response.json({ error: 'Missing required parameters' }, { status: 400 });
+      return Response.json({ error: 'Missing required parameters: roomId and userId' }, { status: 400 });
+    }
+
+    // Sanitize inputs
+    const sanitizedRoomId = String(roomId).replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 128);
+    const sanitizedUserId = String(userId).replace(/[^a-zA-Z0-9_]/g, '').substring(0, 64);
+    const sanitizedRole = ['host', 'audience', 'cohost'].includes(role) ? role : 'audience';
+
+    if (!sanitizedRoomId || !sanitizedUserId) {
+      return Response.json({ error: 'Invalid roomId or userId after sanitization' }, { status: 400 });
+    }
+
+    // Rate limit
+    if (!checkRateLimit(user.email)) {
+      console.warn('[ZegoToken] Rate limited:', user.email);
+      return Response.json({ error: 'Too many token requests. Please wait.' }, { status: 429 });
     }
 
     const appId = Deno.env.get('ZEGOCLOUD_APP_ID');
     const serverSecret = Deno.env.get('ZEGOCLOUD_SERVER_SECRET');
 
-    console.log('[ZegoToken] Config check - appId:', appId, 'secret length:', serverSecret?.length);
-
-    if (!appId) {
-      console.error('[ZegoToken] ZEGOCLOUD_APP_ID not configured');
-      return Response.json({ error: 'Zegocloud not configured' }, { status: 500 });
+    if (!appId || !serverSecret) {
+      console.error('[ZegoToken] Missing env vars — appId:', !!appId, 'secret:', !!serverSecret);
+      return Response.json({ error: 'Streaming service not configured' }, { status: 500 });
     }
 
-    if (!serverSecret) {
-      console.error('[ZegoToken] ZEGOCLOUD_SERVER_SECRET not configured');
-      return Response.json({ error: 'Zegocloud server secret not configured' }, { status: 500 });
-    }
-
-    // Create payload for room privileges
+    // Privilege map: host/cohost can publish, audience cannot
+    const canPublish = sanitizedRole === 'host' || sanitizedRole === 'cohost';
     const payload = JSON.stringify({
-      room_id: roomId,
+      room_id: sanitizedRoomId,
       privilege: {
-        1: 1, // Login room
-        2: role === 'host' ? 1 : 0  // Publish stream (only for hosts)
+        1: 1,                       // Login room
+        2: canPublish ? 1 : 0       // Publish stream
       },
       stream_id_list: null
     });
 
-    // Generate token with 1 hour validity
-    const token = await generateToken04(
+    // 2-hour token for hosts, 1-hour for viewers
+    const ttlSeconds = canPublish ? 7200 : 3600;
+
+    const token = generateToken04(
       parseInt(appId),
-      userId,
+      sanitizedUserId,
       serverSecret,
-      3600,
+      ttlSeconds,
       payload
     );
 
-    console.log('[ZegoToken] Token generated successfully for room:', roomId, 'user:', userId, 'role:', role);
-    
-    return Response.json({ 
-      token, 
+    console.log('[ZegoToken] Generated for room:', sanitizedRoomId, 'user:', sanitizedUserId, 'role:', sanitizedRole, 'ttl:', ttlSeconds);
+
+    return Response.json({
+      token,
       appId: parseInt(appId),
-      userId,
-      roomId
+      userId: sanitizedUserId,
+      roomId: sanitizedRoomId,
+      role: sanitizedRole,
+      expiresIn: ttlSeconds
     });
 
   } catch (error) {
     console.error('[ZegoToken] Error:', error.message, error.stack);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Token generation failed' }, { status: 500 });
   }
 });
