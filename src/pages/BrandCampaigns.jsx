@@ -123,7 +123,7 @@ export default function BrandCampaigns() {
           <Card className="bg-gradient-to-br from-amber-900/40 to-amber-800/20 border-amber-500/30">
             <CardContent className="p-6">
               <DollarSign className="w-8 h-8 text-amber-400 mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">${totalEarnings.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-white mb-1">${totalEarnings}</div>
               <div className="text-amber-200/70 text-sm">Total Earnings</div>
             </CardContent>
           </Card>
@@ -213,7 +213,7 @@ function CampaignCard({ campaign, brand, onAccept, onDecline, isPending }) {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-green-400">${campaign.payment_amount?.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-green-400">${campaign.payment_amount || 0}</div>
               <div className="text-amber-400/70 text-sm">Payment</div>
             </div>
           </div>
@@ -235,7 +235,7 @@ function CampaignCard({ campaign, brand, onAccept, onDecline, isPending }) {
             </div>
             <div>
               <div className="text-amber-400/70 text-xs mb-1">Budget</div>
-              <div className="text-amber-100 font-semibold">${campaign.budget?.toLocaleString()}</div>
+              <div className="text-amber-100 font-semibold">${campaign.budget || 0}</div>
             </div>
             <div>
               <div className="text-amber-400/70 text-xs mb-1">Commission</div>
@@ -296,19 +296,19 @@ function ActiveCampaignCard({ campaign, brand }) {
             <div className="text-amber-400/70 text-xs mb-1">Views</div>
             <div className="text-amber-100 font-semibold flex items-center gap-1">
               <Eye className="w-3 h-3" />
-              {campaign.total_views?.toLocaleString() || 0}
+              {campaign.total_views || 0}
             </div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Clicks</div>
             <div className="text-amber-100 font-semibold flex items-center gap-1">
               <MousePointerClick className="w-3 h-3" />
-              {campaign.total_clicks?.toLocaleString() || 0}
+              {campaign.total_clicks || 0}
             </div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Earnings</div>
-            <div className="text-green-400 font-semibold">${campaign.payment_amount?.toLocaleString()}</div>
+            <div className="text-green-400 font-semibold">${campaign.payment_amount || 0}</div>
           </div>
         </div>
       </CardContent>
@@ -333,19 +333,19 @@ function CompletedCampaignCard({ campaign, brand }) {
         <div className="grid grid-cols-5 gap-3">
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Earned</div>
-            <div className="text-green-400 font-semibold">${campaign.payment_amount?.toLocaleString()}</div>
+            <div className="text-green-400 font-semibold">${campaign.payment_amount || 0}</div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Views</div>
-            <div className="text-amber-100 font-semibold">{campaign.total_views?.toLocaleString() || 0}</div>
+            <div className="text-amber-100 font-semibold">{campaign.total_views || 0}</div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Clicks</div>
-            <div className="text-amber-100 font-semibold">{campaign.total_clicks?.toLocaleString() || 0}</div>
+            <div className="text-amber-100 font-semibold">{campaign.total_clicks || 0}</div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">Sales</div>
-            <div className="text-amber-100 font-semibold">{campaign.total_conversions?.toLocaleString() || 0}</div>
+            <div className="text-amber-100 font-semibold">{campaign.total_conversions || 0}</div>
           </div>
           <div>
             <div className="text-amber-400/70 text-xs mb-1">ROI</div>

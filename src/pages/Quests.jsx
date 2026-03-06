@@ -91,7 +91,7 @@ function QuestCard({ quest, userQuest, onClaim }) {
               <div className="flex justify-between text-xs mb-1.5">
                 <span className="text-white/60">Progress</span>
                 <span className={isCompleted ? 'text-emerald-400' : 'text-white/80'}>
-                  {progress.toLocaleString()} / {quest.requirement_value.toLocaleString()}
+                  {progress} / {quest.requirement_value}
                 </span>
               </div>
               <Progress 

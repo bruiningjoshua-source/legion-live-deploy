@@ -19,7 +19,7 @@ import {
   Unlock,
   BadgeCheck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import GlassCard from '@/components/shared/GlassCard';
@@ -374,15 +374,13 @@ export default function FanClubs() {
         )}
 
         {/* Join Modal */}
-        <AnimatePresence>
-          {joinCreator && (
-            <JoinModal
-              creator={joinCreator}
-              onClose={() => setJoinCreator(null)}
-              onJoin={(c, tier) => joinMutation.mutate({ creator: c, tier })}
-            />
-          )}
-        </AnimatePresence>
+        {joinCreator && (
+          <JoinModal
+            creator={joinCreator}
+            onClose={() => setJoinCreator(null)}
+            onJoin={(c, tier) => joinMutation.mutate({ creator: c, tier })}
+          />
+        )}
       </div>
     </div>
   );
