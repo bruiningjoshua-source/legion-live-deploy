@@ -163,38 +163,26 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                 </div>
                 
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Profile')} className="cursor-pointer">
-                    <User className="w-4 h-4 mr-2" />
-                    My Profile
+                  <Link to={createPageUrl('Profile')} className="cursor-pointer text-white/80">
+                    <User className="w-4 h-4 mr-2 text-white/40" />
+                    Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Wallet')} className="cursor-pointer">
-                    <Wallet className="w-4 h-4 mr-2" />
+                  <Link to={createPageUrl('Wallet')} className="cursor-pointer text-white/80">
+                    <Wallet className="w-4 h-4 mr-2 text-white/40" />
                     Wallet
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('CreatorStudio')} className="cursor-pointer">
-                    <Film className="w-4 h-4 mr-2" />
+                  <Link to={createPageUrl('CreatorStudio')} className="cursor-pointer text-white/80">
+                    <Film className="w-4 h-4 mr-2 text-white/40" />
                     Creator Studio
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('CreatorMonetization')} className="cursor-pointer">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Monetization
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('ChannelAnalytics')} className="cursor-pointer">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    Analytics
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('Settings')} className="cursor-pointer">
-                    <Settings className="w-4 h-4 mr-2" />
+                  <Link to={createPageUrl('Settings')} className="cursor-pointer text-white/80">
+                    <Settings className="w-4 h-4 mr-2 text-white/40" />
                     Settings
                   </Link>
                 </DropdownMenuItem>
