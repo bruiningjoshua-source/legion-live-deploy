@@ -207,13 +207,13 @@ export default function GoLive() {
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
-        {/* Video — 9:16 normalized container */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black">
+        {/* Full-screen native camera feed */}
+        <div className="absolute inset-0 bg-black">
           <video
             ref={videoRef}
             autoPlay playsInline muted
-            className="h-full object-cover"
-            style={{ transform: 'scaleX(-1)', maxWidth: '100%', aspectRatio: '9/16' }}
+            className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }}
           />
         </div>
 
