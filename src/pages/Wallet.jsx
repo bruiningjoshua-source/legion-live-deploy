@@ -233,7 +233,7 @@ export default function Wallet() {
                   </div>
                   <p className="text-white/40 text-xs mt-3">
                     {vipLevel < vipNames.length - 1 
-                      ? `$${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to ${vipNames[vipLevel + 1]}`
+                      ? `$${formatCount((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0))} to ${vipNames[vipLevel + 1]}`
                       : 'Max VIP reached! 🏆'}
                   </p>
                 </div>
@@ -285,9 +285,9 @@ export default function Wallet() {
                     {purchases.map((purchase, i) => (
                       <motion.div
                         key={purchase.id}
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.03 }}
+                        transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                         className="flex items-center justify-between p-4 bg-green-500/10 rounded-xl border border-green-500/20"
                       >
                         <div className="flex items-center gap-4">
@@ -302,7 +302,7 @@ export default function Wallet() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-green-400 font-bold text-lg">+{(purchase.denarii_amount + (purchase.bonus_denarii || 0)).toLocaleString()}</p>
+                          <p className="text-green-400 font-bold text-lg">+{formatCount(purchase.denarii_amount + (purchase.bonus_denarii || 0))}</p>
                           <p className="text-white/40 text-xs">${purchase.price_usd?.toFixed(2)}</p>
                         </div>
                       </motion.div>
@@ -319,9 +319,9 @@ export default function Wallet() {
                     {transactions.map((tx, i) => (
                       <motion.div
                         key={tx.id}
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.03 }}
+                        transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                         className="flex items-center justify-between p-4 bg-amber-500/10 rounded-xl border border-amber-500/20"
                       >
                         <div className="flex items-center gap-4">
@@ -338,7 +338,7 @@ export default function Wallet() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-amber-400 font-bold text-lg">-{tx.total_as_value?.toLocaleString()}</p>
+                          <p className="text-amber-400 font-bold text-lg">-{formatCount(tx.total_as_value)}</p>
                           <p className="text-white/40 text-xs">As</p>
                         </div>
                       </motion.div>
