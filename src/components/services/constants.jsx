@@ -34,11 +34,11 @@ export const CACHE = {
   USER: 10 * 60 * 1000,        // 10 min
   WALLET: 5 * 60 * 1000,       // 5 min
   CREATOR: 2 * 60 * 1000,      // 2 min
-  STREAMS_LIST: 45 * 1000,     // 45s
-  STREAMS_REFETCH: 90 * 1000,  // 90s
+  STREAMS_LIST: 30 * 1000,     // 30s — stay fresh for live data
+  STREAMS_REFETCH: 30 * 1000,  // 30s — keep live list current
   GIFTS: 10 * 60 * 1000,       // 10 min
   FOLLOW_STATUS: 5 * 60 * 1000,// 5 min
-  CHAT_MESSAGES: 30 * 1000,    // 30s
+  CHAT_MESSAGES: 3 * 1000,     // 3s — near real-time chat
 };
 
 // ─── Error Codes ─────────────────────────────────────────────
