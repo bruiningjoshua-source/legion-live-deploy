@@ -607,6 +607,7 @@ class ZegoStreamingService {
     await this.leave();
     if (this.engine) {
       try { this.engine.logoutRoom(); } catch (e) {}
+      try { ZegoExpressEngine.destroyEngine?.(this.engine); } catch (e) {}
       this.engine = null;
     }
     this.appId = null;
