@@ -299,16 +299,36 @@ Deno.serve(async (req) => {
         const creators = await base44.asServiceRole.entities.Creator.list('-follower_count', 1000);
         let sent = 0;
 
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
         for (const creator of creators) {
           try {
-            // Get creator stats for the week
-            // In production, calculate actual stats
+            // Get real creator stats for the week
+            let weeklyGifts = 0;
+            let weeklyEarnings = 0;
+            let newFollowers = 0;
+            try {
+              const gifts = await base44.asServiceRole.entities.GiftTransaction.filter(
+                { receiver_creator_id: creator.id }, '-created_date', 200
+              );
+              weeklyGifts = gifts.filter(g => g.created_date >= oneWeekAgo).length;
+              weeklyEarnings = gifts.filter(g => g.created_date >= oneWeekAgo)
+                .reduce((sum, g) => sum + (g.total_as_value || 0), 0);
+
+              const follows = await base44.asServiceRole.entities.Follow.filter(
+                { following_creator_id: creator.id }, '-created_date', 200
+              );
+              newFollowers = follows.filter(f => f.created_date >= oneWeekAgo).length;
+            } catch (e) {
+              console.warn(`[digest] Stats fetch failed for ${creator.display_name}:`, e.message);
+            }
+
             const template = getEmailTemplate('weekly_digest', {
               name: creator.display_name,
-              views: Math.floor(Math.random() * 1000),
-              newFollowers: Math.floor(Math.random() * 50),
-              giftsReceived: Math.floor(Math.random() * 100),
-              earnings: Math.floor(Math.random() * 500)
+              views: 0,
+              newFollowers,
+              giftsReceived: weeklyGifts,
+              earnings: weeklyEarnings
             });
 
             await base44.integrations.Core.SendEmail({
