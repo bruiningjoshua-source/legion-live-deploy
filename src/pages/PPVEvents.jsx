@@ -21,9 +21,10 @@ import {
   Trophy,
   Gamepad2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { format, formatDistanceToNow, isPast, isFuture } from 'date-fns';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
 
@@ -164,7 +165,7 @@ function EventCard({ event, creator, ticket, onBuyTicket }) {
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold text-white">${event.price_usd}</span>
               {event.price_denarii && (
-                <span className="text-white/40 text-sm">or {event.price_denarii.toLocaleString()} 🪙</span>
+                <span className="text-white/40 text-sm">or {formatCount(event.price_denarii)} 🪙</span>
               )}
             </div>
 
@@ -365,23 +366,21 @@ export default function PPVEvents() {
               </div>
             ) : filteredEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence>
-                  {filteredEvents.map((event, i) => (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <EventCard
-                        event={event}
-                        creator={creatorMap[event.creator_id]}
-                        ticket={ticketMap[event.id]}
-                        onBuyTicket={(e) => buyTicketMutation.mutate(e)}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                {filteredEvents.map((event, i) => (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.4), duration: 0.3 }}
+                  >
+                    <EventCard
+                      event={event}
+                      creator={creatorMap[event.creator_id]}
+                      ticket={ticketMap[event.id]}
+                      onBuyTicket={(e) => buyTicketMutation.mutate(e)}
+                    />
+                  </motion.div>
+                ))}
               </div>
             ) : (
               <GlassCard className="text-center py-16" glowColor="purple">

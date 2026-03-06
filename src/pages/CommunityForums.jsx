@@ -41,7 +41,7 @@ import {
   Flame,
   Star
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -344,11 +344,9 @@ export default function CommunityForums() {
                     <div className="animate-spin w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full mx-auto" />
                   </div>
                 ) : filteredPosts.length > 0 ? (
-                  <AnimatePresence>
-                    {filteredPosts.map(post => (
-                      <PostCard key={post.id} post={post} />
-                    ))}
-                  </AnimatePresence>
+                  filteredPosts.map(post => (
+                    <PostCard key={post.id} post={post} />
+                  ))
                 ) : (
                   <Card className="bg-stone-800/30 border-amber-600/20">
                     <CardContent className="py-12 text-center">

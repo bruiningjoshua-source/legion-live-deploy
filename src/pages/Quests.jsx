@@ -21,8 +21,9 @@ import {
   Radio,
   Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
 
@@ -248,7 +249,7 @@ export default function Quests() {
           <GlassCard className="text-center !p-4" glowColor="purple">
             <div className="text-3xl font-bold text-purple-300 flex items-center justify-center gap-1">
               <span className="text-xl">🪙</span>
-              {stats.totalRewards.toLocaleString()}
+              {formatCount(stats.totalRewards)}
             </div>
             <div className="text-white/50 text-sm">Earned</div>
           </GlassCard>
@@ -278,30 +279,28 @@ export default function Quests() {
 
           {['daily', 'weekly', 'special', 'milestone'].map(type => (
             <TabsContent key={type} value={type} className="mt-0 space-y-4">
-              <AnimatePresence>
-                {filteredQuests.length > 0 ? (
-                  filteredQuests.map((quest, i) => (
-                    <motion.div
-                      key={quest.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <QuestCard
-                        quest={quest}
-                        userQuest={userQuestMap[quest.id]}
-                        onClaim={(q, uq) => claimMutation.mutate({ quest: q, userQuest: uq })}
-                      />
-                    </motion.div>
-                  ))
-                ) : (
-                  <GlassCard className="text-center py-12">
-                    <Target className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                    <h3 className="text-white font-semibold mb-2">No {type} quests available</h3>
-                    <p className="text-white/50">Check back soon for new challenges!</p>
-                  </GlassCard>
-                )}
-              </AnimatePresence>
+              {filteredQuests.length > 0 ? (
+                filteredQuests.map((quest, i) => (
+                  <motion.div
+                    key={quest.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.25 }}
+                  >
+                    <QuestCard
+                      quest={quest}
+                      userQuest={userQuestMap[quest.id]}
+                      onClaim={(q, uq) => claimMutation.mutate({ quest: q, userQuest: uq })}
+                    />
+                  </motion.div>
+                ))
+              ) : (
+                <GlassCard className="text-center py-12">
+                  <Target className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">No {type} quests available</h3>
+                  <p className="text-white/50">Check back soon for new challenges!</p>
+                </GlassCard>
+              )}
             </TabsContent>
           ))}
         </Tabs>
