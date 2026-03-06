@@ -6,11 +6,15 @@ import { base44 } from '@/api/base44Client';
 import { CURRENCY, ERROR } from './constants';
 
 class WalletService {
-  /** Get or create wallet for a user */
+  /** Get or create wallet for a user (with duplicate protection) */
   async getOrCreateWallet(userEmail) {
     if (!userEmail) return null;
     const wallets = await base44.entities.Wallet.filter({ user_email: userEmail }, null, 1);
     if (wallets.length > 0) return wallets[0];
+
+    // Race-condition guard: re-check before creating
+    const recheck = await base44.entities.Wallet.filter({ user_email: userEmail }, null, 1);
+    if (recheck.length > 0) return recheck[0];
 
     return base44.entities.Wallet.create({
       user_email: userEmail,
@@ -42,6 +46,11 @@ class WalletService {
     if (!packageId || !denarii || !price) throw new Error(ERROR.INVALID_INPUT);
     if (price <= 0 || price > 10000) throw new Error(ERROR.INVALID_INPUT);
     if (denarii <= 0 || denarii > 1000000) throw new Error(ERROR.INVALID_INPUT);
+
+    // Block checkout in iframes (required for Stripe)
+    if (window !== window.top) {
+      throw new Error('Purchases only work from the published app. Please open in a new tab.');
+    }
 
     return base44.functions.invoke('createDenariiCheckout', {
       packageId, denarii, bonus, price, packageName,

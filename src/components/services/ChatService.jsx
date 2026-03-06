@@ -10,9 +10,12 @@ class ChatService {
   /** Send a moderated chat message */
   async sendMessage({ streamId, user, wallet, messageData, isBroadcaster }) {
     if (!user) throw new Error('Please sign in to chat');
+    if (!streamId) throw new Error('No active stream');
     
     const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
     if (!messageContent?.trim()) throw new Error('Empty message');
+    // Cap message length to prevent abuse
+    if (messageContent.length > 500) throw new Error('Message too long (max 500 characters)');
 
     // Rate limit: max 5 messages per 5 seconds
     const rateCheck = RateLimitService.checkChat(user.email);
