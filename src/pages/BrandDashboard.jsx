@@ -140,7 +140,7 @@ export default function BrandDashboard() {
           <Card className="bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/30">
             <CardContent className="p-6">
               <DollarSign className="w-8 h-8 text-green-400 mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">${stats.totalSpent.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-white mb-1">${stats.totalSpent}</div>
               <div className="text-green-200/70 text-sm">Total Investment</div>
             </CardContent>
           </Card>
@@ -148,7 +148,7 @@ export default function BrandDashboard() {
           <Card className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/30">
             <CardContent className="p-6">
               <Eye className="w-8 h-8 text-purple-400 mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">{stats.totalViews.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.totalViews}</div>
               <div className="text-purple-200/70 text-sm">Total Views</div>
             </CardContent>
           </Card>
@@ -156,7 +156,7 @@ export default function BrandDashboard() {
           <Card className="bg-gradient-to-br from-amber-900/40 to-amber-800/20 border-amber-500/30">
             <CardContent className="p-6">
               <ShoppingCart className="w-8 h-8 text-amber-400 mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">{stats.totalConversions.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.totalConversions}</div>
               <div className="text-amber-200/70 text-sm">Conversions</div>
             </CardContent>
           </Card>
@@ -209,7 +209,7 @@ export default function BrandDashboard() {
                       <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
                         <div className="text-amber-400/70">
                           <Users className="w-3 h-3 inline mr-1" />
-                          {creator.follower_count?.toLocaleString() || 0}
+                          {creator.follower_count || 0}
                         </div>
                         <div className="text-amber-400/70">
                           <Star className="w-3 h-3 inline mr-1" />
@@ -265,19 +265,19 @@ export default function BrandDashboard() {
                         <div className="grid grid-cols-4 gap-4">
                           <div>
                             <div className="text-amber-400/70 text-xs mb-1">Budget</div>
-                            <div className="text-amber-100 font-semibold">${campaign.budget.toLocaleString()}</div>
+                            <div className="text-amber-100 font-semibold">${campaign.budget || 0}</div>
                           </div>
                           <div>
                             <div className="text-amber-400/70 text-xs mb-1">Views</div>
-                            <div className="text-amber-100 font-semibold">{campaign.total_views?.toLocaleString() || 0}</div>
+                            <div className="text-amber-100 font-semibold">{campaign.total_views || 0}</div>
                           </div>
                           <div>
                             <div className="text-amber-400/70 text-xs mb-1">Clicks</div>
-                            <div className="text-amber-100 font-semibold">{campaign.total_clicks?.toLocaleString() || 0}</div>
+                            <div className="text-amber-100 font-semibold">{campaign.total_clicks || 0}</div>
                           </div>
                           <div>
                             <div className="text-amber-400/70 text-xs mb-1">Conversions</div>
-                            <div className="text-amber-100 font-semibold">{campaign.total_conversions?.toLocaleString() || 0}</div>
+                            <div className="text-amber-100 font-semibold">{campaign.total_conversions || 0}</div>
                           </div>
                         </div>
                       </CardContent>

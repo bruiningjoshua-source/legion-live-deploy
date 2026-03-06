@@ -197,9 +197,9 @@ export default function ContentModerationAdmin() {
                 return (
                   <motion.div
                     key={violation.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.25 }}
                   >
                     <Card className="bg-stone-800/30 border-amber-600/20">
                       <CardContent className="p-6">

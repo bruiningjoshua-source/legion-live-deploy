@@ -416,9 +416,9 @@ export default function AmbassadorProgram() {
               {campaigns.map((campaign, i) => (
                 <motion.div
                   key={campaign.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: Math.min(i * 0.05, 0.4), duration: 0.25 }}
                 >
                   <Card className="bg-stone-800/30 border-amber-600/20 h-full">
                     <CardContent className="p-6">

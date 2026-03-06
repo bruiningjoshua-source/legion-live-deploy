@@ -300,7 +300,7 @@ export default function CreatorAnalytics() {
                 <div>
                   <p className="text-amber-400/70 text-sm">Total Revenue</p>
                   <p className="text-3xl font-bold text-amber-100">
-                    {(aggregatedMetrics.giftRevenue + aggregatedMetrics.tipRevenue).toLocaleString()}
+                    {aggregatedMetrics.giftRevenue + aggregatedMetrics.tipRevenue}
                   </p>
                   <p className="text-amber-400/50 text-xs">Denarii earned</p>
                 </div>
@@ -315,7 +315,7 @@ export default function CreatorAnalytics() {
                 <div>
                   <p className="text-amber-400/70 text-sm">Total Viewers</p>
                   <p className="text-3xl font-bold text-amber-100">
-                    {aggregatedMetrics.totalViewers.toLocaleString()}
+                    {aggregatedMetrics.totalViewers}
                   </p>
                   <p className="text-amber-400/50 text-xs">In selected period</p>
                 </div>
@@ -330,7 +330,7 @@ export default function CreatorAnalytics() {
                 <div>
                   <p className="text-amber-400/70 text-sm">Followers</p>
                   <p className="text-3xl font-bold text-amber-100">
-                    {(creator.follower_count || 0).toLocaleString()}
+                    {creator.follower_count || 0}
                   </p>
                   <p className="text-amber-400/50 text-xs">Total followers</p>
                 </div>
