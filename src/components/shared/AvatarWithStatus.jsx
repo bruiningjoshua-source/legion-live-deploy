@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 import { Crown, Shield, Star, Verified } from 'lucide-react';
 
@@ -80,9 +79,7 @@ export default function AvatarWithStatus({
   const badgeConfig = getBadgeContent();
 
   return (
-    <motion.div
-      whileHover={onClick ? { scale: 1.05 } : {}}
-      whileTap={onClick ? { scale: 0.95 } : {}}
+    <div
       className={cn(
         'relative inline-flex flex-shrink-0',
         onClick && 'cursor-pointer',
@@ -138,6 +135,6 @@ export default function AvatarWithStatus({
           <badgeConfig.icon className={cn('text-white', badgeIconSizes[size])} />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
