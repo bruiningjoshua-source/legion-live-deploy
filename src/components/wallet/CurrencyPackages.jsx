@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { motion } from 'framer-motion';
 import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2 } from 'lucide-react';
@@ -91,6 +91,7 @@ const packages = [
 
 export default function CurrencyPackages({ onPurchase, isProcessing }) {
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
 
   const handlePurchase = (pkg) => {
     setSelectedPackage(pkg.id);
@@ -134,8 +135,8 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={isMobile ? {} : { y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => handlePurchase(pkg)}
             className="cursor-pointer"
           >
