@@ -304,7 +304,7 @@ export default function WatchVideo() {
                         )}
                         <div>
                           <p className="text-amber-100 font-semibold">{creator?.display_name}</p>
-                          <p className="text-amber-400/60 text-sm">{creator?.follower_count?.toLocaleString()} followers</p>
+                          <p className="text-amber-400/60 text-sm">{creator?.follower_count ? (creator.follower_count >= 1000 ? (creator.follower_count / 1000).toFixed(1) + 'K' : creator.follower_count) : 0} followers</p>
                         </div>
                       </div>
                     </Link>
@@ -324,7 +324,7 @@ export default function WatchVideo() {
                         className={`rounded-none border-r border-stone-700 ${hasLiked ? 'text-blue-400' : 'text-amber-200'}`}
                       >
                         <ThumbsUp className={`w-4 h-4 mr-2 ${hasLiked ? 'fill-current' : ''}`} />
-                        {video.like_count?.toLocaleString() || 0}
+                        {video.like_count || 0}
                       </Button>
                       <Button
                         onClick={() => user && dislikeMutation.mutate()}
@@ -333,7 +333,7 @@ export default function WatchVideo() {
                       >
                         <ThumbsDown className={`w-4 h-4 ${hasDisliked ? 'fill-current' : ''}`} />
                         {video.dislike_count > 0 && (
-                          <span className="ml-1">{video.dislike_count?.toLocaleString()}</span>
+                          <span className="ml-1">{video.dislike_count}</span>
                         )}
                       </Button>
                     </div>
@@ -349,7 +349,7 @@ export default function WatchVideo() {
                   </Badge>
                   <Badge className="bg-stone-700/50 text-amber-300">
                     <Eye className="w-3 h-3 mr-1" />
-                    {(video.view_count || video.play_count)?.toLocaleString() || 0} {isMusic ? 'plays' : 'views'}
+                    {(video.view_count || video.play_count) || 0} {isMusic ? 'plays' : 'views'}
                   </Badge>
                   {isMusic ? (
                     <Badge className="bg-purple-600/20 text-purple-300">

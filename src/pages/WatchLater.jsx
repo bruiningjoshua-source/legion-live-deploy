@@ -8,7 +8,7 @@ import { Clock, Play, Trash2, Film, Music, ShoppingBag, Mic } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 export default function WatchLaterPage() {
@@ -116,7 +116,6 @@ export default function WatchLaterPage() {
           </div>
         ) : watchLaterItems.length > 0 ? (
           <div className="space-y-3">
-            <AnimatePresence>
               {watchLaterItems.map((item, index) => {
                 const content = getContent(item);
                 const Icon = getIcon(item.video_type);
@@ -126,10 +125,9 @@ export default function WatchLaterPage() {
                 return (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.25 }}
                   >
                     <Card className="bg-stone-800/50 border-amber-600/20 hover:border-amber-500/40 transition-all">
                       <CardContent className="p-4">
@@ -197,7 +195,6 @@ export default function WatchLaterPage() {
                   </motion.div>
                 );
               })}
-            </AnimatePresence>
           </div>
         ) : (
           <Card className="bg-stone-800/30 border-amber-600/20">

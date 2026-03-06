@@ -9,7 +9,7 @@ import { History, Play, Trash2, Search, Film, Music, Radio, Calendar } from 'luc
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format, isToday, isYesterday, isThisWeek } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 export default function WatchHistoryPage() {
@@ -188,17 +188,15 @@ export default function WatchHistoryPage() {
                   {group}
                 </h2>
                 <div className="space-y-2">
-                  <AnimatePresence>
                     {items.map((item, index) => {
                       const Icon = getIcon(item.video_type);
 
                       return (
                         <motion.div
                           key={item.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ delay: index * 0.03 }}
+                          transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.2 }}
                         >
                           <Card className="bg-stone-800/30 border-amber-600/10 hover:border-amber-500/30 transition-all">
                             <CardContent className="p-3">
@@ -270,7 +268,6 @@ export default function WatchHistoryPage() {
                         </motion.div>
                       );
                     })}
-                  </AnimatePresence>
                 </div>
               </div>
             ))}
