@@ -67,8 +67,8 @@ export default function TrendingSection() {
       {/* Trending Streams */}
       {trendingData.streams?.length > 0 && (
         <div>
-          <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-amber-400" />
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-white/40" />
             Trending Now
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -84,8 +84,8 @@ export default function TrendingSection() {
       {/* Trending Creators */}
       {trendingData.creators?.length > 0 && (
         <div>
-          <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-amber-400" />
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-white/40" />
             Rising Creators
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -99,9 +99,9 @@ export default function TrendingSection() {
       )}
 
       {!trendingData.streams?.length && !trendingData.creators?.length && (
-        <div className="text-center py-12 bg-stone-800/30 rounded-xl">
-          <TrendingUp className="w-12 h-12 text-amber-400/50 mx-auto mb-2" />
-          <p className="text-amber-300/70">Trending content will appear here</p>
+        <div className="text-center py-16 rounded-xl">
+          <TrendingUp className="w-10 h-10 text-white/10 mx-auto mb-3" />
+          <p className="text-white/30 text-sm">Trending content will appear here</p>
         </div>
       )}
     </div>
