@@ -103,25 +103,34 @@ export default function TheAmphitheatre() {
 
   const { data: videos = [], isLoading: videosLoading } = useQuery({
     queryKey: ['amphitheatre-videos'],
-    queryFn: () => base44.entities.VlogVideo.filter({ 
-      is_published: true, 
-      review_status: 'approved',
-      visibility: 'public'
-    }, '-created_date', 200),
+    queryFn: async () => {
+      const res = await base44.entities.VlogVideo.filter({ 
+        is_published: true, 
+        review_status: 'approved',
+        visibility: 'public'
+      }, '-created_date', 200);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['amphitheatre-creators'],
-    queryFn: () => base44.entities.Creator.list('-follower_count', 100),
+    queryFn: async () => {
+      const res = await base44.entities.Creator.list('-follower_count', 100);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
 
   const { data: musicVideos = [] } = useQuery({
     queryKey: ['amphitheatre-music'],
-    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 100),
+    queryFn: async () => {
+      const res = await base44.entities.Music.filter({ is_published: true }, '-created_date', 100);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
@@ -129,14 +138,20 @@ export default function TheAmphitheatre() {
   // Affiliate/Recommended Products Videos
   const { data: affiliateVideos = [] } = useQuery({
     queryKey: ['amphitheatre-affiliate-videos'],
-    queryFn: () => base44.entities.AffiliateVideo.filter({ is_published: true }, '-created_date', 100),
+    queryFn: async () => {
+      const res = await base44.entities.AffiliateVideo.filter({ is_published: true }, '-created_date', 100);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
 
   const { data: affiliatePartners = [] } = useQuery({
     queryKey: ['affiliate-partners-map'],
-    queryFn: () => base44.entities.AffiliatePartner.filter({ status: 'approved' }, null, 200),
+    queryFn: async () => {
+      const res = await base44.entities.AffiliatePartner.filter({ status: 'approved' }, null, 200);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
