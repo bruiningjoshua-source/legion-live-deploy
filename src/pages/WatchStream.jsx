@@ -184,13 +184,7 @@ export default function WatchStream() {
       if (stream?.status !== 'live' || !isBroadcaster) return;
       try {
         const media = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: 'user', 
-            width: { ideal: 720, min: 480 }, 
-            height: { ideal: 1280, min: 854 },
-            aspectRatio: { ideal: 9/16 },
-            frameRate: { ideal: 30, max: 30 }
-          },
+          video: { facingMode: 'user' },
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
         });
         if (!mounted) { media.getTracks().forEach(t => t.stop()); return; }
