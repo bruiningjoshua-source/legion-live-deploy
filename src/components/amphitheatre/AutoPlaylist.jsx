@@ -32,23 +32,32 @@ export default function AutoPlaylist({ category, userInterests }) {
 
   const { data: videos = [] } = useQuery({
     queryKey: ['auto-playlist-videos'],
-    queryFn: () => base44.entities.VlogVideo.filter({ 
-      is_published: true, 
-      review_status: 'approved',
-      visibility: 'public'
-    }, '-created_date', 200),
+    queryFn: async () => {
+      const res = await base44.entities.VlogVideo.filter({ 
+        is_published: true, 
+        review_status: 'approved',
+        visibility: 'public'
+      }, '-created_date', 200);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000
   });
 
   const { data: musicVideos = [] } = useQuery({
     queryKey: ['auto-playlist-music'],
-    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-play_count', 100),
+    queryFn: async () => {
+      const res = await base44.entities.Music.filter({ is_published: true }, '-play_count', 100);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['creators-map-playlist'],
-    queryFn: () => base44.entities.Creator.list(null, 200),
+    queryFn: async () => {
+      const res = await base44.entities.Creator.list(null, 200);
+      return Array.isArray(res) ? res : [];
+    },
     staleTime: 5 * 60 * 1000
   });
 
