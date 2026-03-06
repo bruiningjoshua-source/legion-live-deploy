@@ -1,16 +1,14 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, DollarSign, Zap, Target, Activity, Rocket } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import DynamicBonusEngine from '@/components/monetization/DynamicBonusEngine';
-import { useCallback } from 'react';
 
 const mockData = {
   dailyRevenue: [
@@ -32,6 +30,7 @@ const mockData = {
 
 export default function PlatformAnalytics() {
   const queryClient = useQueryClient();
+  /* eslint-disable-next-line no-unused-vars */
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -104,9 +103,9 @@ export default function PlatformAnalytics() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.25 }}
                 className={`bg-gradient-to-br ${stat.color} bg-opacity-10 border border-current border-opacity-20 rounded-xl p-4`}
               >
                 <div className="flex items-start justify-between mb-2">

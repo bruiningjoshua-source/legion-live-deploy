@@ -238,7 +238,7 @@ export default function ExclusiveContentManager() {
           <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30">
             <CardContent className="p-4">
               <DollarSign className="w-6 h-6 text-green-400 mb-2" />
-              <p className="text-2xl font-bold text-amber-100">{totalEarnings.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-amber-100">{totalEarnings}</p>
               <p className="text-amber-400/60 text-sm">🪙 Earned</p>
             </CardContent>
           </Card>
@@ -269,9 +269,9 @@ export default function ExclusiveContentManager() {
                 {exclusiveContent.map((content, i) => (
                   <motion.div
                     key={content.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.4), duration: 0.25 }}
                     className="bg-stone-900/50 rounded-xl overflow-hidden border border-amber-600/20"
                   >
                     <div className="relative aspect-video bg-stone-950">

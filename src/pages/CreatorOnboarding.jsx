@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -258,7 +258,6 @@ export default function CreatorOnboarding() {
       {/* Main Content */}
       <div className="pt-32 pb-24 px-4">
         <div className="max-w-2xl mx-auto">
-          <AnimatePresence mode="wait">
             {/* Welcome Step */}
             {STEPS[currentStep].id === 'welcome' && (
               <OnboardingStep key="welcome">
@@ -345,7 +344,6 @@ export default function CreatorOnboarding() {
                 />
               </OnboardingStep>
             )}
-          </AnimatePresence>
         </div>
       </div>
 
