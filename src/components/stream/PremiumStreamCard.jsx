@@ -39,7 +39,7 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
           'bg-white/[0.03]',
           'border border-white/[0.05]',
           'transition-all duration-200',
-          !isMobile && 'group-hover:border-white/12 group-hover:-translate-y-0.5'
+          !isMobile && 'group-hover:border-white/[0.12] group-hover:-translate-y-0.5'
         )}>
           {/* Thumbnail Container - Portrait 9:16 */}
           <div className="relative aspect-[9/16] overflow-hidden">

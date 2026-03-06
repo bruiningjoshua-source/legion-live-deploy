@@ -129,8 +129,8 @@ export default function Home() {
   const renderEmptyLive = () => (
     <div className="text-center py-16 px-6">
       <Radio className="w-12 h-12 text-white/15 mx-auto mb-4" />
-      <h3 className="text-white font-semibold text-lg mb-1">No Streams Live</h3>
-      <p className="text-white/40 text-sm mb-6">Be the first to go live</p>
+      <h3 className="text-white font-semibold text-lg mb-2">No Streams Live</h3>
+      <p className="text-white/40 text-sm mb-6 max-w-xs mx-auto">No one is streaming right now. Be the first to go live and grow your audience!</p>
       <div className="flex items-center justify-center gap-3">
         <Link to={createPageUrl('GoLive')}>
           <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full px-6 gap-2">
@@ -155,7 +155,7 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1">
             Legion Live
           </h1>
-          <p className="text-white/40 text-sm sm:text-base">Stream. Compete. Earn.</p>
+          <p className="text-white/40 text-sm sm:text-base font-medium tracking-wide">Stream. Compete. Earn.</p>
           
           <div className="flex items-center justify-center gap-5 mt-4">
             <div className="text-center">

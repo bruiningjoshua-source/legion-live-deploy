@@ -414,10 +414,8 @@ export default function BroadcastControlPanel({
               <div className="p-3 bg-white/5 rounded-xl">
                 <p className="text-white/70 text-xs mb-2">Audio Level</p>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500"
-                    animate={{ width: `${Math.random() * 60 + 20}%` }}
-                    transition={{ duration: 0.1, repeat: Infinity }}
+                  <div
+                  className="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-1/3 transition-all"
                   />
                 </div>
               </div>

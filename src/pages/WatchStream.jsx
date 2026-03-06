@@ -193,7 +193,7 @@ export default function WatchStream() {
         setLiveStream(media);
         if (videoRef.current) {
           videoRef.current.srcObject = media;
-          videoRef.current.muted = false;
+          videoRef.current.muted = true;
           videoRef.current.playsInline = true;
           videoRef.current.play().catch(() => {});
         }
@@ -310,7 +310,7 @@ export default function WatchStream() {
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
-            autoPlay playsInline muted={!isBroadcaster}
+            autoPlay playsInline muted
             poster={stream.thumbnail_url}
             controls={false}
             style={isBroadcaster ? { transform: 'scaleX(-1)' } : undefined}
