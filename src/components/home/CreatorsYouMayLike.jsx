@@ -117,9 +117,9 @@ const CreatorsYouMayLike = memo(function CreatorsYouMayLike({ user }) {
         {creators.map((creator, i) => (
           <motion.div
             key={creator.id}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
+            transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.25 }}
             className="snap-start"
           >
             <CreatorMiniCard creator={creator} user={user} followSet={followSet} />
