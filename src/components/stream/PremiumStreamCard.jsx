@@ -35,23 +35,18 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.3, 
-        delay: Math.min(index * 0.03, 0.2), // Cap delay
-        ease: 'easeOut'
-      }}
-      className={`group transition-transform duration-200 ${isMobile ? '' : 'hover:-translate-y-1 hover:scale-[1.02]'}`}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.15) }}
+      className={`group ${isMobile ? '' : 'hover:-translate-y-0.5'} transition-transform duration-200`}
     >
       <Link to={createPageUrl(`WatchStream?id=${stream.id}`)}>
         <div className={cn(
-          'relative overflow-hidden rounded-2xl',
-          'bg-gradient-to-br from-white/[0.08] to-white/[0.02]',
-          'border border-white/10',
-          'shadow-xl transition-all duration-300',
-          'group-hover:border-white/20',
-          `group-hover:${config.glow}`
+          'relative overflow-hidden rounded-xl',
+          'bg-white/[0.04]',
+          'border border-white/[0.06]',
+          'transition-all duration-200',
+          'group-hover:border-white/15'
         )}>
           {/* Thumbnail Container - Portrait 9:16 */}
           <div className="relative aspect-[9/16] overflow-hidden">
@@ -73,14 +68,8 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
             )}
 
             {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
-            
-            {/* Ambient glow effect on hover */}
-            <div className={cn(
-              'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
-              'bg-gradient-to-t from-red-500/20 via-transparent to-transparent'
-            )} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
 
             {/* Top Bar - Badges */}
             <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
@@ -125,34 +114,27 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
             )}
 
             {/* Bottom Info */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
-              {/* Title */}
-              <h3 className="text-white font-semibold text-lg leading-tight line-clamp-2 drop-shadow-lg">
+            <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2">
+              <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">
                 {stream.title}
               </h3>
-
-              {/* Creator Info */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <AvatarWithStatus
                   src={creator?.avatar_url}
                   alt={creator?.display_name}
                   size="sm"
                   status="live"
                   verified={creator?.is_verified}
-                  vip={creator?.level >= 10}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-white font-medium text-sm truncate">
+                  <div className="flex items-center gap-1">
+                    <span className="text-white/80 text-xs truncate">
                       {creator?.display_name || 'Legionnaire'}
                     </span>
                     {creator?.is_verified && (
-                      <Crown className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      <Crown className="w-3 h-3 text-amber-400 flex-shrink-0" />
                     )}
                   </div>
-                  <span className="text-white/50 text-xs capitalize">
-                    {stream.category?.replace('_', ' ') || 'Live'}
-                  </span>
                 </div>
               </div>
             </div>
