@@ -58,46 +58,46 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-2xl border-b border-white/[0.06]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Logo + Shield Menu + Back Button */}
         <div className="flex items-center gap-2">
           {showBackButton && (
             <button
               onClick={() => navigate(-1)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors lg:hidden"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors lg:hidden"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
           )}
           <button 
             onClick={onOpenShieldMenu}
-            className="text-2xl hover:scale-110 transition-transform cursor-pointer"
+            className="text-xl hover:scale-110 transition-transform cursor-pointer"
             title="Open Menu"
           >
             🛡️
           </button>
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-            <span className="font-bold text-amber-100 text-lg hidden sm:inline">Legion Live</span>
+            <span className="font-bold text-white text-base hidden sm:inline tracking-tight">Legion Live</span>
           </Link>
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-1 bg-white/5 rounded-full p-1">
+        <div className="hidden lg:flex items-center gap-0.5 bg-white/[0.04] rounded-full p-1">
           {mainNavLinks.map(link => {
             const Icon = link.icon;
             return (
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-sm font-medium ${
                   isActive(link.path)
                     ? 'bg-white text-black'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'text-white/50 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{link.name}</span>
+                <Icon className="w-3.5 h-3.5" />
+                {link.name}
               </button>
             );
           })}
@@ -162,10 +162,10 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-stone-900 border-amber-600/20">
-                <div className="px-3 py-2 border-b border-amber-600/20">
-                  <p className="text-amber-100 font-semibold">{user.full_name}</p>
-                  <p className="text-amber-400/60 text-xs">{user.email}</p>
+              <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1f] border-white/10 shadow-2xl">
+                <div className="px-3 py-2.5 border-b border-white/[0.06]">
+                  <p className="text-white font-semibold text-sm">{user.full_name}</p>
+                  <p className="text-white/40 text-xs">{user.email}</p>
                 </div>
                 
                 <DropdownMenuItem asChild>
