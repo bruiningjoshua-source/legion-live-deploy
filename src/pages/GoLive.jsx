@@ -246,7 +246,7 @@ export default function GoLive() {
                   onClick={() => setStreamType(t.value)}
                   className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-[#00d4aa] text-white'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30'
                       : 'text-white/50'
                   }`}
                 >
@@ -322,7 +322,7 @@ export default function GoLive() {
                       onClick={() => setCategory(cat.value)}
                       className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         category === cat.value
-                          ? 'bg-[#00d4aa] text-white'
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
                           : 'bg-white/10 text-white/60'
                       }`}
                     >
@@ -363,13 +363,13 @@ export default function GoLive() {
             <button
               onClick={() => goLiveMutation.mutate()}
               disabled={!isFormValid || goLiveMutation.isPending}
-              className="relative w-[72px] h-[72px] rounded-full bg-gradient-to-br from-[#00d4aa] to-[#00b894] shadow-[0_0_30px_rgba(0,212,170,0.4)] disabled:opacity-40 disabled:shadow-none flex items-center justify-center transition-all active:scale-95"
+              className="relative w-[72px] h-[72px] rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_30px_rgba(239,68,68,0.4)] disabled:opacity-40 disabled:shadow-none flex items-center justify-center transition-all active:scale-95"
             >
               {goLiveMutation.isPending ? (
                 <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-[#00d4aa] to-[#00b894] animate-ping opacity-20" />
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500 to-red-600 animate-ping opacity-20" />
                   <span className="text-white font-bold text-sm tracking-wide">GO<br/>LIVE</span>
                 </>
               )}
@@ -391,14 +391,14 @@ export default function GoLive() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center px-6">
-        <div className="w-20 h-20 bg-[#00d4aa]/15 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(0,212,170,0.2)]">
-          <Radio className="w-10 h-10 text-[#00d4aa]" />
+        <div className="w-20 h-20 bg-amber-500/15 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
+          <Radio className="w-10 h-10 text-amber-400" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Go Live</h1>
         <p className="text-white/50 text-sm mb-8">Camera & microphone access is needed</p>
         <Button 
           onClick={requestCamera}
-          className="bg-gradient-to-r from-[#00d4aa] to-[#00b894] text-white rounded-full px-8 py-3 font-semibold shadow-[0_0_20px_rgba(0,212,170,0.3)]"
+          className="bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full px-8 py-3 font-semibold shadow-[0_0_20px_rgba(245,158,11,0.3)]"
         >
           Enable Camera
         </Button>
