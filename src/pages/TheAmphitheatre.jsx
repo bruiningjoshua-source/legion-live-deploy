@@ -704,13 +704,33 @@ export default function TheAmphitheatre() {
           </div>
         )}
 
-        {/* Trending Tab - Show Playlist */}
+        {/* Trending Tab - Show Playlist + filtered content */}
         {activeSection === 'trending' && (
           <div className="mb-8">
             <AutoPlaylist 
               category={selectedCategory} 
               userInterests={userInterests} 
             />
+            {filteredContent.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-bold text-amber-100 mb-4 flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-red-400" />
+                  Trending Content
+                </h2>
+                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                  {filteredContent.slice(0, 20).map((content, i) => (
+                    <motion.div
+                      key={content._key || `${content.type}-${content.id}`}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.3 }}
+                    >
+                      <AmphitheatreVideoCard content={content} viewMode={viewMode} />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
