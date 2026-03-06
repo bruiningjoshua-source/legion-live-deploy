@@ -59,10 +59,27 @@ class ZegoStreamingService {
       'wss://webliveroom773960930-api.coolzcloud.com/ws'
     );
 
-    // ── Room state ──
+    // ── Room state with auto-reconnect ──
     this.engine.on('roomStateUpdate', (roomID, state, errorCode, extendedData) => {
       console.log(`[Zego] Room ${roomID} state: ${state} (err ${errorCode})`);
       this._notifyRoomEvent({ type: 'roomState', roomID, state, errorCode });
+
+      // Auto-reconnect on temporary disconnection (not user-initiated leave)
+      if (state === 'DISCONNECTED' && !this._leaving && this.roomId && this._lastToken) {
+        console.warn('[Zego] Unexpected disconnect — attempting reconnect in 3s');
+        this._reconnectTimeout = setTimeout(() => {
+          if (!this._leaving && this.engine && this.roomId) {
+            this.engine.loginRoom(this.roomId, this._lastToken, {
+              userID: this.userId,
+              userName: this._lastUserName || this.userId
+            }, { userUpdate: true }).then(() => {
+              console.log('[Zego] Reconnected to room:', this.roomId);
+            }).catch(e => {
+              console.error('[Zego] Reconnect failed:', e.message);
+            });
+          }
+        }, 3000);
+      }
     });
 
     // ── Stream add / remove ──
