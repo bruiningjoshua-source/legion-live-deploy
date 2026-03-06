@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
-import GlassCard from '@/components/shared/GlassCard';
 import TrendingSection from '@/components/shared/TrendingSection';
 import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 
