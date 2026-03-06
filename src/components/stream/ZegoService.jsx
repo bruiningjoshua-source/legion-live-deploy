@@ -66,7 +66,16 @@ class ZegoStreamingService {
 
       // Auto-reconnect on temporary disconnection (not user-initiated leave)
       if (state === 'DISCONNECTED' && !this._leaving && this.roomId && this._lastToken) {
-        console.warn('[Zego] Unexpected disconnect — attempting reconnect in 3s');
+        this._reconnectAttempts = (this._reconnectAttempts || 0) + 1;
+        const maxRetries = 5;
+        if (this._reconnectAttempts > maxRetries) {
+          console.error('[Zego] Max reconnect attempts reached — giving up');
+          this._reconnectAttempts = 0;
+          return;
+        }
+        const backoff = Math.min(3000 * Math.pow(1.5, this._reconnectAttempts - 1), 15000);
+        console.warn(`[Zego] Unexpected disconnect — attempt ${this._reconnectAttempts}/${maxRetries} in ${backoff}ms`);
+        if (this._reconnectTimeout) clearTimeout(this._reconnectTimeout);
         this._reconnectTimeout = setTimeout(() => {
           if (!this._leaving && this.engine && this.roomId) {
             this.engine.loginRoom(this.roomId, this._lastToken, {
@@ -74,11 +83,14 @@ class ZegoStreamingService {
               userName: this._lastUserName || this.userId
             }, { userUpdate: true }).then(() => {
               console.log('[Zego] Reconnected to room:', this.roomId);
+              this._reconnectAttempts = 0;
             }).catch(e => {
               console.error('[Zego] Reconnect failed:', e.message);
             });
           }
-        }, 3000);
+        }, backoff);
+      } else if (state === 'CONNECTED') {
+        this._reconnectAttempts = 0;
       }
     });
 
@@ -571,6 +583,7 @@ class ZegoStreamingService {
     this.qualityCallbacks = [];
     this.roomEventCallbacks = [];
     this._leaving = false;
+    this._reconnectAttempts = 0;
 
     console.log('[Zego] Cleanup complete');
   }
