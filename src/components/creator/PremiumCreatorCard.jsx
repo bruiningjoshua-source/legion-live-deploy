@@ -1,28 +1,26 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Crown, Users, Radio } from 'lucide-react';
 import AvatarWithStatus from '@/components/shared/AvatarWithStatus';
 import GlassCard from '@/components/shared/GlassCard';
+import formatCount from '@/components/shared/FormatCount';
 import { cn } from "@/lib/utils";
 
 const PremiumCreatorCard = memo(function PremiumCreatorCard({ creator, index = 0 }) {
-  const formatCount = (n) => {
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-    return n?.toLocaleString() || '0';
-  };
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.4, 
-        delay: index * 0.05,
-        ease: [0.25, 0.46, 0.45, 0.94]
+        duration: 0.3, 
+        delay: Math.min(index * 0.03, 0.2),
+        ease: 'easeOut'
       }}
+      className={isMobile ? '' : 'hover:-translate-y-1 transition-transform duration-200'}
     >
       <Link to={createPageUrl(`CreatorProfile?id=${creator.id}`)}>
         <GlassCard 
@@ -47,7 +45,10 @@ const PremiumCreatorCard = memo(function PremiumCreatorCard({ creator, index = 0
             {/* Live indicator */}
             {creator.is_live && (
               <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 rounded-md text-[10px] font-bold text-white flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-200 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                </span>
                 LIVE
               </div>
             )}
