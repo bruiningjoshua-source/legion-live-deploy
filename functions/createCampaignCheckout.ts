@@ -25,7 +25,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
-    const campaigns = await base44.asServiceRole.entities.BrandCampaign.filter({ id: campaignId }, null, 1);
+    let campaigns;
+    try {
+      campaigns = await base44.asServiceRole.entities.BrandCampaign.filter({ id: campaignId }, null, 1);
+    } catch (e) {
+      console.error('[createCampaignCheckout] Campaign lookup failed:', e.message);
+      return Response.json({ error: 'Campaign not found' }, { status: 404 });
+    }
     if (!campaigns[0]) {
       return Response.json({ error: 'Campaign not found' }, { status: 404 });
     }

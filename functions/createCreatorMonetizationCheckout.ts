@@ -26,7 +26,13 @@ Deno.serve(async (req) => {
     }
 
     // Verify creator ownership
-    const creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
+    let creators;
+    try {
+      creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
+    } catch (e) {
+      console.error('[createCreatorMonetizationCheckout] Creator lookup failed:', e.message);
+      return Response.json({ error: 'Creator not found' }, { status: 404 });
+    }
     if (!creators[0] || creators[0].user_email !== user.email) {
       return Response.json({ error: 'You can only activate monetization for your own creator profile' }, { status: 403 });
     }
