@@ -26,7 +26,7 @@ import {
   BarChart3,
   Heart
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
 
@@ -101,7 +101,7 @@ function AffiliateStreamCard({ stream, partner }) {
           <div className="absolute top-3 right-3">
             <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/10">
               <Eye className="w-3.5 h-3.5 text-white/80" />
-              <span className="text-white text-xs font-medium">{(stream.viewer_count || 0).toLocaleString()}</span>
+              <span className="text-white text-xs font-medium">{stream.viewer_count || 0}</span>
             </div>
           </div>
 
@@ -369,7 +369,7 @@ export default function AffiliateMarketplace() {
                       <Eye className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-emerald-100 font-bold">{totalLiveViewers.toLocaleString()}</p>
+                      <p className="text-emerald-100 font-bold">{totalLiveViewers}</p>
                       <p className="text-emerald-300/60 text-xs">Watching</p>
                     </div>
                   </div>
@@ -473,9 +473,9 @@ export default function AffiliateMarketplace() {
             {partners.slice(0, 6).map((partner, i) => (
               <motion.div
                 key={partner.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.25 }}
               >
                 <FeaturedPartnerCard partner={partner} />
               </motion.div>
@@ -527,13 +527,12 @@ export default function AffiliateMarketplace() {
               </div>
             ) : filteredStreams.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                <AnimatePresence>
                   {filteredStreams.map((stream, i) => (
                     <motion.div
                       key={stream.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
+                      transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                     >
                       <AffiliateStreamCard 
                         stream={stream} 
@@ -541,7 +540,6 @@ export default function AffiliateMarketplace() {
                       />
                     </motion.div>
                   ))}
-                </AnimatePresence>
               </div>
             ) : (
               <GlassCard className="text-center py-16" glowColor="green">
@@ -572,9 +570,9 @@ export default function AffiliateMarketplace() {
                 {filteredVideos.map((video, i) => (
                   <motion.div
                     key={video.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                   >
                     <AffiliateStreamCard 
                       stream={video} 
@@ -599,9 +597,9 @@ export default function AffiliateMarketplace() {
                 {filteredProducts.map((product, i) => (
                   <motion.div
                     key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                   >
                     <ProductCard product={product} />
                   </motion.div>

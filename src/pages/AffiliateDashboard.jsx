@@ -248,9 +248,9 @@ export default function AffiliateDashboard() {
               {products.map((product, i) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: Math.min(i * 0.05, 0.4), duration: 0.25 }}
                   className="bg-stone-900/50 rounded-xl p-4 border border-amber-600/20"
                 >
                   {product.product_image_url && (
