@@ -62,9 +62,9 @@ export default function ClipsPage() {
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.25 }}
       >
         <Card className="bg-stone-800/50 border-amber-600/20 overflow-hidden hover:border-amber-500/40 transition-all group">
           <div className="relative aspect-video">

@@ -147,9 +147,9 @@ export default function UpcomingStreamsPage() {
                     {streams.map((stream, index) => (
                       <motion.div
                         key={stream.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.2 }}
                       >
                         <StreamScheduleCard
                           schedule={stream}

@@ -18,7 +18,7 @@ import {
   CheckCircle,
   X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import GlassCard from '@/components/shared/GlassCard';
@@ -264,13 +264,12 @@ export default function Highlights() {
           </div>
         ) : highlights.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
               {highlights.map((highlight, i) => (
                 <motion.div
                   key={highlight.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.25 }}
                 >
                   <HighlightCard
                     highlight={highlight}
@@ -280,7 +279,6 @@ export default function Highlights() {
                   />
                 </motion.div>
               ))}
-            </AnimatePresence>
           </div>
         ) : (
           <GlassCard className="text-center py-16" glowColor="pink">
