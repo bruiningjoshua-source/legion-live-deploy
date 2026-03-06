@@ -105,21 +105,21 @@ export default function DirectMessaging({ isOpen, onClose, initialRecipient = nu
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversationMessages]);
 
-  // Mark messages as read
+  // Mark messages as read — track last-marked to prevent infinite loops
+  const lastMarkedConvo = useRef(null);
   useEffect(() => {
-    if (selectedConversation && user?.email) {
-      const unread = messages.filter(
-        m => m.sender_email === selectedConversation && 
-             m.recipient_email === user.email && 
-             !m.is_read
-      );
-      unread.forEach(m => {
-        base44.entities.DirectMessage.update(m.id, { is_read: true });
-      });
-      if (unread.length > 0) {
-        queryClient.invalidateQueries(['direct-messages']);
-      }
-    }
+    if (!selectedConversation || !user?.email) return;
+    const unread = messages.filter(
+      m => m.sender_email === selectedConversation && 
+           m.recipient_email === user.email && 
+           !m.is_read
+    );
+    if (unread.length === 0) return;
+    const key = `${selectedConversation}-${unread.map(m => m.id).join(',')}`;
+    if (lastMarkedConvo.current === key) return;
+    lastMarkedConvo.current = key;
+    Promise.all(unread.map(m => base44.entities.DirectMessage.update(m.id, { is_read: true })))
+      .then(() => queryClient.invalidateQueries(['direct-messages']));
   }, [selectedConversation, messages, user?.email]);
 
   const sendMessageMutation = useMutation({
