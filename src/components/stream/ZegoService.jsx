@@ -150,6 +150,8 @@ class ZegoStreamingService {
 
     this.roomId = roomId;
     this.userId = userId;
+    this._lastToken = token;
+    this._lastUserName = userName || userId;
 
     console.log('[Zego] loginRoom — room:', roomId, 'user:', userId);
 
