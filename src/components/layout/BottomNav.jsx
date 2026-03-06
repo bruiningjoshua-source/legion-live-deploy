@@ -69,13 +69,13 @@ const BottomNav = memo(function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      {/* Gradient blur background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-2xl" />
+      {/* Background */}
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-2xl" />
       
-      {/* Subtle top border glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+      {/* Top border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
       
-      <div className="relative flex items-center justify-around h-18 max-w-lg mx-auto px-4 py-2">
+      <div className="relative flex items-center justify-around h-16 max-w-lg mx-auto px-4 py-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActivePath(item.path);
@@ -118,16 +118,12 @@ const BottomNav = memo(function BottomNav() {
           
           return (
             <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0 active:scale-95 transition-transform">
-              <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-colors ${
-                  isActive ? 'bg-amber-500/15' : ''
-                }`}>
-                  <Icon className={`w-5 h-5 transition-colors ${
-                    isActive ? 'text-amber-400' : 'text-white/40'
-                  }`} />
-                </div>
-                <span className={`text-[9px] sm:text-[10px] font-semibold ${
-                  isActive ? 'text-amber-400' : 'text-white/40'
+              <div className="flex flex-col items-center gap-0.5">
+                <Icon className={`w-[22px] h-[22px] transition-colors ${
+                  isActive ? 'text-white' : 'text-white/35'
+                }`} />
+                <span className={`text-[10px] font-medium ${
+                  isActive ? 'text-white' : 'text-white/35'
                 }`}>
                   {item.label}
                 </span>
