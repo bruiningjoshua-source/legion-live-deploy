@@ -175,12 +175,13 @@ export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGi
       if (prevWallet) {
         queryClient.setQueryData(['wallet', user?.email], {
           ...prevWallet,
-          denarii_balance: (prevWallet.denarii_balance || 0) - totalCost,
+          denarii_balance: Math.max(0, (prevWallet.denarii_balance || 0) - totalCost),
         });
       }
       return { prevWallet };
     },
     onError: (error, _vars, context) => {
+      // Rollback optimistic wallet update
       if (context?.prevWallet) {
         queryClient.setQueryData(['wallet', user?.email], context.prevWallet);
       }
@@ -190,7 +191,9 @@ export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGi
       toast.success('Gift sent!');
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      // Always refetch real balance from server after gift attempt
+      queryClient.invalidateQueries({ queryKey: ['wallet', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['stream'] });
     },
   });
 }
@@ -229,6 +232,7 @@ export function useEndStream({ stream, creator, pkBattle, liveStream }) {
   return useMutation({
     mutationFn: async () => {
       if (!creator) throw new Error('Unauthorized');
+      if (!stream?.id) throw new Error('No active stream');
       // Stop local media tracks
       if (liveStream && typeof liveStream !== 'boolean') {
         liveStream.getTracks().forEach(t => t.stop());
@@ -238,6 +242,11 @@ export function useEndStream({ stream, creator, pkBattle, liveStream }) {
       try { await ZegoService.leave(); } catch (e) { console.warn('[EndStream] Zego leave error:', e); }
 
       return StreamService.endStream(stream, creator, pkBattle);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stream'] });
+      queryClient.invalidateQueries({ queryKey: ['streams-live'] });
+      queryClient.invalidateQueries({ queryKey: ['creator', creator?.id] });
     },
     onError: (error) => toast.error(error.message || 'Failed to end stream'),
   });

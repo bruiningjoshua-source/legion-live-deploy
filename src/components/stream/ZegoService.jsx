@@ -147,11 +147,13 @@ class ZegoStreamingService {
 
   async loginRoom(roomId, userId, userName, token) {
     if (!this.engine) throw new Error('Engine not initialized');
+    if (!roomId || !userId || !token) throw new Error('Missing roomId, userId, or token');
 
     this.roomId = roomId;
     this.userId = userId;
     this._lastToken = token;
     this._lastUserName = userName || userId;
+    this._leaving = false; // Reset leaving flag on new login
 
     console.log('[Zego] loginRoom — room:', roomId, 'user:', userId);
 
@@ -508,6 +510,13 @@ class ZegoStreamingService {
   async leave() {
     if (this._leaving) return; // Prevent concurrent leave calls
     this._leaving = true;
+
+    // Cancel any pending reconnect immediately
+    if (this._reconnectTimeout) {
+      clearTimeout(this._reconnectTimeout);
+      this._reconnectTimeout = null;
+    }
+
     console.log('[Zego] Leaving — cleanup start');
 
     this._stopStatsMonitor();
@@ -549,12 +558,6 @@ class ZegoStreamingService {
       try { await engine.logoutRoom(roomId); } catch (e) {
         console.warn('[Zego] logoutRoom error:', e.message);
       }
-    }
-
-    // Cancel any pending reconnect
-    if (this._reconnectTimeout) {
-      clearTimeout(this._reconnectTimeout);
-      this._reconnectTimeout = null;
     }
 
     this.localStream = null;
