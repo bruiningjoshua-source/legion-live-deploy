@@ -562,12 +562,17 @@ class ZegoStreamingService {
       try { engine.stopPublishingStream((this.roomId || '') + '_screen'); } catch (e) {}
       if (this.screenStream) {
         try { engine.destroyStream(this.screenStream); } catch (e) {}
+        // Also stop raw tracks
+        try { this.screenStream.getTracks().forEach(t => t.stop()); } catch (e) {}
       }
     }
 
-    // Destroy local stream
-    if (this.localStream && engine) {
-      try { engine.destroyStream(this.localStream); } catch (e) {}
+    // Destroy local stream (stop raw tracks to release hardware)
+    if (this.localStream) {
+      if (engine) {
+        try { engine.destroyStream(this.localStream); } catch (e) {}
+      }
+      try { this.localStream.getTracks().forEach(t => { t.stop(); t.enabled = false; }); } catch (e) {}
     }
 
     // Stop all remote streams
