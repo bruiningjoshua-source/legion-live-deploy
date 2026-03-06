@@ -742,35 +742,39 @@ export default function TheAmphitheatre() {
           </div>
         )}
 
-        {/* Main Content Grid */}
-        {isLoading ? (
-          <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-            {[...Array(12)].map((_, i) => (
-              <Skeleton key={i} className="aspect-video rounded-xl bg-stone-800" />
-            ))}
-          </div>
-        ) : filteredContent.length > 0 ? (
-          <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-            {filteredContent.map((content, i) => (
-              <motion.div
-                key={content.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.3 }}
-              >
-                <AmphitheatreVideoCard content={content} viewMode={viewMode} />
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
-            <Film className="w-16 h-16 text-amber-400/30 mx-auto mb-4" />
-            <h3 className="text-amber-100 font-semibold text-xl mb-2">No Content Found</h3>
-            <p className="text-amber-400/60 mb-6">Try adjusting your filters or search query</p>
-            <Button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }} variant="outline" className="border-amber-600/30 text-amber-300">
-              Clear Filters
-            </Button>
-          </div>
+        {/* Main Content Grid — only for discover/history/trending tabs */}
+        {['discover', 'history'].includes(activeSection) && (
+          <>
+            {isLoading ? (
+              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {[...Array(12)].map((_, i) => (
+                  <Skeleton key={i} className="aspect-video rounded-xl bg-stone-800" />
+                ))}
+              </div>
+            ) : filteredContent.length > 0 ? (
+              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                {filteredContent.map((content, i) => (
+                  <motion.div
+                    key={`${content.type}-${content.id}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.3 }}
+                  >
+                    <AmphitheatreVideoCard content={content} viewMode={viewMode} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
+                <Film className="w-16 h-16 text-amber-400/30 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-xl mb-2">No Content Found</h3>
+                <p className="text-amber-400/60 mb-6">Try adjusting your filters or search query</p>
+                <Button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }} variant="outline" className="border-amber-600/30 text-amber-300">
+                  Clear Filters
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Interest Picker Modal */}
