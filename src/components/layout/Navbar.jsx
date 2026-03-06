@@ -23,8 +23,6 @@ import {
   Shield,
   Film,
   ShoppingBag,
-  BarChart3,
-  DollarSign,
   ChevronLeft,
   Headphones,
   Search,
