@@ -82,35 +82,16 @@ const BottomNav = memo(function BottomNav() {
           
           if (item.highlight) {
             return (
-              <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-6">
-                <div className="relative active:scale-95 transition-transform">
-                  {/* Outer glow */}
-                  <div className={`absolute -inset-1 rounded-2xl blur opacity-50 ${
-                    isLive 
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-500'
-                      : 'bg-gradient-to-br from-red-500 to-orange-500'
-                  }`} />
-                  
-                  {/* Main button */}
-                  <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl border ${
+              <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-4">
+                <div className="relative active:scale-90 transition-transform">
+                  <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl ${
                     isLive
-                      ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 border-green-400/40'
-                      : 'bg-gradient-to-br from-red-500 via-rose-500 to-orange-600 border-red-400/40'
+                      ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                      : 'bg-gradient-to-br from-red-500 to-rose-600'
                   }`}>
-                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
-                    
-                    {/* Indicator dot: pulsing red when not live, solid green when live */}
-                    {isLive ? (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
-                        <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-green-500 border-2 border-black" />
-                      </span>
-                    ) : (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
-                        <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-red-500 border-2 border-black" />
-                      </span>
-                    )}
+                    <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                   </div>
+                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-black ${isLive ? 'bg-green-400' : 'bg-red-400'}`} />
                 </div>
               </a>
             );
