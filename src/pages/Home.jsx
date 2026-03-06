@@ -233,11 +233,11 @@ export default function Home() {
             <TabAnimation tabKey="featured">
               {streamsLoading ? <StreamSkeleton /> :
                 featuredStreams.length >= 3 ? renderStreamGrid(featuredStreams) : (
-                  <GlassCard className="text-center py-12 sm:py-16">
-                    <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
-                    <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Featured Streams Right Now</h3>
-                    <p className="text-white/50 text-sm">Featured streams appear when creators get 100+ viewers.</p>
-                  </GlassCard>
+                  <div className="text-center py-16">
+                    <Sparkles className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                    <h3 className="text-white font-semibold text-lg mb-1">No Featured Streams</h3>
+                    <p className="text-white/35 text-sm">Appears when creators reach 100+ viewers.</p>
+                  </div>
                 )
               }
             </TabAnimation>
