@@ -100,7 +100,7 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
 
   const formatPrice = (price) => {
     if (price >= 1000) return `${(price / 1000).toFixed(price >= 10000 ? 0 : 1)}K`;
-    return price.toLocaleString();
+    return String(price);
   };
 
   return (
@@ -122,7 +122,7 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
             <h2 className="text-white font-bold">Send Gifts</h2>
             <div className="flex items-center gap-1">
               <span className="text-sm">🪙</span>
-              <span className="text-amber-400 text-sm font-semibold">{walletBalance.toLocaleString()}</span>
+              <span className="text-amber-400 text-sm font-semibold">{walletBalance}</span>
             </div>
           </div>
         </div>
@@ -258,11 +258,11 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
                 ) : canAfford ? (
                   <span className="flex items-center gap-2">
                     <Send className="w-4 h-4" />
-                    Send {totalCost.toLocaleString()} 🪙
+                    Send {totalCost} 🪙
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    Need {(totalCost - walletBalance).toLocaleString()} more
+                    Need {totalCost - walletBalance} more
                   </span>
                 )}
               </Button>

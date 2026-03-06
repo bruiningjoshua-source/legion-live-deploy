@@ -17,6 +17,8 @@ import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
 import useScrollPreservation from '@/components/navigation/useScrollPreservation';
+import NotificationService from '@/components/services/NotificationService';
+import OfflineService from '@/components/services/OfflineService';
 import { Toaster } from 'sonner';
 
 export default function Layout({ children, currentPageName }) {
@@ -41,6 +43,11 @@ export default function Layout({ children, currentPageName }) {
 
   // Preserve scroll positions across navigation for native-like back stack
   useScrollPreservation();
+
+  // Initialize offline support
+  useEffect(() => {
+    OfflineService.init();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -86,6 +93,14 @@ export default function Layout({ children, currentPageName }) {
     if (user && !localStorage.getItem('legion_tutorial_completed')) {
       const timer = setTimeout(() => setShowTutorial(true), 1500);
       return () => clearTimeout(timer);
+    }
+  }, [user?.email]);
+
+  // Start live notification monitoring for followed creators
+  useEffect(() => {
+    if (user?.email) {
+      NotificationService.startMonitoring(user.email);
+      return () => NotificationService.stopMonitoring();
     }
   }, [user?.email]);
 

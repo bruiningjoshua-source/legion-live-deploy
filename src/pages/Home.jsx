@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useCurrentUser, useLiveStreams, useCreators } from '@/components/hooks/useStreamData';
+import RecommendationEngine from '@/components/services/RecommendationEngine';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -107,10 +108,10 @@ export default function Home() {
   const { data: streams = [], isLoading: streamsLoading } = useLiveStreams();
   const { data: creators = [] } = useCreators();
 
-  // Fetch user interests for personalized "For You" tab
-  const { data: userInterests = [] } = useQuery({
-    queryKey: ['user-interests', user?.email],
-    queryFn: () => base44.entities.UserInterest.filter({ user_email: user.email }),
+  // Build user profile for recommendation engine
+  const { data: userProfile = {} } = useQuery({
+    queryKey: ['user-profile-rec', user?.email],
+    queryFn: () => RecommendationEngine.buildUserProfile(user.email),
     enabled: !!user?.email,
     staleTime: 5 * 60 * 1000,
     retry: 1,
@@ -124,17 +125,10 @@ export default function Home() {
     return map;
   }, [creators]);
 
-  // For You: filter by user interests, fall back to trending (by viewer_count)
+  // For You: ML-lite recommendation engine scoring
   const personalizedStreams = useMemo(() => {
-    if (!userInterests.length) {
-      // Fall back to trending sort
-      return [...streams].sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
-    }
-    const interestCategories = new Set(userInterests.map(i => i.category || i.interest_name).filter(Boolean));
-    const matched = streams.filter(s => interestCategories.has(s.category));
-    const unmatched = streams.filter(s => !interestCategories.has(s.category));
-    return [...matched, ...unmatched];
-  }, [streams, userInterests]);
+    return RecommendationEngine.rankStreams(streams, userProfile);
+  }, [streams, userProfile]);
 
   // Featured: streams with >100 viewers, sorted by viewer count
   const featuredStreams = useMemo(() => {
