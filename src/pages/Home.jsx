@@ -16,10 +16,8 @@ import {
   Film,
   Gamepad2,
   ShoppingBag,
-  ArrowRight,
   Sparkles
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import GlassCard from '@/components/shared/GlassCard';
@@ -71,19 +69,8 @@ const TAB_ITEMS = [
   { value: 'featured', icon: Trophy, label: 'Featured' }
 ];
 
-// Tab content animation wrapper
-const TabAnimation = memo(function TabAnimation({ children, tabKey }) {
-  return (
-    <motion.div
-      key={tabKey}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2 }}
-    >
-      {children}
-    </motion.div>
-  );
+const TabAnimation = memo(function TabAnimation({ children }) {
+  return <div>{children}</div>;
 });
 
 export default function Home() {
