@@ -3,9 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const caller = await base44.auth.me();
+    if (!caller) {
+      return Response.json({ approved: false, action: 'unauthorized', reason: 'Authentication required' }, { status: 401 });
+    }
+
     const { content_type, content, stream_id, user_email, user_name, context } = await req.json();
 
-    console.log(`Moderating ${content_type} from ${user_email}`);
+    console.log(`[aiModerateContent] Moderating ${content_type} from ${user_email} (caller: ${caller.email})`);
 
     // Check if user is banned
     const bans = await base44.asServiceRole.entities.UserBan.filter({
