@@ -100,7 +100,7 @@ export default function Home() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['streams-live'] }),
       queryClient.invalidateQueries({ queryKey: ['creators-home'] }),
-      queryClient.invalidateQueries({ queryKey: ['user-interests'] }),
+      queryClient.invalidateQueries({ queryKey: ['user-profile-rec'] }),
     ]);
   }, [queryClient]);
 
