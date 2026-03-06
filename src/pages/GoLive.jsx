@@ -387,18 +387,18 @@ export default function GoLive() {
     );
   }
 
-  // Pre-permission state: minimal loading screen
+  // Pre-permission state — Bigo style
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center px-6">
-        <div className="w-20 h-20 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Radio className="w-10 h-10 text-red-400" />
+        <div className="w-20 h-20 bg-[#00d4aa]/15 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(0,212,170,0.2)]">
+          <Radio className="w-10 h-10 text-[#00d4aa]" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Go Live</h1>
         <p className="text-white/50 text-sm mb-8">Camera & microphone access is needed</p>
         <Button 
           onClick={requestCamera}
-          className="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full px-8 py-3 font-semibold"
+          className="bg-gradient-to-r from-[#00d4aa] to-[#00b894] text-white rounded-full px-8 py-3 font-semibold shadow-[0_0_20px_rgba(0,212,170,0.3)]"
         >
           Enable Camera
         </Button>
