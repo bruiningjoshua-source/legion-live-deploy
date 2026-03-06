@@ -16,6 +16,7 @@ import {
   Play
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import formatCount from '@/components/shared/FormatCount';
 
 const categories = [
   { value: 'all', label: 'All' },
@@ -169,9 +170,9 @@ export default function Videos() {
 function VideoCard({ video, creator, index }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.25 }}
     >
       <Link to={createPageUrl(`WatchVideo?id=${video.id}`)}>
         <div className="bg-stone-800/30 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all cursor-pointer group">
@@ -205,11 +206,11 @@ function VideoCard({ video, creator, index }) {
             <div className="flex items-center gap-3 text-xs text-amber-400/70">
               <span className="flex items-center gap-1">
                 <Eye className="w-3 h-3" />
-                {video.view_count?.toLocaleString() || 0}
+                {formatCount(video.view_count)}
               </span>
               <span className="flex items-center gap-1">
                 <Heart className="w-3 h-3" />
-                {video.like_count?.toLocaleString() || 0}
+                {formatCount(video.like_count)}
               </span>
             </div>
           </div>

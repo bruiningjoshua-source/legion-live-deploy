@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
 
@@ -71,7 +72,7 @@ function CreatorFanClubCard({ creator, membership, onJoin }) {
           <div className="flex gap-4 mb-4 text-sm">
             <div className="flex items-center gap-1.5 text-white/60">
               <Users className="w-4 h-4" />
-              {(creator.follower_count || 0).toLocaleString()} fans
+              {formatCount(creator.follower_count)} fans
             </div>
             <div className="flex items-center gap-1.5 text-white/60">
               <Heart className="w-4 h-4 text-pink-400" />
@@ -358,9 +359,9 @@ export default function FanClubs() {
             {filteredCreators.map((creator, i) => (
               <motion.div
                 key={creator.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i * 0.05, 0.4), duration: 0.3 }}
               >
                 <CreatorFanClubCard
                   creator={creator}

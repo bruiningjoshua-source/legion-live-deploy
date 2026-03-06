@@ -94,7 +94,7 @@ export default function AchievementsPage() {
           </GlassCard>
           <GlassCard delay={0.1} glowColor="purple" className="text-center">
             <Star className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-            <p className="text-3xl font-black text-white">{totalPoints.toLocaleString()}</p>
+            <p className="text-3xl font-black text-white">{totalPoints > 999 ? (totalPoints / 1000).toFixed(1) + 'K' : totalPoints}</p>
             <p className="text-white/50 text-sm">Points</p>
           </GlassCard>
           <GlassCard delay={0.2} glowColor="green" className="text-center">
@@ -188,9 +188,9 @@ export default function AchievementsPage() {
                     return (
                       <motion.div
                         key={achievement.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        transition={{ delay: Math.min(index * 0.03, 0.4), duration: 0.25 }}
                       >
                         <GlassCard 
                           padding="p-0" 
