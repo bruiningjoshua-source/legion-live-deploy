@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Radio, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
-import StreamCard from '@/components/stream/StreamCard';
-import CreatorCard from '@/components/creator/CreatorCard';
+import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
+import PremiumCreatorCard from '@/components/creator/PremiumCreatorCard';
 
 export default function Following() {
   const { data: user } = useQuery({
@@ -46,10 +46,10 @@ export default function Following() {
     refetchInterval: 30 * 1000
   });
 
-  const creatorMap = creators.reduce((acc, c) => {
+  const creatorMap = useMemo(() => creators.reduce((acc, c) => {
     acc[c.id] = c;
     return acc;
-  }, {});
+  }, {}), [creators]);
 
   const liveCreators = creators.filter(c => c.is_live);
   const offlineCreators = creators.filter(c => !c.is_live);
@@ -114,20 +114,17 @@ export default function Following() {
                 <h2 className="text-2xl font-bold text-amber-100 mb-4 flex items-center gap-2">
                   <Radio className="w-6 h-6 text-red-500" />
                   Live Now
-                  <Badge className="bg-red-500 text-white border-0 animate-pulse">
+                  <Badge className="bg-red-500 text-white border-0 flex items-center gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-100" />
+                    </span>
                     {streams.length}
                   </Badge>
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {streams.map((stream, i) => (
-                    <motion.div
-                      key={stream.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
-                    </motion.div>
+                    <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
                   ))}
                 </div>
               </div>
@@ -138,24 +135,10 @@ export default function Following() {
               <h2 className="text-2xl font-bold text-amber-100 mb-4">All Followed Creators</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {liveCreators.map((creator, i) => (
-                  <motion.div
-                    key={creator.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                  >
-                    <CreatorCard creator={creator} />
-                  </motion.div>
+                  <PremiumCreatorCard key={creator.id} creator={creator} index={i} />
                 ))}
                 {offlineCreators.map((creator, i) => (
-                  <motion.div
-                    key={creator.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: (liveCreators.length + i) * 0.03 }}
-                  >
-                    <CreatorCard creator={creator} />
-                  </motion.div>
+                  <PremiumCreatorCard key={creator.id} creator={creator} index={liveCreators.length + i} />
                 ))}
               </div>
             </div>

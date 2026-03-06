@@ -42,7 +42,8 @@ import {
   Gift,
   MessageSquare
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import formatCount from '@/components/shared/FormatCount';
 import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
 import InterestSelector from '@/components/amphitheatre/InterestSelector';
 import DirectMessaging from '@/components/community/DirectMessaging';
@@ -655,9 +656,15 @@ export default function TheAmphitheatre() {
                       )}
                     </div>
                     <p className="text-amber-100 font-semibold text-sm truncate">{creator.display_name}</p>
-                    <p className="text-amber-400/60 text-xs">{(creator.follower_count || 0).toLocaleString()} followers</p>
+                    <p className="text-amber-400/60 text-xs">{formatCount(creator.follower_count)} followers</p>
                     {creator.is_live && (
-                      <Badge className="mt-2 bg-red-500 text-white text-xs">LIVE</Badge>
+                      <Badge className="mt-2 bg-red-500 text-white text-xs flex items-center gap-1">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-200 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                        </span>
+                        LIVE
+                      </Badge>
                     )}
                   </motion.div>
                 </Link>
@@ -744,18 +751,16 @@ export default function TheAmphitheatre() {
           </div>
         ) : filteredContent.length > 0 ? (
           <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-            <AnimatePresence>
-              {filteredContent.map((content, i) => (
-                <motion.div
-                  key={content.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.02 }}
-                >
-                  <AmphitheatreVideoCard content={content} viewMode={viewMode} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {filteredContent.map((content, i) => (
+              <motion.div
+                key={content.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.3 }}
+              >
+                <AmphitheatreVideoCard content={content} viewMode={viewMode} />
+              </motion.div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-20 bg-stone-800/30 rounded-2xl border border-amber-600/20">
