@@ -4,8 +4,9 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
+import { Radio, X, Shield, Sparkles, Users, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import {
   useCurrentUser, useStream, useCreator, useWallet, useGifts,
   useChatMessages, useFollowStatus, useCreatorSubscription,
@@ -112,12 +113,31 @@ export default function WatchStream() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isBroadcaster, stream?.id]);
 
-  // ─── Viewer: update viewer count on join/leave (via StreamService) ───
+  // ─── Viewer: update viewer count on join/leave ───
+  const viewerJoinedRef = useRef(false);
   useEffect(() => {
     if (!stream?.id || isBroadcaster || !user) return;
-    StreamService.joinAsViewer(stream.id, stream.viewer_count, stream.peak_viewers).catch(() => {});
+    
+    const joinViewer = async () => {
+      try {
+        await base44.entities.Stream.update(stream.id, {
+          viewer_count: (stream.viewer_count || 0) + 1,
+          peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1),
+        });
+        viewerJoinedRef.current = true;
+      } catch (e) {
+        console.error('Failed to increment viewer count:', e);
+      }
+    };
+    joinViewer();
+
     return () => {
-      StreamService.leaveAsViewer(stream.id, stream.viewer_count).catch(() => {});
+      if (viewerJoinedRef.current) {
+        base44.entities.Stream.update(stream.id, {
+          viewer_count: Math.max(0, (stream.viewer_count || 1) - 1),
+        }).catch(() => {});
+        viewerJoinedRef.current = false;
+      }
     };
   }, [stream?.id, isBroadcaster, user?.email]);
 
@@ -231,7 +251,7 @@ export default function WatchStream() {
       const optimisticMsg = ChatService.createOptimisticMessage({ streamId, user, messageData, wallet });
       setChatMessages(prev => [...prev, optimisticMsg]);
     },
-    onError: (error) => alert(error.message || 'Unable to send message.'),
+    onError: (error) => toast.error(error.message || 'Unable to send message.'),
   });
 
   const _sendGiftMutation = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
@@ -279,15 +299,22 @@ export default function WatchStream() {
   if (!stream || streamEnded) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="text-center">
-          <Radio className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
+        <div className="text-center max-w-sm mx-auto px-6">
+          {/* Creator avatar for ended streams */}
+          {streamEnded && creator?.avatar_url ? (
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 mx-auto mb-4">
+              <img src={creator.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+            </div>
+          ) : (
+            <Radio className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
+          )}
           <h1 className="text-2xl font-bold text-white mb-2">
             {streamEnded ? 'Stream Has Ended' : 'Stream Not Found'}
           </h1>
           <p className="text-white/50 mb-2">
             {streamEnded
               ? `${creator?.display_name || 'The host'} ended this broadcast.`
-              : "This stream doesn't exist"}
+              : "This stream doesn't exist or is no longer available."}
           </p>
           {streamEnded && stream && (
             <div className="flex items-center justify-center gap-4 text-white/40 text-sm mb-6">
@@ -296,9 +323,14 @@ export default function WatchStream() {
               {stream.total_gifts_received > 0 && <span>{stream.total_gifts_received} gifts</span>}
             </div>
           )}
-          <Link to={createPageUrl('Home')}>
-            <Button className="bg-amber-600 hover:bg-amber-700">Back to Home</Button>
-          </Link>
+          <div className="flex items-center justify-center gap-3">
+            <Link to={createPageUrl('Explore')}>
+              <Button className="bg-amber-600 hover:bg-amber-700">Back to Explore</Button>
+            </Link>
+            <Link to={createPageUrl('Home')}>
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Home</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -412,14 +444,19 @@ export default function WatchStream() {
           <StreamActionBar
             onGiftClick={() => {
               if (!creatorCanReceiveGifts) {
-                alert('This creator has not enabled monetization yet.');
+                toast.error('This creator has not enabled monetization yet.');
                 return;
               }
               setShowGiftPanel(true);
             }}
             onLikeClick={handleDoubleTapLike}
             onShareClick={() => {
-              if (navigator.share) navigator.share({ title: stream.title, url: window.location.href });
+              const shareUrl = window.location.href;
+              if (navigator.share) {
+                navigator.share({ title: stream.title, url: shareUrl });
+              } else {
+                navigator.clipboard.writeText(shareUrl).then(() => toast.success('Stream link copied!'));
+              }
             }}
             onChatToggle={() => setShowChat(!showChat)}
             isLiked={isFollowing}
