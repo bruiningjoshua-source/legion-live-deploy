@@ -113,7 +113,7 @@ export default function AmphitheatreVideoCard({ content, viewMode = 'grid', isSh
               </span>
               <span className="text-amber-400/50">•</span>
               <span className="text-amber-400/60 text-sm">
-                {content.created_date && formatDistanceToNow(new Date(content.created_date), { addSuffix: true })}
+                {content.created_date ? formatDistanceToNow(new Date(content.created_date), { addSuffix: true }) : ''}
               </span>
             </div>
           </div>
