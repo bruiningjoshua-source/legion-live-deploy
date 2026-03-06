@@ -24,6 +24,8 @@ import {
   Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import MonetizationShowcase from '@/components/monetization/MonetizationShowcase';
 import ViewerSpendingIncentives from '@/components/monetization/ViewerSpendingIncentives';
 import ReferralDashboard from '@/components/monetization/ReferralDashboard';
@@ -123,9 +125,14 @@ export default function CreatorMonetization() {
         throw new Error('Failed to create checkout');
       }
     },
+    onSuccess: () => {
+      toast.success('Redirecting to checkout...');
+    },
     onError: (error) => {
       if (error.message === 'IFRAME_BLOCKED') {
-        alert('⚠️ Subscription checkout only works in the published app.');
+        toast.error('Checkout is only available in the published app. Please open the app directly.');
+      } else {
+        toast.error('Failed to start checkout. Please try again.');
       }
     }
   });
@@ -252,7 +259,7 @@ export default function CreatorMonetization() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-amber-400/70 text-sm">Subscribers</p>
-                      <p className="text-3xl font-bold text-amber-100">{subscribers.length}</p>
+                      <p className="text-3xl font-bold text-amber-100">{formatCount(subscribers.length)}</p>
                     </div>
                     <Users className="w-12 h-12 text-blue-500" />
                   </div>
@@ -264,7 +271,7 @@ export default function CreatorMonetization() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-amber-400/70 text-sm">Tips Received</p>
-                      <p className="text-3xl font-bold text-amber-100">{tips.length}</p>
+                      <p className="text-3xl font-bold text-amber-100">{formatCount(tips.length)}</p>
                     </div>
                     <DollarSign className="w-12 h-12 text-green-500" />
                   </div>

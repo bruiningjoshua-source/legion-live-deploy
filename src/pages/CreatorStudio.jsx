@@ -41,9 +41,10 @@ import {
   Play,
   Filter
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 
 const REVIEW_STATUS_CONFIG = {
   pending: { icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/20', label: 'Under Review' },
@@ -169,7 +170,7 @@ export default function CreatorStudio() {
                   <Eye className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-amber-100">{totalViews.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(totalViews)}</p>
                   <p className="text-amber-400/60 text-sm">Total Views</p>
                 </div>
               </div>
@@ -183,7 +184,7 @@ export default function CreatorStudio() {
                   <ThumbsUp className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-amber-100">{totalLikes.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(totalLikes)}</p>
                   <p className="text-amber-400/60 text-sm">Total Likes</p>
                 </div>
               </div>
@@ -279,8 +280,7 @@ export default function CreatorStudio() {
               </div>
             ) : filteredVideos.length > 0 ? (
               <div className="space-y-4">
-                <AnimatePresence>
-                  {filteredVideos.map((video, i) => {
+                {filteredVideos.map((video, i) => {
                     const reviewConfig = REVIEW_STATUS_CONFIG[video.review_status] || REVIEW_STATUS_CONFIG.pending;
                     const visConfig = VISIBILITY_CONFIG[video.visibility] || VISIBILITY_CONFIG.public;
                     const ReviewIcon = reviewConfig.icon;
@@ -289,10 +289,9 @@ export default function CreatorStudio() {
                     return (
                       <motion.div
                         key={video.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ delay: i * 0.03 }}
+                        transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                       >
                         <Card className="bg-stone-800/30 border-amber-600/20 hover:border-amber-500/40 transition-all">
                           <CardContent className="p-4">
@@ -372,15 +371,15 @@ export default function CreatorStudio() {
                                 <div className="flex items-center gap-4 mt-3 text-sm text-amber-400/70">
                                   <span className="flex items-center gap-1">
                                     <Eye className="w-4 h-4" />
-                                    {(video.view_count || 0).toLocaleString()}
+                                    {formatCount(video.view_count)}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <ThumbsUp className="w-4 h-4" />
-                                    {(video.like_count || 0).toLocaleString()}
+                                    {formatCount(video.like_count)}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <MessageSquare className="w-4 h-4" />
-                                    {(video.comment_count || 0).toLocaleString()}
+                                    {formatCount(video.comment_count)}
                                   </span>
                                   <span className="text-amber-400/50">
                                     {video.created_date && format(new Date(video.created_date), 'MMM d, yyyy')}
@@ -393,8 +392,7 @@ export default function CreatorStudio() {
                       </motion.div>
                     );
                   })}
-                </AnimatePresence>
-              </div>
+                </div>
             ) : (
               <Card className="bg-stone-800/30 border-amber-600/20">
                 <CardContent className="py-16 text-center">
@@ -425,12 +423,12 @@ export default function CreatorStudio() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-stone-900/50 rounded-xl p-6 text-center">
                     <Eye className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-amber-100">{totalViews.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-amber-100">{formatCount(totalViews)}</p>
                     <p className="text-amber-400/60">Total Views</p>
                   </div>
                   <div className="bg-stone-900/50 rounded-xl p-6 text-center">
                     <Users className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-amber-100">{(creator?.follower_count || 0).toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
                     <p className="text-amber-400/60">Subscribers</p>
                   </div>
                   <div className="bg-stone-900/50 rounded-xl p-6 text-center">

@@ -31,7 +31,8 @@ import {
   Tablet
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import formatCount from '@/components/shared/FormatCount';
+import { format, subDays } from 'date-fns';
 import {
   LineChart,
   Line,
@@ -197,7 +198,7 @@ export default function ChannelAnalytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-amber-400/60 text-sm">Views</p>
-                  <p className="text-2xl font-bold text-amber-100">{totalViews.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(totalViews)}</p>
                 </div>
                 <Eye className="w-8 h-8 text-blue-400" />
               </div>
@@ -221,7 +222,7 @@ export default function ChannelAnalytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-amber-400/60 text-sm">Subscribers</p>
-                  <p className="text-2xl font-bold text-amber-100">{(creator?.follower_count || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
                 </div>
                 <Users className="w-8 h-8 text-green-400" />
               </div>
@@ -305,7 +306,7 @@ export default function ChannelAnalytics() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-amber-100 font-semibold truncate">{video.title}</p>
-                        <p className="text-amber-400/60 text-sm">{(video.view_count || 0).toLocaleString()} views</p>
+                        <p className="text-amber-400/60 text-sm">{formatCount(video.view_count)} views</p>
                       </div>
                     </div>
                   ))}
