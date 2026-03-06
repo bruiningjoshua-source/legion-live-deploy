@@ -172,21 +172,21 @@ export default function Home() {
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Hero Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 sm:mb-3 animate-gradient-x">
+        <div className="text-center mb-8 sm:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1">
             Legion Live
           </h1>
-          <p className="text-white/60 text-sm sm:text-lg">Stream, command, and conquer</p>
+          <p className="text-white/40 text-sm sm:text-base">Stream. Compete. Earn.</p>
           
-          <div className="flex items-center justify-center gap-4 sm:gap-6 mt-4 sm:mt-6">
+          <div className="flex items-center justify-center gap-5 mt-4">
             <div className="text-center">
-              <p className="text-xl sm:text-2xl font-bold text-white">{streams.length}</p>
-              <p className="text-white/50 text-[10px] sm:text-xs">Live Now</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{streams.length}</p>
+              <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Live</p>
             </div>
-            <div className="w-px h-6 sm:h-8 bg-white/20" />
+            <div className="w-px h-6 bg-white/15" />
             <div className="text-center">
-              <p className="text-xl sm:text-2xl font-bold text-white">{creators.length}</p>
-              <p className="text-white/50 text-[10px] sm:text-xs">Creators</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{creators.length}</p>
+              <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Creators</p>
             </div>
           </div>
         </div>
