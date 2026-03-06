@@ -71,8 +71,16 @@ export default function GoLive() {
 
   const requestCamera = async () => {
     try {
+      // Use standard 9:16 portrait for mobile broadcast (720×1280)
+      // Falls back gracefully if device can't match exactly
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 720, min: 480 },
+          height: { ideal: 1280, min: 854 },
+          aspectRatio: { ideal: 9/16 },
+          frameRate: { ideal: 30, max: 30 }
+        }, 
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       });
       setCameraStream(stream);
