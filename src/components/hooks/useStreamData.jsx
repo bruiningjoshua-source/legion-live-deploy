@@ -10,6 +10,7 @@ import ChatService from '@/components/services/ChatService';
 import GiftService from '@/components/services/GiftService';
 import FollowService from '@/components/services/FollowService';
 import CreatorService from '@/components/services/CreatorService';
+import { toast } from 'sonner';
 
 // ─── Auth ─────────────────────────────────────────────────────
 export function useCurrentUser() {
@@ -151,7 +152,7 @@ export function useSendMessage({ streamId, user, wallet }) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (messageData) => ChatService.sendMessage({ streamId, user, wallet, messageData }),
-    onError: (error) => alert(error.message || 'Unable to send message.'),
+    onError: (error) => toast.error(error.message || 'Unable to send message.'),
   });
 }
 
@@ -177,7 +178,10 @@ export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGi
       if (context?.prevWallet) {
         queryClient.setQueryData(['wallet', user?.email], context.prevWallet);
       }
-      alert(error.message || 'Gift failed.');
+      toast.error(error.message || 'Gift failed.');
+    },
+    onSuccess: () => {
+      toast.success('Gift sent!');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
@@ -229,6 +233,6 @@ export function useEndStream({ stream, creator, pkBattle, liveStream }) {
 
       return StreamService.endStream(stream, creator, pkBattle);
     },
-    onError: (error) => alert(error.message || 'Failed to end stream'),
+    onError: (error) => toast.error(error.message || 'Failed to end stream'),
   });
 }
