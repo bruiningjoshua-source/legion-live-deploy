@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import StreamCard from '@/components/stream/StreamCard';
 import CreatorCard from '@/components/creator/CreatorCard';
 
@@ -72,24 +72,18 @@ export default function TrendingSection() {
             <TrendingUp className="w-5 h-5 text-amber-400" />
             Trending Now
           </h2>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          >
-            <AnimatePresence>
-              {trendingData.streams.map((stream, i) => (
-                <motion.div
-                  key={stream.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {trendingData.streams.map((stream, i) => (
+              <motion.div
+                key={stream.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.25 }}
+              >
+                <StreamCard stream={stream} creator={creatorMap[stream.creator_id]} />
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -100,24 +94,18 @@ export default function TrendingSection() {
             <TrendingUp className="w-5 h-5 text-amber-400" />
             Rising Creators
           </h2>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-          >
-            <AnimatePresence>
-              {trendingData.creators.map((creator, i) => (
-                <motion.div
-                  key={creator.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <CreatorCard creator={creator} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {trendingData.creators.map((creator, i) => (
+              <motion.div
+                key={creator.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.25 }}
+              >
+                <CreatorCard creator={creator} />
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
 

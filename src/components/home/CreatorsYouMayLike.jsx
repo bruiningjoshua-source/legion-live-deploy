@@ -1,6 +1,7 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import RecommendationEngine from '@/components/services/RecommendationEngine';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
@@ -75,9 +76,9 @@ function CreatorMiniCard({ creator, user, followSet }) {
 }
 
 const CreatorsYouMayLike = memo(function CreatorsYouMayLike({ user }) {
-  const { data: creators = [] } = useQuery({
+  const { data: allCreators = [] } = useQuery({
     queryKey: ['creators-you-may-like'],
-    queryFn: () => base44.entities.Creator.list('-follower_count', 10),
+    queryFn: () => base44.entities.Creator.list('-follower_count', 30),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
@@ -89,7 +90,23 @@ const CreatorsYouMayLike = memo(function CreatorsYouMayLike({ user }) {
     staleTime: 60000,
   });
 
+  const { data: interests = [] } = useQuery({
+    queryKey: ['user-interests-rec', user?.email],
+    queryFn: () => base44.entities.UserInterest.filter({ user_email: user.email }),
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const followSet = new Set(follows.map(f => f.following_creator_id));
+
+  // Use recommendation engine to rank creators
+  const creators = useMemo(() => {
+    const profile = {
+      followedCreatorIds: followSet,
+      interests: interests.map(i => i.category || i.interest_name).filter(Boolean),
+    };
+    return RecommendationEngine.rankCreators(allCreators, profile).slice(0, 10);
+  }, [allCreators, followSet, interests]);
 
   if (creators.length === 0) return null;
 
