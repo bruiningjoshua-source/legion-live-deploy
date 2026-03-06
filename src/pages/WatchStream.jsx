@@ -6,10 +6,11 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   useCurrentUser, useStream, useCreator, useWallet, useGifts,
   useChatMessages, useFollowStatus, useCreatorSubscription,
-  useSendMessage, useSendGift, useToggleFollow, useEndStream,
+  useStreamPKBattle, useSendGift, useToggleFollow, useEndStream,
 } from '@/components/hooks/useStreamData';
 import ChatService from '@/components/services/ChatService';
 import StreamService from '@/components/services/StreamService';

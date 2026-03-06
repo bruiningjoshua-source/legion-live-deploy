@@ -111,6 +111,15 @@ export function useChatMessages(streamId) {
   });
 }
 
+// ─── PK Battle ───────────────────────────────────────────────
+export function useStreamPKBattle(streamId, streamType) {
+  return useQuery({
+    queryKey: ['pk-battle', streamId],
+    queryFn: () => base44.entities.PKBattle.filter({ stream_id: streamId, status: 'active' }, '-created_date', 1).then(r => r[0]),
+    enabled: streamType === 'pk_battle' && !!streamId,
+  });
+}
+
 // ─── Follow ───────────────────────────────────────────────────
 export function useFollowStatus(userEmail, creatorId) {
   return useQuery({
