@@ -4,8 +4,8 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Sparkles, Users, Share2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   useCurrentUser, useStream, useCreator, useWallet, useGifts,
@@ -13,7 +13,6 @@ import {
   useStreamPKBattle, useSendGift, useToggleFollow, useEndStream,
 } from '@/components/hooks/useStreamData';
 import ChatService from '@/components/services/ChatService';
-import StreamService from '@/components/services/StreamService';
 
 import BulletChat from '@/components/stream/BulletChat';
 import FloatingHearts from '@/components/stream/FloatingHearts';
@@ -27,18 +26,13 @@ import AlertNotifications from '@/components/moderation/AlertNotifications';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import ZegoService from '@/components/stream/ZegoService';
-import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
 import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
-import PremiumLensUI from '@/components/stream/PremiumLensUI';
-import StreamingSettings from '@/components/stream/StreamingSettings';
 import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
-import MultiStreamManager from '@/components/stream/MultiStreamManager';
-import StreamOverlayEditor from '@/components/stream/StreamOverlayEditor';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,43 +44,24 @@ export default function WatchStream() {
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
-  const [isMuted, setIsMuted] = useState(false);
   const [liveStream, setLiveStream] = useState(null);
-  const [streamStats, setStreamStats] = useState(null);
-  const [isMirrored, setIsMirrored] = useState(true);
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
-
-  // Broadcaster state
   const [showModerationPanel, setShowModerationPanel] = useState(false);
-  const [moderators, setModerators] = useState([]);
-  const [kickedUsers, setKickedUsers] = useState([]);
-  const [chatMuted, setChatMuted] = useState(false);
-  const [panelParticipants, setPanelParticipants] = useState([]);
-  const [activeLens, setActiveLens] = useState(null);
-  const [activeBackground, setActiveBackground] = useState(null);
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
-  const [showMultiStream, setShowMultiStream] = useState(false);
-  const [showOverlayEditor, setShowOverlayEditor] = useState(false);
-  const [streamOverlays, setStreamOverlays] = useState([]);
-  const [streamSettings, setStreamSettings] = useState({
-    resolution: '720p', bitrate: 'auto', frameRate: 30,
-    arComplexity: 'medium', faceMeshEnabled: true, segmentationEnabled: false,
-    adaptiveEnabled: true, lowPowerMode: false,
-  });
 
   const videoRef = useRef(null);
-  const arCanvasRef = useRef(null);
+  const liveStreamRef = useRef(null);
 
-  // Lock body scroll for fullscreen streaming
+  // Lock body scroll
   useEffect(() => {
     document.body.classList.add('fullscreen-lock');
     return () => document.body.classList.remove('fullscreen-lock');
   }, []);
 
-  // ─── Data queries (service layer) ─────────────────────────
+  // Data queries
   const { data: user } = useCurrentUser();
   const { data: stream, isLoading: streamLoading } = useStream(streamId);
   const { data: creator } = useCreator(stream?.creator_id);
@@ -101,36 +76,28 @@ export default function WatchStream() {
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || user?.role === 'admin';
   const isBroadcaster = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
+  const streamEnded = stream?.status === 'ended';
 
-  // ─── Broadcaster: warn on tab close & cleanup ───
+  // Warn broadcaster on tab close
   useEffect(() => {
     if (!isBroadcaster || !stream?.id) return;
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      e.returnValue = 'You are live! Closing this tab will end your stream.';
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    const handler = (e) => { e.preventDefault(); e.returnValue = 'You are live!'; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
   }, [isBroadcaster, stream?.id]);
 
-  // ─── Viewer: update viewer count on join/leave ───
+  // Viewer count
   const viewerJoinedRef = useRef(false);
   useEffect(() => {
     if (!stream?.id || isBroadcaster || !user) return;
-    
-    const joinViewer = async () => {
-      try {
-        await base44.entities.Stream.update(stream.id, {
-          viewer_count: (stream.viewer_count || 0) + 1,
-          peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1),
-        });
-        viewerJoinedRef.current = true;
-      } catch (e) {
-        console.error('Failed to increment viewer count:', e);
-      }
+    const join = async () => {
+      await base44.entities.Stream.update(stream.id, {
+        viewer_count: (stream.viewer_count || 0) + 1,
+        peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1),
+      });
+      viewerJoinedRef.current = true;
     };
-    joinViewer();
-
+    join().catch(() => {});
     return () => {
       if (viewerJoinedRef.current) {
         base44.entities.Stream.update(stream.id, {
@@ -141,160 +108,117 @@ export default function WatchStream() {
     };
   }, [stream?.id, isBroadcaster, user?.email]);
 
-  // ─── Chat sync (via ChatService) ─────────────────────────
+  // Chat sync
   useEffect(() => {
     if (initialMessages?.length) setChatMessages(initialMessages);
   }, [initialMessages]);
 
   useEffect(() => {
     if (!streamId) return;
-    return ChatService.subscribe(streamId, (newMessage) => {
-      setChatMessages(prev => ChatService.addToBuffer(prev, newMessage));
+    return ChatService.subscribe(streamId, (msg) => {
+      setChatMessages(prev => ChatService.addToBuffer(prev, msg));
     });
   }, [streamId]);
 
-  // ─── Zego viewer init ─────────────────
+  // Zego viewer init
   useEffect(() => {
     let mounted = true;
-    const initZegoViewer = async () => {
-      if (stream?.status === 'live' && !isBroadcaster) {
-        try {
-          const viewerUserId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Math.floor(Math.random() * 1000000)}`;
-          const tokenResponse = await base44.functions.invoke('generateZegoToken', {
-            roomId: streamId, userId: viewerUserId, role: 'audience'
-          });
-          if (!mounted) return;
-          const ZEGO_APP_ID = tokenResponse.data?.appId;
-          if (!ZEGO_APP_ID || !tokenResponse.data?.token) {
-            console.error('[WatchStream] Invalid token response');
-            setLiveStream(true);
-            return;
+    const init = async () => {
+      if (stream?.status !== 'live' || isBroadcaster) return;
+      try {
+        const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
+        const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
+        if (!mounted) return;
+        const { appId, token } = res.data || {};
+        if (!appId || !token) { setLiveStream(true); return; }
+        await ZegoService.initialize(appId);
+        if (!mounted) return;
+        await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
+        if (!mounted) return;
+        ZegoService.onRoomEvent((event) => {
+          if ((event.type === 'roomState' && event.state === 'DISCONNECTED') || 
+              (event.type === 'streamUpdate' && event.updateType === 'DELETE')) {
+            queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
           }
-          await ZegoService.initialize(ZEGO_APP_ID);
-          if (!mounted) return;
-          await ZegoService.loginRoom(streamId, viewerUserId, user?.full_name || 'Viewer', tokenResponse.data.token);
-          if (!mounted) return;
-
-          // Listen for room events (host ends stream)
-          ZegoService.onRoomEvent((event) => {
-            if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
-              queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
-            }
-            if (event.type === 'streamUpdate' && event.updateType === 'DELETE') {
-              // Host stopped publishing - stream ended
-              queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
-            }
-          });
-          ZegoService.onQualityChange((stats) => { if (mounted) setStreamStats(stats); });
-          setTimeout(() => ZegoService.getRemoteStreams(), 1000);
-          setLiveStream(true);
-        } catch (error) {
-          console.error('[WatchStream] Failed to join:', error);
-          if (mounted) setLiveStream(true);
-        }
+        });
+        setTimeout(() => ZegoService.getRemoteStreams(), 1000);
+        setLiveStream(true);
+      } catch (error) {
+        console.error('[WatchStream] Join failed:', error);
+        if (mounted) setLiveStream(true);
       }
     };
-    initZegoViewer();
-    return () => {
-      mounted = false;
-      ZegoService.leave().catch(() => {});
-    };
+    init();
+    return () => { mounted = false; ZegoService.leave().catch(() => {}); };
   }, [stream?.status, streamId, isBroadcaster]);
 
-  // ─── Viewer: detect stream ended and show end screen ───
-  const streamEnded = stream?.status === 'ended';
-
-  // ─── Creator camera init ──────────────
-  const liveStreamRef = useRef(null);
+  // Broadcaster camera
   useEffect(() => {
     let mounted = true;
-    const initCamera = async () => {
-      if (stream?.status === 'live' && isBroadcaster) {
-        try {
-          const mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-          });
-          if (!mounted) { mediaStream.getTracks().forEach(t => t.stop()); return; }
-          liveStreamRef.current = mediaStream;
-          setLiveStream(mediaStream);
-          if (videoRef.current) {
-            videoRef.current.srcObject = mediaStream;
-            videoRef.current.muted = false;
-            videoRef.current.playsInline = true;
-            const playAttempt = async () => {
-              if (!mounted || !videoRef.current) return;
-              try { await videoRef.current.play(); }
-              catch { setTimeout(playAttempt, 500); }
-            };
-            playAttempt();
-          }
-        } catch (error) {
-          console.error('Camera access error:', error);
+    const init = async () => {
+      if (stream?.status !== 'live' || !isBroadcaster) return;
+      try {
+        const media = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        });
+        if (!mounted) { media.getTracks().forEach(t => t.stop()); return; }
+        liveStreamRef.current = media;
+        setLiveStream(media);
+        if (videoRef.current) {
+          videoRef.current.srcObject = media;
+          videoRef.current.muted = false;
+          videoRef.current.playsInline = true;
+          videoRef.current.play().catch(() => {});
         }
+      } catch (error) {
+        console.error('Camera error:', error);
       }
     };
-    initCamera();
+    init();
     return () => {
       mounted = false;
       if (liveStreamRef.current && typeof liveStreamRef.current !== 'boolean') {
-        liveStreamRef.current.getTracks().forEach(track => track.stop());
+        liveStreamRef.current.getTracks().forEach(t => t.stop());
         liveStreamRef.current = null;
       }
     };
   }, [stream?.status, isBroadcaster]);
 
-  // Mirror effect
-  useEffect(() => {
-    if (videoRef.current && isBroadcaster) {
-      videoRef.current.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
-    }
-  }, [isMirrored, isBroadcaster]);
-
-  // ─── Mutations (via service layer hooks) ────────────────────────
+  // Mutations
   const sendMessageMutation = useMutation({
-    mutationFn: (messageData) => ChatService.sendMessage({ streamId, user, wallet, messageData }),
-    onMutate: (messageData) => {
-      const optimisticMsg = ChatService.createOptimisticMessage({ streamId, user, messageData, wallet });
-      setChatMessages(prev => [...prev, optimisticMsg]);
+    mutationFn: (data) => ChatService.sendMessage({ streamId, user, wallet, messageData: data }),
+    onMutate: (data) => {
+      const msg = ChatService.createOptimisticMessage({ streamId, user, messageData: data, wallet });
+      setChatMessages(prev => [...prev, msg]);
     },
-    onError: (error) => toast.error(error.message || 'Unable to send message.'),
+    onError: (err) => toast.error(err.message || 'Unable to send message.'),
   });
 
-  const _sendGiftMutation = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
-  // Wrap to add UI side effects (animation + panel close)
-  const sendGiftMutation = {
-    ..._sendGiftMutation,
-    mutate: ({ gift, quantity }) => {
-      setShowGiftPanel(false);
-      setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity });
-      _sendGiftMutation.mutate({ gift, quantity });
-    }
-  };
-  const followMutation = useToggleFollow({ user, creator, isFollowing });
-  const _endStreamMutation = useEndStream({ stream, creator, pkBattle, liveStream });
-  const endStreamMutation = {
-    ..._endStreamMutation,
-    mutate: () => _endStreamMutation.mutate(null, { onSuccess: () => navigate(createPageUrl('Profile')) }),
+  const _sendGift = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
+  const sendGift = ({ gift, quantity }) => {
+    setShowGiftPanel(false);
+    setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity });
+    _sendGift.mutate({ gift, quantity });
   };
 
-  // ─── Reaction handler ─────────────────
-  const handleDoubleTapLike = useCallback(() => {
+  const followMutation = useToggleFollow({ user, creator, isFollowing });
+  const _endStream = useEndStream({ stream, creator, pkBattle, liveStream });
+  const endStream = () => _endStream.mutate(null, { onSuccess: () => navigate(createPageUrl('Profile')) });
+
+  // Reactions
+  const handleDoubleTap = useCallback(() => {
     const emojis = ['❤️', '🔥', '💜', '✨', '🌟'];
-    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-    setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji }]);
+    setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji: emojis[Math.floor(Math.random() * emojis.length)] }]);
     if (!isFollowing) followMutation.mutate();
   }, [isFollowing]);
 
-  // Clean up old reactions
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFloatingReactions(prev => prev.filter(r => Date.now() - r.id < 3500));
-    }, 1000);
-    return () => clearInterval(interval);
+    const iv = setInterval(() => setFloatingReactions(prev => prev.filter(r => Date.now() - r.id < 3500)), 1000);
+    return () => clearInterval(iv);
   }, []);
 
-  // ─── Loading / Error ──────────────────
+  // Loading
   if (streamLoading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -303,39 +227,37 @@ export default function WatchStream() {
     );
   }
 
+  // Ended / Not found
   if (!stream || streamEnded) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center max-w-sm mx-auto px-6">
-          {/* Creator avatar for ended streams */}
           {streamEnded && creator?.avatar_url ? (
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 mx-auto mb-4">
               <img src={creator.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
             </div>
           ) : (
-            <Radio className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
+            <Radio className="w-16 h-16 text-white/20 mx-auto mb-4" />
           )}
           <h1 className="text-2xl font-bold text-white mb-2">
-            {streamEnded ? 'Stream Has Ended' : 'Stream Not Found'}
+            {streamEnded ? 'Stream Ended' : 'Stream Not Found'}
           </h1>
-          <p className="text-white/50 mb-2">
-            {streamEnded
-              ? `${creator?.display_name || 'The host'} ended this broadcast.`
-              : "This stream doesn't exist or is no longer available."}
+          <p className="text-white/40 text-sm mb-6">
+            {streamEnded ? `${creator?.display_name || 'The host'} ended this broadcast.` : "This stream doesn't exist."}
           </p>
           {streamEnded && stream && (
-            <div className="flex items-center justify-center gap-4 text-white/40 text-sm mb-6">
-              {stream.duration_minutes > 0 && <span>{stream.duration_minutes} min</span>}
-              {stream.peak_viewers > 0 && <span>{stream.peak_viewers} peak viewers</span>}
+            <div className="flex items-center justify-center gap-4 text-white/30 text-xs mb-6">
+              {stream.duration_minutes > 0 && <span>{stream.duration_minutes}m</span>}
+              {stream.peak_viewers > 0 && <span>{stream.peak_viewers} peak</span>}
               {stream.total_gifts_received > 0 && <span>{stream.total_gifts_received} gifts</span>}
             </div>
           )}
           <div className="flex items-center justify-center gap-3">
             <Link to={createPageUrl('Explore')}>
-              <Button className="bg-amber-600 hover:bg-amber-700">Back to Explore</Button>
+              <Button className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6">Explore</Button>
             </Link>
             <Link to={createPageUrl('Home')}>
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Home</Button>
+              <Button variant="ghost" className="text-white/60 hover:text-white rounded-full px-6">Home</Button>
             </Link>
           </div>
         </div>
@@ -343,12 +265,10 @@ export default function WatchStream() {
     );
   }
 
-  // ─── RENDER ───────────────────────────
+  // ── RENDER ──
   return (
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
-
-
-      {/* ── Gift Animation ── */}
+      {/* Gift Animation */}
       <AnimatePresence>
         {giftAnimation && (
           <GiftAnimation
@@ -358,38 +278,26 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* ── Video Layer ── 9:16 portrait */}
+      {/* Video Layer */}
       <div className="absolute inset-0 flex items-center justify-center bg-black">
-        {activeBackground?.type === 'image' && (
-          <div className="absolute inset-0 z-0" style={{ backgroundImage: `url(${activeBackground.url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        )}
-        {activeBackground?.type === 'gradient' && (
-          <div className="absolute inset-0 z-0" style={{ background: `linear-gradient(${activeBackground.angle || 135}deg, ${activeBackground.colors?.join(', ')})` }} />
-        )}
-
-        <canvas ref={arCanvasRef} className="hidden" />
-
-        {/* 9:16 video container */}
         <div className="relative w-full h-full" style={{ maxWidth: 'calc(100vh * 9 / 16)' }}>
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
-            autoPlay playsInline muted={isMuted}
+            autoPlay playsInline muted={!isBroadcaster}
             poster={stream.thumbnail_url}
-            controls={false} preload="auto"
-            onDoubleClick={handleDoubleTapLike}
+            controls={false}
+            style={isBroadcaster ? { transform: 'scaleX(-1)' } : undefined}
+            onDoubleClick={handleDoubleTap}
           />
 
-          {/* Multi-Panel overlay */}
+          {/* Multi-panel */}
           {stream.stream_type === 'multi_panel' && (
             <div className="absolute inset-0 z-10">
               <DiscordStylePanel
                 hostStream={stream} hostCreator={creator} currentUser={user}
-                panelParticipants={panelParticipants}
-                onInviteToPanel={(p) => setPanelParticipants(prev => [...prev, p || user])}
-                onRemoveFromPanel={(p) => setPanelParticipants(prev => prev.filter(x => x.user_email !== p?.user_email))}
-                onMuteAudio={() => {}} onEndCamera={() => {}}
-                onLeaveCall={() => { navigate(createPageUrl('Explore')); }}
+                panelParticipants={[]}
+                onLeaveCall={() => navigate(createPageUrl('Explore'))}
                 isHost={isBroadcaster} maxParticipants={8}
               />
             </div>
@@ -400,70 +308,59 @@ export default function WatchStream() {
             <div className="absolute inset-0 pointer-events-none z-10">
               <PKBattleOverlay
                 hostCreator={creator} opponentCreator={opponentCreator}
-                hostScore={pkBattle?.host_score || stream.pk_score?.host || 0}
-                opponentScore={pkBattle?.opponent_score || stream.pk_score?.opponent || 0}
+                hostScore={pkBattle?.host_score || 0}
+                opponentScore={pkBattle?.opponent_score || 0}
                 timeRemaining={pkBattle ? 300 : 0} status={pkBattle?.status || 'pending'}
               />
             </div>
           )}
         </div>
 
-        {/* Loading overlay */}
+        {/* Loading */}
         {!liveStream && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-5">
             <div className="text-center">
-              <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-white/70 text-sm">Connecting to stream...</p>
+              <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-white/50 text-sm">Connecting...</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Gradient overlays for UI readability ── */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 pointer-events-none" />
+      {/* Gradient overlays */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
 
-      {/* ── Floating Hearts (double-tap reactions) ── */}
+      {/* Floating reactions */}
       <FloatingHearts reactions={floatingReactions} />
 
-      {/* ══════════════════════════════════════════ */}
       {/* ── VIEWER UI ── */}
-      {/* ══════════════════════════════════════════ */}
       {!isBroadcaster && (
         <>
-          {/* Top bar: creator info, follow, viewer count */}
           <ViewerTopBar
             creator={creator} stream={stream}
             isFollowing={isFollowing}
             onFollowClick={() => followMutation.mutate()}
-            onClose={() => { navigate(createPageUrl('Home')); }}
+            onClose={() => navigate(createPageUrl('Home'))}
             viewerCount={stream.viewer_count || 0}
           />
 
-          {/* Wallet badge */}
           {wallet && (
             <div className="absolute top-3 right-3 z-30">
-              <ViewerWallet denariiBalance={wallet.denarii_balance || 0} asBalance={wallet.as_balance || 0} />
+              <ViewerWallet denariiBalance={wallet.denarii_balance || 0} userEmail={user?.email} />
             </div>
           )}
 
-          {/* Right-side action bar */}
           <StreamActionBar
             onGiftClick={() => {
-              if (!creatorCanReceiveGifts) {
-                toast.error('This creator has not enabled monetization yet.');
-                return;
-              }
+              if (!creatorCanReceiveGifts) { toast.error('Creator has not enabled monetization.'); return; }
               setShowGiftPanel(true);
             }}
-            onLikeClick={handleDoubleTapLike}
+            onLikeClick={handleDoubleTap}
             onShareClick={() => {
-              const shareUrl = window.location.href;
-              if (navigator.share) {
-                navigator.share({ title: stream.title, url: shareUrl });
-              } else {
-                navigator.clipboard.writeText(shareUrl).then(() => toast.success('Stream link copied!'));
-              }
+              const url = window.location.href;
+              if (navigator.share) navigator.share({ title: stream.title, url });
+              else navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'));
             }}
             onChatToggle={() => setShowChat(!showChat)}
             isLiked={isFollowing}
@@ -472,12 +369,10 @@ export default function WatchStream() {
             showChat={showChat}
           />
 
-          {/* Gift leaderboard - compact, top right below wallet */}
           <div className="absolute top-16 right-3 z-20 w-44" onClick={() => setShowExpandedLeaderboard(true)}>
             <GiftLeaderboard streamId={streamId} compact />
           </div>
 
-          {/* Bullet Chat - bottom left */}
           {showChat && (
             <BulletChat
               messages={chatMessages}
@@ -492,20 +387,16 @@ export default function WatchStream() {
         </>
       )}
 
-      {/* ══════════════════════════════════════════ */}
       {/* ── BROADCASTER UI ── */}
-      {/* ══════════════════════════════════════════ */}
       {isBroadcaster && (
         <>
-          {/* Exit button */}
           <button
             onClick={() => setShowEndDialog(true)}
-            className="absolute top-3 left-3 z-30 w-10 h-10 bg-black/50 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
+            className="absolute top-3 left-3 z-30 w-10 h-10 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white"
           >
             <X className="w-5 h-5" />
           </button>
 
-          {/* Broadcaster top bar */}
           <div className="absolute top-3 left-14 z-30">
             <BroadcasterTopBar
               stream={stream} viewerCount={stream.viewer_count || 0}
@@ -516,39 +407,27 @@ export default function WatchStream() {
             />
           </div>
 
-          {/* Creator tools row */}
-          <div className="absolute top-16 left-3 z-20 flex gap-2 flex-wrap" style={{ maxWidth: '280px' }}>
-            <PremiumLensUI
-              videoRef={videoRef} canvasRef={arCanvasRef}
-              onMirrorChange={setIsMirrored} initialMirror={isMirrored}
-              onEffectChange={setActiveLens} onBackgroundChange={setActiveBackground}
-              faceMeshEnabled={streamSettings.faceMeshEnabled}
-              segmentationEnabled={streamSettings.segmentationEnabled}
-            />
-            <StreamingSettings onSettingsChange={setStreamSettings} initialSettings={streamSettings} isLive={stream?.status === 'live'} />
-            <Button onClick={() => setShowCoStreamPanel(true)} size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
+          {/* Creator tools */}
+          <div className="absolute top-16 left-3 z-20 flex gap-1.5 flex-wrap" style={{ maxWidth: '240px' }}>
+            <button onClick={() => setShowCoStreamPanel(true)}
+              className="w-9 h-9 bg-black/50 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
               <Users className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => setShowOverlayEditor(true)} size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
-              <Sparkles className="w-4 h-4" />
-            </Button>
-            <Button onClick={() => setShowModerationPanel(true)} size="sm"
-              className="bg-black/50 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 h-10 w-10 rounded-full p-0">
+            </button>
+            <button onClick={() => setShowModerationPanel(true)}
+              className="w-9 h-9 bg-black/50 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
               <Shield className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
 
-          {/* Broadcaster wallet */}
-          <BroadcasterWallet
-            totalEarnings={creator?.total_earnings_denarii || 0}
-            sessionEarnings={stream?.total_denarii_earned || 0}
-            giftsReceived={stream?.total_gifts_received || 0}
-            creatorId={creator?.id}
-          />
+          <div className="absolute top-16 right-3 z-20">
+            <BroadcasterWallet
+              totalEarnings={creator?.total_earnings_denarii || 0}
+              sessionEarnings={stream?.total_denarii_earned || 0}
+              giftsReceived={stream?.total_gifts_received || 0}
+              creatorId={creator?.id}
+            />
+          </div>
 
-          {/* Broadcast controls bottom */}
           <BroadcastControlPanel
             stream={stream}
             streamStats={{
@@ -556,30 +435,34 @@ export default function WatchStream() {
               duration: stream?.created_date
                 ? `${Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000)}:${String(Math.floor(((Date.now() - new Date(stream.created_date).getTime()) % 60000) / 1000)).padStart(2, '0')}`
                 : '0:00',
-              bitrate: streamStats?.bitrate || 0
+              bitrate: 0
             }}
-            onToggleMic={(enabled) => {
-              if (liveStream && typeof liveStream !== 'boolean') liveStream.getAudioTracks().forEach(t => t.enabled = enabled);
+            onToggleMic={(on) => {
+              if (liveStream && typeof liveStream !== 'boolean') liveStream.getAudioTracks().forEach(t => t.enabled = on);
             }}
-            onToggleCamera={(enabled) => {
-              if (liveStream && typeof liveStream !== 'boolean') liveStream.getVideoTracks().forEach(t => t.enabled = enabled);
+            onToggleCamera={(on) => {
+              if (liveStream && typeof liveStream !== 'boolean') liveStream.getVideoTracks().forEach(t => t.enabled = on);
             }}
-            onToggleScreenShare={async (enabled) => {
-              if (enabled) {
+            onToggleScreenShare={async (on) => {
+              if (on) {
                 try {
-                  const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                  if (videoRef.current) videoRef.current.srcObject = screenStream;
-                } catch (e) { console.error('Screen share failed:', e); }
+                  const screen = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                  if (videoRef.current) videoRef.current.srcObject = screen;
+                } catch {}
               } else if (liveStream && typeof liveStream !== 'boolean' && videoRef.current) {
                 videoRef.current.srcObject = liveStream;
               }
             }}
-            onFlipCamera={() => setIsMirrored(!isMirrored)}
+            onFlipCamera={() => {
+              if (videoRef.current) {
+                const current = videoRef.current.style.transform;
+                videoRef.current.style.transform = current === 'scaleX(-1)' ? 'scaleX(1)' : 'scaleX(-1)';
+              }
+            }}
             onEndStream={() => setShowEndDialog(true)}
             onUpdateSettings={() => {}}
           />
 
-          {/* Bullet chat for broadcaster too */}
           <BulletChat
             messages={chatMessages}
             onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
@@ -588,88 +471,40 @@ export default function WatchStream() {
             recentChatters={ChatService.getRecentChatters(chatMessages)}
           />
 
-          {/* End stream dialog */}
-          <EndStreamDialog isOpen={showEndDialog} onConfirm={() => endStreamMutation.mutate()} onCancel={() => setShowEndDialog(false)} isPending={endStreamMutation.isPending} />
+          <EndStreamDialog isOpen={showEndDialog} onConfirm={endStream} onCancel={() => setShowEndDialog(false)} isPending={_endStream.isPending} />
 
-          {/* Moderation panel */}
           <ModerationPanel
             isOpen={showModerationPanel} onClose={() => setShowModerationPanel(false)}
-            streamId={streamId} viewers={[]} moderators={moderators} kickedUsers={kickedUsers}
-            chatMuted={chatMuted} onToggleChatMute={() => setChatMuted(!chatMuted)}
-            onAppointModerator={(v) => setModerators([...moderators, v])}
-            onRemoveModerator={(m) => setModerators(moderators.filter(x => x.email !== m.email))}
-            onKickViewer={(v) => setKickedUsers([...kickedUsers, v])}
-            onResetKicks={() => setKickedUsers([])}
+            streamId={streamId} viewers={[]} moderators={[]} kickedUsers={[]}
+            chatMuted={false} onToggleChatMute={() => {}}
+            onAppointModerator={() => {}} onRemoveModerator={() => {}}
+            onKickViewer={() => {}} onResetKicks={() => {}}
             onMuteViewerAudio={() => {}} onEndViewerCamera={() => {}} isHost={true}
           />
         </>
       )}
 
-      {/* ── Stream Overlays ── */}
-      {streamOverlays.filter(o => o.visible).map(overlay => (
-        <div key={overlay.id} className={`absolute z-30 ${
-          overlay.position === 'top-left' ? 'top-24 left-4' :
-          overlay.position === 'top-center' ? 'top-24 left-1/2 -translate-x-1/2' :
-          overlay.position === 'top-right' ? 'top-24 right-4' :
-          overlay.position === 'bottom-left' ? 'bottom-32 left-4' :
-          overlay.position === 'bottom-center' ? 'bottom-32 left-1/2 -translate-x-1/2' :
-          'bottom-32 right-20'
-        }`}>
-          {overlay.type === 'text' && <div className="bg-black/70 backdrop-blur-xl px-4 py-2 rounded-xl text-white">{overlay.content}</div>}
-          {overlay.type === 'product' && (
-            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-black/80 backdrop-blur-xl rounded-xl p-3 border border-pink-500/30">
-              <p className="text-white font-medium text-sm">{overlay.productName}</p>
-              <p className="text-emerald-400 font-bold">{overlay.productPrice}</p>
-            </a>
-          )}
-          {overlay.type === 'cta' && (
-            <a href={overlay.link} target="_blank" rel="noopener noreferrer" className="block bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold text-sm">
-              {overlay.content}
-            </a>
-          )}
-        </div>
-      ))}
-
-      {/* ── Admin alerts ── */}
+      {/* Alerts */}
       <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
 
-      {/* ── Expanded leaderboard ── */}
+      {/* Expanded leaderboard */}
       <AnimatePresence>
-        {showExpandedLeaderboard && (
-          <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />
-        )}
+        {showExpandedLeaderboard && <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />}
       </AnimatePresence>
 
-      {/* ── Co-Stream panel ── */}
+      {/* Co-Stream panel */}
       <AnimatePresence>
-        {showCoStreamPanel && (
-          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />
-        )}
+        {showCoStreamPanel && <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />}
       </AnimatePresence>
 
-      {/* ── Multi-Stream ── */}
-      <AnimatePresence>
-        {showMultiStream && isBroadcaster && (
-          <MultiStreamManager isLive={stream?.status === 'live'} onClose={() => setShowMultiStream(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* ── Overlay Editor ── */}
-      <AnimatePresence>
-        {showOverlayEditor && isBroadcaster && (
-          <StreamOverlayEditor overlays={streamOverlays} onUpdate={setStreamOverlays} onClose={() => setShowOverlayEditor(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* ── Gift Panel ── */}
+      {/* Gift Panel */}
       <AnimatePresence>
         {showGiftPanel && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowGiftPanel(false)} />
+            <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowGiftPanel(false)} />
             <div className="fixed bottom-0 left-0 right-0 z-50">
               <GiftPanel gifts={gifts} walletBalance={walletBalance}
-                onSendGift={(gift, quantity) => sendGiftMutation.mutate({ gift, quantity })}
+                onSendGift={(gift, qty) => sendGift({ gift, quantity: qty })}
                 onClose={() => setShowGiftPanel(false)} />
             </div>
           </>
