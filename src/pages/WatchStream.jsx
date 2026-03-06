@@ -235,9 +235,22 @@ export default function WatchStream() {
     onError: (error) => alert(error.message || 'Unable to send message.'),
   });
 
-  const sendGiftMutation = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
+  const _sendGiftMutation = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
+  // Wrap to add UI side effects (animation + panel close)
+  const sendGiftMutation = {
+    ..._sendGiftMutation,
+    mutate: ({ gift, quantity }) => {
+      setShowGiftPanel(false);
+      setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity });
+      _sendGiftMutation.mutate({ gift, quantity });
+    }
+  };
   const followMutation = useToggleFollow({ user, creator, isFollowing });
-  const endStreamMutation = useEndStream({ stream, creator, pkBattle, liveStream });
+  const _endStreamMutation = useEndStream({ stream, creator, pkBattle, liveStream });
+  const endStreamMutation = {
+    ..._endStreamMutation,
+    mutate: () => _endStreamMutation.mutate(null, { onSuccess: () => navigate(createPageUrl('Profile')) }),
+  };
 
   // ─── Reaction handler ─────────────────
   const handleDoubleTapLike = useCallback(() => {
