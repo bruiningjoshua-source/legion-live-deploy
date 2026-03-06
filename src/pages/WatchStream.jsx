@@ -205,7 +205,9 @@ export default function WatchStream() {
   const streamEnded = stream?.status === 'ended';
 
   // ─── Creator camera init ──────────────
+  const liveStreamRef = useRef(null);
   useEffect(() => {
+    let mounted = true;
     const initCamera = async () => {
       if (stream?.status === 'live' && isBroadcaster) {
         try {
@@ -213,12 +215,15 @@ export default function WatchStream() {
             video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
             audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
           });
+          if (!mounted) { mediaStream.getTracks().forEach(t => t.stop()); return; }
+          liveStreamRef.current = mediaStream;
           setLiveStream(mediaStream);
           if (videoRef.current) {
             videoRef.current.srcObject = mediaStream;
             videoRef.current.muted = false;
             videoRef.current.playsInline = true;
             const playAttempt = async () => {
+              if (!mounted || !videoRef.current) return;
               try { await videoRef.current.play(); }
               catch { setTimeout(playAttempt, 500); }
             };
@@ -231,8 +236,10 @@ export default function WatchStream() {
     };
     initCamera();
     return () => {
-      if (liveStream && typeof liveStream !== 'boolean') {
-        liveStream.getTracks().forEach(track => track.stop());
+      mounted = false;
+      if (liveStreamRef.current && typeof liveStreamRef.current !== 'boolean') {
+        liveStreamRef.current.getTracks().forEach(track => track.stop());
+        liveStreamRef.current = null;
       }
     };
   }, [stream?.status, isBroadcaster]);
