@@ -182,24 +182,12 @@ export default function GoLive() {
     return () => unsubscribe?.();
   }, []);
 
-  // Stop camera on unmount and warn on tab close during go-live
+  // Stop camera on unmount
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-      }
-      // If we have a pending go-live mutation, warn user
-      if (goLiveMutation.isPending) {
-        e.preventDefault();
-        e.returnValue = 'Your stream is starting. Leaving now will cancel it.';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     };
-  }, [cameraStream, goLiveMutation.isPending]);
+  }, [cameraStream]);
 
   const requestCameraPermissions = async () => {
         try {
