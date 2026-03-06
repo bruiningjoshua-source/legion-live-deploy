@@ -115,34 +115,42 @@ export default function GoLive() {
     mutationFn: async () => {
       if (!user) throw new Error('Please sign in to go live');
       if (!hasPermissions || !cameraStream) throw new Error('Camera permissions required');
-      if (!title.trim()) throw new Error('Stream title is required');
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) throw new Error('Stream title is required');
+      if (trimmedTitle.length > 100) throw new Error('Title must be under 100 characters');
       if (!category) throw new Error('Please select a category');
 
       let creatorId = creator?.id;
 
-      // Clean up any stale live streams
-      if (creator?.is_live || creator?.current_stream_id) {
-        const stale = await base44.entities.Stream.filter({ creator_id: creatorId, status: 'live' }, '-created_date', 5);
+      // Always clean up stale live streams for this creator before going live
+      if (creatorId) {
+        const stale = await base44.entities.Stream.filter({ creator_id: creatorId, status: 'live' }, '-created_date', 10);
         for (const s of stale) {
-          await base44.entities.Stream.update(s.id, { status: 'ended', duration_minutes: Math.floor((new Date() - new Date(s.created_date)) / 60000) });
+          await base44.entities.Stream.update(s.id, { status: 'ended', duration_minutes: Math.floor((Date.now() - new Date(s.created_date).getTime()) / 60000), viewer_count: 0 });
         }
         await base44.entities.Creator.update(creatorId, { is_live: false, current_stream_id: null });
       }
 
       // Create creator profile if needed
       if (!creatorId) {
-        const newCreator = await base44.entities.Creator.create({
-          user_email: user.email,
-          display_name: user.full_name || 'New Creator',
-          category: category || 'other'
-        });
-        creatorId = newCreator.id;
+        // Double-check: maybe another tab created one
+        const existing = await base44.entities.Creator.filter({ user_email: user.email }, null, 1);
+        if (existing[0]) {
+          creatorId = existing[0].id;
+        } else {
+          const newCreator = await base44.entities.Creator.create({
+            user_email: user.email,
+            display_name: user.full_name || 'New Creator',
+            category: category || 'other'
+          });
+          creatorId = newCreator.id;
+        }
       }
 
       // Create stream record
       const stream = await base44.entities.Stream.create({
         creator_id: creatorId,
-        title: title.trim(),
+        title: trimmedTitle.substring(0, 100),
         category,
         stream_type: streamType,
         status: 'live',
@@ -189,11 +197,14 @@ export default function GoLive() {
     },
     onSuccess: (stream) => navigate(createPageUrl(`WatchStream?id=${stream.id}`)),
     onError: async (error) => {
+      console.error('[GoLive] Failed:', error.message);
       ZegoService.leave().catch(() => {});
-      if (creator?.id) {
-        const stale = await base44.entities.Stream.filter({ creator_id: creator.id, status: 'live' }, '-created_date', 5).catch(() => []);
+      // Clean up any stream record that may have been created
+      const cId = creator?.id;
+      if (cId) {
+        const stale = await base44.entities.Stream.filter({ creator_id: cId, status: 'live' }, '-created_date', 10).catch(() => []);
         for (const s of stale) await base44.entities.Stream.update(s.id, { status: 'ended', viewer_count: 0 }).catch(() => {});
-        await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null }).catch(() => {});
+        await base44.entities.Creator.update(cId, { is_live: false, current_stream_id: null }).catch(() => {});
       }
       toast.error(error.message || 'Failed to start stream.');
     }

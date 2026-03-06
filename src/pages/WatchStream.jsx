@@ -86,27 +86,42 @@ export default function WatchStream() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isBroadcaster, stream?.id]);
 
-  // Viewer count
+  // Viewer count — join once per stream session, leave on unmount
   const viewerJoinedRef = useRef(false);
+  const streamIdRef = useRef(null);
   useEffect(() => {
-    if (!stream?.id || isBroadcaster || !user) return;
+    if (!stream?.id || isBroadcaster || !user || stream.status !== 'live') return;
+    if (viewerJoinedRef.current && streamIdRef.current === stream.id) return; // Already joined
+    const sid = stream.id;
+    streamIdRef.current = sid;
     const join = async () => {
-      await base44.entities.Stream.update(stream.id, {
-        viewer_count: (stream.viewer_count || 0) + 1,
-        peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1),
+      // Re-fetch stream to get accurate count
+      const fresh = await base44.entities.Stream.filter({ id: sid }, null, 1);
+      const s = fresh[0];
+      if (!s || s.status !== 'live') return;
+      const newCount = (s.viewer_count || 0) + 1;
+      await base44.entities.Stream.update(sid, {
+        viewer_count: newCount,
+        peak_viewers: Math.max(s.peak_viewers || 0, newCount),
       });
       viewerJoinedRef.current = true;
     };
     join().catch(() => {});
     return () => {
-      if (viewerJoinedRef.current) {
-        base44.entities.Stream.update(stream.id, {
-          viewer_count: Math.max(0, (stream.viewer_count || 1) - 1),
+      if (viewerJoinedRef.current && streamIdRef.current === sid) {
+        base44.entities.Stream.filter({ id: sid }, null, 1).then(fresh => {
+          const s = fresh[0];
+          if (s) {
+            base44.entities.Stream.update(sid, {
+              viewer_count: Math.max(0, (s.viewer_count || 1) - 1),
+            }).catch(() => {});
+          }
         }).catch(() => {});
         viewerJoinedRef.current = false;
+        streamIdRef.current = null;
       }
     };
-  }, [stream?.id, isBroadcaster, user?.email]);
+  }, [stream?.id, isBroadcaster, user?.email, stream?.status]);
 
   // Chat sync
   useEffect(() => {
