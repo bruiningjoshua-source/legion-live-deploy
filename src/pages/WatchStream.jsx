@@ -319,16 +319,20 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Video Layer */}
+      {/* Video Layer — normalized 9:16 for portrait broadcast */}
       <div className="absolute inset-0 flex items-center justify-center bg-black">
-        <div className="relative w-full h-full" style={{ maxWidth: 'calc(100vh * 9 / 16)' }}>
+        <div className="relative h-full" style={{ width: 'min(100vw, calc(100vh * 9 / 16))', maxHeight: '100vh' }}>
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
             autoPlay playsInline muted
             poster={stream.thumbnail_url}
             controls={false}
-            style={isBroadcaster ? { transform: 'scaleX(-1)' } : undefined}
+            style={{
+              ...(isBroadcaster ? { transform: 'scaleX(-1)' } : {}),
+              aspectRatio: '9/16',
+              objectFit: 'cover'
+            }}
             onDoubleClick={handleDoubleTap}
           />
 
