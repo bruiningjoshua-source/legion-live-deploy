@@ -162,11 +162,13 @@ export default function GoLive() {
 
   useEffect(() => {
     if (cameraStream && videoPreviewRef.current) {
-      videoPreviewRef.current.srcObject = cameraStream;
-      videoPreviewRef.current.muted = true;
-      videoPreviewRef.current.playsInline = true;
+      const videoEl = videoPreviewRef.current;
+      videoEl.srcObject = cameraStream;
+      videoEl.muted = true;
+      videoEl.playsInline = true;
       const playVideo = async () => {
-        try { await videoPreviewRef.current.play(); }
+        if (!videoEl || !videoEl.srcObject) return;
+        try { await videoEl.play(); }
         catch (e) { console.log('Play blocked, retrying...', e); setTimeout(playVideo, 500); }
       };
       playVideo();
