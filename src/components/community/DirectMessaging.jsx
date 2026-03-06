@@ -49,10 +49,10 @@ export default function DirectMessaging({ isOpen, onClose, initialRecipient = nu
     staleTime: 5 * 60 * 1000
   });
 
-  const creatorMap = creators.reduce((acc, c) => {
-    acc[c.user_email] = c;
-    return acc;
-  }, {});
+  const creatorMap = React.useMemo(() =>
+    creators.reduce((acc, c) => { acc[c.user_email] = c; return acc; }, {}),
+    [creators]
+  );
 
   // Get conversations list
   const conversations = React.useMemo(() => {
