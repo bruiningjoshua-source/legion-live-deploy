@@ -4,12 +4,20 @@
  */
 import { base44 } from '@/api/base44Client';
 import { CURRENCY, FEES, ERROR } from './constants';
+import RateLimitService from './RateLimitService';
 
 class GiftService {
   /** Send a gift with full validation and side effects */
   async sendGift({ user, wallet, gift, quantity, creator, stream, creatorCanReceiveGifts }) {
     // Validate
     if (!user || !wallet) throw new Error('Please sign in to send gifts');
+    
+    // Rate limit: max 10 gift sends per 10 seconds
+    const rateCheck = RateLimitService.checkGiftSend(user.email);
+    if (!rateCheck.allowed) {
+      throw new Error(`Gift cooldown! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)}s`);
+    }
+    
     if (!creatorCanReceiveGifts) throw new Error(ERROR.MONETIZATION_DISABLED);
     if (stream?.status !== 'live') throw new Error(ERROR.STREAM_ENDED);
     if (quantity < 1 || quantity > CURRENCY.MAX_GIFT_QUANTITY) throw new Error(ERROR.INVALID_INPUT);

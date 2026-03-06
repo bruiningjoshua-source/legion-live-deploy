@@ -4,6 +4,7 @@
  */
 import { base44 } from '@/api/base44Client';
 import { STREAM, ERROR } from './constants';
+import RateLimitService from './RateLimitService';
 
 class ChatService {
   /** Send a moderated chat message */
@@ -12,6 +13,12 @@ class ChatService {
     
     const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
     if (!messageContent?.trim()) throw new Error('Empty message');
+
+    // Rate limit: max 5 messages per 5 seconds
+    const rateCheck = RateLimitService.checkChat(user.email);
+    if (!rateCheck.allowed) {
+      throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)}s`);
+    }
 
     // AI moderation
     try {
