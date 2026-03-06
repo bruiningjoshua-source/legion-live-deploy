@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/layout/Navbar';
@@ -26,9 +26,18 @@ export default function Layout({ children, currentPageName }) {
   const [showShieldMenu, setShowShieldMenu] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   
-  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('legion_theme') || 'roman');
-  const [particleIntensity, setParticleIntensity] = useState(() => localStorage.getItem('legion_particles') || 'medium');
-  const [animatedBg, setAnimatedBg] = useState(() => localStorage.getItem('legion_animated_bg') !== 'false');
+  // Single initializer for all localStorage-backed preferences
+  const [prefs, setPrefs] = useState(() => ({
+    theme: localStorage.getItem('legion_theme') || 'roman',
+    particles: localStorage.getItem('legion_particles') || 'medium',
+    animatedBg: localStorage.getItem('legion_animated_bg') !== 'false',
+  }));
+  const currentTheme = prefs.theme;
+  const particleIntensity = prefs.particles;
+  const animatedBg = prefs.animatedBg;
+  const setCurrentTheme = useCallback((v) => { localStorage.setItem('legion_theme', v); setPrefs(p => ({ ...p, theme: v })); }, []);
+  const setParticleIntensity = useCallback((v) => { localStorage.setItem('legion_particles', v); setPrefs(p => ({ ...p, particles: v })); }, []);
+  const setAnimatedBg = useCallback((v) => { localStorage.setItem('legion_animated_bg', String(v)); setPrefs(p => ({ ...p, animatedBg: v })); }, []);
 
   // Preserve scroll positions across navigation for native-like back stack
   useScrollPreservation();
@@ -64,36 +73,43 @@ export default function Layout({ children, currentPageName }) {
   });
 
   useEffect(() => {
-    if (user && user.role !== 'admin' && !user.age_verified) {
+    // If age check data isn't available yet (loading/error), default to showing content
+    if (user && user.role !== 'admin' && user.age_verified === false) {
       setShowAgeVerification(true);
     } else {
       setShowAgeVerification(false);
     }
   }, [user]);
 
-  // Show tutorial for new users
+  // Show tutorial for new users — cleanup ensures it only fires once
   useEffect(() => {
     if (user && !localStorage.getItem('legion_tutorial_completed')) {
       const timer = setTimeout(() => setShowTutorial(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user?.email]);
 
+  const walletCreatingRef = useRef(false);
   const { data: wallet } = useQuery({
     queryKey: ['user-wallet', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
+      // Mutex via ref to prevent race-condition double-create
+      if (walletCreatingRef.current) return null;
       try {
         const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
         if (wallets.length > 0) return wallets[0];
-        // Seed new users with 500 free Denarii to boost economy
-        return base44.entities.Wallet.create({ 
+        walletCreatingRef.current = true;
+        const newWallet = await base44.entities.Wallet.create({ 
           user_email: user.email, 
           denarii_balance: 500,
           sestertii_balance: 0,
           as_balance: 0
         });
+        walletCreatingRef.current = false;
+        return newWallet;
       } catch (error) {
+        walletCreatingRef.current = false;
         console.error('Wallet fetch failed:', error);
         return null;
       }
@@ -111,6 +127,17 @@ export default function Layout({ children, currentPageName }) {
   const optimizedParticles = isMobile ? 'low' : particleIntensity;
 
   // CSS variables and animations are now in globals.css
+
+  // Listen for theme changes from Settings page
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.theme) setCurrentTheme(e.detail.theme);
+      if (e.detail?.particles) setParticleIntensity(e.detail.particles);
+      if (e.detail?.animatedBg !== undefined) setAnimatedBg(e.detail.animatedBg);
+    };
+    window.addEventListener('legion-theme-change', handler);
+    return () => window.removeEventListener('legion-theme-change', handler);
+  }, [setCurrentTheme, setParticleIntensity, setAnimatedBg]);
 
   const handleTutorialComplete = () => {
     localStorage.setItem('legion_tutorial_completed', 'true');
