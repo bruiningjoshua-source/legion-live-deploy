@@ -5,14 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { 
   Radio, 
   Users, 
@@ -20,7 +12,11 @@ import {
   X,
   ArrowRight,
   Gift,
-  ChevronDown
+  Sparkles,
+  FlipHorizontal,
+  Wand2,
+  Gamepad2,
+  Music
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -29,9 +25,9 @@ import ZegoService from '@/components/stream/ZegoService';
 const CATEGORIES = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
   { value: 'music', label: 'Music', icon: '🎵' },
-  { value: 'talk_show', label: 'Talk Show', icon: '🎙️' },
+  { value: 'talk_show', label: 'Chat', icon: '💬' },
   { value: 'dance', label: 'Dance', icon: '💃' },
-  { value: 'cooking', label: 'Cooking', icon: '👨‍🍳' },
+  { value: 'cooking', label: 'Cooking', icon: '🍳' },
   { value: 'fitness', label: 'Fitness', icon: '💪' },
   { value: 'education', label: 'Education', icon: '📚' },
   { value: 'art', label: 'Art', icon: '🎨' },
@@ -40,9 +36,9 @@ const CATEGORIES = [
 ];
 
 const STREAM_TYPES = [
-  { value: 'solo', label: 'Solo', icon: Radio, color: 'from-blue-500 to-blue-600' },
-  { value: 'multi_panel', label: 'Panel', icon: Users, color: 'from-purple-500 to-purple-600' },
-  { value: 'pk_battle', label: 'PK Battle', icon: Swords, color: 'from-orange-500 to-red-600' }
+  { value: 'solo', label: 'Solo', icon: Radio },
+  { value: 'multi_panel', label: 'Multi', icon: Users },
+  { value: 'pk_battle', label: 'PK', icon: Swords }
 ];
 
 export default function GoLive() {
