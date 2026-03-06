@@ -152,17 +152,22 @@ Deno.serve(async (req) => {
           const totalDenarii = denariiAmount + bonusDenarii;
           const priceUsd = (session.amount_total || 0) / 100;
 
-          if (denariiAmount <= 0) {
+          if (denariiAmount <= 0 || denariiAmount > 1000000) {
             console.error('[stripeWebhook] Invalid denarii amount:', metadata.denarii_amount);
             break;
           }
 
-          // Duplicate payment intent guard
+          if (bonusDenarii < 0 || bonusDenarii > 1000000) {
+            console.error('[stripeWebhook] Invalid bonus amount:', metadata.bonus_denarii);
+            break;
+          }
+
+          // Duplicate payment intent guard (check both payment_intent and session id)
           const existingPurchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
             { stripe_payment_intent: session.payment_intent }, null, 1
           );
           if (existingPurchases.length > 0) {
-            console.log('[stripeWebhook] Duplicate payment intent:', session.payment_intent);
+            console.log('[stripeWebhook] Duplicate payment intent skipped:', session.payment_intent);
             break;
           }
 

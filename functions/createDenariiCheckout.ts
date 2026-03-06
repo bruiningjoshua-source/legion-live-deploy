@@ -15,7 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { packageId, denarii, bonus, price, packageName } = await req.json();
+    const body = await req.json();
+    const packageId = String(body.packageId || '').trim();
+    const denarii = Number(body.denarii);
+    const bonus = Number(body.bonus) || 0;
+    const price = Number(body.price);
+    const packageName = String(body.packageName || '').trim().substring(0, 100);
 
     // Validate all inputs
     if (!packageId || !denarii || !price) {
@@ -23,14 +28,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (typeof price !== 'number' || price <= 0 || price > 10000) {
+    if (!Number.isFinite(price) || price <= 0 || price > 10000) {
       console.error('[createDenariiCheckout] Invalid price:', price);
       return Response.json({ error: 'Invalid price' }, { status: 400 });
     }
 
-    if (typeof denarii !== 'number' || denarii <= 0 || denarii > 1000000) {
+    if (!Number.isInteger(denarii) || denarii <= 0 || denarii > 1000000) {
       console.error('[createDenariiCheckout] Invalid denarii:', denarii);
       return Response.json({ error: 'Invalid denarii amount' }, { status: 400 });
+    }
+
+    if (!Number.isInteger(bonus) || bonus < 0 || bonus > 1000000) {
+      console.error('[createDenariiCheckout] Invalid bonus:', bonus);
+      return Response.json({ error: 'Invalid bonus amount' }, { status: 400 });
+    }
+
+    // Validate price-to-denarii ratio is reasonable (prevent manipulation)
+    const expectedRatio = denarii / price;
+    if (expectedRatio > 300 || expectedRatio < 50) {
+      console.error('[createDenariiCheckout] Suspicious ratio:', expectedRatio, { denarii, price });
+      return Response.json({ error: 'Invalid package configuration' }, { status: 400 });
     }
 
     const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/[^/]*$/, '') || 'https://app.base44.com';

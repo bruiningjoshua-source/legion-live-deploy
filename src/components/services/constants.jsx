@@ -59,6 +59,10 @@ export const VALIDATION = {
   SANITIZE_USER_ID: /[^a-zA-Z0-9_]/g,
   MAX_USER_ID_LENGTH: 64,
   MAX_ROOM_ID_LENGTH: 128,
+  MAX_CHAT_LENGTH: 500,
+  MAX_TITLE_LENGTH: 100,
+  MAX_BIO_LENGTH: 1000,
+  MAX_GIFT_QUANTITY: 99,
 };
 
 // ─── Stream Categories ──────────────────────────────────────

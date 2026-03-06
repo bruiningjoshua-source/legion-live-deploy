@@ -88,9 +88,16 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
     if (!canAfford || !hasGifts || isSending) return;
     setIsSending(true);
     
+    // Send gifts sequentially to avoid race conditions on wallet balance
     for (const { gift, quantity } of cartItems) {
-      if (gift && quantity > 0) {
-        await onSendGift(gift, quantity);
+      if (gift && quantity > 0 && quantity <= 99) {
+        try {
+          await onSendGift(gift, quantity);
+        } catch (e) {
+          // Stop sending remaining gifts if one fails (likely insufficient balance)
+          console.error('[GiftPanel] Send failed:', e.message);
+          break;
+        }
       }
     }
     
