@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Crown, Users, Swords, Star, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
+import formatCount from '@/components/shared/FormatCount';
 
 export default function CreatorCard({ creator, onFollow, isFollowing }) {
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
   const levelBadges = {
     1: { label: 'Recruit', color: 'bg-stone-500' },
     5: { label: 'Legionary', color: 'bg-green-600' },
@@ -27,16 +29,19 @@ export default function CreatorCard({ creator, onFollow, isFollowing }) {
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={isMobile ? {} : { y: -4 }}
       transition={{ duration: 0.2 }}
     >
       <Link to={createPageUrl(`CreatorProfile?id=${creator.id}`)}>
         <div className="relative group cursor-pointer bg-gradient-to-br from-stone-800 to-stone-900 rounded-2xl border border-amber-600/20 overflow-hidden hover:border-amber-500/50 transition-all">
-          {/* Live indicator */}
+          {/* Live indicator - pulsing red overlaid on avatar */}
           {creator.is_live && (
             <div className="absolute top-3 right-3 z-10">
-              <Badge className="bg-red-500 text-white border-0 animate-pulse flex items-center gap-1">
-                <Radio className="w-3 h-3" />
+              <Badge className="bg-red-500 text-white border-0 flex items-center gap-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-100" />
+                </span>
                 LIVE
               </Badge>
             </div>
@@ -82,14 +87,23 @@ export default function CreatorCard({ creator, onFollow, isFollowing }) {
             {/* Stats */}
             <div className="flex items-center justify-center gap-4 text-sm mb-4">
               <div className="text-center">
-                <p className="text-amber-100 font-bold">{(creator.follower_count || 0).toLocaleString()}</p>
+                <p className="text-amber-100 font-bold">{formatCount(creator.follower_count)}</p>
                 <p className="text-amber-400/60 text-xs">Followers</p>
               </div>
               <div className="w-px h-8 bg-amber-600/20" />
               <div className="text-center">
-                <p className="text-amber-100 font-bold">{creator.pk_wins || 0}</p>
+                <p className="text-amber-100 font-bold">{formatCount(creator.pk_wins)}</p>
                 <p className="text-amber-400/60 text-xs">PK Wins</p>
               </div>
+              {(creator.total_earnings_denarii || 0) > 0 && (
+                <>
+                  <div className="w-px h-8 bg-amber-600/20" />
+                  <div className="text-center">
+                    <p className="text-amber-100 font-bold">{formatCount(creator.total_earnings_denarii)}</p>
+                    <p className="text-amber-400/60 text-xs">Denarii</p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Follow Button */}
