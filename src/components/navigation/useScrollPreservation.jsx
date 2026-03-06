@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 // Shared scroll position map — exported so BottomNav can also use it
@@ -19,7 +18,10 @@ export function isBottomTabRoot(pathname) {
 }
 
 export default function useScrollPreservation() {
-  const location = useLocation();
+  // Use window.location directly instead of useLocation() to avoid
+  // requiring a Router context (Layout renders outside the Router).
+  const getPathname = () => window.location.pathname;
+  const location = { pathname: getPathname() };
   const prevPathRef = useRef(location.pathname);
   const isRestoringRef = useRef(false);
 
