@@ -24,6 +24,8 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import StreamCard from '@/components/stream/StreamCard';
 import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
 import TipButton from '@/components/stream/TipButton';
@@ -217,8 +219,12 @@ export default function CreatorProfile() {
                     </div>
                   </div>
                   {creator.is_live && (
-                    <Badge className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-red-500 text-white border-0 animate-pulse">
-                      ● LIVE
+                    <Badge className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-red-500 text-white border-0 flex items-center gap-1">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-100" />
+                      </span>
+                      LIVE
                     </Badge>
                   )}
                 </div>
@@ -288,7 +294,19 @@ export default function CreatorProfile() {
                     <Heart className={`w-4 h-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} />
                     {isFollowing ? 'Following' : 'Follow'}
                   </Button>
-                  <Button variant="outline" size="lg" className="border-amber-500/30 text-amber-300">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="border-amber-500/30 text-amber-300"
+                    onClick={() => {
+                      const url = window.location.href;
+                      if (navigator.share) {
+                        navigator.share({ title: creator.display_name, url });
+                      } else {
+                        navigator.clipboard.writeText(url).then(() => toast.success('Profile link copied!'));
+                      }
+                    }}
+                  >
                     <Share2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -298,17 +316,17 @@ export default function CreatorProfile() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 <div className="bg-stone-800/50 rounded-xl p-4 text-center">
                   <Users className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{(creator.follower_count || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.follower_count)}</p>
                   <p className="text-amber-400/60 text-xs">Followers</p>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 text-center">
                   <Trophy className="w-5 h-5 text-amber-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{(creator.total_earnings_denarii || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.total_earnings_denarii)}</p>
                   <p className="text-amber-400/60 text-xs">🪙 Earned</p>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 text-center">
                   <Swords className="w-5 h-5 text-orange-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{creator.pk_wins || 0}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.pk_wins)}</p>
                   <p className="text-amber-400/60 text-xs">PK Wins</p>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 text-center">
@@ -501,7 +519,7 @@ function VideoCard({ video, creator, index }) {
             <h3 className="text-amber-100 font-semibold text-sm line-clamp-2 mb-2">{video.title}</h3>
             <div className="flex items-center gap-2 text-xs text-amber-400/70">
               <Eye className="w-3 h-3" />
-              {video.view_count?.toLocaleString() || 0}
+              {formatCount(video.view_count)}
             </div>
           </div>
         </div>

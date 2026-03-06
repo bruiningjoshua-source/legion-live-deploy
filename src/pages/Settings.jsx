@@ -67,9 +67,14 @@ export default function Settings() {
     if (savedAnimated !== null) setAppearance(prev => ({ ...prev, animatedBg: savedAnimated === 'true' }));
   }, []);
 
+  const dispatchThemeEvent = (detail) => {
+    window.dispatchEvent(new CustomEvent('legion-theme-change', { detail }));
+  };
+
   const handleThemeChange = (themeId) => {
     setAppearance(prev => ({ ...prev, theme: themeId }));
     localStorage.setItem('legion_theme', themeId);
+    dispatchThemeEvent({ theme: themeId });
     toast.success(`Theme changed to ${THEMES.find(t => t.id === themeId)?.name}`);
   };
 
@@ -78,11 +83,13 @@ export default function Settings() {
     const mode = modes[value];
     setAppearance(prev => ({ ...prev, particles: mode }));
     localStorage.setItem('legion_particles', mode);
+    dispatchThemeEvent({ particles: mode });
   };
 
   const handleAnimatedBgChange = (enabled) => {
     setAppearance(prev => ({ ...prev, animatedBg: enabled }));
     localStorage.setItem('legion_animated_bg', enabled.toString());
+    dispatchThemeEvent({ animatedBg: enabled });
   };
 
   return (
