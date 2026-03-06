@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
@@ -113,45 +113,25 @@ export default function WatchStream() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isBroadcaster, stream?.id]);
 
-  // ─── Viewer: update viewer count on join/leave ───
+  // ─── Viewer: update viewer count on join/leave (via StreamService) ───
   useEffect(() => {
     if (!stream?.id || isBroadcaster || !user) return;
-    base44.entities.Stream.update(stream.id, {
-      viewer_count: (stream.viewer_count || 0) + 1,
-      peak_viewers: Math.max(stream.peak_viewers || 0, (stream.viewer_count || 0) + 1)
-    }).catch(() => {});
+    StreamService.joinAsViewer(stream.id, stream.viewer_count, stream.peak_viewers).catch(() => {});
     return () => {
-      base44.entities.Stream.update(stream.id, {
-        viewer_count: Math.max(0, (stream.viewer_count || 1) - 1)
-      }).catch(() => {});
+      StreamService.leaveAsViewer(stream.id, stream.viewer_count).catch(() => {});
     };
   }, [stream?.id, isBroadcaster, user?.email]);
 
-  // ─── Chat sync ─────────────────────────
+  // ─── Chat sync (via ChatService) ─────────────────────────
   useEffect(() => {
     if (initialMessages?.length) setChatMessages(initialMessages);
   }, [initialMessages]);
 
   useEffect(() => {
     if (!streamId) return;
-    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data?.stream_id === streamId && event.type === 'create') {
-        setChatMessages(prev => {
-          // Deduplicate: skip if already exists (from optimistic add or subscription)
-          if (prev.some(m => m.id === event.data.id)) return prev;
-          // Remove matching optimistic message if it exists
-          const filtered = prev.filter(m => !(
-            m.id?.startsWith('optimistic-') &&
-            m.sender_email === event.data.sender_email &&
-            m.message === event.data.message
-          ));
-          // Cap buffer at 200 messages to prevent memory leak
-          const next = [...filtered, event.data];
-          return next.length > 200 ? next.slice(-200) : next;
-        });
-      }
+    return ChatService.subscribe(streamId, (newMessage) => {
+      setChatMessages(prev => ChatService.addToBuffer(prev, newMessage));
     });
-    return unsubscribe;
   }, [streamId]);
 
   // ─── Zego viewer init ─────────────────
@@ -245,226 +225,19 @@ export default function WatchStream() {
     }
   }, [isMirrored, isBroadcaster]);
 
-  // ─── Mutations ────────────────────────
+  // ─── Mutations (via service layer hooks) ────────────────────────
   const sendMessageMutation = useMutation({
-    mutationFn: async (messageData) => {
-      if (!user) throw new Error('Please sign in to chat');
-      if (stream?.status !== 'live' && !isBroadcaster) throw new Error('Stream has ended');
-      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
-      if (!messageContent?.trim()) throw new Error('Empty message');
-      try {
-        const modResult = await base44.functions.invoke('aiModerateContent', {
-          content_type: 'chat_message', content: messageContent,
-          stream_id: streamId, user_email: user.email, user_name: user.full_name || 'Anonymous'
-        });
-        if (!modResult.data?.approved) throw new Error(modResult.data?.reason || 'Message blocked');
-      } catch (modError) {
-        if (modError.message?.includes('blocked') || modError.message?.includes('banned')) throw modError;
-      }
-      return base44.entities.ChatMessage.create({
-        stream_id: streamId, sender_email: user.email,
-        sender_name: user.full_name || 'Anonymous', message: messageContent,
-        message_type: messageData.message_type || 'text', vip_level: wallet?.vip_level || 0,
-        mentions: messageData.mentions || [], reply_to_id: messageData.reply_to_id || null,
-        reply_to_content: messageData.reply_to_content || null, reply_to_sender: messageData.reply_to_sender || null
-      });
-    },
+    mutationFn: (messageData) => ChatService.sendMessage({ streamId, user, wallet, messageData }),
     onMutate: (messageData) => {
-      // Optimistic: immediately show the message in the chat
-      const messageContent = typeof messageData === 'string' ? messageData : messageData.message;
-      const optimisticMsg = {
-        id: `optimistic-${Date.now()}`,
-        stream_id: streamId,
-        sender_email: user.email,
-        sender_name: user.full_name || 'Anonymous',
-        message: messageContent,
-        message_type: messageData.message_type || 'text',
-        vip_level: wallet?.vip_level || 0,
-        created_date: new Date().toISOString(),
-      };
+      const optimisticMsg = ChatService.createOptimisticMessage({ streamId, user, messageData, wallet });
       setChatMessages(prev => [...prev, optimisticMsg]);
     },
-    onError: (error) => alert(error.message || 'Unable to send message.')
+    onError: (error) => alert(error.message || 'Unable to send message.'),
   });
 
-  const sendGiftMutation = useMutation({
-    mutationFn: async ({ gift, quantity }) => {
-      if (!user || !wallet) throw new Error('Please sign in to send gifts');
-      if (!creatorCanReceiveGifts) throw new Error('Creator has not enabled monetization');
-      if (stream?.status !== 'live') throw new Error('Stream has ended');
-      const totalCost = (gift.cost_denarii || 0) * quantity;
-      if (totalCost > (wallet.denarii_balance || 0)) throw new Error('Insufficient balance.');
-      if (quantity < 1 || quantity > 100) throw new Error('Invalid quantity');
-
-      await base44.entities.GiftTransaction.create({
-        sender_email: user.email, receiver_creator_id: creator.id, stream_id: streamId,
-        gift_id: gift.id, gift_name: gift.name, quantity, total_as_value: totalCost,
-        is_pk_gift: stream.stream_type === 'pk_battle'
-      });
-      await base44.entities.Wallet.update(wallet.id, { denarii_balance: (wallet.denarii_balance || 0) - totalCost });
-
-      const creatorEarning = Math.floor(totalCost * 0.50);
-      await base44.entities.Creator.update(creator.id, { total_earnings_denarii: (creator.total_earnings_denarii || 0) + creatorEarning });
-
-      try {
-        const existing = await base44.entities.BroadcasterEarnings.filter({ creator_id: creator.id }, null, 1);
-        if (existing[0]) {
-          await base44.entities.BroadcasterEarnings.update(existing[0].id, {
-            session_earnings_denarii: (existing[0].session_earnings_denarii || 0) + creatorEarning,
-            session_gifts_count: (existing[0].session_gifts_count || 0) + quantity,
-            total_earnings_denarii: (existing[0].total_earnings_denarii || 0) + creatorEarning,
-            total_gifts_received: (existing[0].total_gifts_received || 0) + quantity,
-            last_gift_at: new Date().toISOString()
-          });
-        } else {
-          await base44.entities.BroadcasterEarnings.create({
-            creator_id: creator.id, user_email: creator.user_email, stream_id: streamId,
-            session_earnings_denarii: creatorEarning, session_gifts_count: quantity,
-            total_earnings_denarii: creatorEarning, total_gifts_received: quantity,
-            session_start_time: new Date().toISOString(), last_gift_at: new Date().toISOString()
-          });
-        }
-      } catch (e) { console.error('BroadcasterEarnings update failed:', e); }
-
-      await base44.entities.ChatMessage.create({
-        stream_id: streamId, sender_email: user.email, sender_name: user.full_name || 'Anonymous',
-        message: `sent ${quantity > 1 ? quantity + 'x ' : ''}${gift.name}`, message_type: 'gift',
-        vip_level: wallet?.vip_level || 0, gift_data: { gift_name: gift.name, gift_icon: gift.icon, quantity }
-      });
-      await base44.entities.Stream.update(stream.id, {
-        total_gifts_received: (stream.total_gifts_received || 0) + quantity,
-        total_denarii_earned: (stream.total_denarii_earned || 0) + Math.floor(totalCost * 0.50)
-      });
-      return { gift, quantity };
-    },
-    onMutate: async ({ gift, quantity }) => {
-      // Optimistic wallet deduction
-      const totalCost = (gift.cost_denarii || 0) * quantity;
-      await queryClient.cancelQueries({ queryKey: ['wallet', user?.email] });
-      const prevWallet = queryClient.getQueryData(['wallet', user?.email]);
-      if (prevWallet) {
-        queryClient.setQueryData(['wallet', user?.email], {
-          ...prevWallet,
-          denarii_balance: (prevWallet.denarii_balance || 0) - totalCost
-        });
-      }
-      setShowGiftPanel(false);
-      setGiftAnimation({ gift, sender: user.full_name || 'Anonymous', quantity });
-      return { prevWallet };
-    },
-    onError: (error, _vars, context) => {
-      // Rollback wallet on failure
-      if (context?.prevWallet) {
-        queryClient.setQueryData(['wallet', user?.email], context.prevWallet);
-      }
-      alert(error.message || 'Gift failed.');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
-    }
-  });
-
-  const followMutation = useMutation({
-    mutationFn: async () => {
-      if (!user) throw new Error('Please sign in');
-      if (isFollowing) {
-        const follows = await base44.entities.Follow.filter({ follower_email: user.email, following_creator_id: creator.id }, null, 1);
-        if (follows[0]) await base44.entities.Follow.delete(follows[0].id);
-      } else {
-        await base44.entities.Follow.create({ follower_email: user.email, following_creator_id: creator.id });
-      }
-    },
-    onMutate: async () => {
-      // Optimistic update — toggle follow state instantly
-      await queryClient.cancelQueries({ queryKey: ['follow-status', user?.email, creator?.id] });
-      const prev = queryClient.getQueryData(['follow-status', user?.email, creator?.id]);
-      queryClient.setQueryData(['follow-status', user?.email, creator?.id], !isFollowing);
-      // Optimistic follower count
-      if (creator) {
-        queryClient.setQueryData(['creator', creator.id], old => old ? {
-          ...old,
-          follower_count: (old.follower_count || 0) + (isFollowing ? -1 : 1)
-        } : old);
-      }
-      return { prev };
-    },
-    onError: (error, _vars, context) => {
-      // Rollback on failure
-      if (context?.prev !== undefined) {
-        queryClient.setQueryData(['follow-status', user?.email, creator?.id], context.prev);
-      }
-      if (error.message?.includes('sign in')) base44.auth.redirectToLogin();
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['follow-status'] });
-      queryClient.invalidateQueries({ queryKey: ['creator', creator?.id] });
-    }
-  });
-
-  const endStreamMutation = useMutation({
-    mutationFn: async () => {
-      if (user?.email !== creator?.user_email) throw new Error('Unauthorized');
-
-      const durationMin = Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000);
-
-      // 1. End the stream record
-      await base44.entities.Stream.update(stream.id, {
-        status: 'ended',
-        duration_minutes: durationMin,
-        viewer_count: 0
-      });
-
-      // 2. Reset creator live status
-      await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null });
-
-      // 3. Finalize PK battle
-      if (stream.stream_type === 'pk_battle' && pkBattle) {
-        const hostWon = (pkBattle.host_score || 0) > (pkBattle.opponent_score || 0);
-        await base44.entities.PKBattle.update(pkBattle.id, {
-          status: 'completed',
-          ended_at: new Date().toISOString(),
-          winner_creator_id: hostWon ? pkBattle.host_creator_id : pkBattle.opponent_creator_id
-        });
-        // Update W/L records
-        if (hostWon) {
-          await base44.entities.Creator.update(pkBattle.host_creator_id, { pk_wins: (creator.pk_wins || 0) + 1 });
-        } else {
-          await base44.entities.Creator.update(pkBattle.host_creator_id, { pk_losses: (creator.pk_losses || 0) + 1 });
-        }
-      }
-
-      // 4. Finalize broadcaster earnings for this session
-      try {
-        const earnings = await base44.entities.BroadcasterEarnings.filter({ creator_id: creator.id, stream_id: stream.id }, null, 1);
-        if (earnings[0]) {
-          await base44.entities.BroadcasterEarnings.update(earnings[0].id, {
-            session_end_time: new Date().toISOString(),
-            session_duration_minutes: durationMin,
-            session_peak_viewers: stream.peak_viewers || 0
-          });
-        }
-      } catch (e) { console.error('[EndStream] Earnings finalize error:', e); }
-
-      // 5. Stop local media tracks
-      if (liveStream && typeof liveStream !== 'boolean') {
-        liveStream.getTracks().forEach(t => t.stop());
-      }
-
-      // 6. Leave Zego room
-      try { await ZegoService.leave(); } catch (e) { console.warn('[EndStream] Zego leave error:', e); }
-
-      // 7. Post system chat message
-      try {
-        await base44.entities.ChatMessage.create({
-          stream_id: streamId, sender_email: 'system', sender_name: 'System',
-          message: `${creator.display_name || 'The host'} ended the stream. Thanks for watching!`,
-          message_type: 'system'
-        });
-      } catch (e) {}
-    },
-    onSuccess: () => { navigate(createPageUrl('Profile')); },
-    onError: (error) => alert(error.message || 'Failed to end stream')
-  });
+  const sendGiftMutation = useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts });
+  const followMutation = useToggleFollow({ user, creator, isFollowing });
+  const endStreamMutation = useEndStream({ stream, creator, pkBattle, liveStream });
 
   // ─── Reaction handler ─────────────────
   const handleDoubleTapLike = useCallback(() => {
