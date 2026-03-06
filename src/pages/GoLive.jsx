@@ -135,6 +135,10 @@ export default function GoLive() {
         category,
         stream_type: streamType,
         status: 'live',
+        viewer_count: 0,
+        peak_viewers: 0,
+        total_gifts_received: 0,
+        total_denarii_earned: 0,
       });
 
       // Initialize ZegoCloud
@@ -151,11 +155,8 @@ export default function GoLive() {
       await ZegoService.createLocalStream();
       await ZegoService.startPublishing(stream.id);
 
-      // Set creator live + init stream counters
+      // Set creator live
       await base44.entities.Creator.update(creatorId, { is_live: true, current_stream_id: stream.id });
-      await base44.entities.Stream.update(stream.id, { 
-        viewer_count: 0, peak_viewers: 0, total_gifts_received: 0, total_denarii_earned: 0
-      });
 
       // PK battle init
       if (streamType === 'pk_battle') {
@@ -168,14 +169,17 @@ export default function GoLive() {
         });
       }
 
-      // System welcome
-      await base44.entities.ChatMessage.create({
+      // System welcome (non-blocking)
+      base44.entities.ChatMessage.create({
         stream_id: stream.id,
         sender_email: 'system',
         sender_name: 'System',
         message: `${user.full_name || 'The host'} started a live stream!`,
         message_type: 'system'
       }).catch(() => {});
+
+      // Stop the preview camera — WatchStream will create its own
+      cameraStream?.getTracks().forEach(t => t.stop());
 
       return stream;
     },
