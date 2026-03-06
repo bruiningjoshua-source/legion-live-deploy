@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowDownRight, 
   History,
   Crown,
   Gift,
   CreditCard,
-  Coins
+  Coins,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import CurrencyPackages from '@/components/wallet/CurrencyPackages';
 import GlassCard from '@/components/shared/GlassCard';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 
 export default function Wallet() {
   // Handle successful purchase redirect
@@ -37,16 +40,16 @@ export default function Wallet() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: wallet, isLoading: walletLoading } = useQuery({
+  const { data: wallet, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
     queryKey: ['wallet', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
       const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, '-created_date', 1);
       if (wallets.length > 0) return wallets[0];
-      // Create wallet if doesn't exist
       return base44.entities.Wallet.create({ user_email: user.email, denarii_balance: 0 });
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   const { data: transactions = [] } = useQuery({
@@ -86,10 +89,10 @@ export default function Wallet() {
     },
     onError: (error) => {
       if (error.message === 'IFRAME_BLOCKED') {
-        alert('⚠️ Checkout is only available in the published app.\n\nPlease open the app directly (not in preview mode) to complete your purchase.');
+        toast.error('Checkout is only available in the published app. Please open the app directly.');
       } else {
         console.error('Purchase error:', error);
-        alert('Purchase failed. Please try again.');
+        toast.error('Purchase failed. Please try again.');
       }
     }
   });
@@ -106,6 +109,22 @@ export default function Wallet() {
   const vipNames = ['Recruit', 'Bronze', 'Silver', 'Gold', 'Diamond', 'Royal', 'Centurion', 'Praetor', 'Senator', 'Augustus', 'Divine'];
   const vipColors = ['stone', 'amber', 'gray', 'amber', 'cyan', 'purple', 'red', 'pink', 'blue', 'orange', 'yellow'];
 
+  // Loading state
+  if (walletLoading) {
+    return (
+      <div className="min-h-screen pt-20 pb-24">
+        <div className="max-w-4xl mx-auto px-4 space-y-6">
+          <Skeleton className="h-12 w-48 bg-white/5" />
+          <Skeleton className="h-4 w-32 bg-white/5" />
+          <Skeleton className="h-56 w-full rounded-2xl bg-white/5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1,2,3].map(i => <Skeleton key={i} className="h-64 rounded-2xl bg-white/5" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-20 pb-24">
       <div className="max-w-4xl mx-auto px-4">
@@ -113,12 +132,21 @@ export default function Wallet() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex items-end justify-between"
         >
-          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2">
-            Treasury
-          </h1>
-          <p className="text-white/60">Manage your Roman fortune</p>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2">
+              Treasury
+            </h1>
+            <p className="text-white/60">Manage your Roman fortune</p>
+          </div>
+          <button 
+            onClick={() => { refetchWallet(); queryClient.invalidateQueries({ queryKey: ['currency-purchases'] }); queryClient.invalidateQueries({ queryKey: ['gift-transactions'] }); }}
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
         </motion.div>
 
         {/* Balance Card */}
@@ -148,7 +176,7 @@ export default function Wallet() {
                       🪙
                     </motion.span>
                     <span className="text-5xl md:text-6xl font-black text-white">
-                      {(wallet?.denarii_balance || 0).toLocaleString()}
+                      {formatCount(wallet?.denarii_balance || 0)}
                     </span>
                     <span className="text-white/50 font-medium">Denarii</span>
                   </div>
@@ -169,7 +197,8 @@ export default function Wallet() {
 
                   {/* Conversion info */}
                   <p className="text-white/30 text-xs mt-4">
-                    Total value: {((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0)).toLocaleString()} As
+                   Total value: {formatCount((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0))} As
+                   {(wallet?.total_spent || 0) > 0 && ` · $${(wallet.total_spent / 100).toFixed(2)} lifetime spend`}
                   </p>
                 </div>
 
@@ -196,7 +225,9 @@ export default function Wallet() {
                     />
                   </div>
                   <p className="text-white/40 text-xs mt-3">
-                    ${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to {vipNames[vipLevel + 1] || 'max'}
+                    {vipLevel < vipNames.length - 1 
+                      ? `$${((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0)).toLocaleString()} to ${vipNames[vipLevel + 1]}`
+                      : 'Max VIP reached! 🏆'}
                   </p>
                 </div>
               </div>
