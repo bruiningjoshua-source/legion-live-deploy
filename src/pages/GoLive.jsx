@@ -203,7 +203,7 @@ export default function GoLive() {
   const isAdmin = user?.role === 'admin';
   const canMonetize = isAdmin || hostSubscription?.status === 'active';
 
-  // Fullscreen camera preview mode
+  // Fullscreen camera preview — Bigo Live style
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
@@ -215,136 +215,173 @@ export default function GoLive() {
           style={{ transform: 'scaleX(-1)' }}
         />
 
-        {/* Top gradient */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10" />
+        {/* Subtle top gradient */}
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/40 to-transparent z-10" />
         {/* Bottom gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/80 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 
-        {/* Close button */}
-        <button
-          onClick={() => {
-            cameraStream?.getTracks().forEach(t => t.stop());
-            setCameraStream(null);
-            setHasPermissions(false);
-            navigate(createPageUrl('Home'));
-          }}
-          className="absolute top-4 left-4 z-20 w-10 h-10 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white"
-          style={{ top: 'max(16px, env(safe-area-inset-top))' }}
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* ─── TOP BAR ─── */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
+          {/* Close */}
+          <button
+            onClick={() => {
+              cameraStream?.getTracks().forEach(t => t.stop());
+              setCameraStream(null);
+              setHasPermissions(false);
+              navigate(createPageUrl('Home'));
+            }}
+            className="w-9 h-9 rounded-full bg-black/40 flex items-center justify-center text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-        {/* Stream type pills - top right */}
-        <div className="absolute top-4 right-4 z-20 flex gap-1.5" style={{ top: 'max(16px, env(safe-area-inset-top))' }}>
-          {STREAM_TYPES.map(t => {
-            const Icon = t.icon;
-            const active = streamType === t.value;
-            return (
-              <button
-                key={t.value}
-                onClick={() => setStreamType(t.value)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  active
-                    ? `bg-gradient-to-r ${t.color} text-white shadow-lg`
-                    : 'bg-black/40 backdrop-blur-md text-white/60 border border-white/10'
-                }`}
-              >
-                <Icon className="w-3 h-3" />
-                {t.label}
-              </button>
-            );
-          })}
+          {/* Stream type selector - Bigo style rounded tabs */}
+          <div className="flex bg-black/40 rounded-full p-0.5 gap-0.5">
+            {STREAM_TYPES.map(t => {
+              const Icon = t.icon;
+              const active = streamType === t.value;
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => setStreamType(t.value)}
+                  className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    active
+                      ? 'bg-[#00d4aa] text-white'
+                      : 'text-white/50'
+                  }`}
+                >
+                  <Icon className="w-3 h-3" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Flip camera */}
+          <button className="w-9 h-9 rounded-full bg-black/40 flex items-center justify-center text-white">
+            <FlipHorizontal className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Setup overlay */}
-        <AnimatePresence>
-          {showSetup && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-32 left-4 right-4 z-20"
-            >
-              <div className="bg-black/60 backdrop-blur-xl rounded-2xl p-4 space-y-3 border border-white/10">
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Stream title..."
-                  className="bg-white/10 border-white/10 text-white placeholder:text-white/30 rounded-xl h-10"
-                  maxLength={100}
-                />
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="bg-white/10 border-white/10 text-white rounded-xl h-10">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1f] border-white/10">
-                    {CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-white/10">
-                        <span className="flex items-center gap-2">
-                          <span>{cat.icon}</span>
-                          {cat.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {isFormValid && (
-                  <button onClick={() => setShowSetup(false)} className="w-full text-center text-white/40 text-xs py-1">
-                    <ChevronDown className="w-4 h-4 mx-auto" />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Stream info pill - show when setup is hidden */}
-        {!showSetup && isFormValid && (
-          <button 
-            onClick={() => setShowSetup(true)}
-            className="absolute bottom-32 left-4 z-20 bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2 border border-white/10"
-          >
-            <span className="text-sm">{CATEGORIES.find(c => c.value === category)?.icon}</span>
-            <span className="text-white/70 text-xs truncate max-w-[150px]">{title}</span>
+        {/* ─── RIGHT SIDE TOOLS (Bigo style vertical bar) ─── */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-4">
+          <button className="flex flex-col items-center gap-0.5">
+            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[10px]">Beauty</span>
           </button>
-        )}
+          <button className="flex flex-col items-center gap-0.5">
+            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+              <Wand2 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[10px]">Filter</span>
+          </button>
+          <button className="flex flex-col items-center gap-0.5">
+            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+              <Music className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[10px]">Music</span>
+          </button>
+          <button className="flex flex-col items-center gap-0.5">
+            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
+              <Gamepad2 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[10px]">Game</span>
+          </button>
+        </div>
 
-        {/* Monetization hint */}
-        {!canMonetize && (
-          <div className="absolute bottom-[120px] left-4 right-4 z-20">
+        {/* ─── BOTTOM SECTION ─── */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+
+          {/* Stream setup form */}
+          <AnimatePresence>
+            {showSetup && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="mb-4 space-y-3"
+              >
+                {/* Title input - Bigo style */}
+                <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 flex items-center gap-2">
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Add a stream title..."
+                    className="bg-transparent border-0 text-white placeholder:text-white/40 h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+                    maxLength={100}
+                  />
+                </div>
+
+                {/* Category selector - horizontal scrollable pills */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                  {CATEGORIES.map(cat => (
+                    <button
+                      key={cat.value}
+                      onClick={() => setCategory(cat.value)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                        category === cat.value
+                          ? 'bg-[#00d4aa] text-white'
+                          : 'bg-white/10 text-white/60'
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Stream info pill when setup collapsed */}
+          {!showSetup && isFormValid && (
+            <button 
+              onClick={() => setShowSetup(true)}
+              className="mb-4 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2"
+            >
+              <span>{CATEGORIES.find(c => c.value === category)?.icon}</span>
+              <span className="text-white/80 text-xs truncate max-w-[200px]">{title}</span>
+            </button>
+          )}
+
+          {/* Monetization hint */}
+          {!canMonetize && (
             <button
               onClick={() => navigate(createPageUrl('CreatorMonetization'))}
-              className="w-full flex items-center gap-2 bg-amber-500/15 backdrop-blur-md border border-amber-500/20 rounded-xl px-3 py-2"
+              className="w-full mb-3 flex items-center gap-2 bg-amber-500/15 backdrop-blur-md border border-amber-500/20 rounded-xl px-3 py-2"
             >
               <Gift className="w-4 h-4 text-amber-400" />
               <span className="text-amber-200 text-xs flex-1 text-left">Enable monetization to earn from gifts</span>
               <ArrowRight className="w-3 h-3 text-amber-400" />
             </button>
-          </div>
-        )}
+          )}
 
-        {/* GO LIVE button */}
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <Button
-            onClick={() => goLiveMutation.mutate()}
-            disabled={!isFormValid || goLiveMutation.isPending}
-            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-12 py-3 text-base rounded-full shadow-lg shadow-red-500/30 disabled:opacity-40"
-          >
-            {goLiveMutation.isPending ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Starting...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-100" />
-                </span>
-                GO LIVE
-              </span>
-            )}
-          </Button>
+          {/* GO LIVE button - large Bigo-style teal */}
+          <div className="flex justify-center pb-2">
+            <button
+              onClick={() => goLiveMutation.mutate()}
+              disabled={!isFormValid || goLiveMutation.isPending}
+              className="relative w-[72px] h-[72px] rounded-full bg-gradient-to-br from-[#00d4aa] to-[#00b894] shadow-[0_0_30px_rgba(0,212,170,0.4)] disabled:opacity-40 disabled:shadow-none flex items-center justify-center transition-all active:scale-95"
+            >
+              {goLiveMutation.isPending ? (
+                <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-[#00d4aa] to-[#00b894] animate-ping opacity-20" />
+                  <span className="text-white font-bold text-sm tracking-wide">GO<br/>LIVE</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Collapse/expand setup */}
+          {showSetup && isFormValid && (
+            <button onClick={() => setShowSetup(false)} className="w-full text-center text-white/30 text-xs py-1">
+              Tap to collapse
+            </button>
+          )}
         </div>
       </div>
     );
