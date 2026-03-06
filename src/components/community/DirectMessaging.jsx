@@ -89,10 +89,13 @@ export default function DirectMessaging({ isOpen, onClose, initialRecipient = nu
   }, [messages, selectedConversation, user?.email]);
 
   // Filter creators for new conversation
-  const filteredCreators = creators.filter(c => 
-    c.user_email !== user?.email &&
-    (c.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     c.user_email?.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredCreators = React.useMemo(() =>
+    creators.filter(c => 
+      c.user_email !== user?.email &&
+      (c.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       c.user_email?.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    [creators, user?.email, searchQuery]
   );
 
   useEffect(() => {
