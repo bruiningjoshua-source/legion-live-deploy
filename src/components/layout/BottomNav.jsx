@@ -75,7 +75,7 @@ const BottomNav = memo(function BottomNav() {
       {/* Top border */}
       <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
       
-      <div className="relative flex items-center justify-around h-16 max-w-lg mx-auto px-4 py-1.5">
+      <div className="relative flex items-center justify-around h-16 max-w-md mx-auto px-2 py-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActivePath(item.path);

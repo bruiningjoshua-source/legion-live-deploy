@@ -319,7 +319,22 @@ class ZegoStreamingService {
     this._notifyRoomEvent({ type: 'remoteStreamRemoved', streamId });
   }
 
-  getRemoteStreams() {
+  async getRemoteStreams() {
+    // If no remote streams cached yet, ask the engine for the current list
+    if (this.remoteStreams.size === 0 && this.engine && this.roomId) {
+      try {
+        const streamList = await this.engine.getStreamList?.(this.roomId);
+        if (streamList?.length) {
+          for (const s of streamList) {
+            if (!this.remoteStreams.has(s.streamID)) {
+              await this._playRemoteStream(s.streamID, s.user);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[Zego] getStreamList fallback error:', e.message);
+      }
+    }
     return Array.from(this.remoteStreams.entries()).map(([id, stream]) => ({
       streamId: id,
       stream,

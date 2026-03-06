@@ -173,6 +173,14 @@ export default function GoLive() {
       // Set creator live
       await base44.entities.Creator.update(creatorId, { is_live: true, current_stream_id: stream.id });
 
+      // Update stream with creator info  
+      await base44.entities.Stream.update(stream.id, { 
+        viewer_count: 0, 
+        peak_viewers: 0,
+        total_gifts_received: 0,
+        total_denarii_earned: 0
+      });
+
       // PK battle init
       if (streamType === 'pk_battle') {
         await base44.entities.PKBattle.create({

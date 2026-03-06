@@ -163,8 +163,9 @@ export default function WatchStream() {
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
         }
       });
-      // Wait for remote stream list to populate
+      // Wait for remote stream list to populate, then retry once more
       setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 1500);
+      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 4000);
       if (mounted) setLiveStream(true);
     };
     init().catch(error => {
