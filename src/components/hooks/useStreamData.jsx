@@ -233,21 +233,42 @@ export function useEndStream({ stream, creator, pkBattle, liveStream }) {
     mutationFn: async () => {
       if (!creator) throw new Error('Unauthorized');
       if (!stream?.id) throw new Error('No active stream');
-      // Stop local media tracks
-      if (liveStream && typeof liveStream !== 'boolean') {
-        liveStream.getTracks().forEach(t => t.stop());
-      }
-      // Leave Zego
-      const { default: ZegoService } = await import('@/components/stream/ZegoService');
-      try { await ZegoService.leave(); } catch (e) { console.warn('[EndStream] Zego leave error:', e); }
 
+      // 1. Stop local media tracks first
+      if (liveStream && typeof liveStream !== 'boolean') {
+        liveStream.getTracks().forEach(t => { t.stop(); t.enabled = false; });
+      }
+
+      // 2. Leave Zego room — stop publishing, logout, destroy engine
+      const { default: ZegoService } = await import('@/components/stream/ZegoService');
+      try { 
+        await ZegoService.stopPublishing?.();
+        await ZegoService.leave(); 
+      } catch (e) { 
+        console.warn('[EndStream] Zego cleanup error:', e); 
+      }
+
+      // 3. Persist end-of-stream to database
       return StreamService.endStream(stream, creator, pkBattle);
     },
     onSuccess: () => {
+      // Remove fullscreen lock
+      document.body.classList.remove('fullscreen-lock');
+
       queryClient.invalidateQueries({ queryKey: ['stream'] });
       queryClient.invalidateQueries({ queryKey: ['streams-live'] });
+      queryClient.invalidateQueries({ queryKey: ['streams-explore'] });
       queryClient.invalidateQueries({ queryKey: ['creator', creator?.id] });
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
     },
-    onError: (error) => toast.error(error.message || 'Failed to end stream'),
+    onError: async (error) => {
+      console.error('[EndStream] Failed:', error.message);
+      // Even on error, try to force-clean the database state
+      if (stream?.id && creator?.id) {
+        await base44.entities.Stream.update(stream.id, { status: 'ended', viewer_count: 0 }).catch(() => {});
+        await base44.entities.Creator.update(creator.id, { is_live: false, current_stream_id: null }).catch(() => {});
+      }
+      toast.error(error.message || 'Failed to end stream');
+    },
   });
 }
