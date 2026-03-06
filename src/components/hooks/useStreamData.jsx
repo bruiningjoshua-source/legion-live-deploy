@@ -29,6 +29,7 @@ export function useStream(streamId) {
     queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
     enabled: !!streamId,
     staleTime: 30 * 1000,
+    refetchInterval: 30000,
     refetchOnWindowFocus: false,
   });
 }
@@ -84,7 +85,8 @@ export function useWallet(userEmail) {
       return wallets[0] || { denarii_balance: 0, as_balance: 0 };
     },
     enabled: !!userEmail,
-    staleTime: 60 * 1000,
+    staleTime: 15 * 1000,
+    refetchInterval: 15000,
     refetchOnWindowFocus: false,
   });
 }
@@ -107,6 +109,7 @@ export function useChatMessages(streamId) {
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
     enabled: !!streamId,
     staleTime: CACHE.CHAT_MESSAGES,
+    refetchInterval: CACHE.CHAT_MESSAGES,
     refetchOnWindowFocus: false,
   });
 }
@@ -117,6 +120,7 @@ export function useStreamPKBattle(streamId, streamType) {
     queryKey: ['pk-battle', streamId],
     queryFn: () => base44.entities.PKBattle.filter({ stream_id: streamId, status: 'active' }, '-created_date', 1).then(r => r[0]),
     enabled: streamType === 'pk_battle' && !!streamId,
+    refetchInterval: 5000,
   });
 }
 
