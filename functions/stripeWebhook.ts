@@ -196,6 +196,20 @@ Deno.serve(async (req) => {
           });
 
           console.log('[stripeWebhook] Denarii purchased:', totalDenarii, 'for', metadata.user_email);
+
+          // Send purchase confirmation email
+          try {
+            await base44.asServiceRole.functions.invoke('transactionalEmail', {
+              action: 'send_purchase_confirmation',
+              userEmail: metadata.user_email,
+              userName: metadata.user_name || metadata.user_email,
+              orderId: session.payment_intent,
+              itemName: metadata.package_name || 'Denarii Package',
+              amount: priceUsd.toFixed(2)
+            });
+          } catch (e) {
+            console.warn('[stripeWebhook] Purchase email failed:', e.message);
+          }
         }
 
         // ── Host Subscription ──
