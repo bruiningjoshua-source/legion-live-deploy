@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, TrendingUp, Gift, Users, Crown, Medal, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import formatCount from '@/components/shared/FormatCount';
 
 export default function Leaderboard() {
   const [timeframe, setTimeframe] = useState('all-time');
@@ -61,9 +62,9 @@ export default function Leaderboard() {
 
     return (
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 0, x: -12 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: rank * 0.03 }}
+        transition={{ delay: Math.min(rank * 0.03, 0.5), duration: 0.25 }}
       >
         <Link to={createPageUrl(`CreatorProfile?id=${creator.id}`)}>
           <Card className="bg-stone-800/30 border-amber-600/20 hover:border-amber-500/50 transition-all cursor-pointer">
@@ -95,7 +96,11 @@ export default function Leaderboard() {
                     <h3 className="text-amber-100 font-semibold truncate">{creator.display_name}</h3>
                     {creator.is_verified && <Crown className="w-4 h-4 text-amber-400 flex-shrink-0" />}
                     {creator.is_live && (
-                      <Badge className="bg-red-500 text-white border-0 text-xs animate-pulse">
+                      <Badge className="bg-red-500 text-white border-0 text-xs flex items-center gap-1">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-200 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                        </span>
                         LIVE
                       </Badge>
                     )}
@@ -105,7 +110,7 @@ export default function Leaderboard() {
 
                 {/* Stat */}
                 <div className="text-right flex-shrink-0">
-                  <p className="text-2xl font-bold text-amber-100">{stat.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-100">{formatCount(stat)}</p>
                   <p className="text-amber-400/60 text-xs">{statLabel}</p>
                 </div>
               </div>

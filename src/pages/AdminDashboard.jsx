@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import formatCount from '@/components/shared/FormatCount';
 import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
 
 // Authorized admin emails - update these as needed
@@ -126,8 +127,8 @@ export default function AdminDashboard() {
           {[
             { icon: Radio, label: 'Live', value: liveStreamCount, color: 'red' },
             { icon: Users, label: 'Creators', value: creators.length, color: 'blue' },
-            { icon: Eye, label: 'Viewers', value: totalViewers.toLocaleString(), color: 'purple' },
-            { icon: TrendingUp, label: 'Revenue', value: totalRevenue.toLocaleString(), color: 'green' }
+            { icon: Eye, label: 'Viewers', value: formatCount(totalViewers), color: 'purple' },
+            { icon: TrendingUp, label: 'Revenue', value: formatCount(totalRevenue), color: 'green' }
           ].map((stat, i) => {
             const Icon = stat.icon;
             return (
@@ -256,7 +257,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                   <span className="text-white/80 text-sm">Revenue</span>
-                  <Badge className="bg-green-500">${totalRevenue.toLocaleString()}</Badge>
+                  <Badge className="bg-green-500">${formatCount(totalRevenue)}</Badge>
                 </div>
               </CardContent>
             </Card>

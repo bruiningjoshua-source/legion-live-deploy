@@ -12,7 +12,7 @@ import {
   Star,
   Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { isAfter, isBefore, parseISO } from 'date-fns';
 import EventCard from '@/components/events/EventCard';
 
@@ -65,19 +65,16 @@ export default function Events() {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {eventList.map((event, i) => (
-            <motion.div
-              key={event.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <EventCard event={event} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {eventList.map((event, i) => (
+          <motion.div
+            key={event.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.3 }}
+          >
+            <EventCard event={event} />
+          </motion.div>
+        ))}
       </div>
     );
   };
@@ -109,8 +106,12 @@ export default function Events() {
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200')] bg-cover bg-center opacity-30" />
               
               <div className="relative p-8 md:p-12">
-                <Badge className="bg-green-500 text-white border-0 mb-4 animate-pulse">
-                  🔴 LIVE NOW
+                <Badge className="bg-green-500 text-white border-0 mb-4 flex items-center gap-1.5 w-fit">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-200 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                  </span>
+                  LIVE NOW
                 </Badge>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">{activeEvents[0].title}</h2>
                 <p className="text-white/80 text-lg mb-6 max-w-2xl">{activeEvents[0].description}</p>
