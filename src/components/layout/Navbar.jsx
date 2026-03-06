@@ -207,21 +207,21 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
                 {user.role === 'admin' && (
                   <>
-                    <DropdownMenuSeparator className="bg-amber-600/20" />
+                    <DropdownMenuSeparator className="bg-white/[0.06]" />
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl('AdminDashboard')} className="cursor-pointer text-amber-400">
                         <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
                       </Link>
                     </DropdownMenuItem>
-                  </>
-                )}
+                      </>
+                    )}
 
-                <DropdownMenuSeparator className="bg-amber-600/20" />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/[0.06]" />
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -236,7 +236,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-amber-300 hover:bg-amber-800/20 rounded-lg"
+            className="lg:hidden p-2 text-white/50 hover:bg-white/10 rounded-lg"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -250,7 +250,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden bg-stone-900 border-t border-amber-600/20"
+            className="lg:hidden bg-[#111113] border-t border-white/[0.06]"
           >
             <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
               {mainNavLinks.map(link => {
@@ -261,8 +261,8 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     onClick={() => { setMobileMenuOpen(false); navigate(link.path); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
                       isActive(link.path)
-                        ? 'bg-amber-600 text-white'
-                        : 'text-amber-300 hover:bg-amber-800/20'
+                        ? 'bg-white/10 text-white'
+                        : 'text-white/50 hover:bg-white/[0.06] hover:text-white'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
