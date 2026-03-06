@@ -27,12 +27,14 @@ import {
   DollarSign,
   ChevronLeft,
   Headphones,
+  Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
 
 export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -103,6 +105,24 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Search — navigates to Explore on Enter */}
+          <div className="hidden md:flex items-center bg-white/10 rounded-full px-3 py-1.5 border border-white/10 focus-within:border-amber-500/40 transition-colors">
+            <Search className="w-4 h-4 text-white/40 mr-2" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  navigate(createPageUrl('Explore') + '?q=' + encodeURIComponent(searchQuery.trim()));
+                  setSearchQuery('');
+                }
+              }}
+              className="bg-transparent text-white text-sm placeholder:text-white/40 outline-none w-32 lg:w-48"
+            />
+          </div>
+
           {/* Wallet */}
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
@@ -206,7 +226,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
             </DropdownMenu>
           ) : (
             <Button
-              onClick={() => base44.auth.redirectToLogin()}
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
               className="bg-white text-black hover:bg-white/90 rounded-full px-5 font-medium"
             >
               Sign In

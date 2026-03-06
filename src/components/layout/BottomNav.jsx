@@ -2,9 +2,12 @@ import React, { memo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { scrollPositions } from '@/components/navigation/useScrollPreservation';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Home, 
   Compass,
+  Wallet,
   Film,
   User,
   Radio
@@ -15,38 +18,57 @@ const BottomNav = memo(function BottomNav() {
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
+  // Check if user is authenticated and if they're live
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  const { data: creator } = useQuery({
+    queryKey: ['bottom-nav-creator', currentUser?.email],
+    queryFn: () => base44.entities.Creator.filter({ user_email: currentUser.email }, null, 1).then(r => r[0] || null),
+    enabled: !!currentUser?.email,
+    staleTime: 60000,
+    retry: 1,
+  });
+
+  const isLive = creator?.is_live === true;
+  const isAuthenticated = !!currentUser;
+
+  // Swap Videos for Wallet when authenticated
   const navItems = [
     { label: 'Home', path: createPageUrl('Home'), icon: Home, key: 'home' },
     { label: 'Explore', path: createPageUrl('Explore'), icon: Compass, key: 'explore' },
-    { label: 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true, key: 'golive' },
-    { label: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film, key: 'videos' },
+    { label: isLive ? 'Live' : 'Go Live', path: createPageUrl('GoLive'), icon: Radio, highlight: true, key: 'golive' },
+    isAuthenticated
+      ? { label: 'Wallet', path: createPageUrl('Wallet'), icon: Wallet, key: 'wallet' }
+      : { label: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film, key: 'videos' },
     { label: 'Profile', path: createPageUrl('Profile'), icon: User, key: 'profile' }
   ];
 
+  // Exact match for top-level routes
   const isActivePath = (itemPath) => {
     const pathPart = itemPath.split('?')[0];
-    return currentPath === pathPart || currentPath.startsWith(pathPart + '/');
+    return currentPath === pathPart;
   };
 
   const handleTabPress = useCallback((targetPath, e) => {
     e.preventDefault();
     const targetClean = targetPath.split('?')[0];
     const currentClean = currentPath.split('?')[0];
-
-    // Save current scroll position into the shared map
     scrollPositions.set(currentClean, window.scrollY);
 
     if (currentClean === targetClean) {
-      // Already on this tab — scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Replace keeps the back stack shallow between tabs
       navigate(targetPath, { replace: true });
     }
   }, [currentPath, navigate]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Gradient blur background */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-2xl" />
       
@@ -63,17 +85,31 @@ const BottomNav = memo(function BottomNav() {
               <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-6">
                 <div className="relative active:scale-95 transition-transform">
                   {/* Outer glow */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur opacity-50" />
+                  <div className={`absolute -inset-1 rounded-2xl blur opacity-50 ${
+                    isLive 
+                      ? 'bg-gradient-to-br from-green-500 to-emerald-500'
+                      : 'bg-gradient-to-br from-red-500 to-orange-500'
+                  }`} />
                   
                   {/* Main button */}
-                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 via-rose-500 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl border border-red-400/40">
+                  <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl border ${
+                    isLive
+                      ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 border-green-400/40'
+                      : 'bg-gradient-to-br from-red-500 via-rose-500 to-orange-600 border-red-400/40'
+                  }`}>
                     <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2.5} />
                     
-                    {/* Live indicator */}
-                    <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
-                      <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-green-500 border-2 border-black" />
-                    </span>
+                    {/* Indicator dot: pulsing red when not live, solid green when live */}
+                    {isLive ? (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
+                        <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-green-500 border-2 border-black" />
+                      </span>
+                    ) : (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-red-500 border-2 border-black" />
+                      </span>
+                    )}
                   </div>
                 </div>
               </a>
