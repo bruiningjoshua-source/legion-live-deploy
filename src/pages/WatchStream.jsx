@@ -430,12 +430,7 @@ export default function WatchStream() {
               isAuthenticated={!!user}
               disabled={sendMessageMutation.isPending}
               isHost={false}
-              recentChatters={chatMessages.reduce((acc, msg) => {
-                if (!acc.find(u => u.sender_email === msg.sender_email)) {
-                  acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
-                }
-                return acc;
-              }, [])}
+              recentChatters={ChatService.getRecentChatters(chatMessages)}
             />
           )}
         </>
@@ -534,10 +529,7 @@ export default function WatchStream() {
             onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
             currentUser={user} isAuthenticated={!!user}
             disabled={sendMessageMutation.isPending} isHost={true}
-            recentChatters={chatMessages.reduce((acc, msg) => {
-              if (!acc.find(u => u.sender_email === msg.sender_email)) acc.push({ sender_email: msg.sender_email, sender_name: msg.sender_name });
-              return acc;
-            }, [])}
+            recentChatters={ChatService.getRecentChatters(chatMessages)}
           />
 
           {/* End stream dialog */}
