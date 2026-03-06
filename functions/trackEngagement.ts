@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       updates.achievements_unlocked = [...unlocked, ...achievements];
     }
 
-    await base44.entities.UserEngagement.update(engagement.id, updates);
+    await base44.asServiceRole.entities.UserEngagement.update(engagement.id, updates);
 
     return Response.json({
       success: true,
