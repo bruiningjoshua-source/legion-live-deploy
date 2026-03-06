@@ -20,61 +20,42 @@ export default function StreamActionBar({
   };
 
   return (
-    <div className={`absolute right-3 bottom-20 z-30 flex flex-col items-center gap-4 ${className}`}>
-      {/* Gift - Primary CTA */}
+    <div className={`absolute right-3 bottom-20 z-30 flex flex-col items-center gap-3 ${className}`}>
+      {/* Gift */}
       <motion.button
         onClick={onGiftClick}
         disabled={giftDisabled}
-        className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl ${
-          giftDisabled
-            ? 'bg-gray-600/50'
-            : 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500'
-        } active:scale-90 transition-transform`}
+        className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
+          giftDisabled ? 'bg-white/10' : 'bg-gradient-to-br from-amber-400 to-orange-500'
+        }`}
         whileTap={giftDisabled ? {} : { scale: 0.85 }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.1, type: 'spring' }}
       >
-        <Gift className="w-7 h-7 text-white" />
-        {!giftDisabled && (
-          <motion.div
-            className="absolute -inset-1 rounded-full border-2 border-amber-400/50"
-            animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        )}
+        <Gift className={`w-6 h-6 ${giftDisabled ? 'text-white/30' : 'text-white'}`} />
       </motion.button>
 
       {/* Like */}
-      <motion.div className="flex flex-col items-center"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.15 }}
-      >
+      <div className="flex flex-col items-center">
         <motion.button
           onClick={onLikeClick}
-          className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${
-            isLiked ? 'bg-red-500/80' : 'bg-black/40 border border-white/10'
+          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            isLiked ? 'bg-red-500' : 'bg-black/40 border border-white/10'
           }`}
           whileTap={{ scale: 0.8 }}
         >
           <Heart className={`w-5 h-5 text-white ${isLiked ? 'fill-current' : ''}`} />
         </motion.button>
         {likeCount > 0 && (
-          <span className="text-white text-[10px] font-bold mt-1 drop-shadow">{formatCount(likeCount)}</span>
+          <span className="text-white/70 text-[10px] font-medium mt-0.5">{formatCount(likeCount)}</span>
         )}
-      </motion.div>
+      </div>
 
-      {/* Chat toggle */}
+      {/* Chat */}
       <motion.button
         onClick={onChatToggle}
-        className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${
-          showChat ? 'bg-white/20 border border-white/20' : 'bg-black/40 border border-white/10'
+        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+          showChat ? 'bg-white/15' : 'bg-black/40 border border-white/10'
         }`}
         whileTap={{ scale: 0.8 }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2 }}
       >
         <MessageCircle className="w-5 h-5 text-white" />
       </motion.button>
@@ -82,11 +63,8 @@ export default function StreamActionBar({
       {/* Share */}
       <motion.button
         onClick={onShareClick}
-        className="w-11 h-11 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm flex items-center justify-center"
+        className="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center"
         whileTap={{ scale: 0.8 }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.25 }}
       >
         <Share2 className="w-5 h-5 text-white" />
       </motion.button>
