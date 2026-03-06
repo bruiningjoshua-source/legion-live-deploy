@@ -11,39 +11,37 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
-      console.error('[createHostSubscription] Unauthorized - no user');
+      console.error('[createHostSubscription] Unauthorized');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { plan, creatorId } = await req.json();
 
     if (!plan || !['monthly', 'yearly'].includes(plan)) {
-      console.error('[createHostSubscription] Invalid plan:', plan);
-      return Response.json({ error: 'Invalid plan' }, { status: 400 });
+      return Response.json({ error: 'Invalid plan. Must be "monthly" or "yearly".' }, { status: 400 });
     }
 
-    console.log('[createHostSubscription] Creating subscription for:', user.email, 'Plan:', plan);
+    // Check for existing active subscription
+    const existingSubs = await base44.asServiceRole.entities.CreatorSubscription.filter({
+      user_email: user.email,
+      status: 'active'
+    }, '-created_date', 1);
 
-    // Price configuration - $5/mo or $12/year (80% savings)
+    if (existingSubs.length > 0) {
+      return Response.json({ error: 'You already have an active host subscription' }, { status: 400 });
+    }
+
     const prices = {
-      monthly: {
-        amount: 500, // $5.00
-        interval: 'month',
-        name: 'Legion Host - Monthly'
-      },
-      yearly: {
-        amount: 1200, // $12.00 - massive savings
-        interval: 'year',
-        name: 'Legion Host - Yearly'
-      }
+      monthly: { amount: 500, interval: 'month', name: 'Legion Host — Monthly' },
+      yearly: { amount: 1200, interval: 'year', name: 'Legion Host — Yearly' }
     };
 
     const selectedPrice = prices[plan];
 
-    // Create Stripe customer if needed
+    // Get or create Stripe customer
     let stripeCustomer;
     const existingCustomers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+
     if (existingCustomers.data.length > 0) {
       stripeCustomer = existingCustomers.data[0];
     } else {
@@ -57,7 +55,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create checkout session for subscription
+    const origin = req.headers.get('origin') || 'https://app.base44.com';
+
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomer.id,
       payment_method_types: ['card'],
@@ -66,18 +65,16 @@ Deno.serve(async (req) => {
           currency: 'usd',
           product_data: {
             name: selectedPrice.name,
-            description: 'Unlock monetization features: Go live, receive gifts, cash out earnings'
+            description: 'Unlock monetization: Go live, receive gifts, cash out earnings'
           },
           unit_amount: selectedPrice.amount,
-          recurring: {
-            interval: selectedPrice.interval
-          }
+          recurring: { interval: selectedPrice.interval }
         },
         quantity: 1
       }],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/Profile?subscription=success`,
-      cancel_url: `${req.headers.get('origin')}/Profile?subscription=cancelled`,
+      success_url: `${origin}/Profile?subscription=success`,
+      cancel_url: `${origin}/Profile?subscription=cancelled`,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         user_email: user.email,
@@ -95,11 +92,11 @@ Deno.serve(async (req) => {
       }
     });
 
-    console.log('[createHostSubscription] Checkout session created:', session.id);
+    console.log('[createHostSubscription] Session:', session.id, user.email, plan);
 
-    return Response.json({ 
+    return Response.json({
       sessionId: session.id,
-      url: session.url 
+      url: session.url
     });
   } catch (error) {
     console.error('[createHostSubscription] Error:', error.message, error.stack);

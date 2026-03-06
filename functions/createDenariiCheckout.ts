@@ -11,20 +11,30 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
-      console.error('[createDenariiCheckout] Unauthorized - no user');
+      console.error('[createDenariiCheckout] Unauthorized');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { packageId, denarii, bonus, price, packageName } = await req.json();
 
+    // Validate all inputs
     if (!packageId || !denarii || !price) {
-      console.error('[createDenariiCheckout] Missing required fields', { packageId, denarii, price });
+      console.error('[createDenariiCheckout] Missing fields:', { packageId, denarii, price });
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    console.log('[createDenariiCheckout] Creating checkout for:', packageName, 'Price:', price);
+    if (typeof price !== 'number' || price <= 0 || price > 10000) {
+      console.error('[createDenariiCheckout] Invalid price:', price);
+      return Response.json({ error: 'Invalid price' }, { status: 400 });
+    }
 
-    // Create checkout session
+    if (typeof denarii !== 'number' || denarii <= 0 || denarii > 1000000) {
+      console.error('[createDenariiCheckout] Invalid denarii:', denarii);
+      return Response.json({ error: 'Invalid denarii amount' }, { status: 400 });
+    }
+
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/[^/]*$/, '') || 'https://app.base44.com';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -32,32 +42,34 @@ Deno.serve(async (req) => {
           currency: 'usd',
           product_data: {
             name: packageName || `${denarii.toLocaleString()} Denarii`,
-            description: bonus > 0 
-              ? `${denarii.toLocaleString()} Denarii + ${bonus.toLocaleString()} Bonus` 
+            description: (bonus && bonus > 0)
+              ? `${denarii.toLocaleString()} Denarii + ${bonus.toLocaleString()} Bonus`
               : `${denarii.toLocaleString()} Denarii`
           },
-          unit_amount: Math.round(price * 100) // Convert to cents
+          unit_amount: Math.round(price * 100)
         },
         quantity: 1
       }],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/Wallet?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${req.headers.get('origin')}/Wallet?cancelled=true`,
+      customer_email: user.email,
+      success_url: `${origin}/Wallet?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${origin}/Wallet?cancelled=true`,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         user_email: user.email,
         package_id: packageId,
+        package_name: packageName || '',
         denarii_amount: denarii.toString(),
         bonus_denarii: (bonus || 0).toString(),
         purchase_type: 'denarii'
       }
     });
 
-    console.log('[createDenariiCheckout] Checkout session created:', session.id);
+    console.log('[createDenariiCheckout] Session created:', session.id, 'for', user.email, '—', denarii, 'denarii @ $', price);
 
-    return Response.json({ 
+    return Response.json({
       sessionId: session.id,
-      url: session.url 
+      url: session.url
     });
   } catch (error) {
     console.error('[createDenariiCheckout] Error:', error.message, error.stack);

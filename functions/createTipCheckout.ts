@@ -17,55 +17,65 @@ Deno.serve(async (req) => {
 
     const { creatorId, amount, message, streamId, isAnonymous } = await req.json();
 
-    if (!creatorId || !amount || amount < 1) {
-      console.error('[createTipCheckout] Invalid data');
-      return Response.json({ error: 'Invalid tip data' }, { status: 400 });
+    if (!creatorId || !amount) {
+      return Response.json({ error: 'Creator ID and amount are required' }, { status: 400 });
     }
 
-    console.log('[createTipCheckout] Tip:', amount, 'to creator:', creatorId);
+    if (typeof amount !== 'number' || amount < 1 || amount > 5000) {
+      return Response.json({ error: 'Tip amount must be between $1 and $5,000' }, { status: 400 });
+    }
 
-    // Get creator info
+    // Self-tip prevention
     const creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
-    const creator = creators[0];
-
-    if (!creator) {
+    if (!creators[0]) {
       return Response.json({ error: 'Creator not found' }, { status: 404 });
     }
+    if (creators[0].user_email === user.email) {
+      return Response.json({ error: 'You cannot tip yourself' }, { status: 400 });
+    }
 
-    // Create checkout session
+    const origin = req.headers.get('origin') || 'https://app.base44.com';
+    const successUrl = streamId
+      ? `${origin}/WatchStream?id=${streamId}&tip_success=true`
+      : `${origin}/CreatorProfile?id=${creatorId}&tip_success=true`;
+    const cancelUrl = streamId
+      ? `${origin}/WatchStream?id=${streamId}&tip_cancelled=true`
+      : `${origin}/CreatorProfile?id=${creatorId}&tip_cancelled=true`;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Tip for ${creator.display_name}`,
-            description: message || 'Support this creator'
+            name: `Tip for ${creators[0].display_name}`,
+            description: message ? message.substring(0, 200) : 'Support this creator'
           },
           unit_amount: Math.round(amount * 100)
         },
         quantity: 1
       }],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/WatchStream/${streamId || ''}?tip_success=true`,
-      cancel_url: `${req.headers.get('origin')}/WatchStream/${streamId || ''}?tip_cancelled=true`,
+      customer_email: user.email,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         creator_id: creatorId,
         sender_email: user.email,
         amount_usd: amount.toString(),
-        message: message || '',
+        message: (message || '').substring(0, 500),
         stream_id: streamId || '',
         is_anonymous: isAnonymous ? 'true' : 'false',
         purchase_type: 'tip'
       }
     });
 
-    console.log('[createTipCheckout] Session created:', session.id);
+    console.log('[createTipCheckout] Session:', session.id, '$', amount, '→', creators[0].display_name);
 
-    return Response.json({ 
+    return Response.json({
       sessionId: session.id,
-      url: session.url 
+      url: session.url
     });
   } catch (error) {
     console.error('[createTipCheckout] Error:', error.message, error.stack);

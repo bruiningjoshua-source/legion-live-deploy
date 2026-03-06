@@ -17,21 +17,27 @@ Deno.serve(async (req) => {
 
     const { planType, creatorId } = await req.json();
 
-    if (!planType || !creatorId) {
-      console.error('[createCreatorMonetizationCheckout] Missing required fields');
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!planType || !['monthly', 'yearly'].includes(planType)) {
+      return Response.json({ error: 'Invalid planType' }, { status: 400 });
     }
 
-    console.log('[createCreatorMonetizationCheckout] Plan:', planType, 'Creator:', creatorId);
+    if (!creatorId) {
+      return Response.json({ error: 'creatorId is required' }, { status: 400 });
+    }
+
+    // Verify creator ownership
+    const creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
+    if (!creators[0] || creators[0].user_email !== user.email) {
+      return Response.json({ error: 'You can only activate monetization for your own creator profile' }, { status: 403 });
+    }
 
     const isMonthly = planType === 'monthly';
-    
-    // Use your existing Stripe product prices
-    const priceId = isMonthly 
-      ? 'price_1QoGxnKJQ5Xtmx7I1Q8fWUZS' // $5/month
-      : 'price_1QoGxnKJQ5Xtmx7ICuwk3GIr'; // $12/year
+    const priceId = isMonthly
+      ? 'price_1QoGxnKJQ5Xtmx7I1Q8fWUZS'
+      : 'price_1QoGxnKJQ5Xtmx7ICuwk3GIr';
 
-    // Create checkout session using existing prices
+    const origin = req.headers.get('origin') || 'https://app.base44.com';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -39,8 +45,9 @@ Deno.serve(async (req) => {
         quantity: 1
       }],
       mode: isMonthly ? 'subscription' : 'payment',
-      success_url: `${req.headers.get('origin')}/CreatorMonetization?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${req.headers.get('origin')}/CreatorMonetization?cancelled=true`,
+      customer_email: user.email,
+      success_url: `${origin}/CreatorMonetization?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${origin}/CreatorMonetization?cancelled=true`,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         creator_id: creatorId,
@@ -50,11 +57,11 @@ Deno.serve(async (req) => {
       }
     });
 
-    console.log('[createCreatorMonetizationCheckout] Session created:', session.id);
+    console.log('[createCreatorMonetizationCheckout] Session:', session.id, user.email, planType);
 
-    return Response.json({ 
+    return Response.json({
       sessionId: session.id,
-      url: session.url 
+      url: session.url
     });
   } catch (error) {
     console.error('[createCreatorMonetizationCheckout] Error:', error.message, error.stack);
