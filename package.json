@@ -81,7 +81,8 @@
     "@mediapipe/face_mesh": "^0.4.1633559619",
     "@mediapipe/selfie_segmentation": "^0.1.1675465747",
     "@mediapipe/camera_utils": "^0.3.1675466862",
-    "zego-express-engine-webrtc": "^3.5.0"
+    "zego-express-engine-webrtc": "^3.5.0",
+    "@floating-ui/core": "^1.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
