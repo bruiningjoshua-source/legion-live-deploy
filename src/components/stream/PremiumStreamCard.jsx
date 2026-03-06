@@ -1,13 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion } from 'framer-motion';
 import { Crown, Swords, Users } from 'lucide-react';
 import LiveBadge from '@/components/shared/LiveBadge';
 import ViewerCount from '@/components/shared/ViewerCount';
 import AvatarWithStatus from '@/components/shared/AvatarWithStatus';
 import { cn } from "@/lib/utils";
-import formatCount from '@/components/shared/FormatCount';
 
 const STREAM_TYPES = {
   solo: { badge: 'live', glow: 'shadow-red-500/30' },
@@ -34,19 +32,14 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
   const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.15) }}
-      className={`group ${isMobile ? '' : 'hover:-translate-y-0.5'} transition-transform duration-200`}
-    >
+    <div className="group transition-transform duration-200">
       <Link to={createPageUrl(`WatchStream?id=${stream.id}`)}>
         <div className={cn(
           'relative overflow-hidden rounded-xl',
-          'bg-white/[0.04]',
-          'border border-white/[0.06]',
+          'bg-white/[0.03]',
+          'border border-white/[0.05]',
           'transition-all duration-200',
-          'group-hover:border-white/15'
+          !isMobile && 'group-hover:border-white/12 group-hover:-translate-y-0.5'
         )}>
           {/* Thumbnail Container - Portrait 9:16 */}
           <div className="relative aspect-[9/16] overflow-hidden">
@@ -99,18 +92,11 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
 
             {/* PK Battle Icon */}
             {stream.stream_type === 'pk_battle' && (
-              <motion.div 
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  rotate: [0, -5, 5, 0]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <div className="p-4 rounded-full bg-gradient-to-br from-orange-500 to-red-600 shadow-2xl shadow-orange-500/50">
-                  <Swords className="w-8 h-8 text-white" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="p-3 rounded-full bg-gradient-to-br from-orange-500 to-red-600 shadow-xl shadow-orange-500/40 animate-pulse">
+                  <Swords className="w-6 h-6 text-white" />
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Bottom Info */}
@@ -141,7 +127,7 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 });
 
