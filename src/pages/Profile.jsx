@@ -50,6 +50,7 @@ import DirectDonationSettings from '@/components/creator/DirectDonationSettings'
 import VideoUploadSection from '@/components/creator/VideoUploadSection';
 import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
 import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
+import EarningsDashboard from '@/components/earnings/EarningsDashboard';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -403,24 +404,30 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="earnings" className="mt-0">
-            {/* Free Tier Wallet - Available to ALL creators */}
-            <div className="mb-8">
+            {/* Earnings Dashboard with analytics */}
+            <EarningsDashboard creator={creator} user={user} />
+
+            {/* Free Tier Wallet */}
+            <div className="mt-8">
               <FreeTierWalletTip creator={creator} isOwnProfile={true} />
             </div>
 
-            {isSubscribed ? (
-              <div className="space-y-8">
-                <CreatorPayoutSettings creator={creator} user={user} />
-                <DirectDonationSettings creator={creator} subscription={hostSubscription} />
-              </div>
-            ) : (
-              <HostSubscriptionGate 
-                user={user} 
-                creator={creator} 
-                subscription={hostSubscription}
-                onSubscribed={() => queryClient.invalidateQueries(['host-subscription'])}
-              />
-            )}
+            {/* Payout Settings & Donation Settings */}
+            <div className="mt-8">
+              {isSubscribed ? (
+                <div className="space-y-8">
+                  <CreatorPayoutSettings creator={creator} user={user} />
+                  <DirectDonationSettings creator={creator} subscription={hostSubscription} />
+                </div>
+              ) : (
+                <HostSubscriptionGate 
+                  user={user} 
+                  creator={creator} 
+                  subscription={hostSubscription}
+                  onSubscribed={() => queryClient.invalidateQueries(['host-subscription'])}
+                />
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="affiliate" className="mt-0">
