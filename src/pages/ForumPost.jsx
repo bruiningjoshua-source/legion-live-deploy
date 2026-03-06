@@ -27,7 +27,7 @@ import {
   Send,
   Reply
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -405,11 +405,9 @@ export default function ForumPost() {
           </h2>
 
           {topLevelReplies.length > 0 ? (
-            <AnimatePresence>
-              {topLevelReplies.map(reply => (
+              topLevelReplies.map(reply => (
                 <ReplyItem key={reply.id} reply={reply} />
-              ))}
-            </AnimatePresence>
+              ))
           ) : (
             <Card className="bg-stone-800/30 border-amber-600/20">
               <CardContent className="py-12 text-center">

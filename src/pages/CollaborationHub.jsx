@@ -184,9 +184,9 @@ export default function CollaborationHub() {
                 {filteredCreators.map((c, i) => (
                   <motion.div
                     key={c.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.25 }}
                   >
                     <CreatorDirectoryCard
                       creator={c}

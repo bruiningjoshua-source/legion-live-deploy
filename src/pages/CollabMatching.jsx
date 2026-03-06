@@ -19,7 +19,7 @@ import {
   Mic,
   Trophy
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
@@ -75,7 +75,7 @@ function MatchCard({ match, creator, myCreator, onAccept, onDecline }) {
           </div>
           <div>
             <h3 className="text-white font-bold text-lg">{creator?.display_name || 'Creator'}</h3>
-            <p className="text-white/50 text-sm">{creator?.follower_count?.toLocaleString() || 0} followers</p>
+            <p className="text-white/50 text-sm">{creator?.follower_count || 0} followers</p>
             <span className="inline-block mt-1 px-2 py-0.5 rounded bg-white/10 text-white/60 text-xs capitalize">
               {creator?.category}
             </span>
