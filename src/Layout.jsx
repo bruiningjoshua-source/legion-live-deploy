@@ -183,7 +183,7 @@ export default function Layout({ children, currentPageName }) {
       
       <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       
-      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-20'}`}>
+      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-24'}`}>
         {children}
       </main>
       
