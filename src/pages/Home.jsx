@@ -141,24 +141,23 @@ export default function Home() {
   );
 
   const renderEmptyLive = () => (
-    <GlassCard className="text-center py-12 sm:py-16">
-      <motion.div
-        animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <Radio className="w-14 h-14 sm:w-16 sm:h-16 text-amber-500/40 mx-auto mb-4" />
-      </motion.div>
-      <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Live Streams Right Now</h3>
-      <p className="text-white/50 text-sm mb-6">Be the first to go live, or explore videos!</p>
+    <div className="text-center py-16 px-6">
+      <Radio className="w-12 h-12 text-white/15 mx-auto mb-4" />
+      <h3 className="text-white font-semibold text-lg mb-1">No Streams Live</h3>
+      <p className="text-white/40 text-sm mb-6">Be the first to go live</p>
       <div className="flex items-center justify-center gap-3">
         <Link to={createPageUrl('GoLive')}>
-          <PremiumButton icon={Radio}>Go Live</PremiumButton>
+          <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full px-6 gap-2">
+            <Radio className="w-4 h-4" /> Go Live
+          </Button>
         </Link>
         <Link to={createPageUrl('TheAmphitheatre')}>
-          <PremiumButton icon={Film} variant="secondary">Explore Videos</PremiumButton>
+          <Button variant="ghost" className="text-white/50 hover:text-white rounded-full px-6 gap-2">
+            <Film className="w-4 h-4" /> Videos
+          </Button>
         </Link>
       </div>
-    </GlassCard>
+    </div>
   );
 
   return (
