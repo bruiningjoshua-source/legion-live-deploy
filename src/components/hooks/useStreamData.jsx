@@ -1,0 +1,221 @@
+/**
+ * useStreamData — Centralized data-fetching hooks for streaming.
+ * Acts as the data access layer, equivalent to an API client/SDK.
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { CACHE } from '@/components/services/constants';
+import StreamService from '@/components/services/StreamService';
+import ChatService from '@/components/services/ChatService';
+import GiftService from '@/components/services/GiftService';
+import FollowService from '@/components/services/FollowService';
+import CreatorService from '@/components/services/CreatorService';
+
+// ─── Auth ─────────────────────────────────────────────────────
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: CACHE.USER,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+// ─── Stream ───────────────────────────────────────────────────
+export function useStream(streamId) {
+  return useQuery({
+    queryKey: ['stream', streamId],
+    queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
+    enabled: !!streamId,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useLiveStreams(limit = 30) {
+  return useQuery({
+    queryKey: ['streams-live'],
+    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', limit),
+    staleTime: CACHE.STREAMS_LIST,
+    refetchInterval: CACHE.STREAMS_REFETCH,
+    refetchOnWindowFocus: false,
+    retry: 1,
+    initialData: [],
+  });
+}
+
+// ─── Creator ──────────────────────────────────────────────────
+export function useCreator(creatorId) {
+  return useQuery({
+    queryKey: ['creator', creatorId],
+    queryFn: () => CreatorService.getById(creatorId),
+    enabled: !!creatorId,
+    staleTime: CACHE.CREATOR,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useMyCreator(userEmail) {
+  return useQuery({
+    queryKey: ['my-creator', userEmail],
+    queryFn: () => base44.entities.Creator.filter({ user_email: userEmail }, null, 1).then(r => r[0] || null),
+    enabled: !!userEmail,
+  });
+}
+
+export function useCreators(limit = 30) {
+  return useQuery({
+    queryKey: ['creators-home'],
+    queryFn: () => base44.entities.Creator.list('-follower_count', limit),
+    staleTime: CACHE.USER,
+    refetchOnWindowFocus: false,
+    retry: 1,
+    initialData: [],
+  });
+}
+
+// ─── Wallet ───────────────────────────────────────────────────
+export function useWallet(userEmail) {
+  return useQuery({
+    queryKey: ['wallet', userEmail],
+    queryFn: async () => {
+      const wallets = await base44.entities.Wallet.filter({ user_email: userEmail }, null, 1);
+      return wallets[0] || { denarii_balance: 0, as_balance: 0 };
+    },
+    enabled: !!userEmail,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ─── Gifts ────────────────────────────────────────────────────
+export function useGifts() {
+  return useQuery({
+    queryKey: ['gifts'],
+    queryFn: () => base44.entities.Gift.filter({ is_active: true }, 'sort_order', 50),
+    staleTime: CACHE.GIFTS,
+    refetchOnWindowFocus: false,
+    initialData: [],
+  });
+}
+
+// ─── Chat ─────────────────────────────────────────────────────
+export function useChatMessages(streamId) {
+  return useQuery({
+    queryKey: ['chat-messages', streamId],
+    queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
+    enabled: !!streamId,
+    staleTime: CACHE.CHAT_MESSAGES,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ─── Follow ───────────────────────────────────────────────────
+export function useFollowStatus(userEmail, creatorId) {
+  return useQuery({
+    queryKey: ['follow-status', userEmail, creatorId],
+    queryFn: () => FollowService.isFollowing(userEmail, creatorId),
+    enabled: !!userEmail && !!creatorId,
+    staleTime: CACHE.FOLLOW_STATUS,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ─── Creator Subscription ─────────────────────────────────────
+export function useCreatorSubscription(creatorEmail) {
+  return useQuery({
+    queryKey: ['creator-monetization', creatorEmail],
+    queryFn: () => CreatorService.hasActiveSubscription(creatorEmail),
+    enabled: !!creatorEmail,
+    staleTime: CACHE.FOLLOW_STATUS,
+  });
+}
+
+// ─── Mutations ────────────────────────────────────────────────
+
+export function useSendMessage({ streamId, user, wallet }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (messageData) => ChatService.sendMessage({ streamId, user, wallet, messageData }),
+    onError: (error) => alert(error.message || 'Unable to send message.'),
+  });
+}
+
+export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ gift, quantity }) => GiftService.sendGift({
+      user, wallet, gift, quantity, creator, stream, creatorCanReceiveGifts,
+    }),
+    onMutate: async ({ gift, quantity }) => {
+      const totalCost = (gift.cost_denarii || 0) * quantity;
+      await queryClient.cancelQueries({ queryKey: ['wallet', user?.email] });
+      const prevWallet = queryClient.getQueryData(['wallet', user?.email]);
+      if (prevWallet) {
+        queryClient.setQueryData(['wallet', user?.email], {
+          ...prevWallet,
+          denarii_balance: (prevWallet.denarii_balance || 0) - totalCost,
+        });
+      }
+      return { prevWallet };
+    },
+    onError: (error, _vars, context) => {
+      if (context?.prevWallet) {
+        queryClient.setQueryData(['wallet', user?.email], context.prevWallet);
+      }
+      alert(error.message || 'Gift failed.');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    },
+  });
+}
+
+export function useToggleFollow({ user, creator, isFollowing }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => FollowService.toggleFollow(user?.email, creator?.id, isFollowing),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['follow-status', user?.email, creator?.id] });
+      const prev = queryClient.getQueryData(['follow-status', user?.email, creator?.id]);
+      queryClient.setQueryData(['follow-status', user?.email, creator?.id], !isFollowing);
+      if (creator) {
+        queryClient.setQueryData(['creator', creator.id], old => old ? {
+          ...old,
+          follower_count: (old.follower_count || 0) + (isFollowing ? -1 : 1),
+        } : old);
+      }
+      return { prev };
+    },
+    onError: (error, _vars, context) => {
+      if (context?.prev !== undefined) {
+        queryClient.setQueryData(['follow-status', user?.email, creator?.id], context.prev);
+      }
+      if (error.message?.includes('sign in')) base44.auth.redirectToLogin();
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['follow-status'] });
+      queryClient.invalidateQueries({ queryKey: ['creator', creator?.id] });
+    },
+  });
+}
+
+export function useEndStream({ stream, creator, pkBattle, liveStream }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!creator) throw new Error('Unauthorized');
+      // Stop local media tracks
+      if (liveStream && typeof liveStream !== 'boolean') {
+        liveStream.getTracks().forEach(t => t.stop());
+      }
+      // Leave Zego
+      const { default: ZegoService } = await import('@/components/stream/ZegoService');
+      try { await ZegoService.leave(); } catch (e) { console.warn('[EndStream] Zego leave error:', e); }
+
+      return StreamService.endStream(stream, creator, pkBattle);
+    },
+    onError: (error) => alert(error.message || 'Failed to end stream'),
+  });
+}
