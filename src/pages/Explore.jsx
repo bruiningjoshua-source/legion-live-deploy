@@ -61,8 +61,8 @@ export default function Explore() {
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams-explore'],
     queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
-    staleTime: 10 * 1000,
-    refetchInterval: 15 * 1000,
+    staleTime: 8 * 1000,
+    refetchInterval: 12 * 1000,
     retry: 1
   });
 
@@ -149,7 +149,7 @@ export default function Explore() {
           <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-300 mb-2">
             Explore
           </h1>
-          <p className="text-white/60">Discover amazing streams and creators</p>
+          <p className="text-white/50 text-sm sm:text-base">Discover live streams, creators, and communities</p>
         </motion.div>
 
         {/* Search & Filters */}
