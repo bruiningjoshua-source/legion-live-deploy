@@ -213,13 +213,15 @@ export default function GoLive() {
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
-        {/* Video */}
-        <video
-          ref={videoRef}
-          autoPlay playsInline muted
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ transform: 'scaleX(-1)' }}
-        />
+        {/* Video — 9:16 normalized container */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <video
+            ref={videoRef}
+            autoPlay playsInline muted
+            className="h-full object-cover"
+            style={{ transform: 'scaleX(-1)', maxWidth: '100%', aspectRatio: '9/16' }}
+          />
+        </div>
 
         {/* Gradient overlays */}
         <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/50 to-transparent z-10" />
