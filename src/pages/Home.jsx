@@ -30,23 +30,17 @@ import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 const QuickAccessCard = memo(function QuickAccessCard({ item, index }) {
   return (
     <Link to={createPageUrl(item.to)}>
-      <GlassCard 
-        delay={index * 0.08} 
-        glowColor={item.color}
-        padding="p-4 sm:p-5"
-        className="h-full group cursor-pointer"
-      >
-        <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg transition-transform duration-200 group-hover:scale-105`}>
-            <item.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+      <div className="h-full group cursor-pointer bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] rounded-xl p-4 transition-all duration-200">
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}>
+            <item.icon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white font-semibold text-sm sm:text-base">{item.title}</p>
-            <p className="text-white/50 text-[10px] sm:text-xs">{item.desc}</p>
+            <p className="text-white font-medium text-sm">{item.title}</p>
+            <p className="text-white/35 text-[10px]">{item.desc}</p>
           </div>
-          <ArrowRight className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors" />
         </div>
-      </GlassCard>
+      </div>
     </Link>
   );
 });
