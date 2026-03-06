@@ -168,7 +168,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="min-h-screen pt-16 pb-24">
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Hero Header */}
@@ -192,7 +192,7 @@ export default function Home() {
         </div>
         
         {/* Quick Access */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-8 sm:mb-10 max-w-4xl mx-auto">
           {QUICK_ACCESS_ITEMS.map((item, i) => (
             <QuickAccessCard key={item.to} item={item} index={i} />
           ))}
@@ -202,16 +202,16 @@ export default function Home() {
         <CreatorsYouMayLike user={user} />
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6 sm:space-y-8">
-          <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl min-w-max">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-5">
+          <div className="flex justify-center">
+            <div className="inline-flex bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl min-w-max">
               {TAB_ITEMS.map((tab) => (
                 <TabsList key={tab.value} className="bg-transparent p-0">
                   <TabsTrigger 
                     value={tab.value}
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-2.5 text-white/60 hover:text-white transition-colors text-sm sm:text-base"
+                    className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow rounded-lg px-4 py-1.5 text-white/40 hover:text-white/70 transition-colors text-sm"
                   >
-                    <tab.icon className="w-4 h-4 mr-1.5 sm:mr-2" />
+                    <tab.icon className="w-3.5 h-3.5 mr-1.5" />
                     {tab.label}
                   </TabsTrigger>
                 </TabsList>
