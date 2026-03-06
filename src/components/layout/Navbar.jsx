@@ -126,26 +126,20 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Wallet */}
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 hover:bg-white/15 transition-all"
-              >
-                <span className="text-lg">🪙</span>
-                <span className="text-white font-semibold text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
-              </motion.div>
+              <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.06] rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors">
+                <span className="text-sm">🪙</span>
+                <span className="text-white font-medium text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
+              </div>
             </Link>
           )}
 
           {/* Go Live */}
           {user && (
             <Link to={createPageUrl('GoLive')}>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button className="hidden sm:flex bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white gap-2 rounded-full px-5 font-medium shadow-lg shadow-red-500/20">
-                  <Radio className="w-4 h-4" />
-                  Go Live
-                </Button>
-              </motion.div>
+              <Button className="hidden sm:flex bg-red-500 hover:bg-red-600 text-white gap-1.5 rounded-full px-4 h-8 text-sm font-medium">
+                <Radio className="w-3.5 h-3.5" />
+                Go Live
+              </Button>
             </Link>
           )}
 
