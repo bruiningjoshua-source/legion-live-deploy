@@ -20,7 +20,8 @@ import {
   Swords,
   Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import PremiumCreatorCard from '@/components/creator/PremiumCreatorCard';
 import GlassCard from '@/components/shared/GlassCard';
@@ -127,8 +128,11 @@ export default function Explore() {
   }, [creators, searchQuery, selectedCategory]);
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['streams-explore'] });
-    await queryClient.invalidateQueries({ queryKey: ['creators-explore'] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['streams-explore'] }),
+      queryClient.invalidateQueries({ queryKey: ['creators-explore'] })
+    ]);
+    toast.success('Refreshed');
   }, [queryClient]);
 
   return (
@@ -137,8 +141,9 @@ export default function Explore() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
           className="mb-8"
         >
           <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-300 mb-2">

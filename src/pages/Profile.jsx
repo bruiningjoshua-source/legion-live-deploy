@@ -157,6 +157,7 @@ export default function Profile() {
     onSuccess: () => {
       queryClient.invalidateQueries(['my-creator']);
       setIsEditing(false);
+      toast.success('Profile updated');
     }
   });
 
@@ -184,7 +185,9 @@ export default function Profile() {
 
   const copyAffiliateLink = () => {
     const link = `${window.location.origin}?ref=${creator?.affiliate_code || 'legion'}`;
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(link).then(() => {
+      toast.success('Affiliate link copied!');
+    });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -448,7 +451,7 @@ export default function Profile() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-stone-800/50 rounded-xl p-4">
-                    <p className="text-2xl font-bold text-green-400">{(creator?.affiliate_earnings || 0).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-400">{formatCount(creator?.affiliate_earnings)}</p>
                     <p className="text-amber-400/60 text-sm">🪙 Earned</p>
                   </div>
                   <div className="bg-stone-800/50 rounded-xl p-4">
