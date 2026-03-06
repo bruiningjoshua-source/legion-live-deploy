@@ -20,9 +20,9 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import GlassCard from '@/components/shared/GlassCard';
-import PremiumButton from '@/components/shared/PremiumButton';
 import TrendingSection from '@/components/shared/TrendingSection';
 import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 
