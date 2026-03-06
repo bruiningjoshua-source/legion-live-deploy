@@ -94,6 +94,23 @@ class GiftService {
       total_denarii_earned: (stream.total_denarii_earned || 0) + creatorEarning,
     });
 
+    // Update PK Battle scores if applicable
+    if (stream.stream_type === 'pk_battle') {
+      try {
+        const battles = await base44.entities.PKBattle.filter({ stream_id: stream.id, status: 'active' }, '-created_date', 1);
+        const battle = battles[0];
+        if (battle) {
+          const isHost = creator.id === battle.host_creator_id;
+          const scoreUpdate = isHost
+            ? { host_score: (battle.host_score || 0) + totalCost }
+            : { opponent_score: (battle.opponent_score || 0) + totalCost };
+          await base44.entities.PKBattle.update(battle.id, scoreUpdate);
+        }
+      } catch (e) {
+        console.error('[GiftService] PK score update failed:', e);
+      }
+    }
+
     return { gift, quantity, totalCost, creatorEarning };
   }
 }

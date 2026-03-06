@@ -305,12 +305,13 @@ export default function WatchStream() {
 
           {/* PK Battle */}
           {stream.stream_type === 'pk_battle' && (
-            <div className="absolute inset-0 pointer-events-none z-10">
+            <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
               <PKBattleOverlay
-                hostCreator={creator} opponentCreator={opponentCreator}
-                hostScore={pkBattle?.host_score || 0}
-                opponentScore={pkBattle?.opponent_score || 0}
-                timeRemaining={pkBattle ? 300 : 0} status={pkBattle?.status || 'pending'}
+                streamId={streamId}
+                hostCreator={creator}
+                opponentCreator={opponentCreator}
+                initialBattle={pkBattle}
+                isBroadcaster={isBroadcaster}
               />
             </div>
           )}
