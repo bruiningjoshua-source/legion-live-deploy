@@ -236,7 +236,17 @@ export default function WatchStream() {
 
   const followMutation = useToggleFollow({ user, creator, isFollowing });
   const _endStream = useEndStream({ stream, creator, pkBattle, liveStream });
-  const endStream = () => _endStream.mutate(null, { onSuccess: () => navigate(createPageUrl('Profile')) });
+  const endStream = () => _endStream.mutate(null, { 
+    onSuccess: () => {
+      // Stop any remaining media
+      if (liveStreamRef.current && typeof liveStreamRef.current !== 'boolean') {
+        liveStreamRef.current.getTracks().forEach(t => t.stop());
+        liveStreamRef.current = null;
+      }
+      if (videoRef.current) videoRef.current.srcObject = null;
+      navigate(createPageUrl('Profile'));
+    }
+  });
 
   // Reactions
   const handleDoubleTap = useCallback(() => {
