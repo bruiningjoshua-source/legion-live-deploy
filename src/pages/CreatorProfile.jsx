@@ -431,9 +431,9 @@ export default function CreatorProfile() {
                 {liveStreams.map((stream, i) => (
                   <motion.div
                     key={stream.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.25 }}
                   >
                     <StreamCard stream={stream} creator={creator} />
                   </motion.div>
@@ -456,9 +456,9 @@ export default function CreatorProfile() {
                 {pastStreams.map((stream, i) => (
                   <motion.div
                     key={stream.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.25 }}
                   >
                     <StreamCard stream={{ ...stream, status: 'ended' }} creator={creator} />
                   </motion.div>
@@ -490,9 +490,9 @@ export default function CreatorProfile() {
 function VideoCard({ video, creator, index }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.25 }}
     >
       <Link to={createPageUrl(`WatchVideo?id=${video.id}`)}>
         <div className="bg-stone-800/30 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all cursor-pointer group">
