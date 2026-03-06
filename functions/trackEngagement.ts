@@ -15,12 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Action is required' }, { status: 400 });
     }
 
-    // Get or create engagement record
-    const engagements = await base44.entities.UserEngagement.filter({ user_email: user.email }, null, 1);
+    // Get or create engagement record using service role for reliability
+    const engagements = await base44.asServiceRole.entities.UserEngagement.filter({ user_email: user.email }, null, 1);
     let engagement = engagements[0];
 
     if (!engagement) {
-      engagement = await base44.entities.UserEngagement.create({
+      engagement = await base44.asServiceRole.entities.UserEngagement.create({
         user_email: user.email,
         daily_streak: 0,
         experience_points: 0,
