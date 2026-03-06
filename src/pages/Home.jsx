@@ -18,7 +18,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
@@ -227,39 +227,33 @@ export default function Home() {
 
           {/* For You */}
           <TabsContent value="personalized" className="mt-0">
-            <AnimatePresence mode="wait">
-              <TabAnimation tabKey="personalized">
-                {streamsLoading ? <StreamSkeleton /> : 
-                  personalizedStreams.length > 0 ? renderStreamGrid(personalizedStreams.slice(0, 15)) : renderEmptyLive()
-                }
-              </TabAnimation>
-            </AnimatePresence>
+            <TabAnimation tabKey="personalized">
+              {streamsLoading ? <StreamSkeleton /> : 
+                personalizedStreams.length > 0 ? renderStreamGrid(personalizedStreams.slice(0, 15)) : renderEmptyLive()
+              }
+            </TabAnimation>
           </TabsContent>
 
           {/* Trending */}
           <TabsContent value="trending" className="mt-0">
-            <AnimatePresence mode="wait">
-              <TabAnimation tabKey="trending">
-                <TrendingSection />
-              </TabAnimation>
-            </AnimatePresence>
+            <TabAnimation tabKey="trending">
+              <TrendingSection />
+            </TabAnimation>
           </TabsContent>
 
           {/* Featured */}
           <TabsContent value="featured" className="mt-0">
-            <AnimatePresence mode="wait">
-              <TabAnimation tabKey="featured">
-                {streamsLoading ? <StreamSkeleton /> :
-                  featuredStreams.length >= 3 ? renderStreamGrid(featuredStreams) : (
-                    <GlassCard className="text-center py-12 sm:py-16">
-                      <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
-                      <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Featured Streams Right Now</h3>
-                      <p className="text-white/50 text-sm">Featured streams appear when creators get 100+ viewers.</p>
-                    </GlassCard>
-                  )
-                }
-              </TabAnimation>
-            </AnimatePresence>
+            <TabAnimation tabKey="featured">
+              {streamsLoading ? <StreamSkeleton /> :
+                featuredStreams.length >= 3 ? renderStreamGrid(featuredStreams) : (
+                  <GlassCard className="text-center py-12 sm:py-16">
+                    <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
+                    <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Featured Streams Right Now</h3>
+                    <p className="text-white/50 text-sm">Featured streams appear when creators get 100+ viewers.</p>
+                  </GlassCard>
+                )
+              }
+            </TabAnimation>
           </TabsContent>
         </Tabs>
       </div>

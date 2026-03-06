@@ -327,9 +327,9 @@ export default function Profile() {
                 {pastStreams.map((stream, i) => (
                   <motion.div
                     key={stream.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.25 }}
                   >
                     <StreamCard stream={{ ...stream, status: 'ended' }} creator={creator} />
                   </motion.div>
