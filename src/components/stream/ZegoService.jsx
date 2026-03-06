@@ -493,36 +493,43 @@ class ZegoStreamingService {
 
     this._stopStatsMonitor();
 
+    const engine = this.engine; // Capture ref in case it's nulled during async ops
+
     // Stop publishing
-    if (this.isPublishing && this.engine) {
-      try { this.engine.stopPublishingStream(this.roomId || ''); } catch (e) {}
+    if (this.isPublishing && engine) {
+      try { engine.stopPublishingStream(this.roomId || ''); } catch (e) {
+        console.warn('[Zego] stopPublishing error:', e.message);
+      }
     }
 
     // Stop screen share
-    if (this.isScreenSharing && this.engine) {
-      try { this.engine.stopPublishingStream((this.roomId || '') + '_screen'); } catch (e) {}
+    if (this.isScreenSharing && engine) {
+      try { engine.stopPublishingStream((this.roomId || '') + '_screen'); } catch (e) {}
       if (this.screenStream) {
-        try { this.engine.destroyStream(this.screenStream); } catch (e) {}
+        try { engine.destroyStream(this.screenStream); } catch (e) {}
       }
     }
 
     // Destroy local stream
-    if (this.localStream && this.engine) {
-      try { this.engine.destroyStream(this.localStream); } catch (e) {}
+    if (this.localStream && engine) {
+      try { engine.destroyStream(this.localStream); } catch (e) {}
     }
 
     // Stop all remote streams
-    if (this.engine) {
+    if (engine) {
       for (const streamId of this.remoteStreams.keys()) {
-        try { this.engine.stopPlayingStream(streamId); } catch (e) {}
+        try { engine.stopPlayingStream(streamId); } catch (e) {}
       }
     }
     this.remoteStreams.clear();
     this.remoteUserMap.clear();
 
     // Leave room
-    if (this.roomId && this.engine) {
-      try { await this.engine.logoutRoom(this.roomId); } catch (e) {}
+    const roomId = this.roomId;
+    if (roomId && engine) {
+      try { await engine.logoutRoom(roomId); } catch (e) {
+        console.warn('[Zego] logoutRoom error:', e.message);
+      }
     }
 
     this.localStream = null;
@@ -542,8 +549,8 @@ class ZegoStreamingService {
     await this.leave();
     if (this.engine) {
       try { this.engine.logoutRoom(); } catch (e) {}
+      this.engine = null;
     }
-    this.engine = null;
     this.appId = null;
     console.log('[Zego] Engine destroyed');
   }
