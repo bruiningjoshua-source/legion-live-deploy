@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useCurrentUser, useLiveStreams, useCreators } from '@/components/hooks/useStreamData';
@@ -10,19 +11,21 @@ import {
   Radio, 
   TrendingUp, 
   Heart,
-  Sparkles,
   Trophy,
   Film,
   Gamepad2,
   ShoppingBag,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import GlassCard from '@/components/shared/GlassCard';
 import PremiumButton from '@/components/shared/PremiumButton';
 import TrendingSection from '@/components/shared/TrendingSection';
+import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 
-// Memoized quick access card for performance
+// Memoized quick access card
 const QuickAccessCard = memo(function QuickAccessCard({ item, index }) {
   return (
     <Link to={createPageUrl(item.to)}>
@@ -47,18 +50,19 @@ const QuickAccessCard = memo(function QuickAccessCard({ item, index }) {
   );
 });
 
-// Memoized skeleton loader
-const StreamSkeleton = memo(function StreamSkeleton({ count = 10 }) {
+// Responsive skeleton loader: 2 on mobile, 3 on tablet, 4 on desktop
+const StreamSkeleton = memo(function StreamSkeleton() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-      {Array.from({ length: count }).map((_, i) => (
-        <Skeleton key={i} className="aspect-[9/16] w-full rounded-2xl bg-white/5" />
+      {Array.from({ length: 10 }).map((_, i) => (
+        <Skeleton key={i} className={`aspect-[9/16] w-full rounded-2xl bg-white/5 ${
+          i >= 4 ? 'hidden md:block' : ''
+        } ${i >= 6 ? 'hidden lg:block' : ''}`} />
       ))}
     </div>
   );
 });
 
-// Quick access items defined outside component to prevent recreation
 const QUICK_ACCESS_ITEMS = [
   { to: 'Explore', icon: Radio, title: 'Live Streams', desc: 'Solo • PK • Group', color: 'red', gradient: 'from-red-500 to-rose-600' },
   { to: 'TheAmphitheatre', icon: Film, title: 'Videos', desc: 'Shorts • Long Form', color: 'blue', gradient: 'from-blue-500 to-cyan-600' },
@@ -72,20 +76,46 @@ const TAB_ITEMS = [
   { value: 'featured', icon: Trophy, label: 'Featured' }
 ];
 
+// Tab content animation wrapper
+const TabAnimation = memo(function TabAnimation({ children, tabKey }) {
+  return (
+    <motion.div
+      key={tabKey}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.2 }}
+    >
+      {children}
+    </motion.div>
+  );
+});
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState('personalized');
   const queryClient = useQueryClient();
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['streams-live'] });
-    await queryClient.invalidateQueries({ queryKey: ['creators-home'] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['streams-live'] }),
+      queryClient.invalidateQueries({ queryKey: ['creators-home'] }),
+      queryClient.invalidateQueries({ queryKey: ['user-interests'] }),
+    ]);
   }, [queryClient]);
 
   const { data: user } = useCurrentUser();
   const { data: streams = [], isLoading: streamsLoading } = useLiveStreams();
   const { data: creators = [] } = useCreators();
 
-  // Memoize expensive computations
+  // Fetch user interests for personalized "For You" tab
+  const { data: userInterests = [] } = useQuery({
+    queryKey: ['user-interests', user?.email],
+    queryFn: () => base44.entities.UserInterest.filter({ user_email: user.email }),
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
   const creatorMap = useMemo(() => {
     const map = {};
     for (let i = 0; i < creators.length; i++) {
@@ -94,22 +124,66 @@ export default function Home() {
     return map;
   }, [creators]);
 
-  const featuredStreams = useMemo(() => streams.filter(s => s.is_featured), [streams]);
-  
+  // For You: filter by user interests, fall back to trending (by viewer_count)
+  const personalizedStreams = useMemo(() => {
+    if (!userInterests.length) {
+      // Fall back to trending sort
+      return [...streams].sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
+    }
+    const interestCategories = new Set(userInterests.map(i => i.category || i.interest_name).filter(Boolean));
+    const matched = streams.filter(s => interestCategories.has(s.category));
+    const unmatched = streams.filter(s => !interestCategories.has(s.category));
+    return [...matched, ...unmatched];
+  }, [streams, userInterests]);
+
+  // Featured: streams with >100 viewers, sorted by viewer count
+  const featuredStreams = useMemo(() => {
+    const featured = streams.filter(s => (s.viewer_count || 0) > 100 || s.is_featured);
+    return featured.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0)).slice(0, 10);
+  }, [streams]);
+
   const handleTabChange = useCallback((value) => setActiveTab(value), []);
+
+  const renderStreamGrid = (streamList) => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+      {streamList.map((stream, i) => (
+        <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
+      ))}
+    </div>
+  );
+
+  const renderEmptyLive = () => (
+    <GlassCard className="text-center py-12 sm:py-16">
+      <motion.div
+        animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <Radio className="w-14 h-14 sm:w-16 sm:h-16 text-amber-500/40 mx-auto mb-4" />
+      </motion.div>
+      <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Live Streams Right Now</h3>
+      <p className="text-white/50 text-sm mb-6">Be the first to go live, or explore videos!</p>
+      <div className="flex items-center justify-center gap-3">
+        <Link to={createPageUrl('GoLive')}>
+          <PremiumButton icon={Radio}>Go Live</PremiumButton>
+        </Link>
+        <Link to={createPageUrl('TheAmphitheatre')}>
+          <PremiumButton icon={Film} variant="secondary">Explore Videos</PremiumButton>
+        </Link>
+      </div>
+    </GlassCard>
+  );
 
   return (
     <div className="min-h-screen pt-20 pb-24">
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Hero Header - Optimized with CSS animations */}
+        {/* Hero Header */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 sm:mb-3 animate-gradient-x">
             Legion Live
           </h1>
           <p className="text-white/60 text-sm sm:text-lg">Stream, command, and conquer</p>
           
-          {/* Quick Stats */}
           <div className="flex items-center justify-center gap-4 sm:gap-6 mt-4 sm:mt-6">
             <div className="text-center">
               <p className="text-xl sm:text-2xl font-bold text-white">{streams.length}</p>
@@ -123,13 +197,17 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Platform Quick Access - Optimized */}
+        {/* Quick Access */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12 max-w-5xl mx-auto">
           {QUICK_ACCESS_ITEMS.map((item, i) => (
             <QuickAccessCard key={item.to} item={item} index={i} />
           ))}
         </div>
 
+        {/* Creators You May Like */}
+        <CreatorsYouMayLike user={user} />
+
+        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6 sm:space-y-8">
           <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
             <div className="inline-flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl min-w-max">
@@ -147,50 +225,41 @@ export default function Home() {
             </div>
           </div>
 
-          {/* For You - Shows all live streams */}
+          {/* For You */}
           <TabsContent value="personalized" className="mt-0">
-            {streamsLoading ? (
-              <StreamSkeleton count={8} />
-            ) : streams.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                {streams.slice(0, 15).map((stream, i) => (
-                  <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
-                ))}
-              </div>
-            ) : (
-              <GlassCard className="text-center py-12 sm:py-16">
-                <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
-                <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Live Streams</h3>
-                <p className="text-white/50 text-sm mb-6">Be the first to go live!</p>
-                <Link to={createPageUrl('GoLive')}>
-                  <PremiumButton icon={Radio}>Go Live</PremiumButton>
-                </Link>
-              </GlassCard>
-            )}
+            <AnimatePresence mode="wait">
+              <TabAnimation tabKey="personalized">
+                {streamsLoading ? <StreamSkeleton /> : 
+                  personalizedStreams.length > 0 ? renderStreamGrid(personalizedStreams.slice(0, 15)) : renderEmptyLive()
+                }
+              </TabAnimation>
+            </AnimatePresence>
           </TabsContent>
 
           {/* Trending */}
           <TabsContent value="trending" className="mt-0">
-            <TrendingSection />
+            <AnimatePresence mode="wait">
+              <TabAnimation tabKey="trending">
+                <TrendingSection />
+              </TabAnimation>
+            </AnimatePresence>
           </TabsContent>
 
           {/* Featured */}
           <TabsContent value="featured" className="mt-0">
-            {streamsLoading ? (
-              <StreamSkeleton count={8} />
-            ) : featuredStreams.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                {featuredStreams.map((stream, i) => (
-                  <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
-                ))}
-              </div>
-            ) : (
-              <GlassCard className="text-center py-12 sm:py-16">
-                <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
-                <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Featured Streams</h3>
-                <p className="text-white/50 text-sm">Check back soon for featured content!</p>
-              </GlassCard>
-            )}
+            <AnimatePresence mode="wait">
+              <TabAnimation tabKey="featured">
+                {streamsLoading ? <StreamSkeleton /> :
+                  featuredStreams.length >= 3 ? renderStreamGrid(featuredStreams) : (
+                    <GlassCard className="text-center py-12 sm:py-16">
+                      <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-amber-500/30 mx-auto mb-4" />
+                      <h3 className="text-white font-semibold text-base sm:text-lg mb-2">No Featured Streams Right Now</h3>
+                      <p className="text-white/50 text-sm">Featured streams appear when creators get 100+ viewers.</p>
+                    </GlassCard>
+                  )
+                }
+              </TabAnimation>
+            </AnimatePresence>
           </TabsContent>
         </Tabs>
       </div>
