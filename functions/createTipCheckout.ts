@@ -26,7 +26,13 @@ Deno.serve(async (req) => {
     }
 
     // Self-tip prevention
-    const creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
+    let creators;
+    try {
+      creators = await base44.asServiceRole.entities.Creator.filter({ id: creatorId }, null, 1);
+    } catch (e) {
+      console.error('[createTipCheckout] Creator lookup failed:', e.message);
+      return Response.json({ error: 'Creator not found' }, { status: 404 });
+    }
     if (!creators[0]) {
       return Response.json({ error: 'Creator not found' }, { status: 404 });
     }

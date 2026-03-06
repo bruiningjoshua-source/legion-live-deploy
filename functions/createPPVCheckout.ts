@@ -20,8 +20,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'event_id is required' }, { status: 400 });
     }
 
-    const events = await base44.asServiceRole.entities.PPVEvent.filter({ id: event_id }, null, 1);
-    const ppvEvent = events[0];
+    let ppvEvent;
+    try {
+      const events = await base44.asServiceRole.entities.PPVEvent.filter({ id: event_id }, null, 1);
+      ppvEvent = events[0];
+    } catch (e) {
+      console.error('[createPPVCheckout] Event lookup failed:', e.message);
+      return Response.json({ error: 'Event not found' }, { status: 404 });
+    }
 
     if (!ppvEvent) {
       return Response.json({ error: 'Event not found' }, { status: 404 });
