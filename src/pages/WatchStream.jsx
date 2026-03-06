@@ -158,9 +158,14 @@ export default function WatchStream() {
       await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
       if (!mounted) return;
       ZegoService.onRoomEvent((event) => {
-        if ((event.type === 'roomState' && event.state === 'DISCONNECTED') || 
-            (event.type === 'streamUpdate' && event.updateType === 'DELETE')) {
+        if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
+          // Host ended or connection lost — refetch stream to get ended state
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
+        }
+        if (event.type === 'streamUpdate' && event.updateType === 'DELETE') {
+          // All remote streams removed — stream is ending
+          queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
+          ZegoService.leave().catch(() => {});
         }
       });
       // Wait for remote stream list to populate, then retry once more
