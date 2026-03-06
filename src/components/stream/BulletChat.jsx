@@ -221,9 +221,9 @@ export default function BulletChat({
         {/* Input bar */}
         <div className="pointer-events-auto">
           <form onSubmit={handleSubmit}>
-            <div className={`flex items-center gap-2 px-3 py-2 backdrop-blur-md transition-all ${
-              replyingTo ? 'rounded-b-2xl' : 'rounded-2xl'
-            } ${isFocused ? 'bg-black/50 border border-white/20' : 'bg-black/30 border border-white/8'}`}>
+            <div className={`flex items-center gap-2 px-3 py-1.5 backdrop-blur-md transition-all ${
+              replyingTo ? 'rounded-b-2xl' : 'rounded-full'
+            } ${isFocused ? 'bg-black/50 border border-white/15' : 'bg-black/30 border border-white/[0.06]'}`}>
               <Input
                 ref={inputRef}
                 value={inputValue}
@@ -232,12 +232,12 @@ export default function BulletChat({
                 onBlur={() => setIsFocused(false)}
                 placeholder={isAuthenticated ? "Say something..." : "Sign in to chat"}
                 disabled={disabled || !isAuthenticated}
-                className="flex-1 bg-transparent border-0 text-white placeholder:text-white/30 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+                className="flex-1 bg-transparent border-0 text-white placeholder:text-white/25 h-7 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
               />
               <motion.button
                 type="submit"
                 disabled={disabled || !isAuthenticated || !inputValue.trim()}
-                className="w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white disabled:opacity-20 shrink-0"
+                className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white disabled:opacity-15 shrink-0"
                 whileTap={{ scale: 0.85 }}
               >
                 <Send className="w-3 h-3" />
