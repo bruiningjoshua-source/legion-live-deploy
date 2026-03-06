@@ -119,7 +119,13 @@ export function useChatMessages(streamId) {
 export function useStreamPKBattle(streamId, streamType) {
   return useQuery({
     queryKey: ['pk-battle', streamId],
-    queryFn: () => base44.entities.PKBattle.filter({ stream_id: streamId, status: 'active' }, '-created_date', 1).then(r => r[0]),
+    queryFn: async () => {
+      // Check active first, then pending
+      const active = await base44.entities.PKBattle.filter({ stream_id: streamId, status: 'active' }, '-created_date', 1);
+      if (active[0]) return active[0];
+      const pending = await base44.entities.PKBattle.filter({ stream_id: streamId, status: 'pending' }, '-created_date', 1);
+      return pending[0] || null;
+    },
     enabled: streamType === 'pk_battle' && !!streamId,
     refetchInterval: 5000,
   });
