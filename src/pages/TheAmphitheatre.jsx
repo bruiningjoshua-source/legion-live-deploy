@@ -183,16 +183,18 @@ export default function TheAmphitheatre() {
       .map(v => ({ ...v, type: 'video', creator: creatorMap[v.creator_id] }));
   }, [videos, creatorMap]);
 
-  // Combine videos and music
+  // Combine videos and music — prefix IDs to prevent key collisions
   const allContent = useMemo(() => {
     const videoContent = videos.map(v => ({
       ...v,
+      _key: `video-${v.id}`,
       type: 'video',
       creator: creatorMap[v.creator_id]
     }));
     
     const musicContent = musicVideos.map(m => ({
       ...m,
+      _key: `music-${m.id}`,
       type: 'music',
       category: 'music',
       creator: creatorMap[m.creator_id]
