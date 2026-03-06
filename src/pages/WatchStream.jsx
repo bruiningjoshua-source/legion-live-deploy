@@ -254,6 +254,13 @@ export default function WatchStream() {
     );
   }
 
+  // Cleanup fullscreen lock on ended/not-found
+  useEffect(() => {
+    if (!stream || streamEnded) {
+      document.body.classList.remove('fullscreen-lock');
+    }
+  }, [stream, streamEnded]);
+
   // Ended / Not found
   if (!stream || streamEnded) {
     return (
@@ -273,10 +280,10 @@ export default function WatchStream() {
             {streamEnded ? `${creator?.display_name || 'The host'} ended this broadcast.` : "This stream doesn't exist."}
           </p>
           {streamEnded && stream && (
-            <div className="flex items-center justify-center gap-4 text-white/30 text-xs mb-6">
-              {stream.duration_minutes > 0 && <span>{stream.duration_minutes}m</span>}
-              {stream.peak_viewers > 0 && <span>{stream.peak_viewers} peak</span>}
-              {stream.total_gifts_received > 0 && <span>{stream.total_gifts_received} gifts</span>}
+            <div className="flex items-center justify-center gap-5 text-white/40 text-sm mb-6">
+              {stream.duration_minutes > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.duration_minutes}m</p><p className="text-[11px]">Duration</p></div>}
+              {stream.peak_viewers > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.peak_viewers}</p><p className="text-[11px]">Peak Viewers</p></div>}
+              {stream.total_gifts_received > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.total_gifts_received}</p><p className="text-[11px]">Gifts</p></div>}
             </div>
           )}
           <div className="flex items-center justify-center gap-3">
