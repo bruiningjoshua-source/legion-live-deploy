@@ -86,37 +86,22 @@ export default function WatchStream() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isBroadcaster, stream?.id]);
 
-  // Viewer count — join once per stream session, leave on unmount
+  // Viewer count — atomic join/leave via backend function (prevents race conditions)
   const viewerJoinedRef = useRef(false);
   const streamIdRef = useRef(null);
   useEffect(() => {
     if (!stream?.id || isBroadcaster || !user || stream.status !== 'live') return;
-    if (viewerJoinedRef.current && streamIdRef.current === stream.id) return; // Already joined
+    if (viewerJoinedRef.current && streamIdRef.current === stream.id) return;
     const sid = stream.id;
     streamIdRef.current = sid;
     const join = async () => {
-      // Re-fetch stream to get accurate count
-      const fresh = await base44.entities.Stream.filter({ id: sid }, null, 1);
-      const s = fresh[0];
-      if (!s || s.status !== 'live') return;
-      const newCount = (s.viewer_count || 0) + 1;
-      await base44.entities.Stream.update(sid, {
-        viewer_count: newCount,
-        peak_viewers: Math.max(s.peak_viewers || 0, newCount),
-      });
+      await base44.functions.invoke('updateViewerCount', { streamId: sid, action: 'join' });
       viewerJoinedRef.current = true;
     };
-    join().catch(() => {});
+    join().catch((e) => console.warn('[Viewer] Join failed:', e.message));
     return () => {
       if (viewerJoinedRef.current && streamIdRef.current === sid) {
-        base44.entities.Stream.filter({ id: sid }, null, 1).then(fresh => {
-          const s = fresh[0];
-          if (s) {
-            base44.entities.Stream.update(sid, {
-              viewer_count: Math.max(0, (s.viewer_count || 1) - 1),
-            }).catch(() => {});
-          }
-        }).catch(() => {});
+        base44.functions.invoke('updateViewerCount', { streamId: sid, action: 'leave' }).catch(() => {});
         viewerJoinedRef.current = false;
         streamIdRef.current = null;
       }
