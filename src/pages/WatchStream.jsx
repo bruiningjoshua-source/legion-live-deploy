@@ -255,13 +255,6 @@ export default function WatchStream() {
     );
   }
 
-  // Cleanup fullscreen lock on ended/not-found
-  useEffect(() => {
-    if (!stream || streamEnded) {
-      document.body.classList.remove('fullscreen-lock');
-    }
-  }, [stream, streamEnded]);
-
   // Ended / Not found
   if (!stream || streamEnded) {
     return (
