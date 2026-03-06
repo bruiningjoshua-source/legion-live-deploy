@@ -149,7 +149,8 @@ export default function GoLive() {
     if (user && !hasPermissions && !cameraStream) {
       requestCameraPermissions();
     }
-  }, [user]);
+    // eslint-disable-next-line
+  }, [user?.email]);
 
   const createCreatorMutation = useMutation({
     mutationFn: () => base44.entities.Creator.create({
@@ -404,10 +405,16 @@ export default function GoLive() {
       }
       
       if (error.message?.includes('sign in')) {
-        toast.error('You need to sign in to go live.');
+        toast.error('You need to sign in to go live');
         setTimeout(() => base44.auth.redirectToLogin(window.location.href), 1500);
+      } else if (error.message?.includes('title')) {
+        toast.error('Please enter a stream title');
+      } else if (error.message?.includes('category')) {
+        toast.error('Please select a category');
+      } else if (error.message?.includes('permissions')) {
+        toast.error('Camera and microphone access is required');
       } else {
-        toast.error('Failed to go live: ' + (error.message || 'Unknown error'));
+        toast.error('Failed to start stream. Please try again.');
       }
     }
   });
@@ -426,8 +433,10 @@ export default function GoLive() {
   const handleThumbnailUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      toast.info('Uploading thumbnail...');
       const result = await base44.integrations.Core.UploadFile({ file });
       setThumbnailUrl(result.file_url);
+      toast.success('Thumbnail uploaded');
     }
   };
 

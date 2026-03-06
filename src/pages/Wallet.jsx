@@ -130,8 +130,9 @@ export default function Wallet() {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
           className="mb-8 flex items-end justify-between"
         >
           <div>
@@ -141,7 +142,13 @@ export default function Wallet() {
             <p className="text-white/60">Manage your Roman fortune</p>
           </div>
           <button 
-            onClick={() => { refetchWallet(); queryClient.invalidateQueries({ queryKey: ['currency-purchases'] }); queryClient.invalidateQueries({ queryKey: ['gift-transactions'] }); }}
+            onClick={() => { 
+              Promise.all([
+                refetchWallet(), 
+                queryClient.invalidateQueries({ queryKey: ['currency-purchases'] }), 
+                queryClient.invalidateQueries({ queryKey: ['gift-transactions'] })
+              ]).then(() => toast.success('Wallet refreshed'));
+            }}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white transition-colors"
             title="Refresh"
           >
@@ -151,9 +158,9 @@ export default function Wallet() {
 
         {/* Balance Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.05, duration: 0.3 }}
         >
           <GlassCard className="mb-8 relative overflow-hidden" padding="p-0" glow glowColor="amber">
             {/* Background decoration */}
