@@ -269,7 +269,7 @@ export default function AmphitheatreVideoCard({ content, viewMode = 'grid', isSh
             <div className="text-amber-400/50 text-xs mt-1 flex items-center gap-1">
               <span>{formatViews(content.view_count)} views</span>
               <span>•</span>
-              <span>{content.created_date && formatDistanceToNow(new Date(content.created_date), { addSuffix: true })}</span>
+              <span>{content.created_date ? formatDistanceToNow(new Date(content.created_date), { addSuffix: true }) : ''}</span>
             </div>
           </div>
         </div>
