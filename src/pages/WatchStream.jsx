@@ -187,8 +187,20 @@ export default function WatchStream() {
   useEffect(() => {
     if (!streamId) return;
     const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data.stream_id === streamId && event.type === 'create') {
-        setChatMessages(prev => [...prev, event.data]);
+      if (event.data?.stream_id === streamId && event.type === 'create') {
+        setChatMessages(prev => {
+          // Deduplicate: skip if already exists (from optimistic add or subscription)
+          if (prev.some(m => m.id === event.data.id)) return prev;
+          // Remove matching optimistic message if it exists
+          const filtered = prev.filter(m => !(
+            m.id?.startsWith('optimistic-') &&
+            m.sender_email === event.data.sender_email &&
+            m.message === event.data.message
+          ));
+          // Cap buffer at 200 messages to prevent memory leak
+          const next = [...filtered, event.data];
+          return next.length > 200 ? next.slice(-200) : next;
+        });
       }
     });
     return unsubscribe;
