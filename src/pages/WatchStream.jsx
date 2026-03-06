@@ -78,6 +78,13 @@ export default function WatchStream() {
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
 
+  // Cleanup fullscreen lock when stream ends or is not found
+  useEffect(() => {
+    if (!stream || streamEnded) {
+      document.body.classList.remove('fullscreen-lock');
+    }
+  }, [stream, streamEnded]);
+
   // Warn broadcaster on tab close
   useEffect(() => {
     if (!isBroadcaster || !stream?.id) return;
