@@ -4,42 +4,14 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
-  Radio, 
-  Users, 
-  Swords, 
-  X,
-  ArrowRight,
-  Gift,
-  Sparkles,
-  FlipHorizontal,
-  Wand2,
-  Gamepad2,
-  Music
+  Radio, FlipHorizontal, Sparkles, Wand2, Gamepad2, Music, Gift, ArrowRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
-
-const CATEGORIES = [
-  { value: 'gaming', label: 'Gaming', icon: '🎮' },
-  { value: 'music', label: 'Music', icon: '🎵' },
-  { value: 'talk_show', label: 'Chat', icon: '💬' },
-  { value: 'dance', label: 'Dance', icon: '💃' },
-  { value: 'cooking', label: 'Cooking', icon: '🍳' },
-  { value: 'fitness', label: 'Fitness', icon: '💪' },
-  { value: 'education', label: 'Education', icon: '📚' },
-  { value: 'art', label: 'Art', icon: '🎨' },
-  { value: 'comedy', label: 'Comedy', icon: '😂' },
-  { value: 'other', label: 'Other', icon: '✨' }
-];
-
-const STREAM_TYPES = [
-  { value: 'solo', label: 'Solo', icon: Radio },
-  { value: 'multi_panel', label: 'Multi', icon: Users },
-  { value: 'pk_battle', label: 'PK', icon: Swords }
-];
+import GoLiveTopBar from '@/components/stream/GoLiveTopBar';
+import GoLiveStreamTypeBar from '@/components/stream/GoLiveStreamTypeBar';
 
 export default function GoLive() {
   const [streamType, setStreamType] = useState('solo');
@@ -47,7 +19,6 @@ export default function GoLive() {
   const [category, setCategory] = useState('');
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
-  const [showSetup, setShowSetup] = useState(true);
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -111,6 +82,13 @@ export default function GoLive() {
     }
   };
 
+  const handleClose = () => {
+    cameraStream?.getTracks().forEach(t => t.stop());
+    setCameraStream(null);
+    setHasPermissions(false);
+    navigate(createPageUrl('Home'));
+  };
+
   const goLiveMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Please sign in to go live');
@@ -122,18 +100,21 @@ export default function GoLive() {
 
       let creatorId = creator?.id;
 
-      // Always clean up stale live streams for this creator before going live
+      // Clean up stale live streams for this creator
       if (creatorId) {
         const stale = await base44.entities.Stream.filter({ creator_id: creatorId, status: 'live' }, '-created_date', 10);
         for (const s of stale) {
-          await base44.entities.Stream.update(s.id, { status: 'ended', duration_minutes: Math.floor((Date.now() - new Date(s.created_date).getTime()) / 60000), viewer_count: 0 });
+          await base44.entities.Stream.update(s.id, { 
+            status: 'ended', 
+            duration_minutes: Math.floor((Date.now() - new Date(s.created_date).getTime()) / 60000), 
+            viewer_count: 0 
+          });
         }
         await base44.entities.Creator.update(creatorId, { is_live: false, current_stream_id: null });
       }
 
       // Create creator profile if needed
       if (!creatorId) {
-        // Double-check: maybe another tab created one
         const existing = await base44.entities.Creator.filter({ user_email: user.email }, null, 1);
         if (existing[0]) {
           creatorId = existing[0].id;
@@ -170,15 +151,10 @@ export default function GoLive() {
       await ZegoService.createLocalStream();
       await ZegoService.startPublishing(stream.id);
 
-      // Set creator live
+      // Set creator live + init stream counters
       await base44.entities.Creator.update(creatorId, { is_live: true, current_stream_id: stream.id });
-
-      // Update stream with creator info  
       await base44.entities.Stream.update(stream.id, { 
-        viewer_count: 0, 
-        peak_viewers: 0,
-        total_gifts_received: 0,
-        total_denarii_earned: 0
+        viewer_count: 0, peak_viewers: 0, total_gifts_received: 0, total_denarii_earned: 0
       });
 
       // PK battle init
@@ -207,7 +183,6 @@ export default function GoLive() {
     onError: async (error) => {
       console.error('[GoLive] Failed:', error.message);
       ZegoService.leave().catch(() => {});
-      // Clean up any stream record that may have been created
       const cId = creator?.id;
       if (cId) {
         const stale = await base44.entities.Stream.filter({ creator_id: cId, status: 'live' }, '-created_date', 10).catch(() => []);
@@ -222,7 +197,7 @@ export default function GoLive() {
   const isAdmin = user?.role === 'admin';
   const canMonetize = isAdmin || hostSubscription?.status === 'active';
 
-  // Fullscreen camera preview — Bigo Live style
+  // ── Camera preview UI ──
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
@@ -234,137 +209,54 @@ export default function GoLive() {
           style={{ transform: 'scaleX(-1)' }}
         />
 
-        {/* Subtle top gradient */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/40 to-transparent z-10" />
-        {/* Bottom gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
+        {/* Gradient overlays */}
+        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/50 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
 
-        {/* ─── TOP BAR ─── */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
-          {/* Close */}
-          <button
-            onClick={() => {
-              cameraStream?.getTracks().forEach(t => t.stop());
-              setCameraStream(null);
-              setHasPermissions(false);
-              navigate(createPageUrl('Home'));
-            }}
-            className="w-9 h-9 rounded-full bg-black/40 flex items-center justify-center text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        {/* ─── TOP BAR: Title + Category menu ─── */}
+        <GoLiveTopBar
+          title={title}
+          onTitleChange={setTitle}
+          category={category}
+          onCategoryChange={setCategory}
+          onClose={handleClose}
+        />
 
-          {/* Stream type selector - Bigo style rounded tabs */}
-          <div className="flex bg-black/40 rounded-full p-0.5 gap-0.5">
-            {STREAM_TYPES.map(t => {
-              const Icon = t.icon;
-              const active = streamType === t.value;
-              return (
-                <button
-                  key={t.value}
-                  onClick={() => setStreamType(t.value)}
-                  className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    active
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30'
-                      : 'text-white/50'
-                  }`}
-                >
-                  <Icon className="w-3 h-3" />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Flip camera */}
-          <button className="w-9 h-9 rounded-full bg-black/40 flex items-center justify-center text-white">
-            <FlipHorizontal className="w-4 h-4" />
-          </button>
+        {/* ─── STREAM TYPE SELECTOR (centered below top bar) ─── */}
+        <div className="absolute z-20 left-1/2 -translate-x-1/2" style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 60px)' }}>
+          <GoLiveStreamTypeBar streamType={streamType} onStreamTypeChange={setStreamType} />
         </div>
 
-        {/* ─── RIGHT SIDE TOOLS (Bigo style vertical bar) ─── */}
+        {/* ─── RIGHT SIDE TOOLS ─── */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-4">
-          <button className="flex flex-col items-center gap-0.5">
-            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+          {[
+            { icon: Sparkles, label: 'Beauty' },
+            { icon: Wand2, label: 'Filter' },
+            { icon: Music, label: 'Music' },
+            { icon: Gamepad2, label: 'Game' },
+          ].map(tool => (
+            <button key={tool.label} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+                <tool.icon className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-white/50 text-[10px]">{tool.label}</span>
+            </button>
+          ))}
+          <button className="flex flex-col items-center gap-0.5" onClick={() => {
+            if (videoRef.current) {
+              const cur = videoRef.current.style.transform;
+              videoRef.current.style.transform = cur === 'scaleX(-1)' ? 'scaleX(1)' : 'scaleX(-1)';
+            }
+          }}>
+            <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+              <FlipHorizontal className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white/60 text-[10px]">Beauty</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5">
-            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-              <Wand2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[10px]">Filter</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5">
-            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[10px]">Music</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5">
-            <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center">
-              <Gamepad2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[10px]">Game</span>
+            <span className="text-white/50 text-[10px]">Flip</span>
           </button>
         </div>
 
         {/* ─── BOTTOM SECTION ─── */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-
-          {/* Stream setup form */}
-          <AnimatePresence>
-            {showSetup && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="mb-4 space-y-3"
-              >
-                {/* Title input - Bigo style */}
-                <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 flex items-center gap-2">
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Add a stream title..."
-                    className="bg-transparent border-0 text-white placeholder:text-white/40 h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                    maxLength={100}
-                  />
-                </div>
-
-                {/* Category selector - horizontal scrollable pills */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                  {CATEGORIES.map(cat => (
-                    <button
-                      key={cat.value}
-                      onClick={() => setCategory(cat.value)}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                        category === cat.value
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
-                          : 'bg-white/10 text-white/60'
-                      }`}
-                    >
-                      <span>{cat.icon}</span>
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Stream info pill when setup collapsed */}
-          {!showSetup && isFormValid && (
-            <button 
-              onClick={() => setShowSetup(true)}
-              className="mb-4 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2"
-            >
-              <span>{CATEGORIES.find(c => c.value === category)?.icon}</span>
-              <span className="text-white/80 text-xs truncate max-w-[200px]">{title}</span>
-            </button>
-          )}
-
           {/* Monetization hint */}
           {!canMonetize && (
             <button
@@ -377,36 +269,40 @@ export default function GoLive() {
             </button>
           )}
 
-          {/* GO LIVE button - large Bigo-style teal */}
+          {/* Validation hint */}
+          {!isFormValid && (
+            <motion.p 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }}
+              className="text-center text-white/30 text-xs mb-2"
+            >
+              {!title.trim() ? 'Add a title to go live' : 'Select a category to go live'}
+            </motion.p>
+          )}
+
+          {/* GO LIVE button */}
           <div className="flex justify-center pb-2">
             <button
               onClick={() => goLiveMutation.mutate()}
               disabled={!isFormValid || goLiveMutation.isPending}
-              className="relative w-[72px] h-[72px] rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_30px_rgba(239,68,68,0.4)] disabled:opacity-40 disabled:shadow-none flex items-center justify-center transition-all active:scale-95"
+              className="relative w-[72px] h-[72px] rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_30px_rgba(239,68,68,0.4)] disabled:opacity-30 disabled:shadow-none flex items-center justify-center transition-all active:scale-95"
             >
               {goLiveMutation.isPending ? (
                 <span className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   <span className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500 to-red-600 animate-ping opacity-20" />
-                  <span className="text-white font-bold text-sm tracking-wide">GO<br/>LIVE</span>
+                  <span className="text-white font-bold text-sm tracking-wide leading-tight text-center">GO<br/>LIVE</span>
                 </>
               )}
             </button>
           </div>
-
-          {/* Collapse/expand setup */}
-          {showSetup && isFormValid && (
-            <button onClick={() => setShowSetup(false)} className="w-full text-center text-white/30 text-xs py-1">
-              Tap to collapse
-            </button>
-          )}
         </div>
       </div>
     );
   }
 
-  // Pre-permission state — Bigo style
+  // ── Pre-permission state ──
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center px-6">
