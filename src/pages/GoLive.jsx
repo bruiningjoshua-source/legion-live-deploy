@@ -31,6 +31,7 @@ import {
   Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
 import StreamQualityMonitor from '@/components/stream/StreamQualityMonitor';
 import BulletChat from '@/components/stream/BulletChat';
@@ -217,7 +218,7 @@ export default function GoLive() {
         }
       }
     } catch (error) {
-      alert('Camera and microphone access is required to go live. Please allow permissions and try again.');
+      toast.error('Camera and microphone access is required to go live. Please allow permissions and try again.');
       console.error('Media error:', error);
     }
   };
@@ -403,11 +404,10 @@ export default function GoLive() {
       }
       
       if (error.message?.includes('sign in')) {
-        if (window.confirm('You need to sign in to go live. Sign in now?')) {
-          base44.auth.redirectToLogin(window.location.href);
-        }
+        toast.error('You need to sign in to go live.');
+        setTimeout(() => base44.auth.redirectToLogin(window.location.href), 1500);
       } else {
-        alert('Failed to go live: ' + (error.message || 'Unknown error'));
+        toast.error('Failed to go live: ' + (error.message || 'Unknown error'));
       }
     }
   });
@@ -540,7 +540,7 @@ export default function GoLive() {
               {/* Top Left - Exit Button */}
               <button
                 onClick={() => {
-                  if (goLiveMutation.isPending) return; // Don't exit while starting
+                  if (goLiveMutation.isPending) return;
                   if (cameraStream) {
                     cameraStream.getTracks().forEach(track => track.stop());
                     setCameraStream(null);
@@ -550,6 +550,7 @@ export default function GoLive() {
                   navigate(createPageUrl('Home'));
                 }}
                 className="absolute top-4 left-4 z-30 w-10 h-10 bg-black/60 hover:bg-red-600/80 rounded-full flex items-center justify-center text-white transition-colors"
+                style={{ top: 'max(16px, env(safe-area-inset-top))' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -599,21 +600,26 @@ export default function GoLive() {
 
               {/* Stream Setup Overlay - Title & Category Input - BOTTOM */}
               {(!title.trim() || !category) && (
-                <div className="absolute bottom-24 left-4 right-4 z-20 bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute bottom-28 left-4 right-4 z-20 bg-black/80 backdrop-blur-xl rounded-2xl p-4 space-y-3 border border-white/10"
+                >
+                  <p className="text-white/60 text-xs font-medium">Set up your stream</p>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter stream title..."
-                    className="bg-stone-900/50 border-amber-600/20 text-amber-100 placeholder:text-amber-400/40"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-500/50"
                     maxLength={100}
                   />
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="bg-stone-900/50 border-amber-600/20 text-amber-100">
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent className="bg-stone-900 border-amber-600/30">
+                    <SelectContent className="bg-stone-900/95 backdrop-blur-xl border-white/10">
                       {categories.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
+                        <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-white/10">
                           <span className="flex items-center gap-2">
                             <span>{cat.icon}</span>
                             {cat.label}
@@ -622,17 +628,26 @@ export default function GoLive() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </motion.div>
               )}
 
               {/* Bottom Bar */}
-              <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center">
+              <div className="absolute bottom-6 left-4 right-4 z-20 flex flex-col items-center gap-3" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+                {/* Stream info preview */}
+                {title.trim() && category && (
+                  <div className="bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2 max-w-xs">
+                    <span className="text-amber-400 text-sm">{categories.find(c => c.value === category)?.icon}</span>
+                    <span className="text-white/80 text-sm truncate">{title}</span>
+                    <Badge className="bg-red-500/80 text-white border-0 text-[10px] ml-auto shrink-0">
+                      {streamTypes.find(t => t.value === streamType)?.label}
+                    </Badge>
+                  </div>
+                )}
                 {/* Go Live Button */}
                 <Button
                   onClick={() => goLiveMutation.mutate()}
                   disabled={!isFormValid || goLiveMutation.isPending}
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6"
-                  size="sm"
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-10 py-3 text-base rounded-full shadow-lg shadow-red-500/30"
                 >
                   {goLiveMutation.isPending ? (
                     <span className="flex items-center gap-2">
@@ -641,7 +656,10 @@ export default function GoLive() {
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <Radio className="w-4 h-4" />
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-100" />
+                      </span>
                       GO LIVE
                     </span>
                   )}
