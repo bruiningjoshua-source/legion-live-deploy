@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import {
+  useCurrentUser, useStream, useCreator, useWallet, useGifts,
+  useChatMessages, useFollowStatus, useCreatorSubscription,
+  useSendMessage, useSendGift, useToggleFollow, useEndStream,
+} from '@/components/hooks/useStreamData';
+import ChatService from '@/components/services/ChatService';
+import StreamService from '@/components/services/StreamService';
 
 import BulletChat from '@/components/stream/BulletChat';
 import FloatingHearts from '@/components/stream/FloatingHearts';
@@ -78,77 +85,17 @@ export default function WatchStream() {
     return () => document.body.classList.remove('fullscreen-lock');
   }, []);
 
-  // ─── Data queries ─────────────────────────
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: stream, isLoading: streamLoading } = useQuery({
-    queryKey: ['stream', streamId],
-    queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
-    enabled: !!streamId, staleTime: 30 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: creator } = useQuery({
-    queryKey: ['creator', stream?.creator_id],
-    queryFn: () => base44.entities.Creator.filter({ id: stream.creator_id }, null, 1).then(r => r[0]),
-    enabled: !!stream?.creator_id, staleTime: 2 * 60 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: opponentCreator } = useQuery({
-    queryKey: ['opponent-creator', stream?.pk_opponent_id],
-    queryFn: () => base44.entities.Creator.filter({ id: stream.pk_opponent_id }, null, 1).then(r => r[0]),
-    enabled: !!stream?.pk_opponent_id
-  });
-
-  const { data: pkBattle } = useQuery({
-    queryKey: ['pk-battle', streamId],
-    queryFn: () => base44.entities.PKBattle.filter({ stream_id: streamId, status: 'active' }, '-created_date', 1).then(r => r[0]),
-    enabled: stream?.stream_type === 'pk_battle'
-  });
-
-  const { data: gifts = [] } = useQuery({
-    queryKey: ['gifts'],
-    queryFn: () => base44.entities.Gift.filter({ is_active: true }, 'sort_order', 50),
-    staleTime: 10 * 60 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: wallet } = useQuery({
-    queryKey: ['wallet', user?.email],
-    queryFn: async () => {
-      const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
-      return wallets[0] || { denarii_balance: 0, as_balance: 0 };
-    },
-    enabled: !!user?.email, staleTime: 60 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: initialMessages } = useQuery({
-    queryKey: ['chat-messages', streamId],
-    queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
-    enabled: !!streamId, staleTime: 30 * 1000, refetchOnWindowFocus: false,
-  });
-
-  const { data: isFollowing } = useQuery({
-    queryKey: ['follow-status', user?.email, creator?.id],
-    queryFn: async () => {
-      if (!user?.email || !creator?.id) return false;
-      const follows = await base44.entities.Follow.filter({ follower_email: user.email, following_creator_id: creator.id }, null, 1);
-      return follows.length > 0;
-    },
-    enabled: !!user?.email && !!creator?.id, staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false
-  });
-
-  const { data: creatorSubscription } = useQuery({
-    queryKey: ['creator-monetization', creator?.user_email],
-    queryFn: async () => {
-      if (!creator?.user_email) return null;
-      const subs = await base44.entities.CreatorSubscription.filter({ user_email: creator.user_email, status: 'active' }, '-created_date', 1);
-      return subs[0] || null;
-    },
-    enabled: !!creator?.user_email, staleTime: 5 * 60 * 1000
-  });
+  // ─── Data queries (service layer) ─────────────────────────
+  const { data: user } = useCurrentUser();
+  const { data: stream, isLoading: streamLoading } = useStream(streamId);
+  const { data: creator } = useCreator(stream?.creator_id);
+  const { data: opponentCreator } = useCreator(stream?.pk_opponent_id);
+  const { data: pkBattle } = useStreamPKBattle(streamId, stream?.stream_type);
+  const { data: gifts = [] } = useGifts();
+  const { data: wallet } = useWallet(user?.email);
+  const { data: initialMessages } = useChatMessages(streamId);
+  const { data: isFollowing } = useFollowStatus(user?.email, creator?.id);
+  const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
 
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || user?.role === 'admin';
   const isBroadcaster = user?.email === creator?.user_email;
