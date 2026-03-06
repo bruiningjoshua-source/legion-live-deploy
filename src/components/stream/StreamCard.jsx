@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Users, Eye, Swords, Crown, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import formatCount from '@/components/shared/FormatCount';
 
 export default function StreamCard({ stream, creator }) {
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
   const streamTypeStyles = {
     solo: { label: 'LIVE', color: 'bg-red-500' },
     multi_panel: { label: 'PANEL', color: 'bg-purple-500' },
@@ -16,7 +18,7 @@ export default function StreamCard({ stream, creator }) {
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={isMobile ? {} : { y: -4, scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
       <Link to={createPageUrl(`WatchStream?id=${stream.id}`)}>
@@ -28,22 +30,32 @@ export default function StreamCard({ stream, creator }) {
                 src={stream.thumbnail_url} 
                 alt={stream.title}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-6xl opacity-50">🏛️</div>
+              <div className="w-full h-full bg-gradient-to-br from-stone-800 via-stone-900 to-black flex items-center justify-center relative">
+                <div className="text-6xl opacity-20">🏛️</div>
+                <div className="absolute bottom-16 left-0 right-0 px-4">
+                  <p className="text-white/30 text-sm text-center line-clamp-2">{stream.title}</p>
+                </div>
               </div>
             )}
 
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-            {/* Live Badge */}
-            <div className="absolute top-3 left-3 flex items-center gap-2">
+            {/* Live Badge + Type badges */}
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
               <Badge className={`${typeConfig.color} text-white border-0 font-bold animate-pulse`}>
                 <span className="w-2 h-2 bg-white rounded-full mr-1.5 animate-ping" />
                 {typeConfig.label}
               </Badge>
+              {stream.stream_type === 'pk_battle' && (
+                <Badge className="bg-orange-500/90 text-white border-0 text-[10px]">⚔ PK</Badge>
+              )}
+              {stream.stream_type === 'multi_panel' && (
+                <Badge className="bg-purple-500/90 text-white border-0 text-[10px]"><Users className="w-2.5 h-2.5 mr-0.5" />Panel</Badge>
+              )}
               {stream.is_featured && (
                 <Badge className="bg-amber-500 text-white border-0">
                   <Star className="w-3 h-3 mr-1" />
@@ -56,7 +68,7 @@ export default function StreamCard({ stream, creator }) {
             <div className="absolute top-3 right-3">
               <Badge variant="secondary" className="bg-black/60 text-white border-0">
                 <Eye className="w-3 h-3 mr-1" />
-                {(stream.viewer_count || 0).toLocaleString()}
+                {formatCount(stream.viewer_count || 0)}
               </Badge>
             </div>
 
