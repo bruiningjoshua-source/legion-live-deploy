@@ -605,6 +605,7 @@ class ZegoStreamingService {
     this.screenStream = null;
     this.isPublishing = false;
     this.isScreenSharing = false;
+    this.publishStreamId = null;
     this.roomId = null;
     this.userId = null;
     this._lastToken = null;
