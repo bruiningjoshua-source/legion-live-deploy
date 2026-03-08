@@ -5,6 +5,47 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
+// Rate limiting: 3 PPV purchases per hour per user
+const ppvBuckets = new Map();
+function checkPPVRate(email) {
+  const now = Date.now();
+  const bucket = ppvBuckets.get(email);
+  if (!bucket || now > bucket.resetAt) {
+    ppvBuckets.set(email, { count: 1, resetAt: now + 3600000 });
+    return { allowed: true };
+  }
+  bucket.count++;
+  if (bucket.count > 3) {
+    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  return { allowed: true };
+}
+
+// Fraud detection for PPV
+const ppvHistory = new Map();
+function detectPPVFraud(email, price) {
+  if (!ppvHistory.has(email)) {
+    ppvHistory.set(email, { purchases: [] });
+  }
+  const history = ppvHistory.get(email);
+  const now = Date.now();
+  const oneDayAgo = now - 86400000;
+  
+  history.purchases = history.purchases.filter(p => p.timestamp > oneDayAgo);
+  const total24h = history.purchases.reduce((sum, p) => sum + p.price, 0);
+  
+  let riskScore = 0;
+  const flags = [];
+  
+  if (total24h + price > 3000) {
+    riskScore += 30;
+    flags.push('high_ppv_spending_24h');
+  }
+  
+  history.purchases.push({ price, timestamp: now });
+  return { isSuspicious: riskScore >= 50, riskScore, flags };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,10 +55,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { event_id } = await req.json();
+    const { event_id, csrfToken } = await req.json();
 
-    if (!event_id) {
-      return Response.json({ error: 'event_id is required' }, { status: 400 });
+    // Input validation
+    if (!event_id || typeof event_id !== 'string' || event_id.length > 100) {
+      return Response.json({ error: 'Invalid event_id' }, { status: 400 });
+    }
+
+    // CSRF validation
+    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 20) {
+      return Response.json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
+
+    // Rate limiting
+    const rateCheck = checkPPVRate(user.email);
+    if (!rateCheck.allowed) {
+      return Response.json({ error: 'Rate limited: 3 PPV purchases per hour', retryAfter: rateCheck.retryAfter }, { status: 429 });
     }
 
     let ppvEvent;
@@ -33,8 +86,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    if (!ppvEvent.price_usd || ppvEvent.price_usd <= 0) {
-      return Response.json({ error: 'Event has no valid price configured' }, { status: 400 });
+    if (!ppvEvent.price_usd || ppvEvent.price_usd <= 0 || ppvEvent.price_usd > 100) {
+      return Response.json({ error: 'Event has invalid price' }, { status: 400 });
+    }
+
+    // Fraud detection
+    const fraud = detectPPVFraud(user.email, ppvEvent.price_usd);
+    if (fraud.isSuspicious) {
+      console.warn(`[createPPVCheckout] FRAUD FLAG for ${user.email}:`, fraud.flags);
     }
 
     // Existing ticket check
@@ -76,7 +135,8 @@ Deno.serve(async (req) => {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         event_id,
         user_email: user.email,
-        type: 'ppv_ticket'
+        type: 'ppv_ticket',
+        risk_score: fraud.riskScore.toString()
       }
     });
 
