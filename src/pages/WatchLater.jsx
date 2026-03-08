@@ -21,7 +21,7 @@ export default function WatchLater() {
     queryKey: ['watch-later', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const results = await base44.entities.WatchLater.filter({ user_email: user.email }, '-created_date', 100);
+      const results = await base44.entities.WatchLater.filter({ user_email: user.email }, '-added_at', 100);
       return results || [];
     },
     enabled: !!user?.email,

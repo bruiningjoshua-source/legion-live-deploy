@@ -18,7 +18,7 @@ export default function WatchHistory() {
     queryKey: ['watch-history', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const results = await base44.entities.WatchHistory.filter({ user_email: user.email }, '-created_date', 100);
+      const results = await base44.entities.WatchHistory.filter({ user_email: user.email }, '-watched_at', 100);
       return results || [];
     },
     enabled: !!user?.email,

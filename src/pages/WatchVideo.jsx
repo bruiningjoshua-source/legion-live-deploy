@@ -55,7 +55,7 @@ export default function WatchVideo() {
     refetchOnWindowFocus: false
   });
 
-  // Track view count once on mount
+  // Track view count once on mount and log to watch history
   React.useEffect(() => {
     if (!video || viewTrackedRef.current) return;
     viewTrackedRef.current = true;
@@ -69,7 +69,20 @@ export default function WatchVideo() {
         view_count: (video.view_count || 0) + 1
       }).catch(err => console.error('View count update failed:', err));
     }
-  }, [video, videoId, isMusic]);
+
+    // Log to watch history if user is authenticated
+    if (user?.email) {
+      base44.entities.WatchHistory.create({
+        user_email: user.email,
+        video_id: videoId,
+        video_type: isMusic ? 'music' : 'vlog',
+        watch_duration_seconds: 0,
+        progress_percent: 0,
+        last_position_seconds: 0,
+        completed: false
+      }).catch(err => console.error('Watch history logging failed:', err));
+    }
+  }, [video, videoId, isMusic, user?.email]);
 
   const { data: creator } = useQuery({
     queryKey: ['video-creator', video?.creator_id],

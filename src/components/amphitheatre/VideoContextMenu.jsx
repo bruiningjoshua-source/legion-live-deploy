@@ -36,12 +36,17 @@ export default function VideoContextMenu({ video, onAddToPlaylist }) {
       return;
     }
     
-    await base44.entities.WatchLater.create({
-      user_email: user.email,
-      video_id: video.id,
-      video_title: video.title
-    });
-    toast.success('Added to Watch Later');
+    try {
+      await base44.entities.WatchLater.create({
+        user_email: user.email,
+        video_id: video.id,
+        video_type: video.type === 'music' ? 'music' : 'vlog'
+      });
+      toast.success('Added to Watch Later');
+    } catch (error) {
+      console.error('Save to Watch Later failed:', error);
+      toast.error('Failed to save video');
+    }
   };
 
   const handleReport = async () => {
