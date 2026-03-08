@@ -177,37 +177,41 @@ export default function WatchStream() {
     };
   }, [stream?.status, streamId, isBroadcaster]);
 
-  // Broadcaster camera
+  // BUG-5 fix: Broadcaster camera — reuse ZegoService's already-active stream
+  // instead of opening a duplicate getUserMedia which causes hardware conflicts
   useEffect(() => {
-    let mounted = true;
-    const init = async () => {
-      if (stream?.status !== 'live' || !isBroadcaster) return;
-      try {
-        const media = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user' },
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-        });
-        if (!mounted) { media.getTracks().forEach(t => t.stop()); return; }
-        liveStreamRef.current = media;
-        setLiveStream(media);
-        if (videoRef.current) {
-          videoRef.current.srcObject = media;
-          videoRef.current.muted = true;
-          videoRef.current.playsInline = true;
-          videoRef.current.play().catch(() => {});
+    if (stream?.status !== 'live' || !isBroadcaster) return;
+    
+    // ZegoService already owns the camera from GoLive — just get the local stream for preview
+    const zegoStream = ZegoService.getLocalStream();
+    if (zegoStream) {
+      liveStreamRef.current = zegoStream;
+      setLiveStream(zegoStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = zegoStream;
+        videoRef.current.muted = true;
+        videoRef.current.playsInline = true;
+        videoRef.current.play().catch(() => {});
+      }
+    } else {
+      // Fallback: Zego stream not ready yet, wait and retry
+      const retryTimer = setInterval(() => {
+        const s = ZegoService.getLocalStream();
+        if (s) {
+          clearInterval(retryTimer);
+          liveStreamRef.current = s;
+          setLiveStream(s);
+          if (videoRef.current) {
+            videoRef.current.srcObject = s;
+            videoRef.current.muted = true;
+            videoRef.current.playsInline = true;
+            videoRef.current.play().catch(() => {});
+          }
         }
-      } catch (error) {
-        console.error('Camera error:', error);
-      }
-    };
-    init();
-    return () => {
-      mounted = false;
-      if (liveStreamRef.current && typeof liveStreamRef.current !== 'boolean') {
-        liveStreamRef.current.getTracks().forEach(t => t.stop());
-        liveStreamRef.current = null;
-      }
-    };
+      }, 500);
+      return () => clearInterval(retryTimer);
+    }
+    // No cleanup of tracks here — ZegoService owns the stream lifecycle
   }, [stream?.status, isBroadcaster]);
 
   // Mutations
