@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     );
 
     // REVENUE FIX: Calculate actual earnings with guarantee
-    const baseEarnings = (creator.total_earnings_denarii || 0) / 180; // Convert to USD (180 Denarii/$1)
+    const baseEarnings = (creator.total_earnings_denarii || 0) / 100; // Convert to USD (100 Denarii/$1 = $0.01 per Denarii)
     const guaranteeEarnings = guarantees[0] ? guarantees[0].earnings_during_guarantee || 0 : 0;
 
     // Payout can only be withdrawn from actual earnings
