@@ -43,7 +43,7 @@ class ZegoStreamingService {
 
   // ─── ENGINE LIFECYCLE ───────────────────────────────────────────
 
-  async initialize(appId) {
+  async initialize(appId, serverUrl) {
     if (this.engine && this.appId === appId) {
       console.log('[Zego] Already initialized with appId:', appId);
       return true;
@@ -55,9 +55,12 @@ class ZegoStreamingService {
     }
 
     this.appId = parseInt(appId);
+    // BUG-1 fix: use dynamic server URL from token endpoint, never hardcode
+    const wsUrl = serverUrl || this._lastServerUrl || '';
+    if (wsUrl) this._lastServerUrl = wsUrl;
     this.engine = new ZegoExpressEngine(
       this.appId,
-      'wss://webliveroom773960930-api.coolzcloud.com/ws'
+      wsUrl
     );
 
     // ── Room state with auto-reconnect ──
