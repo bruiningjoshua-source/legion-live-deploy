@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -29,10 +30,12 @@ import {
   DollarSign,
   ArrowRight,
   Loader2,
-  Info
+  Info,
+  ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import StripeConnectKYC from './StripeConnectKYC';
 
 const PAYOUT_METHODS = [
   { id: 'stripe_connect', name: 'Bank Account (Stripe)', icon: '🏦', placeholder: 'Connect your bank', recommended: true },
