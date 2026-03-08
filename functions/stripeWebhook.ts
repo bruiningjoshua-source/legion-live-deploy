@@ -137,11 +137,11 @@ Deno.serve(async (req) => {
           const creators = await base44.asServiceRole.entities.Creator.filter({ id: metadata.creator_id }, null, 1);
           if (creators[0]) {
             const creatorEarning = amount * (1 - tipPlatformFee);
-            const earningInDenarii = Math.floor(creatorEarning * 100);
+            const earningInDenarii = Math.floor(creatorEarning * 180); // FIX: 180 Denarii/$1, not 100
             await base44.asServiceRole.entities.Creator.update(metadata.creator_id, {
               total_earnings_denarii: (creators[0].total_earnings_denarii || 0) + earningInDenarii
             });
-            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii (fee:', tipPlatformFee, ')');
+            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii @ 180:1 rate (fee:', tipPlatformFee, ')');
           }
         }
 
@@ -409,6 +409,54 @@ Deno.serve(async (req) => {
 
       case 'payment_intent.payment_failed': {
         console.error('[stripeWebhook] Payment failed:', event.data.object.id, event.data.object.last_payment_error?.message);
+        break;
+      }
+
+      // ═══════════════════════════════════════════
+      // CHARGEBACK / DISPUTE HANDLING
+      // ═══════════════════════════════════════════
+      case 'charge.dispute.created': {
+        const charge = event.data.object;
+        console.error('[stripeWebhook] Chargeback initiated:', charge.id, 'amount:', charge.amount / 100);
+        
+        // Find the related CurrencyPurchase by payment intent
+        const purchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
+          { stripe_payment_intent: charge.payment_intent }, null, 1
+        );
+
+        if (purchases[0]) {
+          const purchase = purchases[0];
+          const userEmail = purchase.user_email;
+          const denarii = purchase.denarii_amount + (purchase.bonus_denarii || 0);
+
+          // Debit the user's wallet (reverse the purchase)
+          const wallets = await base44.asServiceRole.entities.Wallet.filter(
+            { user_email: userEmail }, null, 1
+          );
+
+          if (wallets[0]) {
+            const newBalance = Math.max(0, (wallets[0].denarii_balance || 0) - denarii);
+            await base44.asServiceRole.entities.Wallet.update(wallets[0].id, {
+              denarii_balance: newBalance
+            });
+            console.log('[stripeWebhook] Chargeback: Reversed', denarii, 'denarii from', userEmail);
+          }
+
+          // Flag the user for review
+          const users = await base44.asServiceRole.entities.User.filter({ email: userEmail }, null, 1);
+          if (users[0]) {
+            await base44.asServiceRole.entities.User.update(users[0].id, {
+              flagged_for_chargeback: true,
+              chargeback_count: (users[0].chargeback_count || 0) + 1
+            }).catch(e => console.warn('[stripeWebhook] User flag failed:', e.message));
+          }
+        }
+        break;
+      }
+
+      case 'charge.dispute.updated': {
+        const charge = event.data.object;
+        console.error('[stripeWebhook] Dispute status updated:', charge.id, '→', charge.dispute.status);
         break;
       }
 
