@@ -140,13 +140,16 @@ Deno.serve(async (req) => {
 
     console.log('[ZegoToken] Generated for room:', sanitizedRoomId, 'user:', sanitizedUserId, 'role:', sanitizedRole, 'ttl:', ttlSeconds);
 
+    const serverUrl = Deno.env.get('ZEGOCLOUD_SERVER_URL') || '';
+
     return Response.json({
       token,
       appId: parseInt(appId),
       userId: sanitizedUserId,
       roomId: sanitizedRoomId,
       role: sanitizedRole,
-      expiresIn: ttlSeconds
+      expiresIn: ttlSeconds,
+      serverUrl
     });
 
   } catch (error) {
