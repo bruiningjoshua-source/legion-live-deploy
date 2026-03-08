@@ -449,7 +449,7 @@ class ZegoStreamingService {
     try {
       // Recreate local stream with new config then republish
       const wasPublishing = this.isPublishing;
-      const publishStreamId = this.roomId; // stream ID = room ID convention
+      const publishStreamId = this.publishStreamId || this.roomId; // BUG-2 fix: use tracked ID
 
       if (wasPublishing) {
         this.engine.stopPublishingStream(publishStreamId);
