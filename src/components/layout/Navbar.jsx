@@ -30,6 +30,7 @@ import {
   Video,
   Zap,
   Star,
+  Trophy,
   ChevronDown,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
