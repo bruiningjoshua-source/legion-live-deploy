@@ -34,6 +34,7 @@ import CustomTierEditor from '@/components/monetization/CustomTierEditor';
 import LimitedTimeOfferManager from '@/components/monetization/LimitedTimeOfferManager';
 import TipRewardManager from '@/components/monetization/TipRewardManager';
 import MilestoneAlertManager from '@/components/monetization/MilestoneAlertManager';
+import CreatorEarningsProjection from '@/components/monetization/CreatorEarningsProjection';
 
 export default function CreatorMonetization() {
   const queryClient = useQueryClient();
@@ -305,6 +306,11 @@ export default function CreatorMonetization() {
               </Card>
             </div>
 
+            {/* Earnings Projection Chart */}
+            <div className="mb-8">
+              <CreatorEarningsProjection />
+            </div>
+
             {/* Creator Payout Optimizer */}
             <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
               <CardHeader>
@@ -312,7 +318,7 @@ export default function CreatorMonetization() {
                   <TrendingUp className="w-5 h-5 text-amber-400" />
                   Your Payout Tier
                 </CardTitle>
-                <p className="text-amber-400/70 text-sm mt-2">Earn more as you grow—higher tiers unlock better revenue share</p>
+                <p className="text-amber-400/70 text-sm mt-2">Earn more as you grow — higher tiers unlock better revenue share</p>
               </CardHeader>
               <CardContent>
                 <CreatorPayoutOptimizer creatorEarningsUsd={creator?.total_earnings_denarii || 0} />
