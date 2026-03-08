@@ -1,206 +1,130 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+/**
+ * FRAUD DETECTION SYSTEM
+ * Detect velocity abuse, chargeback patterns, suspicious behavior
+ */
 
-// Fraud detection rules and scoring
-const FRAUD_SIGNALS = {
-  // High risk signals (each worth 30+ points)
-  NEW_ACCOUNT_LARGE_PURCHASE: { score: 40, description: 'New account making large purchase' },
-  MULTIPLE_FAILED_PAYMENTS: { score: 35, description: 'Multiple failed payment attempts' },
-  VELOCITY_ABUSE: { score: 40, description: 'Too many transactions in short time' },
-  SUSPICIOUS_IP: { score: 30, description: 'IP associated with fraud' },
-  
-  // Medium risk signals (10-29 points)
-  MISMATCHED_COUNTRY: { score: 25, description: 'Billing country differs from IP country' },
-  DISPOSABLE_EMAIL: { score: 20, description: 'Using disposable email provider' },
-  ODD_HOURS: { score: 15, description: 'Transaction at unusual hours' },
-  ROUND_AMOUNTS: { score: 10, description: 'Suspicious round amount patterns' },
-  
-  // Low risk signals (1-9 points)
-  FIRST_PURCHASE: { score: 5, description: 'First time purchaser' },
-  MOBILE_DEVICE: { score: -5, description: 'Mobile device (slightly lower risk)' },
-  RETURNING_CUSTOMER: { score: -10, description: 'Returning customer with good history' }
-};
+const userActivity = new Map(); // email -> { gifts: [], tips: [], chargebacks: [] }
 
-const RISK_THRESHOLDS = {
-  LOW: 20,
-  MEDIUM: 50,
-  HIGH: 75
-};
+export async function detectFraud(email, activityType, amount, externalData = {}) {
+  if (!userActivity.has(email)) {
+    userActivity.set(email, { gifts: [], tips: [], chargebacks: [] });
+  }
 
-// Disposable email domains
-const DISPOSABLE_DOMAINS = [
-  'tempmail.com', 'throwaway.com', 'guerrillamail.com', 'mailinator.com',
-  '10minutemail.com', 'temp-mail.org', 'fakemailgenerator.com', 'yopmail.com'
-];
+  const activity = userActivity.get(email);
+  const now = Date.now();
+  const oneDayAgo = now - 86400000;
+  const oneHourAgo = now - 3600000;
 
-function isDisposableEmail(email) {
-  if (!email) return false;
-  const domain = email.split('@')[1]?.toLowerCase();
-  return DISPOSABLE_DOMAINS.some(d => domain?.includes(d));
-}
+  let riskScore = 0;
+  const flags = [];
 
-function checkVelocity(transactions, windowMinutes = 60) {
-  const cutoff = Date.now() - (windowMinutes * 60 * 1000);
-  const recentTransactions = transactions.filter(t => 
-    new Date(t.created_date).getTime() > cutoff
-  );
-  return recentTransactions.length;
-}
+  // ── GIFT VELOCITY CHECK ──
+  if (activityType === 'gift') {
+    const recentGifts = activity.gifts.filter(t => t.timestamp > oneHourAgo);
 
-function isOddHours(timezone) {
-  // Consider 2 AM - 5 AM as odd hours
-  const hour = new Date().getUTCHours();
-  return hour >= 2 && hour <= 5;
-}
-
-async function analyzeTransaction(base44, data) {
-  const { 
-    userEmail, 
-    amount, 
-    ipAddress, 
-    userAgent,
-    billingCountry 
-  } = data;
-
-  let fraudScore = 0;
-  const signals = [];
-
-  // Check user account age
-  try {
-    const users = await base44.asServiceRole.entities.User.filter({ email: userEmail }, null, 1);
-    const user = users[0];
-    
-    if (user) {
-      const accountAge = Date.now() - new Date(user.created_date).getTime();
-      const hoursSinceCreation = accountAge / (1000 * 60 * 60);
-      
-      // New account making large purchase
-      if (hoursSinceCreation < 24 && amount > 50) {
-        fraudScore += FRAUD_SIGNALS.NEW_ACCOUNT_LARGE_PURCHASE.score;
-        signals.push(FRAUD_SIGNALS.NEW_ACCOUNT_LARGE_PURCHASE.description);
-      }
-      
-      // First purchase
-      const purchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
-        { user_email: userEmail, status: 'completed' }, null, 1
-      );
-      if (purchases.length === 0) {
-        fraudScore += FRAUD_SIGNALS.FIRST_PURCHASE.score;
-        signals.push(FRAUD_SIGNALS.FIRST_PURCHASE.description);
-      } else {
-        fraudScore += FRAUD_SIGNALS.RETURNING_CUSTOMER.score;
-        signals.push(FRAUD_SIGNALS.RETURNING_CUSTOMER.description);
-      }
+    // Flag: 10+ gifts in 1 hour
+    if (recentGifts.length >= 10) {
+      riskScore += 30;
+      flags.push('excessive_gift_velocity_1h');
     }
-  } catch (e) {
-    console.error('Error checking user:', e);
-  }
 
-  // Check transaction velocity
-  try {
-    const recentTransactions = await base44.asServiceRole.entities.CurrencyPurchase.filter(
-      { user_email: userEmail }, '-created_date', 20
-    );
-    const velocityCount = checkVelocity(recentTransactions, 60);
-    
-    if (velocityCount > 5) {
-      fraudScore += FRAUD_SIGNALS.VELOCITY_ABUSE.score;
-      signals.push(FRAUD_SIGNALS.VELOCITY_ABUSE.description);
+    // Flag: 50+ gifts in 24 hours
+    const last24Gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo);
+    if (last24Gifts.length >= 50) {
+      riskScore += 20;
+      flags.push('excessive_gift_velocity_24h');
     }
-  } catch (e) {
-    console.error('Error checking velocity:', e);
+
+    // Log gift
+    activity.gifts.push({ amount, timestamp: now });
+    activity.gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo); // Keep 24h
   }
 
-  // Check for disposable email
-  if (isDisposableEmail(userEmail)) {
-    fraudScore += FRAUD_SIGNALS.DISPOSABLE_EMAIL.score;
-    signals.push(FRAUD_SIGNALS.DISPOSABLE_EMAIL.description);
+  // ── TIP VELOCITY CHECK ──
+  if (activityType === 'tip') {
+    const recentTips = activity.tips.filter(t => t.timestamp > oneHourAgo);
+    const totalRecentTips = recentTips.reduce((sum, t) => sum + t.amount, 0);
+
+    // Flag: $500+ tips in 1 hour
+    if (totalRecentTips >= 500) {
+      riskScore += 35;
+      flags.push('high_tip_velocity_1h');
+    }
+
+    // Flag: $1000+ tips in 24 hours
+    const last24Tips = activity.tips.filter(t => t.timestamp > oneDayAgo);
+    const total24Tips = last24Tips.reduce((sum, t) => sum + t.amount, 0);
+    if (total24Tips >= 1000) {
+      riskScore += 25;
+      flags.push('high_tip_velocity_24h');
+    }
+
+    // Flag: Single tip > $5000
+    if (amount > 5000) {
+      riskScore += 15;
+      flags.push('high_single_tip_amount');
+    }
+
+    activity.tips.push({ amount, timestamp: now });
+    activity.tips = activity.tips.filter(t => t.timestamp > oneDayAgo);
   }
 
-  // Check odd hours
-  if (isOddHours()) {
-    fraudScore += FRAUD_SIGNALS.ODD_HOURS.score;
-    signals.push(FRAUD_SIGNALS.ODD_HOURS.description);
+  // ── CHARGEBACK HISTORY ──
+  if (activityType === 'chargeback') {
+    activity.chargebacks.push({ timestamp: now });
+
+    // Flag: 2+ chargebacks in 30 days
+    const last30Days = activity.chargebacks.filter(t => t.timestamp > now - 2592000000).length;
+    if (last30Days >= 2) {
+      riskScore += 50;
+      flags.push('repeat_chargeback_pattern');
+    }
+
+    activity.chargebacks = activity.chargebacks.filter(t => t.timestamp > now - 2592000000);
   }
 
-  // Check for mobile device (lower risk)
-  if (userAgent && /mobile|android|iphone/i.test(userAgent)) {
-    fraudScore += FRAUD_SIGNALS.MOBILE_DEVICE.score;
-    signals.push(FRAUD_SIGNALS.MOBILE_DEVICE.description);
+  // ── PURCHASE AMOUNT ANOMALY ──
+  if (externalData.avgSpend && amount > externalData.avgSpend * 5) {
+    riskScore += 20;
+    flags.push('unusually_large_purchase');
   }
 
-  // Determine risk level
-  let riskLevel = 'low';
-  if (fraudScore >= RISK_THRESHOLDS.HIGH) {
-    riskLevel = 'high';
-  } else if (fraudScore >= RISK_THRESHOLDS.MEDIUM) {
-    riskLevel = 'medium';
-  } else if (fraudScore >= RISK_THRESHOLDS.LOW) {
-    riskLevel = 'low';
+  // ── NEW ACCOUNT VELOCITY ──
+  if (externalData.accountAgeHours && externalData.accountAgeHours < 24 && amount > 100) {
+    riskScore += 25;
+    flags.push('new_account_high_spending');
   }
 
   return {
-    score: Math.max(0, fraudScore),
-    riskLevel,
-    signals,
-    shouldBlock: riskLevel === 'high',
-    requiresReview: riskLevel === 'medium'
+    isSuspicious: riskScore >= 50,
+    riskScore: Math.min(100, riskScore),
+    flags,
+    recommendation: riskScore >= 80 ? 'block' : riskScore >= 50 ? 'review' : 'allow'
   };
 }
 
-Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
+// Cleanup old activity every hour
+setInterval(() => {
+  const oneDayAgo = Date.now() - 86400000;
+  for (const [email, activity] of userActivity) {
+    activity.gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo);
+    activity.tips = activity.tips.filter(t => t.timestamp > oneDayAgo);
+    activity.chargebacks = activity.chargebacks.filter(t => t.timestamp > oneDayAgo - 1728000000); // 20 days for chargebacks
     
-    // Verify admin or system call
-    const user = await base44.auth.me();
-    
-    const data = await req.json();
-    const { action } = data;
-
-    if (action === 'analyze') {
-      const result = await analyzeTransaction(base44, data);
-      
-      // Log high-risk transactions
-      if (result.riskLevel === 'high' || result.requiresReview) {
-        await base44.asServiceRole.entities.PlatformAnalytics.create({
-          metric_type: 'fraud_detection',
-          metric_name: result.riskLevel,
-          metric_value: result.score,
-          metadata: {
-            userEmail: data.userEmail,
-            amount: data.amount,
-            signals: result.signals,
-            timestamp: new Date().toISOString()
-          }
-        });
-      }
-      
-      return Response.json(result);
+    if (activity.gifts.length === 0 && activity.tips.length === 0 && activity.chargebacks.length === 0) {
+      userActivity.delete(email);
     }
-
-    if (action === 'report') {
-      // Manual fraud report
-      const { transactionId, reason, reporterEmail } = data;
-      
-      await base44.asServiceRole.entities.PlatformAnalytics.create({
-        metric_type: 'fraud_report',
-        metric_name: 'manual_report',
-        metric_value: 1,
-        metadata: {
-          transactionId,
-          reason,
-          reporterEmail,
-          timestamp: new Date().toISOString()
-        }
-      });
-      
-      return Response.json({ success: true, message: 'Fraud report submitted' });
-    }
-
-    return Response.json({ error: 'Invalid action' }, { status: 400 });
-    
-  } catch (error) {
-    console.error('Fraud detection error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}, 3600000);
+
+export const FRAUD_THRESHOLDS = {
+  gift_per_hour: 10,
+  gift_per_day: 50,
+  tip_per_hour_usd: 500,
+  tip_per_day_usd: 1000,
+  single_tip_max: 5000,
+  chargeback_threshold_days: 30,
+  chargeback_max: 2,
+  new_account_threshold_hours: 24,
+  new_account_spend_max: 100
+};
