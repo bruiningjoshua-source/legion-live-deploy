@@ -200,38 +200,46 @@ export default function Wallet() {
 
                   {/* Conversion info */}
                   <p className="text-white/30 text-xs mt-4">
-                  ≈ ${((wallet?.denarii_balance || 0) / 180).toFixed(2)} USD value
-                  {(wallet?.total_spent || 0) > 0 && ` · $${(wallet.total_spent / 180).toFixed(2)} lifetime spend`}
+                    ≈ ${((wallet?.denarii_balance || 0) / DENARII_PER_DOLLAR).toFixed(2)} USD value
+                    {(wallet?.total_purchased_usd || 0) > 0 && ` · $${(wallet.total_purchased_usd).toFixed(2)} lifetime spend`}
                   </p>
                 </div>
 
-                {/* VIP Level */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 min-w-[220px]">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                      <Crown className="w-7 h-7 text-white drop-shadow-lg" />
+                {/* VIP Panel */}
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 min-w-[240px]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-12 h-12 rounded-xl ${vipTier.bgColor} flex items-center justify-center text-2xl shadow-lg`}>
+                      {vipTier.icon}
                     </div>
                     <div>
-                      <p className="text-white font-bold text-xl">{vipNames[vipLevel]}</p>
-                      <p className="text-white/40 text-xs">VIP Level {vipLevel}</p>
+                      <p className={`font-bold text-lg ${vipTier.color}`}>{vipTier.name}</p>
+                      <p className="text-white/40 text-xs">{vipPoints.toLocaleString()} VIP points</p>
                     </div>
                   </div>
-                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
+                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                    <motion.div
                       initial={{ width: 0 }}
-                      animate={{ 
-                        width: `${Math.min(((wallet?.total_spent || 0) - vipLevelThresholds[vipLevel]) / 
-                          (vipLevelThresholds[vipLevel + 1] - vipLevelThresholds[vipLevel]) * 100, 100)}%` 
-                      }}
-                      transition={{ duration: 1, delay: 0.5 }}
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                      animate={{ width: `${Math.min(vipProgress, 100)}%` }}
+                      transition={{ duration: 1, delay: 0.4 }}
+                      className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${
+                        vipTier.level >= 4 ? 'from-amber-400 to-orange-500' : 'from-blue-400 to-indigo-500'
+                      }`}
                     />
                   </div>
-                  <p className="text-white/40 text-xs mt-3">
-                    {vipLevel < vipNames.length - 1 
-                      ? `$${formatCount((vipLevelThresholds[vipLevel + 1] || vipLevelThresholds[vipLevel]) - (wallet?.total_spent || 0))} to ${vipNames[vipLevel + 1]}`
-                      : 'Max VIP reached! 🏆'}
-                  </p>
+                  {nextTier ? (
+                    <p className="text-white/40 text-xs">
+                      {(nextTier.minPoints - vipPoints).toLocaleString()} pts to <span className={nextTier.color}>{nextTier.name}</span>
+                    </p>
+                  ) : (
+                    <p className="text-amber-400 text-xs font-bold">⚡ DIVINE — Maximum tier reached!</p>
+                  )}
+                  <div className="mt-3 space-y-1">
+                    {vipTier.perks.map((perk, i) => (
+                      <p key={i} className="text-white/50 text-[11px] flex items-center gap-1">
+                        <span className="text-green-400">✓</span> {perk}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
