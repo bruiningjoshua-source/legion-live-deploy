@@ -6,6 +6,8 @@ import { createPageUrl } from '@/utils';
 import { useCurrentUser, useLiveStreams, useCreators } from '@/components/hooks/useStreamData';
 import RecommendationEngine from '@/components/services/RecommendationEngine';
 import PullToRefresh from '@/components/shared/PullToRefresh';
+import ForgeStamp from '@/components/shared/ForgeStamp';
+import { fmt } from '@/components/core/legion';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -159,14 +161,17 @@ export default function Home() {
           
           <div className="flex items-center justify-center gap-5 mt-4">
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-white">{streams.length}</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{fmt.count(streams.length)}</p>
               <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Live</p>
             </div>
             <div className="w-px h-6 bg-white/15" />
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-white">{creators.length}</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{fmt.count(creators.length)}</p>
               <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Creators</p>
             </div>
+          </div>
+          <div className="flex justify-center mt-3">
+            <ForgeStamp variant="badge" />
           </div>
         </div>
         
