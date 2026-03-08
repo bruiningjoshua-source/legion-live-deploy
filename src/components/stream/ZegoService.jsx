@@ -226,6 +226,7 @@ class ZegoStreamingService {
   async startPublishing(streamId) {
     if (!this.localStream) throw new Error('No local stream');
 
+    this.publishStreamId = streamId; // BUG-2 fix: track the actual publish stream ID
     await this.engine.startPublishingStream(streamId, this.localStream);
     this.isPublishing = true;
     this._startStatsMonitor();
@@ -236,9 +237,12 @@ class ZegoStreamingService {
   async stopPublishing() {
     if (!this.engine || !this.isPublishing) return;
     try {
-      this.engine.stopPublishingStream(this.roomId || '');
+      // BUG-2 fix: use the actual publish stream ID, not the room ID
+      const sid = this.publishStreamId || this.roomId || '';
+      this.engine.stopPublishingStream(sid);
       this.isPublishing = false;
-      console.log('[Zego] Stopped publishing');
+      this.publishStreamId = null;
+      console.log('[Zego] Stopped publishing:', sid);
     } catch (e) {
       console.warn('[Zego] stopPublishing error:', e);
     }
