@@ -76,6 +76,32 @@ const GAMES = [
     players: '4.9K',
     rating: '4.6',
   },
+  {
+    id: 'wolfenstein',
+    title: 'Legion Wolf 3D',
+    subtitle: 'Classic FPS raycaster',
+    description: 'Navigate a nazi dungeon — shoot guards, find the exit',
+    gradient: 'from-zinc-700 to-stone-600',
+    border: 'border-zinc-500/30',
+    glow: 'shadow-zinc-500/20',
+    emoji: '🔦',
+    component: WolfensteinGame,
+    players: '9.2K',
+    rating: '4.9',
+  },
+  {
+    id: 'quake',
+    title: 'Legion Quake',
+    subtitle: 'Arena FPS + rocket launcher',
+    description: 'Hunt shamblers with rockets, collect quad damage, reach the exit',
+    gradient: 'from-orange-700 to-red-700',
+    border: 'border-orange-500/30',
+    glow: 'shadow-orange-500/20',
+    emoji: '🚀',
+    component: QuakeGame,
+    players: '7.6K',
+    rating: '5.0',
+  },
 ];
 
 const GameCard = memo(function GameCard({ game, onPlay }) {
