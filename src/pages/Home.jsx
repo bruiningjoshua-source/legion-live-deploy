@@ -154,20 +154,32 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Hero Header */}
         <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1">
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1 mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+            </span>
+            <span className="text-amber-300/80 text-[11px] font-semibold tracking-wider uppercase">Platform Live</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1 animate-gradient-x">
             Legion Live
           </h1>
           <p className="text-white/40 text-sm sm:text-base font-medium tracking-wide">Stream. Compete. Earn.</p>
           
-          <div className="flex items-center justify-center gap-5 mt-4">
+          <div className="flex items-center justify-center gap-5 mt-5">
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-white">{fmt.count(streams.length)}</p>
-              <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Live</p>
+              <p className="text-lg sm:text-xl font-black text-white">{fmt.count(streams.length)}</p>
+              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Live Now</p>
             </div>
-            <div className="w-px h-6 bg-white/15" />
+            <div className="w-px h-7 bg-white/10" />
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-white">{fmt.count(creators.length)}</p>
-              <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-wider">Creators</p>
+              <p className="text-lg sm:text-xl font-black text-white">{fmt.count(creators.length)}</p>
+              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Creators</p>
+            </div>
+            <div className="w-px h-7 bg-white/10" />
+            <div className="text-center">
+              <p className="text-lg sm:text-xl font-black text-amber-400">50%</p>
+              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Creator Cut</p>
             </div>
           </div>
           <div className="flex justify-center mt-3">
