@@ -52,8 +52,6 @@ const MIN_PAYOUT_DENARII = 1000; // Minimum 1000 Denarii ($5 payout)
 export default function CreatorPayoutSettings({ creator, user }) {
   const queryClient = useQueryClient();
   const [showAddMethod, setShowAddMethod] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [_effect] = React.useEffect ? [React.useEffect] : [() => {}];
   const [showCashout, setShowCashout] = useState(false);
   const [newMethod, setNewMethod] = useState({ type: '', identifier: '', displayName: '' });
   const [cashoutAmount, setCashoutAmount] = useState('');
