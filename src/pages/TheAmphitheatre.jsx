@@ -14,6 +14,7 @@ import CategoryChips from '@/components/amphitheatre/CategoryChips';
 import VideoFeedCard from '@/components/amphitheatre/VideoFeedCard';
 import ShortsShelf from '@/components/amphitheatre/ShortsShelf';
 import InterestSelector from '@/components/amphitheatre/InterestSelector';
+import AmphitheatreSidebar from '@/components/amphitheatre/AmphitheatreSidebar';
 import DirectMessaging from '@/components/community/DirectMessaging';
 
 export default function TheAmphitheatre() {
@@ -145,8 +146,9 @@ export default function TheAmphitheatre() {
   const isShowingShorts = selectedCategory === 'shorts';
 
   return (
-    <div className="min-h-screen bg-stone-950 pt-16 pb-24">
-      <div className="max-w-[1800px] mx-auto px-4">
+    <div className="min-h-screen bg-stone-950 pt-16 pb-24 flex">
+      <AmphitheatreSidebar />
+      <div className="flex-1 max-w-[1800px] mx-auto px-4">
 
         {/* ── Search bar (YouTube-style toggle) ── */}
         <AnimatePresence>

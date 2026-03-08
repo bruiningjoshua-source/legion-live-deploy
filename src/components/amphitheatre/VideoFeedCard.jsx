@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Play, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import VideoContextMenu from './VideoContextMenu';
 
 const formatViews = (views) => {
   if (!views) return '0 views';
@@ -24,6 +25,7 @@ const formatDuration = (seconds) => {
 };
 
 export default function VideoFeedCard({ content, isShort = false }) {
+  const [showPlaylistDialog, setShowPlaylistDialog] = useState(false);
   const videoUrl = content.type === 'music'
     ? createPageUrl(`WatchVideo?id=${content.id}&type=music`)
     : createPageUrl(`WatchVideo?id=${content.id}`);
@@ -32,7 +34,7 @@ export default function VideoFeedCard({ content, isShort = false }) {
   if (isShort || content.video_type === 'short') {
     return (
       <Link to={videoUrl} className="block group">
-        <div className="relative aspect-[9/16] bg-stone-900 rounded-xl overflow-hidden">
+        <div className="relative aspect-[9/16] bg-stone-900 rounded-xl overflow-hidden group">
           {content.thumbnail_url ? (
             <img src={content.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
@@ -56,9 +58,10 @@ export default function VideoFeedCard({ content, isShort = false }) {
 
   // Standard — YouTube-style card
   return (
-    <Link to={videoUrl} className="block group">
-      {/* Thumbnail */}
-      <div className="relative aspect-video bg-stone-900 rounded-xl overflow-hidden">
+    <div>
+      <Link to={videoUrl} className="block group">
+        {/* Thumbnail */}
+        <div className="relative aspect-video bg-stone-900 rounded-xl overflow-hidden group">
         {content.thumbnail_url ? (
           <img src={content.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:rounded-none transition-all duration-200" />
         ) : (
@@ -83,6 +86,7 @@ export default function VideoFeedCard({ content, isShort = false }) {
             <Play className="w-5 h-5 text-white fill-white ml-0.5" />
           </div>
         </div>
+        <VideoContextMenu video={content} onAddToPlaylist={() => setShowPlaylistDialog(true)} />
       </div>
 
       {/* Meta row */}
@@ -119,6 +123,7 @@ export default function VideoFeedCard({ content, isShort = false }) {
           </div>
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
