@@ -151,10 +151,10 @@ export default function GoLive() {
         roomId: stream.id, userId, role: 'host'
       });
       
-      const { appId: ZEGO_APP_ID, token } = tokenResponse.data || {};
+      const { appId: ZEGO_APP_ID, token, serverUrl } = tokenResponse.data || {};
       if (!ZEGO_APP_ID || !token) throw new Error('Invalid token response');
 
-      await ZegoService.initialize(ZEGO_APP_ID);
+      await ZegoService.initialize(ZEGO_APP_ID, serverUrl);
       await ZegoService.loginRoom(stream.id, userId, user.full_name || 'Host', token);
       await ZegoService.createLocalStream();
       await ZegoService.startPublishing(stream.id);
