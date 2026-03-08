@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import GameMobileControls from './GameMobileControls';
 
 const COLS = 10;
 const ROWS = 20;

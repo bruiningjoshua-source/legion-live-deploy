@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import GameMobileControls from './GameMobileControls';
 
 const CANVAS_W = 800;
 const CANVAS_H = 400;
