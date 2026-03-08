@@ -126,8 +126,8 @@ export default function Wallet() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen pt-16 pb-24">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -12 }}
