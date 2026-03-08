@@ -21,9 +21,26 @@ import CreatorEarningsHub from '@/components/monetization/CreatorEarningsHub';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 
+// CSRF token generation
+function generateCSRFToken() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
 export default function Wallet() {
   const [showTosGate, setShowTosGate] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(false);
+  const [csrfToken, setCsrfToken] = useState('');
+
+  // Generate CSRF token on mount
+  useEffect(() => {
+    const token = generateCSRFToken();
+    setCsrfToken(token);
+  }, []);
 
   // Handle successful purchase redirect
   useEffect(() => {
@@ -82,7 +99,11 @@ export default function Wallet() {
         throw new Error('IFRAME_BLOCKED');
       }
 
-      // Create Stripe checkout session
+      if (!csrfToken) {
+        throw new Error('Security token missing. Please refresh the page.');
+      }
+
+      // Create Stripe checkout session with CSRF token
       const response = await base44.functions.invoke('createDenariiCheckout', {
         packageId: pkg.id,
         denarii: pkg.denarii,
@@ -90,6 +111,7 @@ export default function Wallet() {
         price: pkg.price,
         packageName: pkg.name,
         vipPoints: pkg.vipPoints || 0,
+        csrfToken: csrfToken
       });
 
       // Redirect to Stripe checkout
