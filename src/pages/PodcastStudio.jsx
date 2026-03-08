@@ -1,87 +1,70 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Mic,
-  Radio,
-  Upload,
-  Plus,
-  Settings,
-  TrendingUp,
-  Headphones,
-  BarChart3,
-  Loader2,
-  Square,
-  Pause,
-  Play,
-  Trash2,
-  Clock,
-  Users
+  Mic, Radio, Headphones, BarChart3, Plus, Settings, Trash2,
+  Upload, Play, Users, TrendingUp, ChevronRight, ChevronLeft,
+  Rss, Star, Eye, Clock, Loader2, Layers, Edit3, Globe, Lock,
+  Music2, Wand2, BookOpen, Download
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import PodcastCard from '@/components/podcast/PodcastCard';
+import StudioRecorder from '@/components/podcast/StudioRecorder';
+import StudioAudioEditor from '@/components/podcast/StudioAudioEditor';
+import StudioPublisher from '@/components/podcast/StudioPublisher';
 import PodcastDetailPanel from '@/components/podcast/PodcastDetailPanel';
 import PodcastAudioPlayer from '@/components/podcast/PodcastAudioPlayer';
 
-const CATEGORIES = [
-  { value: 'technology', label: 'Technology' },
-  { value: 'business', label: 'Business' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'education', label: 'Education' },
-  { value: 'health', label: 'Health' },
-  { value: 'sports', label: 'Sports' },
-  { value: 'news', label: 'News' },
-  { value: 'comedy', label: 'Comedy' },
-  { value: 'music', label: 'Music' },
-  { value: 'other', label: 'Other' },
+const NAV_ITEMS = [
+  { id: 'shows', label: 'My Shows', icon: Headphones },
+  { id: 'studio', label: 'Recording Studio', icon: Mic },
+  { id: 'episodes', label: 'Episodes', icon: Layers },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'distribution', label: 'Distribution', icon: Rss },
 ];
+
+const CATEGORIES = [
+  'technology','business','entertainment','education','health','sports','news','comedy','music','other'
+];
+
+function StatCard({ icon: Icon, label, value, sub, color = 'amber' }) {
+  return (
+    <div className={`rounded-2xl border border-${color}-500/10 bg-${color}-500/5 p-5`}>
+      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center mb-3`}>
+        <Icon className={`w-5 h-5 text-${color}-400`} />
+      </div>
+      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-white/40 text-sm">{label}</p>
+      {sub && <p className={`text-${color}-400 text-xs mt-1`}>{sub}</p>}
+    </div>
+  );
+}
 
 export default function PodcastStudio() {
   const queryClient = useQueryClient();
-  const [showNewPodcast, setShowNewPodcast] = useState(false);
-  const [editingPodcast, setEditingPodcast] = useState(null);
+  const [activeNav, setActiveNav] = useState('shows');
   const [selectedPodcast, setSelectedPodcast] = useState(null);
+  const [showCreatePodcast, setShowCreatePodcast] = useState(false);
+  const [editingPodcast, setEditingPodcast] = useState(null);
   const [playingEpisode, setPlayingEpisode] = useState(null);
   const [playlist, setPlaylist] = useState([]);
 
-  // Recording state
-  const [isRecording, setIsRecording] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  // Studio workflow state
+  const [studioTab, setStudioTab] = useState('record'); // record | edit | publish
   const [recordedUrl, setRecordedUrl] = useState(null);
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
-  const timerRef = useRef(null);
-  const streamRef = useRef(null);
+  const [editedData, setEditedData] = useState(null);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+  // Podcast form
+  const [podForm, setPodForm] = useState({
+    title: '', description: '', category: 'entertainment', cover_art_url: '', is_explicit: false, website_url: ''
   });
 
+  const { data: user } = useQuery({ queryKey: ['current-user'], queryFn: () => base44.auth.me() });
   const { data: creator } = useQuery({
     queryKey: ['my-creator', user?.email],
     queryFn: async () => {
-      if (!user?.email) return null;
-      const creators = await base44.entities.Creator.filter({ user_email: user.email }, null, 1);
-      return creators[0] || null;
+      const c = await base44.entities.Creator.filter({ user_email: user.email }, null, 1);
+      return c[0] || null;
     },
     enabled: !!user?.email
   });
@@ -92,378 +75,515 @@ export default function PodcastStudio() {
     enabled: !!creator?.id
   });
 
-  // Podcast form
-  const [podForm, setPodForm] = useState({
-    title: '', description: '', category: 'entertainment', cover_art_url: '', is_explicit: false, website_url: ''
+  const { data: allEpisodes = [] } = useQuery({
+    queryKey: ['all-episodes', creator?.id],
+    queryFn: async () => {
+      if (!podcasts.length) return [];
+      const eps = await Promise.all(podcasts.map(p => base44.entities.PodcastEpisode.filter({ podcast_id: p.id })));
+      return eps.flat().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    },
+    enabled: !!creator?.id && podcasts.length > 0
   });
 
-  useEffect(() => {
-    if (editingPodcast) {
-      setPodForm({
-        title: editingPodcast.title || '',
-        description: editingPodcast.description || '',
-        category: editingPodcast.category || 'entertainment',
-        cover_art_url: editingPodcast.cover_art_url || '',
-        is_explicit: editingPodcast.is_explicit || false,
-        website_url: editingPodcast.website_url || '',
-      });
-    } else {
-      setPodForm({ title: '', description: '', category: 'entertainment', cover_art_url: '', is_explicit: false, website_url: '' });
-    }
-  }, [editingPodcast]);
-
   const savePodcastMutation = useMutation({
-    mutationFn: (data) => {
-      if (editingPodcast) {
-        return base44.entities.Podcast.update(editingPodcast.id, data);
-      }
-      return base44.entities.Podcast.create({ ...data, creator_id: creator.id });
-    },
+    mutationFn: (data) => editingPodcast
+      ? base44.entities.Podcast.update(editingPodcast.id, data)
+      : base44.entities.Podcast.create({ ...data, creator_id: creator.id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-podcasts'] });
-      setShowNewPodcast(false);
+      setShowCreatePodcast(false);
       setEditingPodcast(null);
       toast.success(editingPodcast ? 'Podcast updated!' : 'Podcast created!');
     }
   });
 
-  const deletePodcastMutation = useMutation({
-    mutationFn: (id) => base44.entities.Podcast.delete(id),
+  const saveEpisodeMutation = useMutation({
+    mutationFn: (data) => base44.entities.PodcastEpisode.create({
+      ...data,
+      podcast_id: selectedPodcast?.id || podcasts[0]?.id,
+      creator_id: creator?.id,
+      audio_url: recordedUrl,
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-podcasts'] });
-      toast.success('Podcast deleted');
+      queryClient.invalidateQueries({ queryKey: ['all-episodes'] });
+      setRecordedUrl(null); setStudioTab('record');
+      toast.success('Episode published!');
+      setActiveNav('episodes');
     }
   });
 
+  const deletePodcastMutation = useMutation({
+    mutationFn: (id) => base44.entities.Podcast.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-podcasts'] })
+  });
+
   const handleCoverUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setPodForm(prev => ({ ...prev, cover_art_url: result.file_url }));
-    }
+    const file = e.target.files?.[0]; if (!file) return;
+    const result = await base44.integrations.Core.UploadFile({ file });
+    setPodForm(p => ({ ...p, cover_art_url: result.file_url }));
   };
 
-  // ---- Recording ----
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-    };
+  const openCreatePodcast = useCallback((pod = null) => {
+    setEditingPodcast(pod);
+    setPodForm(pod ? { title: pod.title || '', description: pod.description || '', category: pod.category || 'entertainment', cover_art_url: pod.cover_art_url || '', is_explicit: pod.is_explicit || false, website_url: pod.website_url || '' } : { title: '', description: '', category: 'entertainment', cover_art_url: '', is_explicit: false, website_url: '' });
+    setShowCreatePodcast(true);
   }, []);
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
-    streamRef.current = stream;
-    chunksRef.current = [];
-    setRecordedUrl(null);
-
-    const recorder = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm' });
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-      const file = new File([blob], `recording-${Date.now()}.webm`, { type: 'audio/webm' });
-      toast.loading('Uploading recording...');
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setRecordedUrl(result.file_url);
-      toast.dismiss();
-      toast.success('Recording uploaded! You can now create an episode with it.');
-    };
-
-    recorder.start(1000);
-    mediaRecorderRef.current = recorder;
-    setIsRecording(true);
-    setIsPaused(false);
-    setRecordingTime(0);
-    timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
-  };
-
-  const pauseRecording = () => {
-    if (mediaRecorderRef.current?.state === 'recording') {
-      mediaRecorderRef.current.pause();
-      clearInterval(timerRef.current);
-      setIsPaused(true);
-    }
-  };
-
-  const resumeRecording = () => {
-    if (mediaRecorderRef.current?.state === 'paused') {
-      mediaRecorderRef.current.resume();
-      timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
-      setIsPaused(false);
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      clearInterval(timerRef.current);
-      setIsRecording(false);
-      setIsPaused(false);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  const handlePlayEpisode = (episode, episodes) => {
-    setPlayingEpisode(episode);
-    setPlaylist(episodes);
-  };
-
-  const handleNext = () => {
-    if (!playlist.length || !playingEpisode) return;
-    const idx = playlist.findIndex(e => e.id === playingEpisode.id);
-    if (idx < playlist.length - 1) handlePlayEpisode(playlist[idx + 1], playlist);
-  };
-
-  const handlePrev = () => {
-    if (!playlist.length || !playingEpisode) return;
-    const idx = playlist.findIndex(e => e.id === playingEpisode.id);
-    if (idx > 0) handlePlayEpisode(playlist[idx - 1], playlist);
-  };
-
-  // Stats
-  const totalEps = podcasts.reduce((a, p) => a + (p.total_episodes || 0), 0);
+  const totalPlays = podcasts.reduce((a, p) => a + (p.total_plays || 0), 0);
   const totalSubs = podcasts.reduce((a, p) => a + (p.subscriber_count || 0), 0);
+  const totalEps = allEpisodes.length;
+
+  // Studio workflow steps
+  const studioSteps = [
+    { id: 'record', label: 'Record', icon: Mic, done: !!recordedUrl },
+    { id: 'edit', label: 'Edit', icon: Wand2, done: !!editedData },
+    { id: 'publish', label: 'Publish', icon: Globe, done: false },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-32">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-amber-100 flex items-center gap-2">
-              <Mic className="w-8 h-8 text-amber-400" />
-              Podcast Studio
-            </h1>
-            <p className="text-amber-400/60 mt-1">Record, manage, and publish your podcasts</p>
-          </div>
-          <Button onClick={() => { setEditingPodcast(null); setShowNewPodcast(true); }} className="bg-amber-600 hover:bg-amber-700">
-            <Plus className="w-4 h-4 mr-2" /> New Podcast
-          </Button>
-        </div>
+    <div className="min-h-screen bg-[#080810] pt-16 pb-28 flex">
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {[
-            { label: 'Shows', value: podcasts.length, icon: Headphones },
-            { label: 'Episodes', value: totalEps, icon: Radio },
-            { label: 'Subscribers', value: totalSubs, icon: Users },
-          ].map(stat => (
-            <Card key={stat.label} className="bg-stone-800/30 border-amber-600/20">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-600/15 flex items-center justify-center">
-                  <stat.icon className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-amber-100">{stat.value}</p>
-                  <p className="text-xs text-amber-400/50">{stat.label}</p>
-                </div>
-              </CardContent>
-            </Card>
+      {/* ── Sidebar ─────────────────────────────────────────────── */}
+      <aside className="hidden lg:flex flex-col w-56 shrink-0 pt-6 pl-4 pr-3 gap-1">
+        <div className="flex items-center gap-2 px-3 py-3 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+            <Mic className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white font-bold text-sm">Podcast Studio</span>
+        </div>
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setActiveNav(id)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              activeNav === id
+                ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+            }`}
+          >
+            <Icon className="w-4 h-4" /> {label}
+          </button>
+        ))}
+
+        {podcasts.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-white/[0.06]">
+            <p className="text-white/20 text-xs uppercase tracking-wide px-3 mb-2">Your Shows</p>
+            {podcasts.slice(0, 5).map(p => (
+              <button
+                key={p.id}
+                onClick={() => { setSelectedPodcast(p); setActiveNav('episodes'); }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/[0.03] text-xs w-full text-left transition-colors"
+              >
+                {p.cover_art_url
+                  ? <img src={p.cover_art_url} className="w-6 h-6 rounded object-cover" alt="" />
+                  : <div className="w-6 h-6 rounded bg-amber-500/20 flex items-center justify-center"><Mic className="w-3 h-3 text-amber-400" /></div>
+                }
+                <span className="truncate">{p.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-auto pb-6">
+          <button
+            onClick={() => openCreatePodcast()}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" /> New Show
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Main Content ─────────────────────────────────────────── */}
+      <main className="flex-1 min-w-0 px-4 lg:px-6 pt-6">
+
+        {/* Mobile nav */}
+        <div className="lg:hidden flex gap-1 overflow-x-auto scrollbar-hide pb-3 mb-4">
+          {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveNav(id)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+                activeNav === id ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20' : 'bg-white/[0.04] text-white/40'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" /> {label}
+            </button>
           ))}
         </div>
 
-        {selectedPodcast ? (
-          <PodcastDetailPanel
-            podcast={selectedPodcast}
-            creatorId={creator?.id}
-            isCreator={true}
-            onBack={() => setSelectedPodcast(null)}
-            onPlayEpisode={handlePlayEpisode}
-            currentEpisodeId={playingEpisode?.id}
-          />
-        ) : (
-          <Tabs defaultValue="shows">
-            <TabsList className="bg-stone-800/50 border border-amber-600/20 mb-6">
-              <TabsTrigger value="shows" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300">
-                <Headphones className="w-3 h-3 mr-1" /> My Shows
-              </TabsTrigger>
-              <TabsTrigger value="record" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300">
-                <Mic className="w-3 h-3 mr-1" /> Record
-              </TabsTrigger>
-            </TabsList>
+        {/* ── SHOWS ── */}
+        {activeNav === 'shows' && (
+          <motion.div key="shows" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl">
+            {/* Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <StatCard icon={Headphones} label="Shows" value={podcasts.length} color="amber" />
+              <StatCard icon={Layers} label="Episodes" value={totalEps} color="blue" />
+              <StatCard icon={Users} label="Subscribers" value={totalSubs.toLocaleString()} color="green" />
+              <StatCard icon={Eye} label="Total Plays" value={totalPlays.toLocaleString()} color="purple" />
+            </div>
 
-            <TabsContent value="shows">
-              {isLoading ? (
-                <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-amber-400 animate-spin" /></div>
-              ) : podcasts.length === 0 ? (
-                <div className="text-center py-16">
-                  <Headphones className="w-16 h-16 text-amber-400/20 mx-auto mb-4" />
-                  <p className="text-amber-400/50 mb-4">You haven't created any podcasts yet</p>
-                  <Button onClick={() => setShowNewPodcast(true)} className="bg-amber-600 hover:bg-amber-700">
-                    <Plus className="w-4 h-4 mr-2" /> Create Your First Podcast
-                  </Button>
+            {/* Show grid */}
+            {isLoading ? (
+              <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-amber-400 animate-spin" /></div>
+            ) : podcasts.length === 0 ? (
+              <div className="text-center py-24">
+                <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-5">
+                  <Mic className="w-10 h-10 text-amber-400/40" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {podcasts.map((p, i) => (
-                    <div key={p.id} className="relative group">
-                      <PodcastCard podcast={p} index={i} onClick={() => setSelectedPodcast(p)} />
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditingPodcast(p); setShowNewPodcast(true); }}
-                          className="w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-amber-300 hover:bg-amber-600"
-                        >
-                          <Settings className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); if (confirm('Delete this podcast and all episodes?')) deletePodcastMutation.mutate(p.id); }}
-                          className="w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-red-400 hover:bg-red-600 hover:text-white"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                <h2 className="text-white font-bold text-xl mb-2">Start Your First Show</h2>
+                <p className="text-white/30 mb-6 max-w-xs mx-auto">Create a podcast show, then start recording episodes in the studio.</p>
+                <button onClick={() => openCreatePodcast()} className="px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-colors">
+                  <Plus className="w-4 h-4 inline mr-2" />Create Show
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {podcasts.map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                    className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.05] transition-all overflow-hidden cursor-pointer"
+                    onClick={() => { setSelectedPodcast(p); setActiveNav('episodes'); }}
+                  >
+                    <div className="aspect-square relative overflow-hidden">
+                      {p.cover_art_url
+                        ? <img src={p.cover_art_url} className="w-full h-full object-cover" alt={p.title} />
+                        : <div className="w-full h-full bg-gradient-to-br from-amber-900/30 to-orange-900/30 flex items-center justify-center"><Mic className="w-12 h-12 text-amber-400/30" /></div>
+                      }
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+                        <span className="text-white text-sm font-bold flex items-center gap-1.5"><Play className="w-4 h-4 fill-current" /> Open Studio</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                    <div className="p-4">
+                      <h3 className="text-white font-bold text-sm line-clamp-1">{p.title}</h3>
+                      <p className="text-white/40 text-xs mt-1 line-clamp-2">{p.description || 'No description'}</p>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="text-white/30 text-xs capitalize">{p.category}</span>
+                        <div className="flex items-center gap-3 text-white/30 text-xs">
+                          <span>{p.total_episodes || 0} eps</span>
+                          <span>{p.subscriber_count || 0} subs</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={e => { e.stopPropagation(); openCreatePodcast(p); }} className="w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white/60 hover:text-white hover:bg-amber-600/80 transition-colors">
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); if (confirm('Delete this podcast?')) deletePodcastMutation.mutate(p.id); }} className="w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white/60 hover:text-red-400 hover:bg-red-600/20 transition-colors">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
 
-            <TabsContent value="record">
-              <Card className="bg-stone-800/30 border-amber-600/20">
-                <CardHeader>
-                  <CardTitle className="text-amber-100 flex items-center gap-2">
-                    <Radio className="w-5 h-5 text-amber-400" />
-                    Recording Studio
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center gap-6 py-8">
-                    {/* Mic animation */}
-                    <motion.div
-                      animate={isRecording && !isPaused ? { scale: [1, 1.08, 1] } : {}}
-                      transition={{ repeat: Infinity, duration: 1.5 }}
-                      className={`w-32 h-32 rounded-full flex items-center justify-center ${
-                        isRecording ? 'bg-red-600 shadow-lg shadow-red-500/50' : 'bg-amber-600'
+                {/* Add new */}
+                <button
+                  onClick={() => openCreatePodcast()}
+                  className="rounded-2xl border-2 border-dashed border-white/[0.08] hover:border-amber-500/30 flex flex-col items-center justify-center gap-2 min-h-[220px] text-white/20 hover:text-amber-400 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-xl border-2 border-dashed border-current flex items-center justify-center">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-medium">New Show</span>
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── RECORDING STUDIO ── */}
+        {activeNav === 'studio' && (
+          <motion.div key="studio" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl space-y-6">
+            <div className="flex items-center justify-between">
+              <h1 className="text-white font-black text-2xl">Recording Studio</h1>
+              {podcasts.length > 0 && (
+                <select
+                  value={selectedPodcast?.id || ''}
+                  onChange={e => setSelectedPodcast(podcasts.find(p => p.id === e.target.value) || null)}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm outline-none"
+                >
+                  <option value="">Select a show</option>
+                  {podcasts.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                </select>
+              )}
+            </div>
+
+            {/* Workflow steps */}
+            <div className="flex items-center gap-2">
+              {studioSteps.map((step, i) => {
+                const Icon = step.icon;
+                const isActive = studioTab === step.id;
+                const isDone = step.done;
+                return (
+                  <React.Fragment key={step.id}>
+                    <button
+                      onClick={() => setStudioTab(step.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                        isActive ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                        : isDone ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                        : 'bg-white/[0.03] text-white/30 border border-white/[0.06]'
                       }`}
                     >
-                      <Mic className="w-16 h-16 text-white" />
-                    </motion.div>
-
-                    {/* Timer */}
-                    {isRecording && (
-                      <Badge className={`text-lg px-6 py-2 ${isPaused ? 'bg-yellow-600 text-yellow-100' : 'bg-red-500 text-white animate-pulse'}`}>
-                        {isPaused ? '⏸ PAUSED' : '● REC'} {formatTime(recordingTime)}
-                      </Badge>
-                    )}
-
-                    {/* Controls */}
-                    <div className="flex items-center gap-3">
-                      {!isRecording ? (
-                        <Button onClick={startRecording} size="lg" className="bg-red-600 hover:bg-red-700 text-white px-8">
-                          <Mic className="w-5 h-5 mr-2" /> Start Recording
-                        </Button>
-                      ) : (
-                        <>
-                          <Button onClick={isPaused ? resumeRecording : pauseRecording} variant="outline" className="border-amber-600/30 text-amber-200">
-                            {isPaused ? <Play className="w-4 h-4 mr-1" /> : <Pause className="w-4 h-4 mr-1" />}
-                            {isPaused ? 'Resume' : 'Pause'}
-                          </Button>
-                          <Button onClick={stopRecording} className="bg-red-600 hover:bg-red-700 text-white">
-                            <Square className="w-4 h-4 mr-1" /> Stop & Save
-                          </Button>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Recorded file */}
-                    {recordedUrl && (
-                      <div className="w-full max-w-md bg-stone-900 rounded-xl p-4 border border-green-500/30">
-                        <p className="text-green-300 text-sm font-medium mb-2">✓ Recording saved</p>
-                        <audio src={recordedUrl} controls className="w-full mb-3" />
-                        <p className="text-amber-400/50 text-xs">Select a podcast above, then create a new episode to use this recording.</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        )}
-      </div>
-
-      {/* Create / Edit Podcast Dialog */}
-      <Dialog open={showNewPodcast} onOpenChange={v => { setShowNewPodcast(v); if (!v) setEditingPodcast(null); }}>
-        <DialogContent className="bg-stone-900 border-amber-600/30 max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-amber-100">{editingPodcast ? 'Edit Podcast' : 'Create New Podcast'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label className="text-amber-200">Title *</Label>
-              <Input value={podForm.title} onChange={e => setPodForm(p => ({ ...p, title: e.target.value }))} placeholder="My Awesome Podcast" className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1" />
+                      <Icon className="w-3.5 h-3.5" /> {step.label}
+                      {isDone && <span className="text-green-400 text-xs">✓</span>}
+                    </button>
+                    {i < studioSteps.length - 1 && <ChevronRight className="w-4 h-4 text-white/20 shrink-0" />}
+                  </React.Fragment>
+                );
+              })}
             </div>
-            <div>
-              <Label className="text-amber-200">Description</Label>
-              <Textarea value={podForm.description} onChange={e => setPodForm(p => ({ ...p, description: e.target.value }))} placeholder="What is your podcast about?" className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1" rows={3} />
+
+            {/* Step content */}
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+              {studioTab === 'record' && (
+                <StudioRecorder
+                  onRecordingReady={(url) => {
+                    setRecordedUrl(url);
+                    setTimeout(() => setStudioTab('edit'), 500);
+                  }}
+                />
+              )}
+              {studioTab === 'edit' && (
+                <StudioAudioEditor
+                  audioUrl={recordedUrl}
+                  onExport={(data) => { setEditedData(data); setStudioTab('publish'); }}
+                />
+              )}
+              {studioTab === 'publish' && (
+                <StudioPublisher
+                  podcast={selectedPodcast}
+                  onPublish={(data) => saveEpisodeMutation.mutate(data)}
+                />
+              )}
             </div>
-            <div>
-              <Label className="text-amber-200">Category</Label>
-              <Select value={podForm.category} onValueChange={v => setPodForm(p => ({ ...p, category: v }))}>
-                <SelectTrigger className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-stone-900 border-amber-600/30">
-                  {CATEGORIES.map(c => (
-                    <SelectItem key={c.value} value={c.value} className="text-amber-100">{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-amber-200">Cover Art</Label>
-              <div className="flex items-center gap-3 mt-1">
-                {podForm.cover_art_url ? (
-                  <div className="relative w-24 h-24 rounded-xl overflow-hidden">
-                    <img src={podForm.cover_art_url} className="w-full h-full object-cover" alt="" />
-                    <button onClick={() => setPodForm(p => ({ ...p, cover_art_url: '' }))} className="absolute top-1 right-1 bg-black/60 rounded-full p-1 text-white">✕</button>
-                  </div>
-                ) : (
-                  <label className="w-24 h-24 border-2 border-dashed border-amber-600/30 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/50">
-                    <Upload className="w-6 h-6 text-amber-400/50" />
-                    <span className="text-amber-400/50 text-xs mt-1">Upload</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
-                  </label>
-                )}
-                <p className="text-amber-400/50 text-xs">Square format recommended (1400×1400)</p>
+
+            {/* Also allow audio upload */}
+            {studioTab === 'record' && (
+              <div className="text-center">
+                <p className="text-white/20 text-sm mb-3">or upload an existing audio file</p>
+                <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-white/40 hover:text-white hover:border-white/20 text-sm cursor-pointer transition-colors">
+                  <Upload className="w-4 h-4" /> Upload Audio
+                  <input
+                    type="file" accept="audio/*" className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]; if (!file) return;
+                      toast.loading('Uploading...');
+                      const result = await base44.integrations.Core.UploadFile({ file });
+                      toast.dismiss(); toast.success('Uploaded!');
+                      setRecordedUrl(result.file_url);
+                      setStudioTab('edit');
+                    }}
+                  />
+                </label>
               </div>
-            </div>
-            <div>
-              <Label className="text-amber-200">Website (optional)</Label>
-              <Input value={podForm.website_url} onChange={e => setPodForm(p => ({ ...p, website_url: e.target.value }))} placeholder="https://yourpodcast.com" className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1" />
-            </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── EPISODES ── */}
+        {activeNav === 'episodes' && (
+          <motion.div key="episodes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-5xl space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-amber-200">Explicit Content</Label>
-              <Switch checked={podForm.is_explicit} onCheckedChange={v => setPodForm(p => ({ ...p, is_explicit: v }))} />
+              <h1 className="text-white font-black text-2xl">Episodes</h1>
+              <button onClick={() => setActiveNav('studio')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors">
+                <Mic className="w-4 h-4" /> New Episode
+              </button>
             </div>
-            <Button
-              onClick={() => savePodcastMutation.mutate(podForm)}
-              disabled={!podForm.title.trim() || savePodcastMutation.isPending}
-              className="w-full bg-amber-600 hover:bg-amber-700"
+
+            {selectedPodcast && (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                {selectedPodcast.cover_art_url && <img src={selectedPodcast.cover_art_url} className="w-10 h-10 rounded-lg object-cover" alt="" />}
+                <div>
+                  <p className="text-white text-sm font-medium">{selectedPodcast.title}</p>
+                  <p className="text-white/30 text-xs capitalize">{selectedPodcast.category}</p>
+                </div>
+                <button onClick={() => setSelectedPodcast(null)} className="ml-auto text-white/30 hover:text-white text-xs">Show All</button>
+              </div>
+            )}
+
+            {allEpisodes.length === 0 ? (
+              <div className="text-center py-20 text-white/20">
+                <Layers className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p>No episodes yet. Start recording in the Studio!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {allEpisodes.map((ep, i) => (
+                  <motion.div
+                    key={ep.id}
+                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 flex items-center justify-center shrink-0">
+                      {ep.cover_art_url ? <img src={ep.cover_art_url} className="w-full h-full rounded-xl object-cover" alt="" /> : <Headphones className="w-5 h-5 text-amber-400/50" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-white font-medium text-sm truncate">{ep.title}</p>
+                        {ep.is_published ? (
+                          <span className="text-green-400 text-xs bg-green-500/10 px-1.5 py-0.5 rounded-full border border-green-500/20">Live</span>
+                        ) : (
+                          <span className="text-amber-400 text-xs bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20">Draft</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-white/25 text-xs">
+                        {ep.duration_seconds && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{Math.round(ep.duration_seconds / 60)}m</span>}
+                        <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{ep.play_count || 0} plays</span>
+                        {ep.episode_number && <span>Ep. {ep.episode_number}</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => setPlayingEpisode(ep)}
+                        className="w-8 h-8 rounded-full bg-amber-500/20 hover:bg-amber-500 flex items-center justify-center text-amber-400 hover:text-black transition-all"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── ANALYTICS ── */}
+        {activeNav === 'analytics' && (
+          <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-5xl space-y-6">
+            <h1 className="text-white font-black text-2xl">Analytics</h1>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <StatCard icon={Eye} label="Total Plays" value={totalPlays.toLocaleString()} color="blue" />
+              <StatCard icon={Users} label="Subscribers" value={totalSubs.toLocaleString()} color="green" />
+              <StatCard icon={TrendingUp} label="Avg Plays/Ep" value={totalEps ? Math.round(totalPlays / totalEps) : 0} color="purple" />
+              <StatCard icon={Star} label="Shows" value={podcasts.length} color="amber" />
+            </div>
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center">
+              <BarChart3 className="w-12 h-12 text-white/10 mx-auto mb-3" />
+              <p className="text-white/30">Detailed analytics with charts coming soon</p>
+              <p className="text-white/15 text-sm mt-1">Listenership trends, geographic data, device breakdown</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── DISTRIBUTION ── */}
+        {activeNav === 'distribution' && (
+          <motion.div key="distribution" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl space-y-6">
+            <h1 className="text-white font-black text-2xl">Distribution</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { name: 'Apple Podcasts', color: '#fc3c44', desc: 'Reach 1B+ Apple users' },
+                { name: 'Spotify', color: '#1db954', desc: 'World\'s largest streaming platform' },
+                { name: 'Google Podcasts', color: '#4285f4', desc: 'Billions of Android users' },
+                { name: 'Amazon Music', color: '#ff9900', desc: 'Alexa-integrated listeners' },
+                { name: 'RSS Feed', color: '#ff6600', desc: 'Universal podcast standard' },
+                { name: 'Pocket Casts', color: '#f43e37', desc: 'Power-user podcast app' },
+              ].map(platform => (
+                <div key={platform.name} className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: platform.color + '22', border: `1px solid ${platform.color}40` }}>
+                    <Rss className="w-5 h-5" style={{ color: platform.color }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white text-sm font-medium">{platform.name}</p>
+                    <p className="text-white/30 text-xs">{platform.desc}</p>
+                  </div>
+                  <button className="text-xs px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-white/40 hover:text-white hover:bg-white/10 transition-colors">
+                    Connect
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </main>
+
+      {/* ── Create Podcast Modal ── */}
+      <AnimatePresence>
+        {showCreatePodcast && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowCreatePodcast(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#111118] p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
             >
-              {savePodcastMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {editingPodcast ? 'Save Changes' : 'Create Podcast'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <h2 className="text-white font-bold text-lg">{editingPodcast ? 'Edit Show' : 'Create New Show'}</h2>
+
+              <div>
+                <label className="text-white/50 text-xs uppercase tracking-wide block mb-2">Title *</label>
+                <input value={podForm.title} onChange={e => setPodForm(p => ({ ...p, title: e.target.value }))}
+                  placeholder="My Awesome Podcast" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-amber-500/50 placeholder:text-white/20" />
+              </div>
+
+              <div>
+                <label className="text-white/50 text-xs uppercase tracking-wide block mb-2">Description</label>
+                <textarea value={podForm.description} onChange={e => setPodForm(p => ({ ...p, description: e.target.value }))}
+                  rows={3} placeholder="What's your podcast about?" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-amber-500/50 placeholder:text-white/20 resize-none" />
+              </div>
+
+              <div>
+                <label className="text-white/50 text-xs uppercase tracking-wide block mb-2">Category</label>
+                <select value={podForm.category} onChange={e => setPodForm(p => ({ ...p, category: e.target.value }))}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-amber-500/50 capitalize">
+                  {CATEGORIES.map(c => <option key={c} value={c} className="capitalize bg-[#111118]">{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-white/50 text-xs uppercase tracking-wide block mb-2">Cover Art</label>
+                <div className="flex items-center gap-4">
+                  {podForm.cover_art_url
+                    ? <div className="relative w-20 h-20 rounded-xl overflow-hidden">
+                        <img src={podForm.cover_art_url} className="w-full h-full object-cover" alt="" />
+                        <button onClick={() => setPodForm(p => ({ ...p, cover_art_url: '' }))} className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center text-white text-xs">×</button>
+                      </div>
+                    : <label className="w-20 h-20 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/40 transition-colors">
+                        <Upload className="w-5 h-5 text-white/20" /><span className="text-white/20 text-xs mt-1">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                      </label>
+                  }
+                  <p className="text-white/20 text-xs">Recommended 1400×1400px</p>
+                </div>
+              </div>
+
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-white/50 text-sm">Explicit Content</span>
+                <div onClick={() => setPodForm(p => ({ ...p, is_explicit: !p.is_explicit }))}
+                  className={`w-10 h-6 rounded-full transition-colors ${podForm.is_explicit ? 'bg-red-500' : 'bg-white/10'} relative`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${podForm.is_explicit ? 'translate-x-5' : 'translate-x-1'}`} />
+                </div>
+              </label>
+
+              <div className="flex gap-3">
+                <button onClick={() => setShowCreatePodcast(false)} className="flex-1 py-3 rounded-xl border border-white/10 text-white/50 hover:text-white text-sm transition-colors">Cancel</button>
+                <button
+                  onClick={() => savePodcastMutation.mutate(podForm)}
+                  disabled={!podForm.title.trim() || savePodcastMutation.isPending}
+                  className="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-colors disabled:opacity-50"
+                >
+                  {savePodcastMutation.isPending ? 'Saving...' : editingPodcast ? 'Save Changes' : 'Create Show'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Audio Player */}
       {playingEpisode && (
         <PodcastAudioPlayer
           episode={playingEpisode}
-          coverFallback={selectedPodcast?.cover_art_url || podcasts.find(p => p.id === playingEpisode.podcast_id)?.cover_art_url}
-          onNext={handleNext}
-          onPrev={handlePrev}
+          onNext={() => {
+            const idx = allEpisodes.findIndex(e => e.id === playingEpisode.id);
+            if (idx < allEpisodes.length - 1) setPlayingEpisode(allEpisodes[idx + 1]);
+          }}
+          onPrev={() => {
+            const idx = allEpisodes.findIndex(e => e.id === playingEpisode.id);
+            if (idx > 0) setPlayingEpisode(allEpisodes[idx - 1]);
+          }}
           onClose={() => setPlayingEpisode(null)}
         />
       )}
