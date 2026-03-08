@@ -57,6 +57,106 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid package configuration' }, { status: 400 });
     }
 
+    // ─── IDEMPOTENCY CHECK ───
+    const hourTs = Math.floor(Date.now() / 3600000);
+    const idempotencyKey = `${user.email}:denarii:${price}:${hourTs}`;
+    
+    try {
+      const existingCheckouts = await base44.asServiceRole.entities.WalletAuditLog.filter(
+        { 
+          user_email: user.email,
+          action: 'checkout_initiated',
+          related_entity_id: { $regex: `.*${packageId}.*` }
+        },
+        '-timestamp_utc',
+        5
+      );
+
+      // Check if same amount was checked out in last 5 minutes
+      const fiveMinutesAgo = Date.now() - 300000;
+      const recentDuplicate = existingCheckouts.find(c => 
+        new Date(c.timestamp_utc).getTime() > fiveMinutesAgo &&
+        c.reason.includes(`$${price}`)
+      );
+
+      if (recentDuplicate) {
+        console.log('[createDenariiCheckout] Duplicate checkout detected:', recentDuplicate.related_entity_id);
+        return Response.json({
+          duplicate: true,
+          message: 'This checkout session already exists',
+          sessionId: recentDuplicate.related_entity_id
+        }, { status: 409 });
+      }
+    } catch (e) {
+      console.warn('[createDenariiCheckout] Idempotency check failed:', e.message);
+      // Continue on error
+    }
+
+    // ─── FRAUD RISK ANALYSIS ───
+    let riskLevel = 'LOW';
+    let shouldCreateReview = false;
+
+    try {
+      let riskScore = 0;
+      const flags = [];
+
+      if (price > 5000) {
+        riskScore += 40;
+        flags.push(`HIGH_VALUE:$${price}`);
+      }
+
+      // Check user chargeback history
+      const users = await base44.asServiceRole.entities.User.filter(
+        { email: user.email },
+        null,
+        1
+      );
+
+      if (users[0]?.chargeback_count >= 3) {
+        riskScore += 50;
+        flags.push(`CHARGEBACKS:${users[0].chargeback_count}`);
+      }
+
+      // Check daily velocity
+      const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
+      const dayPurchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
+        {
+          user_email: user.email,
+          created_date: { $gte: oneDayAgo }
+        },
+        null,
+        100
+      );
+
+      const dailyTotal = dayPurchases.reduce((sum, p) => sum + (p.price_usd || 0), 0) + price;
+      if (dailyTotal > 10000) {
+        riskScore += 35;
+        flags.push(`DAILY:$${dailyTotal.toFixed(2)}`);
+      }
+
+      riskLevel = riskScore > 70 ? 'HIGH' : riskScore > 40 ? 'MEDIUM' : 'LOW';
+      shouldCreateReview = riskScore > 40;
+
+      if (shouldCreateReview) {
+        try {
+          await base44.asServiceRole.entities.WalletAuditLog.create({
+            user_email: user.email,
+            action: 'fraud_review_case',
+            amount_denarii: denarii,
+            new_balance: 0,
+            reason: `${riskLevel} risk denarii purchase | $${price} | Flags: ${flags.join(', ')}`,
+            timestamp_utc: new Date().toISOString()
+          }).catch(() => {});
+        } catch (e) {
+          console.warn('[createDenariiCheckout] Fraud case log failed:', e.message);
+        }
+      }
+
+      console.log('[createDenariiCheckout] Fraud analysis:', { riskScore, riskLevel, flags });
+    } catch (e) {
+      console.warn('[createDenariiCheckout] Fraud analysis failed:', e.message);
+    }
+
     const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/[^/]*$/, '') || 'https://app.base44.com';
 
     const session = await stripe.checkout.sessions.create({
@@ -87,15 +187,34 @@ Deno.serve(async (req) => {
         bonus_denarii: (bonus || 0).toString(),
         vip_points: String(body.vipPoints || 0),
         lotto_tickets: String(body.lottoTickets || 0),
-        purchase_type: 'denarii'
+        purchase_type: 'denarii',
+        idempotency_key: idempotencyKey,
+        fraud_risk_level: riskLevel
       }
     });
 
-    console.log('[createDenariiCheckout] Session created:', session.id, 'for', user.email, '—', denarii, 'denarii @ $', price);
+    console.log('[createDenariiCheckout] Session created:', session.id, 'for', user.email, '—', denarii, 'denarii @ $', price, '| Risk:', riskLevel);
+
+    // Log checkout initiation for audit + idempotency
+    try {
+      await base44.asServiceRole.entities.WalletAuditLog.create({
+        user_email: user.email,
+        action: 'checkout_initiated',
+        amount_denarii: denarii,
+        new_balance: 0,
+        related_entity_id: session.id,
+        reason: `Denarii checkout: $${price} | Risk: ${riskLevel} | Key: ${idempotencyKey}`,
+        timestamp_utc: new Date().toISOString()
+      }).catch(() => {});
+    } catch (e) {
+      console.warn('[createDenariiCheckout] Audit log failed:', e.message);
+    }
 
     return Response.json({
       sessionId: session.id,
-      url: session.url
+      url: session.url,
+      fraudRiskLevel: riskLevel,
+      requiresReview: shouldCreateReview
     });
   } catch (error) {
     console.error('[createDenariiCheckout] Error:', error.message, error.stack);
