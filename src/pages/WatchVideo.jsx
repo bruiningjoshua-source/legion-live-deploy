@@ -81,6 +81,20 @@ export default function WatchVideo() {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
+  const { data: subscription } = useQuery({
+    queryKey: ['user-subscription', user?.email, creator?.id],
+    queryFn: async () => {
+      if (!user?.email || !creator?.id) return null;
+      const subs = await base44.entities.CreatorSubscription.filter({ 
+        user_email: user.email, 
+        creator_id: creator.id 
+      }, null, 1);
+      return subs[0] || null;
+    },
+    enabled: !!user?.email && !!creator?.id,
+    staleTime: 5 * 60 * 1000
+  });
+
   const { data: affiliateProducts = [] } = useQuery({
     queryKey: ['video-affiliate-products', video?.affiliate_products],
     queryFn: async () => {
@@ -296,27 +310,41 @@ export default function WatchVideo() {
                 <h1 className="text-2xl font-bold text-amber-100 mb-4">{video.title}</h1>
                 
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
-                      <div className="flex items-center gap-3">
-                        {creator?.avatar_url && (
-                          <img src={creator.avatar_url} className="w-12 h-12 rounded-full" alt="" />
-                        )}
-                        <div>
-                          <p className="text-amber-100 font-semibold">{creator?.display_name}</p>
-                          <p className="text-amber-400/60 text-sm">{creator?.follower_count ? (creator.follower_count >= 1000 ? (creator.follower_count / 1000).toFixed(1) + 'K' : creator.follower_count) : 0} followers</p>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
+                  <div className="flex items-center justify-between flex-1">
+                     <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
+                       <div className="flex items-center gap-3">
+                         {creator?.avatar_url && (
+                           <img src={creator.avatar_url} className="w-12 h-12 rounded-full" alt="" />
+                         )}
+                         <div>
+                           <p className="text-amber-100 font-semibold">{creator?.display_name}</p>
+                           <p className="text-amber-400/60 text-sm">{creator?.follower_count ? (creator.follower_count >= 1000 ? (creator.follower_count / 1000).toFixed(1) + 'K' : creator.follower_count) : 0} followers</p>
+                         </div>
+                       </div>
+                     </Link>
+                     <Button 
+                       onClick={() => {
+                         if (!user?.email) {
+                           toast.error('Sign in to subscribe');
+                           return;
+                         }
+                         // Subscribe/unsubscribe logic
+                       }}
+                       className={subscription ? 'bg-stone-600 hover:bg-stone-700' : 'bg-red-600 hover:bg-red-700'}
+                     >
+                       {subscription ? 'Subscribed' : 'Subscribe'}
+                     </Button>
+                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <TipButton 
-                      creatorId={creator?.id}
-                      streamId={null}
-                      variant="outline"
-                      size="default"
-                    />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {creator?.id && (
+                      <TipButton 
+                        creatorId={creator?.id}
+                        streamId={null}
+                        variant="outline"
+                        size="sm"
+                      />
+                    )}
                     <div className="flex items-center bg-stone-800 rounded-lg overflow-hidden">
                       <Button
                         onClick={() => user && likeMutation.mutate()}
@@ -379,21 +407,24 @@ export default function WatchVideo() {
 
           {/* Sidebar - Recommendations and Affiliate Products */}
           <div className="space-y-4">
-            {/* Recommended Videos */}
-            <RecommendedVideos
-              currentVideoId={videoId}
-              currentVideo={video}
-              autoplay={autoplay}
-              onAutoplayChange={setAutoplay}
-              onVideoSelect={(nextVideo) => {
-                if (autoplay && videoEnded) {
-                  const url = nextVideo.contentType === 'music' 
-                    ? `WatchVideo?id=${nextVideo.id}&type=music`
-                    : `WatchVideo?id=${nextVideo.id}`;
-                  navigate(createPageUrl(url));
-                }
-              }}
-            />
+            {/* Up Next (Recommended Videos) */}
+             <div className="bg-stone-800/30 border-amber-600/20 rounded-xl p-4">
+               <h3 className="text-amber-100 font-semibold mb-4">Up Next</h3>
+               <RecommendedVideos
+                 currentVideoId={videoId}
+                 currentVideo={video}
+                 autoplay={autoplay}
+                 onAutoplayChange={setAutoplay}
+                 onVideoSelect={(nextVideo) => {
+                   if (autoplay && videoEnded) {
+                     const url = nextVideo.contentType === 'music' 
+                       ? `WatchVideo?id=${nextVideo.id}&type=music`
+                       : `WatchVideo?id=${nextVideo.id}`;
+                     navigate(createPageUrl(url));
+                   }
+                 }}
+               />
+             </div>
 
             {/* Affiliate Products */}
             {affiliateProducts.length > 0 && (
