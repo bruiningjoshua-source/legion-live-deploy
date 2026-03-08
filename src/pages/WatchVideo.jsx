@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,13 @@ export default function WatchVideo() {
   const contentType = urlParams.get('type'); // 'music' or null for video
 
   const isMusic = contentType === 'music';
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
+  });
 
   const viewTrackedRef = useRef(false);
   const [autoplay, setAutoplay] = useState(() => {
@@ -127,13 +135,6 @@ export default function WatchVideo() {
     },
     enabled: !!video?.affiliate_products?.length,
     staleTime: 10 * 60 * 1000 // 10 minutes
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
   });
 
   const { data: userInterest } = useQuery({
@@ -341,7 +342,18 @@ export default function WatchVideo() {
                            toast.error('Sign in to subscribe');
                            return;
                          }
-                         // Subscribe/unsubscribe logic
+                         if (subscription) {
+                           base44.entities.CreatorSubscription.delete(subscription.id).then(() => {
+                             queryClient.invalidateQueries({ queryKey: ['user-subscription'] });
+                             toast.success('Unsubscribed');
+                           }).catch(() => toast.error('Failed to unsubscribe'));
+                         } else {
+                           base44.functions.invoke('createHostSubscription', { creatorId: creator.id })
+                             .then(res => {
+                               if (res.data?.url) window.location.href = res.data.url;
+                             })
+                             .catch(() => toast.error('Failed to start subscription'));
+                         }
                        }}
                        className={subscription ? 'bg-stone-600 hover:bg-stone-700' : 'bg-red-600 hover:bg-red-700'}
                      >
