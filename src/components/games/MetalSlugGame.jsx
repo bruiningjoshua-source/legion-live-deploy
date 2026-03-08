@@ -231,9 +231,10 @@ export default function MetalSlugGame() {
       else if (right) { player.vx = PLAYER_SPEED; player.facing = 1; }
       else { player.vx *= 0.8; }
 
-      if (jump && player.onGround) { player.vy = JUMP_FORCE; player.onGround = false; }
+      if (jump && player.onGround) { player.vy = JUMP_FORCE; player.onGround = false; GameAudio.jump(); }
       if (shoot && player.shootCooldown === 0) {
         player.shootCooldown = 12;
+        GameAudio.shoot();
         s.bullets.push({ x: player.x + player.w / 2, y: player.y + 18, vx: BULLET_SPEED * player.facing, age: 0 });
       }
 
@@ -264,7 +265,7 @@ export default function MetalSlugGame() {
           if (!e.alive || hit) return;
           if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
             e.hp--; hit = true;
-            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1000 : e.type === 'tank' ? 300 : 100; }
+            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1000 : e.type === 'tank' ? 300 : 100; GameAudio.stomp(); }
           }
         });
         return !hit;
@@ -288,8 +289,8 @@ export default function MetalSlugGame() {
         b.x += b.vx; b.age++;
         if (b.age > 80) return false;
         if (player.iframes === 0 && b.x > player.x && b.x < player.x + player.w && b.y > player.y && b.y < player.y + player.h) {
-          player.hp--; player.iframes = 80;
-          if (player.hp <= 0) { s.gameOver = true; setUi({ hp: 0, score: s.score, gameOver: true, win: false }); }
+          player.hp--; player.iframes = 80; GameAudio.hit();
+          if (player.hp <= 0) { s.gameOver = true; GameAudio.gameOver(); setUi({ hp: 0, score: s.score, gameOver: true, win: false }); }
           return false;
         }
         return true;
@@ -301,7 +302,7 @@ export default function MetalSlugGame() {
       s.camera.x = Math.max(0, Math.min(s.camera.x, WORLD_W - CANVAS_W));
 
       if (s.enemies.every(e => !e.alive)) {
-        s.win = true; setUi({ hp: player.hp, score: s.score, gameOver: false, win: true }); return;
+        s.win = true; GameAudio.win(); setUi({ hp: player.hp, score: s.score, gameOver: false, win: true }); return;
       }
       setUi({ hp: player.hp, score: s.score, gameOver: false, win: false });
     }
