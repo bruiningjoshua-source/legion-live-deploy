@@ -249,11 +249,15 @@ export default function TetrisGame() {
         s.score += SCORE_TABLE[cleared] * s.level;
         s.level = Math.floor(s.lines / 10) + 1;
         s.dropInterval = Math.max(80, 600 - (s.level - 1) * 55);
+        GameAudio.lineClear(cleared);
+      } else {
+        GameAudio.land();
       }
       s.current = s.next;
       s.next = randomPiece();
       if (!isValid(s.board, s.current)) {
         s.gameOver = true;
+        GameAudio.gameOver();
         setUi({ score: s.score, lines: s.lines, level: s.level, gameOver: true });
         return;
       }
