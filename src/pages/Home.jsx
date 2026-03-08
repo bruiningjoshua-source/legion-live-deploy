@@ -29,14 +29,14 @@ import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 const QuickAccessCard = memo(function QuickAccessCard({ item, index }) {
   return (
     <Link to={createPageUrl(item.to)}>
-      <div className="h-full group cursor-pointer bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] rounded-xl p-4 transition-all duration-200">
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}>
-            <item.icon className="w-5 h-5 text-white" />
+      <div className="h-full group cursor-pointer bg-gradient-to-br from-white/[0.06] to-white/[0.02] hover:from-white/[0.1] hover:to-white/[0.04] backdrop-blur-md border border-white/[0.1] hover:border-white/[0.15] rounded-2xl p-4 transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+        <div className="flex flex-col items-center text-center gap-3">
+          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg shadow-black/30 group-hover:scale-110 transition-transform duration-300`}>
+            <item.icon className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-white font-medium text-sm">{item.title}</p>
-            <p className="text-white/35 text-[10px]">{item.desc}</p>
+            <p className="text-white font-bold text-sm">{item.title}</p>
+            <p className="text-white/45 text-[10px] font-medium">{item.desc}</p>
           </div>
         </div>
       </div>
@@ -149,37 +149,37 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen pt-16 pb-24">
+    <div className="min-h-screen pt-16 pb-24 bg-gradient-to-b from-black via-slate-950 to-black">
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Hero Header */}
         <div className="text-center mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1 mb-4">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-amber-400/10 backdrop-blur-xl border border-amber-500/30 rounded-full px-4 py-2 mb-4 shadow-lg shadow-amber-500/10">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
             </span>
-            <span className="text-amber-300/80 text-[11px] font-semibold tracking-wider uppercase">Platform Live</span>
+            <span className="text-amber-300 text-[11px] font-bold tracking-widest uppercase">✦ Platform Live</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1 animate-gradient-x">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-1 animate-gradient-x drop-shadow-lg">
             Legion Live
           </h1>
-          <p className="text-white/40 text-sm sm:text-base font-medium tracking-wide">Stream. Compete. Earn.</p>
+          <p className="text-white/50 text-sm sm:text-base font-semibold tracking-wide">Stream • Compete • Earn</p>
           
-          <div className="flex items-center justify-center gap-5 mt-5">
+          <div className="flex items-center justify-center gap-6 mt-8 px-4 py-4 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 backdrop-blur-sm border border-amber-500/10 rounded-2xl max-w-2xl mx-auto">
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-black text-white">{fmt.count(streams.length)}</p>
-              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Live Now</p>
+              <p className="text-xl sm:text-2xl font-black text-amber-400">{fmt.count(streams.length)}</p>
+              <p className="text-white/40 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mt-0.5">Live Now</p>
             </div>
-            <div className="w-px h-7 bg-white/10" />
+            <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-black text-white">{fmt.count(creators.length)}</p>
-              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Creators</p>
+              <p className="text-xl sm:text-2xl font-black text-white">{fmt.count(creators.length)}</p>
+              <p className="text-white/40 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mt-0.5">Creators</p>
             </div>
-            <div className="w-px h-7 bg-white/10" />
+            <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
             <div className="text-center">
-              <p className="text-lg sm:text-xl font-black text-amber-400">50%</p>
-              <p className="text-white/35 text-[10px] sm:text-xs uppercase tracking-widest">Creator Cut</p>
+              <p className="text-xl sm:text-2xl font-black text-amber-400">60%</p>
+              <p className="text-white/40 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mt-0.5">Creator Cut</p>
             </div>
           </div>
           <div className="flex justify-center mt-3">
@@ -188,7 +188,7 @@ export default function Home() {
         </div>
         
         {/* Quick Access */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-8 sm:mb-10 max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-12 max-w-4xl mx-auto">
           {QUICK_ACCESS_ITEMS.map((item, i) => (
             <QuickAccessCard key={item.to} item={item} index={i} />
           ))}
@@ -198,16 +198,16 @@ export default function Home() {
         <CreatorsYouMayLike user={user} />
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-5">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="flex justify-center">
-            <div className="inline-flex bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl min-w-max">
+            <div className="inline-flex bg-gradient-to-r from-white/[0.08] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] p-1.5 rounded-2xl min-w-max shadow-lg shadow-black/20">
               {TAB_ITEMS.map((tab) => (
                 <TabsList key={tab.value} className="bg-transparent p-0">
                   <TabsTrigger 
                     value={tab.value}
-                    className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow rounded-lg px-4 py-1.5 text-white/40 hover:text-white/70 transition-colors text-sm"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-white data-[state=active]:to-white/90 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-white/20 rounded-xl px-5 py-2 text-white/50 hover:text-white/80 transition-all duration-300 text-sm font-semibold"
                   >
-                    <tab.icon className="w-3.5 h-3.5 mr-1.5" />
+                    <tab.icon className="w-4 h-4 mr-2" />
                     {tab.label}
                   </TabsTrigger>
                 </TabsList>
