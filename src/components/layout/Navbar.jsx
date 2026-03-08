@@ -42,12 +42,12 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const navigate = useNavigate();
 
   const mainNavLinks = [
-    { name: 'Home', path: createPageUrl('Home'), icon: Home },
-    { name: 'Live', path: createPageUrl('Explore'), icon: Radio },
-    { name: 'Watch', path: createPageUrl('TheAmphitheatre'), icon: Film },
-    { name: 'Podcasts', path: createPageUrl('Podcasts'), icon: Headphones },
-    { name: 'Games', path: createPageUrl('GamesExpo'), icon: Gamepad2 },
-    { name: 'Shop', path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
+    { name: 'Home',    path: createPageUrl('Home'),               icon: Home       },
+    { name: 'Live',    path: createPageUrl('Explore'),            icon: Radio      },
+    { name: 'Watch',   path: createPageUrl('TheAmphitheatre'),    icon: Film       },
+    { name: 'Events',  path: createPageUrl('Events'),             icon: Trophy     },
+    { name: 'Games',   path: createPageUrl('GamesExpo'),          icon: Gamepad2   },
+    { name: 'Shop',    path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
   ];
 
   const creatorLinks = [
@@ -138,7 +138,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
               <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.06] rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors">
                 <span className="text-sm">🪙</span>
                 <span className="text-white font-medium text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
-                <span className="text-white/40 text-xs">${((wallet.denarii_balance || 0) / 180).toFixed(2)}</span>
+                <span className="text-white/40 text-xs">≈${((wallet.denarii_balance || 0) * 0.01 * 0.5).toFixed(2)}</span>
               </div>
             </Link>
           )}
