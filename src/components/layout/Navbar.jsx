@@ -68,7 +68,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-2xl border-b border-white/[0.06]">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/95 to-black/50 backdrop-blur-xl border-b border-gradient-to-r from-amber-500/10 via-transparent to-amber-500/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Logo + Shield Menu + Back Button */}
         <div className="flex items-center gap-2">
@@ -93,20 +93,20 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-0.5 bg-white/[0.04] rounded-full p-1">
+        <div className="hidden lg:flex items-center gap-1 bg-gradient-to-r from-white/[0.08] to-white/[0.03] backdrop-blur-lg rounded-2xl p-1.5 border border-white/[0.1]">
           {mainNavLinks.map(link => {
             const Icon = link.icon;
             return (
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-sm font-medium ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-sm font-semibold ${
                   isActive(link.path)
-                    ? 'bg-white text-black'
-                    : 'text-white/50 hover:text-white hover:bg-white/[0.08]'
+                    ? 'bg-gradient-to-r from-white to-white/90 text-black shadow-lg shadow-white/20'
+                    : 'text-white/60 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-4 h-4" />
                 {link.name}
               </button>
             );
@@ -116,11 +116,11 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Search — navigates to Explore on Enter */}
-          <div className="hidden md:flex items-center bg-white/10 rounded-full px-3 py-1.5 border border-white/10 focus-within:border-amber-500/40 transition-colors">
-            <Search className="w-4 h-4 text-white/40 mr-2" />
+          <div className="hidden md:flex items-center bg-gradient-to-r from-white/[0.08] to-white/[0.03] rounded-2xl px-4 py-2 border border-white/[0.1] focus-within:border-amber-500/40 transition-all backdrop-blur-lg">
+            <Search className="w-4 h-4 text-white/50 mr-2" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search creators, streams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -129,17 +129,17 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   setSearchQuery('');
                 }
               }}
-              className="bg-transparent text-white text-sm placeholder:text-white/40 outline-none w-32 lg:w-48"
+              className="bg-transparent text-white text-sm placeholder:text-white/40 outline-none w-32 lg:w-52"
             />
           </div>
 
           {/* Wallet */}
           {wallet && (
             <Link to={createPageUrl('Wallet')}>
-              <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.06] rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors">
-                <span className="text-sm">🪙</span>
-                <span className="text-white font-medium text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
-                <span className="text-white/40 text-xs">≈${((wallet.denarii_balance || 0) * 0.01 * 0.5).toFixed(2)}</span>
+              <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-amber-500/10 to-amber-400/5 rounded-2xl px-4 py-2 hover:from-amber-500/15 hover:to-amber-400/10 transition-all border border-amber-500/20 backdrop-blur-lg">
+                <span className="text-base">🪙</span>
+                <span className="text-white font-bold text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
+                <span className="text-white/50 text-xs">≈${((wallet.denarii_balance || 0) * 0.01 * 0.5).toFixed(2)}</span>
               </div>
             </Link>
           )}
@@ -147,8 +147,8 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {/* Go Live */}
           {user && (
             <Link to={createPageUrl('GoLive')}>
-              <Button className="hidden sm:flex bg-red-500 hover:bg-red-600 text-white gap-1.5 rounded-full px-4 h-8 text-sm font-medium">
-                <Radio className="w-3.5 h-3.5" />
+              <Button className="hidden sm:flex bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white gap-2 rounded-xl px-5 h-9 text-sm font-bold shadow-lg shadow-red-500/30 active:scale-95 transition-all">
+                <Radio className="w-4 h-4" />
                 Go Live
               </Button>
             </Link>
@@ -167,7 +167,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1f] border-white/10 shadow-2xl">
+              <DropdownMenuContent align="end" className="w-56 bg-gradient-to-br from-slate-900/95 to-black/95 backdrop-blur-xl border border-white/[0.1] shadow-2xl shadow-black/50 rounded-2xl">
                 <div className="px-3 py-2.5 border-b border-white/[0.06]">
                   <p className="text-white font-semibold text-sm">{user.full_name}</p>
                   <p className="text-white/40 text-xs">{user.email}</p>
@@ -243,7 +243,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden bg-[#111113] border-t border-white/[0.06]"
+            className="lg:hidden bg-gradient-to-b from-slate-900/80 to-black/90 backdrop-blur-lg border-t border-white/[0.1]"
           >
             <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
               {mainNavLinks.map(link => {
