@@ -143,9 +143,9 @@ export default function WatchStream() {
       const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
       const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
       if (!mounted) return;
-      const { appId, token } = res.data || {};
+      const { appId, token, serverUrl } = res.data || {};
       if (!appId || !token) { setLiveStream(true); return; }
-      await ZegoService.initialize(appId);
+      await ZegoService.initialize(appId, serverUrl);
       if (!mounted) return;
       await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
       if (!mounted) return;
