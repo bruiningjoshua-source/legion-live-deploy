@@ -43,9 +43,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid bonus amount' }, { status: 400 });
     }
 
-    // Validate price-to-denarii ratio (65 Denarii/$1, allow 40–120 range for bonuses)
+    // Validate price-to-denarii ratio (260 Denarii/$1 base, allow 200–400 range for bonuses)
     const expectedRatio = denarii / price;
-    if (expectedRatio > 120 || expectedRatio < 40) {
+    if (expectedRatio > 400 || expectedRatio < 200) {
       console.error('[createDenariiCheckout] Suspicious ratio:', expectedRatio, { denarii, price });
       return Response.json({ error: 'Invalid package configuration' }, { status: 400 });
     }

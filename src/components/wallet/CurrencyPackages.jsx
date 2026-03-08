@@ -271,12 +271,12 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         <div className="flex items-center gap-4 bg-white/5 rounded-full px-6 py-2 border border-white/10">
           <div className="flex items-center gap-2 text-white/80 text-sm">
             <span className="text-base">🪙</span>
-            <span>65 Denarii = $1 USD</span>
+            <span>260 Denarii = $1 spent</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/80 text-sm">
             <span className="text-base">🎁</span>
-            <span>Creators earn 50%</span>
+            <span>Creators earn 60%</span>
           </div>
         </div>
         <p className="text-white/40 text-xs flex items-center gap-1">
