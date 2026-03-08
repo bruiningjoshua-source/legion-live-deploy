@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import GameMobileControls from './GameMobileControls';
+import GameAudio from './GameAudio';
 
 const COLS = 10;
 const ROWS = 20;
