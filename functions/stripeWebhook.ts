@@ -175,11 +175,27 @@ Deno.serve(async (req) => {
             { user_email: metadata.user_email }, null, 1
           );
 
+          // VIP points and lotto tickets from metadata
+          const vipPointsAwarded = parseInt(metadata.vip_points) || Math.floor(priceUsd * 10);
+          const lottoTicketsAwarded = parseInt(metadata.lotto_tickets) || Math.floor(priceUsd / 10);
+
           if (wallets[0]) {
+            const newVipPoints = (wallets[0].vip_points || 0) + vipPointsAwarded;
+            // Compute VIP level from points
+            const VIP_THRESHOLDS = [0, 500, 1500, 4000, 10000, 25000, 60000, 150000, 500000];
+            let newVipLevel = 0;
+            for (let i = VIP_THRESHOLDS.length - 1; i >= 0; i--) {
+              if (newVipPoints >= VIP_THRESHOLDS[i]) { newVipLevel = i; break; }
+            }
             await base44.asServiceRole.entities.Wallet.update(wallets[0].id, {
               denarii_balance: (wallets[0].denarii_balance || 0) + totalDenarii,
-              total_spent: (wallets[0].total_spent || 0) + priceUsd
+              total_spent: (wallets[0].total_spent || 0) + priceUsd,
+              total_purchased_usd: (wallets[0].total_purchased_usd || 0) + priceUsd,
+              vip_points: newVipPoints,
+              vip_level: newVipLevel,
+              lotto_tickets: (wallets[0].lotto_tickets || 0) + lottoTicketsAwarded,
             });
+            console.log('[stripeWebhook] VIP points awarded:', vipPointsAwarded, '→ total', newVipPoints, 'level', newVipLevel);
           } else {
             await base44.asServiceRole.entities.Wallet.create({
               user_email: metadata.user_email,
@@ -187,7 +203,10 @@ Deno.serve(async (req) => {
               sestertii_balance: 0,
               as_balance: 0,
               total_spent: priceUsd,
-              vip_level: 0
+              total_purchased_usd: priceUsd,
+              vip_points: vipPointsAwarded,
+              vip_level: 0,
+              lotto_tickets: lottoTicketsAwarded,
             });
           }
 
