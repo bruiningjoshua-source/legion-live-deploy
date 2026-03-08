@@ -5,6 +5,22 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
+// Rate limiting: 1 host subscription per day per user
+const hostBuckets = new Map();
+function checkHostSubRate(email) {
+  const now = Date.now();
+  const bucket = hostBuckets.get(email);
+  if (!bucket || now > bucket.resetAt) {
+    hostBuckets.set(email, { count: 1, resetAt: now + 86400000 });
+    return { allowed: true };
+  }
+  bucket.count++;
+  if (bucket.count > 1) {
+    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  return { allowed: true };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -15,10 +31,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { plan, creatorId } = await req.json();
+    const { plan, creatorId, csrfToken } = await req.json();
 
+    // Input validation
     if (!plan || !['monthly', 'yearly'].includes(plan)) {
       return Response.json({ error: 'Invalid plan. Must be "monthly" or "yearly".' }, { status: 400 });
+    }
+    if (creatorId && (typeof creatorId !== 'string' || creatorId.length > 100)) {
+      return Response.json({ error: 'Invalid creatorId' }, { status: 400 });
+    }
+
+    // CSRF validation
+    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 20) {
+      return Response.json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
+
+    // Rate limiting
+    const rateCheck = checkHostSubRate(user.email);
+    if (!rateCheck.allowed) {
+      return Response.json({ error: 'Rate limited: 1 host subscription per day', retryAfter: rateCheck.retryAfter }, { status: 429 });
     }
 
     // Check for existing active subscription
@@ -80,14 +111,16 @@ Deno.serve(async (req) => {
         user_email: user.email,
         creator_id: creatorId || '',
         plan_type: plan,
-        subscription_type: 'host_subscription'
+        subscription_type: 'host_subscription',
+        timestamp: Date.now().toString()
       },
       subscription_data: {
         metadata: {
           base44_app_id: Deno.env.get("BASE44_APP_ID"),
           user_email: user.email,
           creator_id: creatorId || '',
-          plan_type: plan
+          plan_type: plan,
+          timestamp: Date.now().toString()
         }
       }
     });
