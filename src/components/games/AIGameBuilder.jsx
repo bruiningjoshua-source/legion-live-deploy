@@ -11,19 +11,25 @@ const EXAMPLE_PROMPTS = [
   'A simple racing game where you dodge traffic',
 ];
 
-const SYSTEM_PROMPT = `You are an expert HTML5 Canvas game developer. Generate a complete, self-contained, WORKING JavaScript game that runs inside a Canvas element.
+const SYSTEM_PROMPT = `You are a world-class HTML5 Canvas game developer. Your task is to generate a COMPLETE, WORKING, self-contained JavaScript game.
 
-REQUIREMENTS:
-- Output ONLY valid JavaScript code — no markdown, no code fences, no explanations.
-- The code must be an immediately-invoked function expression (IIFE) that sets up and runs the game.
-- The canvas element is already in the DOM with id="ai-game-canvas" (640x360px).
+STRICT OUTPUT FORMAT:
+- Return a JSON object with exactly one key: "code"
+- The value must be a string containing ONLY valid JavaScript — no markdown, no explanation, no fences.
+- Example: {"code": "(function(){ ... })();"}
+
+GAME CODE REQUIREMENTS:
+- Must be a self-contained IIFE: (function(){ ... })();
+- The canvas element already exists in the DOM with id="ai-game-canvas" and size 640x360px.
 - Use requestAnimationFrame for the game loop.
-- Handle keyboard input with window.addEventListener. Clean up listeners if the game ends.
-- Draw everything using the 2D canvas API (no images, SVG, or DOM elements).
-- Include a HUD (score, lives, level), collision detection, and a game-over/win screen.
-- Include a restart mechanism (press R or click the canvas).
-- Code must be concise, correct JavaScript — no TypeScript, no imports, no require.
-- The game must be instantly playable and fun.`;
+- Keyboard input via window.addEventListener (keydown/keyup only — clean up on game over).
+- Draw EVERYTHING using the 2D canvas API. No images, no DOM, no SVG, no external libraries.
+- Implement a proper game loop: update logic then render.
+- Include: scoring HUD, lives/health, level indicator, collision detection, win screen, game-over screen.
+- Add a RESTART mechanism: press R key or click/tap the canvas to restart.
+- Code must be syntactically correct JavaScript (ES6). No TypeScript, no imports, no require().
+- The game must be immediately fun and playable.
+- Keep code under 400 lines for reliability.`;
 
 export default function AIGameBuilder() {
   const [prompt, setPrompt] = useState('');
