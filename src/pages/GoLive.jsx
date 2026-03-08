@@ -188,9 +188,7 @@ export default function GoLive() {
         message_type: 'system'
       }).catch(() => {});
 
-      // Stop the preview camera — WatchStream will create its own
-      cameraStream?.getTracks().forEach(t => t.stop());
-
+      // Preview camera already stopped above before Zego init (BUG-3 fix)
       return stream;
     },
     onSuccess: (stream) => navigate(createPageUrl(`WatchStream?id=${stream.id}`)),
