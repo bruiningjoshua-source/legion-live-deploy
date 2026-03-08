@@ -192,7 +192,9 @@ export default function Layout({ children, currentPageName }) {
       
       {/* Theme variables are now in globals.css */}
       
-      <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
+      {currentPageName !== 'VideoEditor' && (
+        <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
+      )}
       
       <main className={`${
         currentPageName === 'GoLive' || currentPageName === 'WatchStream' || currentPageName === 'VideoEditor'
