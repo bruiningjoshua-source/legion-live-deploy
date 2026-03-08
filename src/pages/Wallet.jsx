@@ -77,7 +77,8 @@ export default function Wallet() {
         denarii: pkg.denarii,
         bonus: pkg.bonus || 0,
         price: pkg.price,
-        packageName: pkg.name
+        packageName: pkg.name,
+        vipPoints: pkg.vipPoints || 0,
       });
 
       // Redirect to Stripe checkout
