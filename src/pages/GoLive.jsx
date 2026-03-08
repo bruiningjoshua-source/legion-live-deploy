@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { 
-  Radio, FlipHorizontal, Sparkles, Wand2, Gamepad2, Music, Gift, ArrowRight, X
+  Radio, FlipHorizontal, Sparkles, Wand2, Gift, ArrowRight, X
 } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import { motion, AnimatePresence } from 'framer-motion';
