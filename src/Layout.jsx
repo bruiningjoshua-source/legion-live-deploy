@@ -59,12 +59,12 @@ export default function Layout({ children, currentPageName }) {
         setIsAuthenticated(false);
       }
       
-      const lastLoadTime = localStorage.getItem('lastAppLoadTime');
-      const now = Date.now();
-      if (!lastLoadTime || (now - parseInt(lastLoadTime)) > 5000) {
+      // Always show loading screen on fresh app load; suppress on navigations within session
+      const sessionKey = window.__legionSessionStarted;
+      if (!sessionKey) {
+        window.__legionSessionStarted = true;
         setShowLoadingScreen(true);
       }
-      localStorage.setItem('lastAppLoadTime', now.toString());
     };
     checkAuth();
   }, []);
