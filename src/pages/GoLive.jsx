@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { 
   Radio, FlipHorizontal, Sparkles, Wand2, Gamepad2, Music, Gift, ArrowRight, X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import BeautyFilter from '@/components/stream/BeautyFilter';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
 import GoLiveTopBar from '@/components/stream/GoLiveTopBar';
@@ -19,6 +20,7 @@ export default function GoLive() {
   const [category, setCategory] = useState('');
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
+  const [showBeauty, setShowBeauty] = useState(false);
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -236,20 +238,19 @@ export default function GoLive() {
         </div>
 
         {/* ─── RIGHT SIDE TOOLS ─── */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-4">
-          {[
-            { icon: Sparkles, label: 'Beauty' },
-            { icon: Wand2, label: 'Filter' },
-            { icon: Music, label: 'Music' },
-            { icon: Gamepad2, label: 'Game' },
-          ].map(tool => (
-            <button key={tool.label} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center">
-                <tool.icon className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-white/50 text-[10px]">{tool.label}</span>
-            </button>
-          ))}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-3">
+          <button className="flex flex-col items-center gap-0.5" onClick={() => setShowBeauty(!showBeauty)}>
+            <div className={`w-11 h-11 rounded-full backdrop-blur-xl border flex items-center justify-center ${showBeauty ? 'bg-amber-500/30 border-amber-400/50' : 'bg-black/50 border-white/10'}`}>
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/50 text-[10px]">Beauty</span>
+          </button>
+          <button className="flex flex-col items-center gap-0.5" onClick={() => setShowBeauty(!showBeauty)}>
+            <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+              <Wand2 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/50 text-[10px]">Filter</span>
+          </button>
           <button className="flex flex-col items-center gap-0.5" onClick={() => {
             if (videoRef.current) {
               const cur = videoRef.current.style.transform;
@@ -262,6 +263,11 @@ export default function GoLive() {
             <span className="text-white/50 text-[10px]">Flip</span>
           </button>
         </div>
+
+        {/* Beauty / Filter overlay */}
+        <AnimatePresence>
+          {showBeauty && <BeautyFilter videoRef={videoRef} />}
+        </AnimatePresence>
 
         {/* ─── BOTTOM SECTION ─── */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>

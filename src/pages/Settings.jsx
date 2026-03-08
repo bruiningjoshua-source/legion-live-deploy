@@ -37,11 +37,10 @@ const THEMES = [
 export default function Settings() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [notifications, setNotifications] = useState({
-    liveAlerts: true,
-    giftAlerts: true,
-    followAlerts: true,
-    eventReminders: true
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('legion_notifications');
+    if (saved) return JSON.parse(saved);
+    return { liveAlerts: true, giftAlerts: true, followAlerts: true, eventReminders: true };
   });
 
   const [appearance, setAppearance] = useState({
@@ -93,8 +92,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-24">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2 flex items-center gap-3">
@@ -160,49 +159,31 @@ export default function Settings() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Live Alerts</p>
-                    <p className="text-amber-400/60 text-sm">Get notified when creators you follow go live</p>
-                  </div>
-                  <Switch
-                    checked={notifications.liveAlerts}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, liveAlerts: checked })}
-                  />
-                </div>
-                <Separator className="bg-amber-600/20" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Gift Notifications</p>
-                    <p className="text-amber-400/60 text-sm">Receive alerts when you get gifts</p>
-                  </div>
-                  <Switch
-                    checked={notifications.giftAlerts}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, giftAlerts: checked })}
-                  />
-                </div>
-                <Separator className="bg-amber-600/20" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">New Followers</p>
-                    <p className="text-amber-400/60 text-sm">Get notified of new followers</p>
-                  </div>
-                  <Switch
-                    checked={notifications.followAlerts}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, followAlerts: checked })}
-                  />
-                </div>
-                <Separator className="bg-amber-600/20" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Event Reminders</p>
-                    <p className="text-amber-400/60 text-sm">Receive reminders for upcoming events</p>
-                  </div>
-                  <Switch
-                    checked={notifications.eventReminders}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, eventReminders: checked })}
-                  />
-                </div>
+                {[
+                  { key: 'liveAlerts', title: 'Live Alerts', desc: 'Get notified when creators you follow go live' },
+                  { key: 'giftAlerts', title: 'Gift Notifications', desc: 'Receive alerts when you get gifts' },
+                  { key: 'followAlerts', title: 'New Followers', desc: 'Get notified of new followers' },
+                  { key: 'eventReminders', title: 'Event Reminders', desc: 'Receive reminders for upcoming events' },
+                ].map((item, i, arr) => (
+                  <React.Fragment key={item.key}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-amber-100 font-medium">{item.title}</p>
+                        <p className="text-amber-400/60 text-sm">{item.desc}</p>
+                      </div>
+                      <Switch
+                        checked={notifications[item.key]}
+                        onCheckedChange={(checked) => {
+                          const next = { ...notifications, [item.key]: checked };
+                          setNotifications(next);
+                          localStorage.setItem('legion_notifications', JSON.stringify(next));
+                          toast.success(`${item.title} ${checked ? 'enabled' : 'disabled'}`);
+                        }}
+                      />
+                    </div>
+                    {i < arr.length - 1 && <Separator className="bg-amber-600/20" />}
+                  </React.Fragment>
+                ))}
               </CardContent>
             </Card>
           </motion.div>
@@ -338,29 +319,31 @@ export default function Settings() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Private Profile</p>
-                    <p className="text-amber-400/60 text-sm">Only approved followers can see your activity</p>
-                  </div>
-                  <Switch />
-                </div>
-                <Separator className="bg-amber-600/20" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Hide Gift History</p>
-                    <p className="text-amber-400/60 text-sm">Don't show gifts you've sent publicly</p>
-                  </div>
-                  <Switch />
-                </div>
-                <Separator className="bg-amber-600/20" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-amber-100 font-medium">Block Chat Invites</p>
-                    <p className="text-amber-400/60 text-sm">Only receive messages from people you follow</p>
-                  </div>
-                  <Switch />
-                </div>
+                {[
+                  { key: 'private_profile', title: 'Private Profile', desc: 'Only approved followers can see your activity' },
+                  { key: 'hide_gifts', title: 'Hide Gift History', desc: "Don't show gifts you've sent publicly" },
+                  { key: 'block_chat', title: 'Block Chat Invites', desc: 'Only receive messages from people you follow' },
+                ].map((item, i, arr) => {
+                  const saved = localStorage.getItem(`legion_privacy_${item.key}`) === 'true';
+                  return (
+                    <React.Fragment key={item.key}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-amber-100 font-medium">{item.title}</p>
+                          <p className="text-amber-400/60 text-sm">{item.desc}</p>
+                        </div>
+                        <Switch
+                          defaultChecked={saved}
+                          onCheckedChange={(checked) => {
+                            localStorage.setItem(`legion_privacy_${item.key}`, checked.toString());
+                            toast.success(`${item.title} ${checked ? 'enabled' : 'disabled'}`);
+                          }}
+                        />
+                      </div>
+                      {i < arr.length - 1 && <Separator className="bg-amber-600/20" />}
+                    </React.Fragment>
+                  );
+                })}
               </CardContent>
             </Card>
           </motion.div>

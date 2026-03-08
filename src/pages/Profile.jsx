@@ -216,25 +216,25 @@ export default function Profile() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-24">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* Profile Header */}
-        <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 overflow-hidden mb-8">
+        <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 overflow-hidden mb-6">
           {/* Cover */}
-          <div className="h-32 bg-gradient-to-r from-amber-800 via-stone-800 to-amber-800 relative">
+          <div className="h-28 sm:h-32 bg-gradient-to-r from-amber-800 via-stone-800 to-amber-800 relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800')] bg-cover bg-center opacity-30" />
           </div>
 
-          <CardContent className="relative px-6 pb-6">
-            {/* Avatar */}
-            <div className="relative -mt-16 mb-4">
+          <CardContent className="relative px-4 sm:px-6 pb-6">
+            {/* Avatar + Edit button row */}
+            <div className="flex items-end justify-between -mt-14 mb-4">
               <div className="relative inline-block">
-                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1">
                   <div className="w-full h-full rounded-full overflow-hidden bg-stone-800 border-4 border-stone-900">
                     {creator?.avatar_url ? (
                       <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">👤</div>
+                      <div className="w-full h-full flex items-center justify-center text-3xl sm:text-4xl">👤</div>
                     )}
                   </div>
                 </div>
@@ -243,76 +243,81 @@ export default function Profile() {
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </label>
               </div>
-            </div>
-
-            {/* Info */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-amber-100">{creator?.display_name || user?.full_name || 'Legionnaire'}</h1>
-                  {creator?.is_verified && <Crown className="w-5 h-5 text-amber-400" />}
-                  <Badge className={`bg-${badge.color}-600/20 text-${badge.color}-300 border-${badge.color}-500/30`}>
-                    {badge.icon} {badge.label}
-                  </Badge>
-                </div>
-                <p className="text-amber-400/70 capitalize mb-2">{creator?.category?.replace('_', ' ') || 'Content Creator'}</p>
-                {creator?.bio && (
-                  <p className="text-amber-100/80 text-sm max-w-md">{creator.bio}</p>
-                )}
-              </div>
-
-              <Button onClick={handleEdit} variant="outline" className="border-amber-500/30 text-amber-300">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Profile
+              <Button onClick={handleEdit} variant="outline" size="sm" className="border-amber-500/30 text-amber-300 mb-1">
+                <Edit className="w-3.5 h-3.5 mr-1.5" />
+                Edit
               </Button>
             </div>
 
+            {/* Info */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-amber-100">{creator?.display_name || user?.full_name || 'Legionnaire'}</h1>
+                {creator?.is_verified && <Crown className="w-5 h-5 text-amber-400" />}
+                <Badge className="bg-amber-600/20 text-amber-300 border-amber-500/30 text-xs">
+                  {badge.icon} {badge.label}
+                </Badge>
+              </div>
+              <p className="text-amber-400/70 capitalize text-sm mb-1">{creator?.category?.replace('_', ' ') || 'Content Creator'}</p>
+              {creator?.bio && (
+                <p className="text-amber-100/80 text-sm max-w-md">{creator.bio}</p>
+              )}
+              {/* Social links display */}
+              {creator?.social_links && Object.values(creator.social_links).some(Boolean) && (
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {Object.entries(creator.social_links).filter(([,v]) => v).map(([platform, value]) => (
+                    <a key={platform} href={value.startsWith('http') ? value : `https://${value}`} target="_blank" rel="noopener noreferrer" 
+                       className="text-amber-400/60 hover:text-amber-300 text-xs flex items-center gap-1 transition-colors">
+                      <LinkIcon className="w-3 h-3" /> {platform}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
-                <p className="text-amber-400/60 text-sm">Followers</p>
-              </div>
-              <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{creator?.level || 1}</p>
-                <p className="text-amber-400/60 text-sm">Level</p>
-              </div>
-              <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{formatCount(creator?.pk_wins)}</p>
-                <p className="text-amber-400/60 text-sm">PK Wins</p>
-              </div>
-              <div className="bg-stone-800/50 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-amber-100">{formatCount(totalEarnings)}</p>
-                <p className="text-amber-400/60 text-sm">🪙 Earned</p>
-              </div>
+            <div className="grid grid-cols-4 gap-2 sm:gap-4 mt-4">
+              {[
+                { val: formatCount(creator?.follower_count), label: 'Followers' },
+                { val: creator?.level || 1, label: 'Level' },
+                { val: formatCount(creator?.pk_wins), label: 'PK Wins' },
+                { val: formatCount(totalEarnings), label: '🪙 Earned' },
+              ].map(stat => (
+                <div key={stat.label} className="bg-stone-800/50 rounded-xl p-2.5 sm:p-4 text-center">
+                  <p className="text-lg sm:text-2xl font-bold text-amber-100">{stat.val}</p>
+                  <p className="text-amber-400/60 text-[10px] sm:text-sm">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Tabs */}
-        <Tabs defaultValue="videos" className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl flex-wrap">
-            <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              <Video className="w-4 h-4 mr-1" />
-              Videos
-            </TabsTrigger>
-            <TabsTrigger value="info" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Info Section
-            </TabsTrigger>
-            <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Past Streams
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Statistics
-            </TabsTrigger>
-            <TabsTrigger value="earnings" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              <DollarSign className="w-4 h-4 mr-1" />
-              Earnings
-            </TabsTrigger>
-            <TabsTrigger value="affiliate" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
-              Affiliate
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="videos" className="space-y-4">
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl inline-flex min-w-max">
+              <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                <Video className="w-3.5 h-3.5 mr-1" />
+                Videos
+              </TabsTrigger>
+              <TabsTrigger value="info" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                Info
+              </TabsTrigger>
+              <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                Streams
+              </TabsTrigger>
+              <TabsTrigger value="stats" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                Stats
+              </TabsTrigger>
+              <TabsTrigger value="earnings" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                <DollarSign className="w-3.5 h-3.5 mr-1" />
+                Earn
+              </TabsTrigger>
+              <TabsTrigger value="affiliate" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+                Affiliate
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="videos" className="mt-0">
             <VideoUploadSection creator={creator} videos={myVideos} />
@@ -477,7 +482,7 @@ export default function Profile() {
             <DialogHeader>
               <DialogTitle className="text-amber-100">Edit Profile</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
               <div>
                 <Label className="text-amber-200">Display Name</Label>
                 <Input
@@ -510,8 +515,33 @@ export default function Profile() {
                   maxLength={200}
                 />
               </div>
-              <Button onClick={handleSave} className="w-full bg-amber-600 hover:bg-amber-700">
-                Save Changes
+              
+              {/* Social Links */}
+              <div className="space-y-3">
+                <Label className="text-amber-200">Social Links</Label>
+                {[
+                  { key: 'youtube', label: 'YouTube', placeholder: 'youtube.com/c/yourchannel' },
+                  { key: 'tiktok', label: 'TikTok', placeholder: '@username' },
+                  { key: 'instagram', label: 'Instagram', placeholder: '@username' },
+                  { key: 'twitter', label: 'X / Twitter', placeholder: '@username' },
+                ].map(link => (
+                  <div key={link.key}>
+                    <span className="text-amber-400/60 text-xs">{link.label}</span>
+                    <Input
+                      value={editData.social_links?.[link.key] || ''}
+                      onChange={(e) => setEditData({ 
+                        ...editData, 
+                        social_links: { ...editData.social_links, [link.key]: e.target.value } 
+                      })}
+                      placeholder={link.placeholder}
+                      className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1"
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              <Button onClick={handleSave} disabled={updateMutation.isPending} className="w-full bg-amber-600 hover:bg-amber-700">
+                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </DialogContent>
