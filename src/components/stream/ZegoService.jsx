@@ -558,9 +558,10 @@ class ZegoStreamingService {
 
     const engine = this.engine; // Capture ref in case it's nulled during async ops
 
-    // Stop publishing
+    // Stop publishing — BUG-2 fix: use tracked publishStreamId
     if (this.isPublishing && engine) {
-      try { engine.stopPublishingStream(this.roomId || ''); } catch (e) {
+      const sid = this.publishStreamId || this.roomId || '';
+      try { engine.stopPublishingStream(sid); } catch (e) {
         console.warn('[Zego] stopPublishing error:', e.message);
       }
     }
