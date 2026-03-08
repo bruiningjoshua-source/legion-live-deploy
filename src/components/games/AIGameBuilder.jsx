@@ -80,12 +80,20 @@ export default function AIGameBuilder() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${SYSTEM_PROMPT}\n\nGame request: "${prompt.trim()}"\n\nGenerate the complete JavaScript game code now. Output ONLY the raw JavaScript code, nothing else.`,
+        prompt: `${SYSTEM_PROMPT}\n\nGame request: "${prompt.trim()}"`,
         model: 'claude_sonnet_4_6',
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            code: { type: 'string', description: 'Complete self-contained JavaScript IIFE game code' },
+          },
+          required: ['code'],
+        },
       });
 
-      const code = typeof result === 'string' ? result : result?.text || result?.content || String(result);
-      // Strip any accidental markdown fences
+      const code = result?.code || '';
+      if (!code || code.length < 50) throw new Error('No valid game code returned. Try a different prompt.');
+      // Strip any accidental markdown fences just in case
       const cleaned = code.replace(/^```(?:javascript|js)?\n?/gm, '').replace(/^```\n?/gm, '').trim();
       setGameCode(cleaned);
     } catch (err) {

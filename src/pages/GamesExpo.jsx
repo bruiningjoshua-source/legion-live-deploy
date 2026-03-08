@@ -6,6 +6,8 @@ import ZeldaGame from '@/components/games/ZeldaGame';
 import MetalSlugGame from '@/components/games/MetalSlugGame';
 import TetrisGame from '@/components/games/TetrisGame';
 import DoubleDragonGame from '@/components/games/DoubleDragonGame';
+import WolfensteinGame from '@/components/games/WolfensteinGame';
+import QuakeGame from '@/components/games/QuakeGame';
 import AIGameBuilder from '@/components/games/AIGameBuilder';
 
 const GAMES = [
