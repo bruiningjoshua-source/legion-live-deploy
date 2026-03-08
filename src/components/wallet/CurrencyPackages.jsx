@@ -5,110 +5,121 @@ import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2, Zap, Co
 import GlassCard from '@/components/shared/GlassCard';
 
 // ── Pricing Philosophy ──────────────────────────────────────────────────────
-// TikTok parity: 65 coins = $0.99. We match their entry point exactly.
-// Our coin → Denarii = 1:1. Creator keeps 50%. Viewer earns VIP points on every purchase.
-// We are MORE generous: bigger bonuses, more tiers, daily refill incentives.
+// Internal rate:  180 Denarii = $1 USD  (used for creator earnings calculations)
+// Purchase rate:  260 Denarii = $1 USD  (what buyers get — generous entry)
+// Creators earn:  60% of the 180 Denarii/$1 internal rate = 108 Denarii per $1 spent
+// Bonuses:        Scale from 10% → 35% (35% locked in on all packs $100+)
+// Top pack:       $999.99
 // ─────────────────────────────────────────────────────────────────────────────
-export const DENARII_PER_DOLLAR = 65; // 65 Denarii ≈ $1 (matches TikTok ~65 coins/$1)
+export const DENARII_PER_DOLLAR = 180;        // internal rate used for USD display
+export const PURCHASE_RATE = 260;             // Denarii buyers receive per $1 before bonus
+export const CREATOR_SHARE = 0.60;            // 60% of internal rate goes to creator
 
 export const packages = [
   {
+    // $0.99 → 260 base (≈ $1.44 internal value — great entry deal)
     id: 'micro',
     name: 'Rookie Pack',
-    denarii: 65,
-    bonus: 5,
-    bonusPercent: 8,
+    denarii: 260,
+    bonus: 26,
+    bonusPercent: 10,
     price: 0.99,
-    vipPoints: 10,
+    vipPoints: 15,
     icon: '🪙',
     popular: false,
     color: 'from-slate-700 to-slate-800',
     border: 'border-slate-500/40',
     tag: null,
-    perks: ['8% bonus Denarii', '+10 VIP points']
+    perks: ['+10% bonus Denarii', '+15 VIP points']
   },
   {
+    // $4.99 → 1,300 base + 12%
     id: 'starter',
     name: 'Recruit Pack',
-    denarii: 330,
-    bonus: 40,
+    denarii: 1300,
+    bonus: 156,
     bonusPercent: 12,
     price: 4.99,
-    vipPoints: 60,
+    vipPoints: 75,
     icon: '💰',
     popular: false,
     color: 'from-emerald-700 to-emerald-900',
     border: 'border-emerald-500/40',
     tag: null,
-    perks: ['12% bonus Denarii', '+60 VIP points']
+    perks: ['+12% bonus Denarii', '+75 VIP points']
   },
   {
+    // $9.99 → 2,600 base + 15%
     id: 'basic',
     name: 'Soldier Pack',
-    denarii: 660,
-    bonus: 110,
-    bonusPercent: 17,
+    denarii: 2600,
+    bonus: 390,
+    bonusPercent: 15,
     price: 9.99,
-    vipPoints: 130,
+    vipPoints: 160,
     icon: '⚔️',
     popular: false,
     color: 'from-blue-700 to-blue-900',
     border: 'border-blue-500/40',
     tag: null,
-    perks: ['17% bonus', '+130 VIP pts', 'Lotto ticket included']
+    perks: ['+15% bonus', '+160 VIP pts', '1 lotto ticket']
   },
   {
+    // $19.99 → 5,200 base + 20%
     id: 'popular',
     name: 'Centurion Pack',
-    denarii: 1300,
-    bonus: 330,
-    bonusPercent: 25,
+    denarii: 5200,
+    bonus: 1040,
+    bonusPercent: 20,
     price: 19.99,
-    vipPoints: 300,
+    vipPoints: 350,
     icon: '🏛️',
     popular: true,
     color: 'from-amber-600 to-orange-700',
     border: 'border-amber-400',
     tag: 'MOST POPULAR',
-    perks: ['25% bonus', '+300 VIP pts', '3 lotto tickets', 'VIP1 fast track']
+    perks: ['+20% bonus', '+350 VIP pts', '3 lotto tickets', 'VIP1 fast track']
   },
   {
+    // $49.99 → 13,000 base + 25%
     id: 'premium',
     name: 'Praetorian Pack',
-    denarii: 2600,
-    bonus: 780,
-    bonusPercent: 30,
-    price: 39.99,
-    vipPoints: 650,
+    denarii: 13000,
+    bonus: 3250,
+    bonusPercent: 25,
+    price: 49.99,
+    vipPoints: 850,
     icon: '🏆',
     popular: false,
     color: 'from-purple-700 to-violet-900',
     border: 'border-purple-400/60',
     tag: null,
-    perks: ['30% bonus', '+650 VIP pts', '5 lotto tickets', 'VIP badge']
+    perks: ['+25% bonus', '+850 VIP pts', '6 lotto tickets', 'VIP badge']
   },
   {
+    // $99.99 → 26,000 base + 30%
     id: 'elite',
     name: 'Senator Pack',
-    denarii: 5200,
-    bonus: 1820,
-    bonusPercent: 35,
-    price: 79.99,
-    vipPoints: 1400,
+    denarii: 26000,
+    bonus: 7800,
+    bonusPercent: 30,
+    price: 99.99,
+    vipPoints: 1800,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-900',
     border: 'border-rose-400/50',
     tag: 'GREAT VALUE',
-    perks: ['35% bonus', '+1400 VIP pts', '10 lotto tickets', 'SVIP fast track']
+    perks: ['+30% bonus', '+1800 VIP pts', '12 lotto tickets', 'SVIP fast track']
   },
   {
+    // $149.99 → 39,000 base + 35% (hits the $100+ bonus tier)
     id: 'whale',
     name: 'Consul Pack',
-    denarii: 10400,
-    bonus: 4680,
-    bonusPercent: 45,
-    price: 159.99,
+    denarii: 39000,
+    bonus: 13650,
+    bonusPercent: 35,
+    price: 149.99,
     vipPoints: 3000,
     icon: '🦅',
     popular: false,
@@ -116,15 +127,16 @@ export const packages = [
     border: 'border-cyan-400/50',
     tag: null,
     premium: true,
-    perks: ['45% bonus', '+3000 VIP pts', '20 lotto tickets', 'SVIP5 badge']
+    perks: ['+35% MEGA bonus', '+3000 VIP pts', '20 lotto tickets', 'SVIP badge']
   },
   {
+    // $299.99 → 78,000 base + 35%
     id: 'ultimate',
     name: 'Imperator Pack',
-    denarii: 20800,
-    bonus: 10400,
-    bonusPercent: 50,
-    price: 319.99,
+    denarii: 78000,
+    bonus: 27300,
+    bonusPercent: 35,
+    price: 299.99,
     vipPoints: 7000,
     icon: '✨',
     popular: false,
@@ -132,23 +144,41 @@ export const packages = [
     border: 'border-amber-300',
     tag: 'LEGENDARY',
     premium: true,
-    perks: ['50% LEGENDARY bonus', '+7000 VIP pts', '40 lotto tickets', 'DIVINE badge']
+    perks: ['+35% LEGENDARY bonus', '+7000 VIP pts', '40 lotto tickets', 'DIVINE badge']
   },
   {
+    // $499.99 → 130,000 base + 35%
     id: 'titan',
-    name: 'Emperor\'s Ascension',
-    denarii: 104000,
-    bonus: 62400,
-    bonusPercent: 60,
-    price: 1599.99,
-    vipPoints: 40000,
+    name: 'Triumvir Pack',
+    denarii: 130000,
+    bonus: 45500,
+    bonusPercent: 35,
+    price: 499.99,
+    vipPoints: 14000,
+    icon: '🔱',
+    popular: false,
+    color: 'from-orange-500 via-yellow-500 to-amber-600',
+    border: 'border-orange-300',
+    tag: '🔱 TITAN',
+    premium: true,
+    perks: ['+35% TITAN bonus', '+14K VIP pts', '80 lotto tickets', 'Emperor crown']
+  },
+  {
+    // $999.99 → 260,000 base + 35%
+    id: 'emperor',
+    name: "Emperor's Ascension",
+    denarii: 260000,
+    bonus: 91000,
+    bonusPercent: 35,
+    price: 999.99,
+    vipPoints: 32000,
     icon: '⚡',
     popular: false,
-    color: 'from-yellow-500 via-red-500 to-pink-600',
+    color: 'from-yellow-400 via-red-500 to-pink-600',
     border: 'border-yellow-300',
     tag: '⚡ DIVINE',
     premium: true,
-    perks: ['60% DIVINE bonus', '+40K VIP pts', '200 lotto tickets', 'Emperor crown']
+    perks: ['+35% DIVINE bonus', '+32K VIP pts', '200 lotto tickets', 'Divine Emperor status']
   }
 ];
 
