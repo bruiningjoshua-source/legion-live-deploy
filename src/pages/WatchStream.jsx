@@ -489,11 +489,13 @@ export default function WatchStream() {
             onToggleScreenShare={async (on) => {
               if (on) {
                 try {
-                  const screen = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                  if (videoRef.current) videoRef.current.srcObject = screen;
-                } catch {}
-              } else if (liveStream && typeof liveStream !== 'boolean' && videoRef.current) {
-                videoRef.current.srcObject = liveStream;
+                  const screenStream = await ZegoService.startScreenShare(streamId);
+                  if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
+                } catch (e) { console.warn('[ScreenShare] Failed:', e); }
+              } else {
+                await ZegoService.stopScreenShare();
+                const localStream = ZegoService.getLocalStream();
+                if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
               }
             }}
             onFlipCamera={() => {
