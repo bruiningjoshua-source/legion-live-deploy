@@ -85,34 +85,76 @@ function drawTile(ctx, tx, ty) {
   const t = MAP[ty]?.[tx] ?? 1;
   const px = tx * TILE, py = ty * TILE;
   switch (t) {
-    case 0:
-      ctx.fillStyle = ty % 2 === 0 ? '#3a6632' : '#3d6b35';
+    case 0: {
+      // NES Zelda floor - checkerboard grass tiles
+      const even = (tx + ty) % 2 === 0;
+      ctx.fillStyle = even ? '#3c7a28' : '#448a30';
       ctx.fillRect(px, py, TILE, TILE);
+      // Subtle grass detail
+      ctx.fillStyle = even ? '#54a038' : '#5ab040';
+      ctx.fillRect(px + 2, py + 2, 4, 3);
+      ctx.fillRect(px + TILE - 8, py + TILE - 6, 4, 3);
+      // Floor border
+      ctx.strokeStyle = 'rgba(0,60,0,0.2)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(px, py, TILE, TILE);
       break;
-    case 1:
-      ctx.fillStyle = '#5d4e3a';
+    }
+    case 1: {
+      // Stone wall - NES Zelda dungeon block
+      ctx.fillStyle = '#8c7450';
       ctx.fillRect(px, py, TILE, TILE);
-      ctx.fillStyle = '#4a3e2e';
+      // Stone face - inner shadow
+      ctx.fillStyle = '#6a5838';
       ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
-      ctx.fillStyle = '#6b5a44';
+      // Stone cracks / texture
+      ctx.fillStyle = '#7a6440';
+      ctx.fillRect(px + 4, py + 8, TILE - 8, 4);
+      ctx.fillRect(px + 10, py + 20, TILE - 14, 4);
+      // Top highlight (light source from top-left)
+      ctx.fillStyle = '#b09870';
       ctx.fillRect(px, py, TILE, 3);
       ctx.fillRect(px, py, 3, TILE);
+      // Dark bottom/right edges
+      ctx.fillStyle = '#3a2810';
+      ctx.fillRect(px, py + TILE - 3, TILE, 3);
+      ctx.fillRect(px + TILE - 3, py, 3, TILE);
       break;
-    case 2:
-      ctx.fillStyle = '#1e6eb5';
+    }
+    case 2: {
+      // Water - animated shimmer
+      ctx.fillStyle = '#1060c0';
       ctx.fillRect(px, py, TILE, TILE);
-      ctx.fillStyle = 'rgba(100,180,255,0.3)';
-      ctx.fillRect(px + 4, py + 8, TILE - 8, 4);
+      ctx.fillStyle = '#1878d8';
+      ctx.fillRect(px + 2, py + 2, TILE - 4, TILE - 4);
+      // Wave lines
+      ctx.fillStyle = 'rgba(140,200,255,0.5)';
+      ctx.fillRect(px + 3, py + 8, TILE - 6, 4);
+      ctx.fillRect(px + 3, py + 20, TILE - 10, 4);
+      ctx.fillRect(px + 8, py + 30, TILE - 12, 4);
+      // Shimmer highlight
+      ctx.fillStyle = 'rgba(200,230,255,0.4)';
+      ctx.fillRect(px + 4, py + 6, 8, 3);
       break;
-    case 3:
-      ctx.fillStyle = '#3a6632';
+    }
+    case 3: {
+      // Tree - NES Zelda bush/tree style
+      ctx.fillStyle = '#3c7a28';
       ctx.fillRect(px, py, TILE, TILE);
-      ctx.fillStyle = '#1e4a18';
-      ctx.beginPath(); ctx.arc(px + TILE / 2, py + TILE / 2, 14, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#2a7022';
-      ctx.beginPath(); ctx.arc(px + TILE / 2 - 5, py + TILE / 2 - 3, 10, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(px + TILE / 2 + 5, py + TILE / 2 - 3, 10, 0, Math.PI * 2); ctx.fill();
+      // Dark trunk
+      ctx.fillStyle = '#6b3c14';
+      ctx.fillRect(px + TILE / 2 - 4, py + TILE - 12, 8, 12);
+      // Canopy - layered circles
+      ctx.fillStyle = '#1e5a14';
+      ctx.beginPath(); ctx.arc(px + TILE / 2, py + TILE / 2 - 2, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2a7020';
+      ctx.beginPath(); ctx.arc(px + TILE / 2 - 6, py + TILE / 2 - 6, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px + TILE / 2 + 6, py + TILE / 2 - 6, 11, 0, Math.PI * 2); ctx.fill();
+      // Highlight
+      ctx.fillStyle = '#44a030';
+      ctx.beginPath(); ctx.arc(px + TILE / 2 - 4, py + TILE / 2 - 10, 7, 0, Math.PI * 2); ctx.fill();
       break;
+    }
   }
 }
 
@@ -144,36 +186,89 @@ export default function ZeldaGame() {
       const { x, y, w, h, dir, iframes } = p;
       if (iframes > 0 && Math.floor(iframes / 4) % 2 === 0) return;
       const cx = x + w / 2, cy = y + h / 2;
+      const walk = Math.sin(frame * 0.25) * 3;
 
-      // Body - Link style
-      ctx.fillStyle = '#228B22';
-      ctx.fillRect(x + 4, y + 10, w - 8, h - 12);
-      // Hat
-      ctx.fillStyle = '#1a7a1a';
-      ctx.beginPath(); ctx.moveTo(x + 2, y + 10); ctx.lineTo(cx, y - 4); ctx.lineTo(x + w - 2, y + 10); ctx.fill();
-      // Head
-      ctx.fillStyle = '#f5c5a0';
-      ctx.beginPath(); ctx.arc(cx, y + 8, 8, 0, Math.PI * 2); ctx.fill();
-      // Eyes
-      const ex = dir === 0 ? cx + 2 : dir === 1 ? cx - 2 : cx;
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath(); ctx.ellipse(cx, y + h + 2, 10, 3, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Boots
+      ctx.fillStyle = '#6b3c14';
+      ctx.fillRect(x + 3, y + h - 8 + walk, 8, 8);
+      ctx.fillRect(x + w - 11, y + h - 8 - walk, 8, 8);
+
+      // Tunic body - NES Link green
+      ctx.fillStyle = '#38a030';
+      ctx.fillRect(x + 4, y + 12, w - 8, h - 20);
+
+      // Shield (left arm)
+      ctx.fillStyle = '#2050c8';
+      ctx.fillRect(x - 2, y + 14, 6, 10);
+      ctx.fillStyle = '#e83030';
+      ctx.fillRect(x - 1, y + 15, 4, 4);
+
+      // Sword arm
+      if (!p.attack) {
+        ctx.fillStyle = '#f5c0a0';
+        ctx.fillRect(x + w - 2, y + 14, 5, 8);
+      }
+
+      // Head - elf ears
+      ctx.fillStyle = '#f5c0a0';
+      ctx.beginPath(); ctx.arc(cx, y + 8, 9, 0, Math.PI * 2); ctx.fill();
+      // Ear tips
+      ctx.fillRect(x + 1, y + 6, 3, 5);
+      ctx.fillRect(x + w - 4, y + 6, 3, 5);
+
+      // Hair - golden blonde
+      ctx.fillStyle = '#d4a820';
+      ctx.fillRect(x + 3, y + 2, w - 6, 6);
+      ctx.fillRect(x + 2, y + 6, 4, 6);
+
+      // Eye (changes by direction)
       ctx.fillStyle = '#1a1a2e';
-      ctx.beginPath(); ctx.arc(ex, y + 7, 2, 0, Math.PI * 2); ctx.fill();
-      // Legs
-      const legOff = Math.sin(frame * 0.25) * 3;
-      ctx.fillStyle = '#8B6914';
-      ctx.fillRect(x + 4, y + h - 8, 8, 6 + legOff);
-      ctx.fillRect(x + w - 12, y + h - 8, 8, 6 - legOff);
+      if (dir === 1) { ctx.beginPath(); ctx.arc(cx + 3, y + 8, 2, 0, Math.PI * 2); ctx.fill(); }
+      else if (dir === 3) { ctx.beginPath(); ctx.arc(cx - 3, y + 8, 2, 0, Math.PI * 2); ctx.fill(); }
+      else { ctx.beginPath(); ctx.arc(cx, y + 8, 2, 0, Math.PI * 2); ctx.fill(); }
 
-      // Sword attack
+      // Hat - pointy Link hat
+      ctx.fillStyle = '#2a8028';
+      ctx.beginPath();
+      ctx.moveTo(x + 2, y + 3);
+      ctx.lineTo(cx + 4, y - 10);
+      ctx.lineTo(x + w - 2, y + 3);
+      ctx.fill();
+      ctx.fillStyle = '#44a040';
+      ctx.beginPath();
+      ctx.moveTo(x + 4, y + 2);
+      ctx.lineTo(cx + 3, y - 8);
+      ctx.lineTo(cx, y + 2);
+      ctx.fill();
+
+      // Sword attack animation
       if (p.attack) {
         const angle = p.attackAngle;
+        const swingProgress = p.attackTimer / 10;
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(angle);
-        ctx.fillStyle = '#C0C0C0';
-        ctx.fillRect(0, -3, SWORD_RANGE * (p.attackTimer / 10), 6);
-        ctx.fillStyle = '#FFD700';
-        ctx.fillRect(-4, -5, 10, 10);
+        // Blade
+        ctx.fillStyle = '#d0d8e8';
+        ctx.fillRect(0, -2, SWORD_RANGE * swingProgress, 4);
+        // Blade edge
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(2, -1, SWORD_RANGE * swingProgress - 4, 2);
+        // Guard
+        ctx.fillStyle = '#c8a800';
+        ctx.fillRect(-6, -6, 12, 12);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(-4, -4, 8, 8);
+        // Sword tip sparkle
+        if (swingProgress > 0.5) {
+          ctx.fillStyle = '#ffffff';
+          const tip = SWORD_RANGE * swingProgress;
+          ctx.beginPath(); ctx.arc(tip, 0, 4, 0, Math.PI * 2); ctx.fill();
+        }
         ctx.restore();
       }
     }
@@ -181,50 +276,116 @@ export default function ZeldaGame() {
     function drawEnemy(e, frame) {
       if (!e.alive) return;
       const cx = e.x + e.w / 2, cy = e.y + e.h / 2;
-      const bob = Math.sin(frame * 0.15) * 2;
+      const bob = Math.sin(frame * 0.18) * 2;
+      const walk = Math.sin(frame * 0.22) * 2;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath(); ctx.ellipse(cx, e.y + e.h + 2, e.w / 2 - 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+
       if (e.type === 'boss') {
+        // Ganon-inspired boss - large dark figure
+        // Cloak body
+        ctx.fillStyle = '#4a0080';
+        ctx.beginPath(); ctx.arc(cx, cy + bob, e.w / 2 + 2, 0, Math.PI * 2); ctx.fill();
+        // Inner body
+        ctx.fillStyle = '#6a00b0';
+        ctx.beginPath(); ctx.arc(cx, cy + bob, e.w / 2 - 3, 0, Math.PI * 2); ctx.fill();
+        // Shoulder pads
         ctx.fillStyle = '#8B0000';
-        ctx.beginPath(); ctx.arc(cx, cy + bob, e.w / 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#FF0000';
-        ctx.beginPath(); ctx.arc(cx, cy + bob, e.w / 2 - 4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#FF6600';
-        ctx.beginPath(); ctx.arc(cx - 6, cy - 4 + bob, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(cx + 6, cy - 4 + bob, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(cx - 6, cy - 4 + bob, 2.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(cx + 6, cy - 4 + bob, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx - e.w / 2, cy - 2 + bob, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + e.w / 2, cy - 2 + bob, 7, 0, Math.PI * 2); ctx.fill();
+        // Head
+        ctx.fillStyle = '#1a0a00';
+        ctx.beginPath(); ctx.arc(cx, cy - e.h / 3 + bob, 10, 0, Math.PI * 2); ctx.fill();
+        // Glowing evil eyes
+        ctx.fillStyle = '#ff4400';
+        ctx.beginPath(); ctx.arc(cx - 5, cy - e.h / 3 + bob, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 5, cy - e.h / 3 + bob, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff8800';
+        ctx.beginPath(); ctx.arc(cx - 5, cy - e.h / 3 + bob, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 5, cy - e.h / 3 + bob, 2, 0, Math.PI * 2); ctx.fill();
+        // Triforce symbol
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('▲', cx, cy + 5 + bob);
+        ctx.textAlign = 'left';
         // HP bar
-        const bw = 36;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(e.x - 2, e.y - 10, bw, 5);
-        ctx.fillStyle = '#e53935';
-        ctx.fillRect(e.x - 2, e.y - 10, bw * (e.hp / 6), 5);
+        const bw = 40;
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(e.x - 4, e.y - 14, bw + 4, 8);
+        ctx.fillStyle = '#cc0000'; ctx.fillRect(e.x - 2, e.y - 13, bw * (e.hp / 6), 6);
+        ctx.fillStyle = '#ff4444'; ctx.fillRect(e.x - 2, e.y - 13, bw * (e.hp / 6) * 0.5, 3);
       } else {
-        const color = e.type === 'red' ? '#e53935' : '#1e88e5';
+        // Bokoblin / Moblin-style enemy
+        const color = e.type === 'red' ? '#cc2020' : '#1a68cc';
+        const lightColor = e.type === 'red' ? '#e84040' : '#2a88ee';
+
+        // Body
         ctx.fillStyle = color;
-        ctx.fillRect(e.x, e.y + bob, e.w, e.h);
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.fillRect(e.x + 2, e.y + 2 + bob, e.w - 4, 4);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(e.x + 5, e.y + 7 + bob, 5, 6);
-        ctx.fillRect(e.x + e.w - 10, e.y + 7 + bob, 5, 6);
+        ctx.fillRect(e.x + 3, e.y + 10 + bob, e.w - 6, e.h - 16);
+        // Body highlight
+        ctx.fillStyle = lightColor;
+        ctx.fillRect(e.x + 5, e.y + 12 + bob, 6, e.h - 20);
+
+        // Arms
+        ctx.fillStyle = color;
+        ctx.fillRect(e.x - 2, e.y + 10 + bob + walk, 6, 10);
+        ctx.fillRect(e.x + e.w - 4, e.y + 10 + bob - walk, 6, 10);
+
+        // Legs
+        ctx.fillStyle = '#2a1800';
+        ctx.fillRect(e.x + 3, e.y + e.h - 10 + walk, 8, 10);
+        ctx.fillRect(e.x + e.w - 11, e.y + e.h - 10 - walk, 8, 10);
+
+        // Head - goblin style
+        ctx.fillStyle = e.type === 'red' ? '#d04a00' : '#184890';
+        ctx.beginPath(); ctx.arc(cx, e.y + 7 + bob, 10, 0, Math.PI * 2); ctx.fill();
+        // Snout
+        ctx.fillStyle = e.type === 'red' ? '#e87050' : '#2860c8';
+        ctx.fillRect(cx - 5, e.y + 8 + bob, 10, 6);
+        // Eyes - square goblin eyes
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(e.x + 4, e.y + 3 + bob, 6, 5);
+        ctx.fillRect(e.x + e.w - 10, e.y + 3 + bob, 6, 5);
         ctx.fillStyle = '#000';
-        ctx.fillRect(e.x + 6, e.y + 8 + bob, 3, 4);
-        ctx.fillRect(e.x + e.w - 9, e.y + 8 + bob, 3, 4);
+        ctx.fillRect(e.x + 5, e.y + 4 + bob, 4, 3);
+        ctx.fillRect(e.x + e.w - 9, e.y + 4 + bob, 4, 3);
+        // Horns
+        ctx.fillStyle = '#c8a000';
+        ctx.fillRect(e.x + 3, e.y - 3 + bob, 4, 6);
+        ctx.fillRect(e.x + e.w - 7, e.y - 3 + bob, 4, 6);
       }
     }
 
     function drawRupee(r, frame) {
       if (r.collected) return;
-      const pulse = Math.abs(Math.sin(frame * 0.07)) * 3;
-      ctx.fillStyle = '#00e676';
+      const bob = Math.sin(frame * 0.12) * 3;
+      const spin = Math.abs(Math.cos(frame * 0.1));
+      const rw = 6 + spin * 4;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.beginPath(); ctx.ellipse(r.x, r.y + 13, 8, 3, 0, 0, Math.PI * 2); ctx.fill();
+
       ctx.save();
-      ctx.translate(r.x, r.y - pulse);
+      ctx.translate(r.x, r.y - bob);
+      // Outer gem
+      ctx.fillStyle = '#00aa44';
       ctx.beginPath();
-      ctx.moveTo(0, -10); ctx.lineTo(7, 0); ctx.lineTo(0, 10); ctx.lineTo(-7, 0);
+      ctx.moveTo(0, -12); ctx.lineTo(rw, -4); ctx.lineTo(rw, 8); ctx.lineTo(0, 13); ctx.lineTo(-rw, 8); ctx.lineTo(-rw, -4);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(3, -3); ctx.lineTo(0, 0); ctx.lineTo(-3, -3); ctx.closePath(); ctx.fill();
+      // Inner gem highlight
+      ctx.fillStyle = '#00e876';
+      ctx.beginPath();
+      const iw = rw * 0.6;
+      ctx.moveTo(0, -9); ctx.lineTo(iw, -3); ctx.lineTo(iw, 5); ctx.lineTo(0, 9); ctx.lineTo(-iw, 5); ctx.lineTo(-iw, -3);
+      ctx.closePath(); ctx.fill();
+      // Shine
+      if (spin > 0.4) {
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.beginPath(); ctx.moveTo(-2, -8); ctx.lineTo(2, -8); ctx.lineTo(1, -2); ctx.lineTo(-1, -2); ctx.closePath(); ctx.fill();
+      }
       ctx.restore();
     }
 
