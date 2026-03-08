@@ -392,24 +392,33 @@ export default function MetalSlugGame() {
       ctx.restore();
     }
 
-    const p = stateRef.current.player;
-
     function drawBullets(bullets, enemyBullets, camX) {
-      ctx.fillStyle = '#ffee00';
+      // Player bullets - golden shell casings
       bullets.forEach((b) => {
         const bx = b.x - camX;
         if (bx < -10 || bx > CANVAS_W + 10) return;
+        // Bullet trail
+        ctx.fillStyle = 'rgba(255,150,0,0.4)';
+        ctx.beginPath(); ctx.ellipse(bx - b.vx * 1.5, b.y, 10, 3, 0, 0, Math.PI * 2); ctx.fill();
+        // Main bullet
         ctx.fillStyle = '#ffee00';
-        ctx.beginPath(); ctx.ellipse(bx, b.y, 8, 4, b.vx > 0 ? 0 : Math.PI, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ff8800';
-        ctx.beginPath(); ctx.ellipse(bx - b.vx * 0.6, b.y, 4, 2, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(bx, b.y, 9, 4, 0, 0, Math.PI * 2); ctx.fill();
+        // Highlight
+        ctx.fillStyle = '#ffffc0';
+        ctx.beginPath(); ctx.ellipse(bx - 2, b.y - 1, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
       });
-      ctx.fillStyle = '#ff4444';
+      // Enemy bullets - red
       enemyBullets.forEach((b) => {
         const bx = b.x - camX;
         if (bx < -10 || bx > CANVAS_W + 10) return;
-        ctx.fillStyle = '#ff4444';
-        ctx.beginPath(); ctx.ellipse(bx, b.y, 7, 3, 0, 0, Math.PI * 2); ctx.fill();
+        // Trail
+        ctx.fillStyle = 'rgba(255,40,0,0.35)';
+        ctx.beginPath(); ctx.ellipse(bx - b.vx * 1.2, b.y, 8, 3, 0, 0, Math.PI * 2); ctx.fill();
+        // Bullet
+        ctx.fillStyle = '#ff4040';
+        ctx.beginPath(); ctx.ellipse(bx, b.y, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff9090';
+        ctx.beginPath(); ctx.ellipse(bx - 1, b.y - 1, 4, 2, 0, 0, Math.PI * 2); ctx.fill();
       });
     }
 
