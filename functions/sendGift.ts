@@ -93,9 +93,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Insufficient balance', required: totalCost, balance: wallet.denarii_balance || 0 }, { status: 400 });
     }
 
-    // ── Debit sender wallet FIRST (fail fast) ──
-    await base44.asServiceRole.entities.Wallet.update(wallet.id, {
-      denarii_balance: (wallet.denarii_balance || 0) - totalCost,
+    // ── Debit sender wallet atomically (prevent race condition from double-tap) ──
+    // Re-fetch wallet to ensure fresh balance, then perform conditional update
+    const freshWallet = await base44.asServiceRole.entities.Wallet.filter({ user_email: user.email }, null, 1);
+    if (!freshWallet[0] || (freshWallet[0].denarii_balance || 0) < totalCost) {
+      return Response.json({ error: 'Insufficient balance (balance changed)', required: totalCost, balance: freshWallet[0]?.denarii_balance || 0 }, { status: 400 });
+    }
+
+    await base44.asServiceRole.entities.Wallet.update(freshWallet[0].id, {
+      denarii_balance: (freshWallet[0].denarii_balance || 0) - totalCost,
     });
 
     // ── Record transaction ──
@@ -123,6 +129,16 @@ Deno.serve(async (req) => {
       total_denarii_earned: (stream.total_denarii_earned || 0) + creatorEarning,
     });
 
+    // ── Check for AI video gift ──
+    const videoGifts = await base44.asServiceRole.entities.AIVideoGift.filter(
+      { gift_id: giftId, is_active: true }, null, 1
+    );
+    const videoGiftData = videoGifts[0] ? {
+      video_url: videoGifts[0].video_url,
+      duration_seconds: videoGifts[0].duration_seconds,
+      loop_enabled: videoGifts[0].loop_enabled
+    } : null;
+
     // ── Post chat message (non-blocking) ──
     base44.asServiceRole.entities.ChatMessage.create({
       stream_id: streamId,
@@ -130,8 +146,13 @@ Deno.serve(async (req) => {
       sender_name: user.full_name || 'Anonymous',
       message: `sent ${qty > 1 ? qty + 'x ' : ''}${gift.name}`,
       message_type: 'gift',
-      vip_level: wallet.vip_level || 0,
-      gift_data: { gift_name: gift.name, gift_icon: gift.icon, quantity: qty },
+      vip_level: freshWallet[0].vip_level || 0,
+      gift_data: { 
+        gift_name: gift.name, 
+        gift_icon: gift.icon, 
+        quantity: qty,
+        video_url: videoGiftData?.video_url || null
+      },
     }).catch(e => console.warn('[sendGift] Chat message failed:', e.message));
 
     // ── Update PK Battle scores (non-blocking) ──
@@ -173,7 +194,9 @@ Deno.serve(async (req) => {
       quantity: qty,
       totalCost,
       creatorEarning,
-      newBalance: (wallet.denarii_balance || 0) - totalCost,
+      newBalance: (freshWallet[0].denarii_balance || 0) - totalCost,
+      hasVideoGift: !!videoGiftData,
+      videoGiftUrl: videoGiftData?.video_url || null
     });
 
   } catch (error) {
