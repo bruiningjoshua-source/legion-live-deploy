@@ -20,6 +20,7 @@ import useScrollPreservation from '@/components/navigation/useScrollPreservation
 import NotificationService from '@/components/services/NotificationService';
 import OfflineService from '@/components/services/OfflineService';
 import { Toaster } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
