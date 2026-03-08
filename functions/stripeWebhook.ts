@@ -9,6 +9,36 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
 const processedEvents = new Map(); // eventId → timestamp
 const IDEMPOTENCY_WINDOW = 3600000; // 1 hour
 
+// ─── Fraud detection for purchases ───
+const purchaseHistory = new Map(); // email -> { purchases: [], chargebacks: [] }
+
+function validatePurchaseAmount(amount, email) {
+  if (!purchaseHistory.has(email)) {
+    purchaseHistory.set(email, { purchases: [], chargebacks: [] });
+  }
+
+  const history = purchaseHistory.get(email);
+  const now = Date.now();
+  const oneDayAgo = now - 86400000;
+
+  // Prune old purchases
+  history.purchases = history.purchases.filter(p => p.timestamp > oneDayAgo);
+
+  // Check: $1000+ in 24 hours
+  const totalLast24 = history.purchases.reduce((sum, p) => sum + p.amount, 0);
+  if (totalLast24 + amount > 10000) {
+    console.warn(`[stripeWebhook] High purchase velocity for ${email}: ${totalLast24 + amount} in 24h`);
+  }
+
+  // Check: Single purchase > $5000 (needs manual review)
+  if (amount > 5000) {
+    console.warn(`[stripeWebhook] HIGH VALUE PURCHASE: ${email} - $${amount}`);
+  }
+
+  history.purchases.push({ amount, timestamp: now });
+  return true;
+}
+
 // Periodic cleanup
 setInterval(() => {
   const cutoff = Date.now() - IDEMPOTENCY_WINDOW;
@@ -150,10 +180,18 @@ Deno.serve(async (req) => {
           const denariiAmount = parseInt(metadata.denarii_amount) || 0;
           const priceUsd = (session.amount_total || 0) / 100;
 
+          // Input validation
           if (denariiAmount <= 0 || denariiAmount > 1000000) {
-            console.error('[stripeWebhook] Invalid denarii amount:', metadata.denarii_amount);
+            console.error('[stripeWebhook] INVALID denarii amount:', metadata.denarii_amount);
             break;
           }
+          if (priceUsd < 0.99 || priceUsd > 100000) {
+            console.error('[stripeWebhook] INVALID price: $' + priceUsd);
+            break;
+          }
+
+          // Fraud check
+          validatePurchaseAmount(priceUsd, metadata.user_email);
 
           // REVENUE FIX: Calculate bonus server-side to prevent client-side manipulation
           let bonusDenarii = 0;
