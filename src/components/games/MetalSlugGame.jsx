@@ -73,25 +73,79 @@ export default function MetalSlugGame() {
     const ctx = canvas.getContext('2d');
 
     function drawBg(camX) {
-      const sky = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-      sky.addColorStop(0, '#b05a28'); sky.addColorStop(1, '#e8a060');
+      // Metal Slug style - desert/war zone sunset
+      const sky = ctx.createLinearGradient(0, 0, 0, CANVAS_H * 0.7);
+      sky.addColorStop(0, '#1a2040');
+      sky.addColorStop(0.4, '#8a3a10');
+      sky.addColorStop(1, '#d06020');
       ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-      // Sun
-      ctx.fillStyle = '#ffdd44';
-      ctx.beginPath(); ctx.arc(CANVAS_W - 60, 60, 30, 0, Math.PI * 2); ctx.fill();
-      // Buildings in bg
-      ctx.fillStyle = 'rgba(80,40,20,0.5)';
-      [[80, 180, 60, 140, camX*0.2], [200, 160, 80, 120, camX*0.2], [400, 200, 50, 100, camX*0.2]].forEach(([bx, by, bw, bh, off]) => {
-        const rx = ((bx - off) % (CANVAS_W + 200) + CANVAS_W + 200) % (CANVAS_W + 200) - 100;
-        ctx.fillRect(rx, by, bw, bh);
-        // Windows
-        ctx.fillStyle = 'rgba(255,220,100,0.4)';
-        for (let wy = by + 10; wy < by + bh - 10; wy += 20) {
-          for (let wx = rx + 8; wx < rx + bw - 8; wx += 16) ctx.fillRect(wx, wy, 8, 10);
-        }
-        ctx.fillStyle = 'rgba(80,40,20,0.5)';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H * 0.7);
+
+      // Sun/Moon glow
+      const sunGrad = ctx.createRadialGradient(CANVAS_W * 0.8, 70, 10, CANVAS_W * 0.8, 70, 80);
+      sunGrad.addColorStop(0, 'rgba(255,220,80,0.9)');
+      sunGrad.addColorStop(0.4, 'rgba(255,140,20,0.5)');
+      sunGrad.addColorStop(1, 'rgba(255,80,20,0)');
+      ctx.fillStyle = sunGrad;
+      ctx.fillRect(0, 0, CANVAS_W, 200);
+      ctx.fillStyle = '#ffd040';
+      ctx.beginPath(); ctx.arc(CANVAS_W * 0.8, 70, 28, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe870';
+      ctx.beginPath(); ctx.arc(CANVAS_W * 0.8, 70, 20, 0, Math.PI * 2); ctx.fill();
+
+      // Distant mountains - silhouette
+      ctx.fillStyle = '#2a1808';
+      [[0, 200, camX * 0.05], [300, 160, camX * 0.05], [600, 190, camX * 0.05], [900, 150, camX * 0.05]].forEach(([mx, mh, off]) => {
+        const px = ((mx - off) % (CANVAS_W + 400) + CANVAS_W + 400) % (CANVAS_W + 400) - 100;
+        ctx.beginPath(); ctx.moveTo(px, CANVAS_H * 0.65); ctx.lineTo(px + 120, mh); ctx.lineTo(px + 240, CANVAS_H * 0.65); ctx.fill();
       });
+
+      // Destroyed buildings - war zone
+      ctx.fillStyle = '#3a2010';
+      [[50, 160, 55, 180, camX * 0.2], [200, 140, 70, 200, camX * 0.2], [450, 170, 45, 170, camX * 0.2], [700, 150, 60, 190, camX * 0.2]].forEach(([bx, by, bw, bh, off]) => {
+        const rx = ((bx - off) % (CANVAS_W + 300) + CANVAS_W + 300) % (CANVAS_W + 300) - 120;
+        // Jagged destroyed top
+        ctx.fillRect(rx, by, bw, bh);
+        // Rubble/damage
+        ctx.fillStyle = '#2a1408';
+        ctx.fillRect(rx + bw * 0.6, by - 15, bw * 0.4, 20);
+        ctx.fillRect(rx, by - 8, bw * 0.3, 12);
+        // Windows - some dark, some lit
+        for (let wy = by + 15; wy < by + bh - 15; wy += 24) {
+          for (let wx = rx + 8; wx < rx + bw - 8; wx += 18) {
+            const lit = (Math.floor(wx / 18) + Math.floor(wy / 24)) % 3 !== 0;
+            ctx.fillStyle = lit ? 'rgba(255,180,50,0.6)' : '#1a0a04';
+            ctx.fillRect(wx, wy, 10, 14);
+          }
+        }
+        ctx.fillStyle = '#3a2010';
+      });
+
+      // Mid-ground - sand dunes
+      ctx.fillStyle = '#a07040';
+      ctx.fillRect(0, CANVAS_H * 0.65, CANVAS_W, CANVAS_H * 0.35);
+      ctx.fillStyle = '#c09060';
+      ctx.fillRect(0, CANVAS_H * 0.65, CANVAS_W, 8);
+
+      // Ground surface - NES-style dirt/asphalt
+      ctx.fillStyle = '#785030';
+      ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+      // Ground line
+      ctx.fillStyle = '#c8a060';
+      ctx.fillRect(0, GROUND_Y, CANVAS_W, 6);
+      // Cracks/rubble on ground
+      ctx.fillStyle = '#604020';
+      for (let cx2 = -camX % 60; cx2 < CANVAS_W; cx2 += 60) {
+        ctx.fillRect(cx2, GROUND_Y + 8, 25, 3);
+        ctx.fillRect(cx2 + 30, GROUND_Y + 15, 15, 2);
+      }
+
+      // Debris/rocks on ground
+      ctx.fillStyle = '#8a6040';
+      for (let rx2 = -camX % 180; rx2 < CANVAS_W + 40; rx2 += 180) {
+        ctx.fillRect(rx2, GROUND_Y - 4, 12, 8);
+        ctx.fillRect(rx2 + 80, GROUND_Y - 3, 8, 6);
+      }
     }
 
     function drawPlatforms(platforms, camX) {
@@ -99,38 +153,107 @@ export default function MetalSlugGame() {
         const px = p.x - camX;
         if (px + p.w < 0 || px > CANVAS_W) return;
         if (p.h >= 50) {
-          ctx.fillStyle = '#7a5c3a'; ctx.fillRect(px, p.y, p.w, p.h);
-          ctx.fillStyle = '#c8a86e'; ctx.fillRect(px, p.y, p.w, 8);
-          ctx.fillStyle = '#a08050';
-          for (let bx = 0; bx < p.w; bx += 50) ctx.fillRect(px + bx, p.y + 8, 48, p.h - 8);
-        } else {
-          ctx.fillStyle = '#8B7355'; ctx.fillRect(px, p.y, p.w, p.h);
-          ctx.fillStyle = '#c8a86e'; ctx.fillRect(px, p.y, p.w, 4);
+          // Ground handled in drawBg, skip
+          return;
         }
+        // Steel/concrete platform - Metal Slug style
+        ctx.fillStyle = '#5a5040';
+        ctx.fillRect(px, p.y, p.w, p.h);
+        // Concrete texture
+        ctx.fillStyle = '#6a6050';
+        ctx.fillRect(px + 2, p.y + 2, p.w - 4, p.h - 4);
+        // Top edge - metal highlight
+        ctx.fillStyle = '#b0a080';
+        ctx.fillRect(px, p.y, p.w, 3);
+        // Rivet details
+        ctx.fillStyle = '#888070';
+        for (let rx2 = px + 8; rx2 < px + p.w - 4; rx2 += 20) {
+          ctx.beginPath(); ctx.arc(rx2, p.y + p.h / 2, 3, 0, Math.PI * 2); ctx.fill();
+        }
+        // Bottom shadow
+        ctx.fillStyle = '#2a2010';
+        ctx.fillRect(px, p.y + p.h - 2, p.w, 2);
       });
     }
 
     function drawPlayer(p, camX, frame) {
       const px = p.x - camX;
       if (p.iframes > 0 && Math.floor(p.iframes / 4) % 2 === 0) return;
+      const legOff = p.onGround ? Math.sin(frame * 0.28) * 4 : 0;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.ellipse(px + p.w / 2, p.y + p.h + 2, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+
       ctx.save();
       if (p.facing < 0) { ctx.translate(px + p.w, p.y + p.h / 2); ctx.scale(-1, 1); ctx.translate(-(px + p.w), -(p.y + p.h / 2)); }
 
-      // Helmet
-      ctx.fillStyle = '#3d6b3d'; ctx.fillRect(px + 2, p.y, p.w - 4, 12);
-      ctx.fillStyle = '#c0c0c0'; ctx.fillRect(px + 5, p.y + 3, p.w - 10, 7);
+      // Boots
+      ctx.fillStyle = '#2a2010';
+      ctx.fillRect(px + 1, p.y + p.h - 8 + legOff, 12, 8);
+      ctx.fillRect(px + p.w - 13, p.y + p.h - 8 - legOff, 12, 8);
+
+      // Legs - camo pants
+      ctx.fillStyle = '#4a5a30';
+      ctx.fillRect(px + 3, p.y + 24, 10, 12 + legOff);
+      ctx.fillRect(px + p.w - 13, p.y + 24, 10, 12 - legOff);
+      // Camo spots
+      ctx.fillStyle = '#3a4820';
+      ctx.fillRect(px + 5, p.y + 26, 4, 3);
+      ctx.fillRect(px + p.w - 10, p.y + 28, 3, 3);
+
+      // Body/jacket - army green
+      ctx.fillStyle = '#4a6838';
+      ctx.fillRect(px + 2, p.y + 16, p.w - 4, 12);
+      // Jacket highlight
+      ctx.fillStyle = '#5a7848';
+      ctx.fillRect(px + 3, p.y + 17, 5, 9);
+      // Chest strap
+      ctx.fillStyle = '#8a7050';
+      ctx.fillRect(px + 8, p.y + 18, 2, 10);
+
+      // Gun arm
+      ctx.fillStyle = '#4a6838';
+      ctx.fillRect(px + p.w - 1, p.y + 16, 5, 8);
+      // Gun - detailed Sega style
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(px + p.w + 2, p.y + 14, 14, 7);
+      ctx.fillStyle = '#404040';
+      ctx.fillRect(px + p.w + 3, p.y + 15, 10, 4);
+      // Barrel
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(px + p.w + 12, p.y + 16, 6, 3);
+      // Muzzle flash (if shooting indicated by cooldown)
+      if (p.shootCooldown > 8) {
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath(); ctx.arc(px + p.w + 20, p.y + 17, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath(); ctx.arc(px + p.w + 20, p.y + 17, 3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Other arm
+      ctx.fillStyle = '#4a6838';
+      ctx.fillRect(px - 3, p.y + 18, 6, 8);
+
+      // Head - helmet
+      ctx.fillStyle = '#2a4a20';
+      ctx.fillRect(px + 4, p.y + 2, p.w - 8, 12);
+      ctx.fillRect(px + 3, p.y + 8, p.w - 6, 6);
+      // Helmet rim
+      ctx.fillStyle = '#1a3010';
+      ctx.fillRect(px + 2, p.y + 12, p.w - 4, 3);
+      // Visor/goggles
+      ctx.fillStyle = '#20304a';
+      ctx.fillRect(px + 5, p.y + 4, p.w - 10, 6);
+      ctx.fillStyle = '#304050';
+      ctx.fillRect(px + 6, p.y + 5, 6, 3);
       // Face
-      ctx.fillStyle = '#e8c880'; ctx.fillRect(px + 4, p.y + 12, p.w - 8, 10);
-      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(px + 8, p.y + 14, 5, 5);
-      // Body
-      ctx.fillStyle = '#3d6b3d'; ctx.fillRect(px + 3, p.y + 22, p.w - 6, 10);
-      // Gun
-      ctx.fillStyle = '#555'; ctx.fillRect(px + p.w - 2, p.y + 18, 12, 6);
-      // Legs
-      const legOff = p.onGround ? Math.sin(frame * 0.28) * 3 : 0;
-      ctx.fillStyle = '#4a5a4a';
-      ctx.fillRect(px + 3, p.y + 32, 10, 4 + legOff);
-      ctx.fillRect(px + p.w - 13, p.y + 32, 10, 4 - legOff);
+      ctx.fillStyle = '#d8b070';
+      ctx.fillRect(px + 5, p.y + 14, p.w - 10, 6);
+      // Eye (visible below visor)
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(px + 10, p.y + 15, 4, 4);
+
       ctx.restore();
     }
 
@@ -138,40 +261,133 @@ export default function MetalSlugGame() {
       if (!e.alive) return;
       const ex = e.x - camX;
       if (ex + e.w < -20 || ex > CANVAS_W + 20) return;
+      const legOff = Math.sin(frame * 0.22) * 2;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath(); ctx.ellipse(ex + e.w / 2, e.y + e.h + 2, e.w / 2 - 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+
       ctx.save();
       if (e.facing > 0) { ctx.translate(ex + e.w, e.y + e.h / 2); ctx.scale(-1, 1); ctx.translate(-(ex + e.w), -(e.y + e.h / 2)); }
 
       if (e.type === 'tank') {
-        ctx.fillStyle = '#6b5a2a'; ctx.fillRect(ex, e.y + 10, e.w, e.h - 10);
-        ctx.fillStyle = '#8a7540'; ctx.beginPath(); ctx.arc(ex + e.w / 2, e.y + 14, 18, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#555'; ctx.fillRect(ex + e.w - 10, e.y + 8, 20, 6);
-        ctx.fillStyle = '#a0a020';
-        for (let wx = 0; wx < e.w; wx += 10) ctx.fillRect(ex + wx, e.y + e.h - 10, 8, 10);
+        // Metal Slug tank - chunky pixel art
+        // Treads
+        ctx.fillStyle = '#2a2010';
+        ctx.fillRect(ex - 2, e.y + e.h - 14, e.w + 4, 14);
+        // Tread detail
+        ctx.fillStyle = '#4a3820';
+        for (let tx2 = ex; tx2 < ex + e.w; tx2 += 10) ctx.fillRect(tx2, e.y + e.h - 12, 8, 10);
+        // Tread highlight
+        ctx.fillStyle = '#6a5830';
+        ctx.fillRect(ex - 2, e.y + e.h - 14, e.w + 4, 3);
+
+        // Hull body
+        ctx.fillStyle = '#7a6830';
+        ctx.fillRect(ex + 2, e.y + 14, e.w - 4, e.h - 24);
+        // Hull highlight
+        ctx.fillStyle = '#9a8848';
+        ctx.fillRect(ex + 4, e.y + 16, e.w - 12, 8);
+
+        // Turret
+        ctx.fillStyle = '#8a7838';
+        ctx.beginPath(); ctx.arc(ex + e.w / 2, e.y + 16, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#a09050';
+        ctx.beginPath(); ctx.arc(ex + e.w / 2 - 2, e.y + 14, 14, Math.PI, 0); ctx.fill();
+
+        // Barrel
+        ctx.fillStyle = '#4a4030';
+        ctx.fillRect(ex + e.w - 4, e.y + 10, 24, 8);
+        ctx.fillStyle = '#2a2010';
+        ctx.fillRect(ex + e.w + 14, e.y + 12, 8, 4);
+
+        // Hatch
+        ctx.fillStyle = '#5a5030';
+        ctx.beginPath(); ctx.arc(ex + e.w / 2, e.y + 8, 6, 0, Math.PI * 2); ctx.fill();
+
         // HP bar
-        ctx.fillStyle = '#333'; ctx.fillRect(ex, e.y - 8, e.w, 5);
-        ctx.fillStyle = '#e53935'; ctx.fillRect(ex, e.y - 8, e.w * (e.hp / (e.type === 'tank' ? 6 : 8)), 5);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(ex, e.y - 12, e.w, 8);
+        ctx.fillStyle = '#cc4400'; ctx.fillRect(ex + 1, e.y - 11, (e.w - 2) * (e.hp / 6), 6);
+        ctx.fillStyle = '#ff6600'; ctx.fillRect(ex + 1, e.y - 11, (e.w - 2) * (e.hp / 6) * 0.5, 3);
+
       } else if (e.type === 'boss') {
-        ctx.fillStyle = '#8B0000'; ctx.fillRect(ex, e.y, e.w, e.h);
-        ctx.fillStyle = '#FF0000'; ctx.fillRect(ex + 5, e.y + 5, e.w - 10, e.h - 10);
-        ctx.fillStyle = '#555'; ctx.fillRect(ex + e.w - 15, e.y + 15, 30, 10);
-        ctx.fillStyle = '#555'; ctx.fillRect(ex - 15, e.y + 15, 30, 10);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(ex + 10, e.y + 12, 12, 12); ctx.fillRect(ex + e.w - 22, e.y + 12, 12, 12);
-        ctx.fillStyle = '#f00';
-        ctx.fillRect(ex + 13, e.y + 15, 6, 6); ctx.fillRect(ex + e.w - 19, e.y + 15, 6, 6);
+        // Giant mech boss - Metal Slug boss style
+        // Legs/base
+        ctx.fillStyle = '#4a2010';
+        ctx.fillRect(ex + 5, e.y + e.h - 20, 18, 20);
+        ctx.fillRect(ex + e.w - 23, e.y + e.h - 20, 18, 20);
+        // Leg details
+        ctx.fillStyle = '#6a3010';
+        ctx.fillRect(ex + 6, e.y + e.h - 18, 14, 4);
+        ctx.fillRect(ex + e.w - 22, e.y + e.h - 18, 14, 4);
+
+        // Main body
+        ctx.fillStyle = '#8B2000';
+        ctx.fillRect(ex + 2, e.y + 15, e.w - 4, e.h - 30);
+        ctx.fillStyle = '#aa3010';
+        ctx.fillRect(ex + 4, e.y + 17, e.w - 12, e.h - 38);
+
+        // Shoulder cannons
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(ex - 12, e.y + 18, 16, 30);
+        ctx.fillRect(ex + e.w - 4, e.y + 18, 16, 30);
+        ctx.fillStyle = '#222'; ctx.fillRect(ex - 14, e.y + 26, 4, 14);
+        ctx.fillStyle = '#222'; ctx.fillRect(ex + e.w + 10, e.y + 26, 4, 14);
+
+        // Head
+        ctx.fillStyle = '#5a1000';
+        ctx.fillRect(ex + 12, e.y, e.w - 24, 18);
+        // Visor
+        ctx.fillStyle = '#ff2200';
+        ctx.fillRect(ex + 14, e.y + 4, e.w - 28, 8);
+        ctx.fillStyle = '#ff6600';
+        ctx.fillRect(ex + 14, e.y + 4, (e.w - 28) * 0.5, 4);
+        // Eye slots
+        ctx.fillStyle = '#ff0000';
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath(); ctx.arc(ex + 20 + i * 10, e.y + 8, 3, 0, Math.PI * 2); ctx.fill();
+        }
+
         // HP bar
-        ctx.fillStyle = '#333'; ctx.fillRect(ex, e.y - 10, e.w, 6);
-        ctx.fillStyle = '#e53935'; ctx.fillRect(ex, e.y - 10, e.w * (e.hp / 20), 6);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(ex - 2, e.y - 14, e.w + 4, 10);
+        ctx.fillStyle = '#dd0000'; ctx.fillRect(ex, e.y - 13, (e.w) * (e.hp / 20), 8);
+        ctx.fillStyle = '#ff3300'; ctx.fillRect(ex, e.y - 13, (e.w) * (e.hp / 20) * 0.4, 4);
+
       } else {
-        ctx.fillStyle = '#8B0000'; ctx.fillRect(ex + 3, e.y, e.w - 6, 12);
-        ctx.fillStyle = '#e8a080'; ctx.fillRect(ex + 4, e.y + 12, e.w - 8, 10);
-        ctx.fillStyle = '#1a1a2e'; ctx.fillRect(ex + 8, e.y + 14, 5, 5);
-        ctx.fillStyle = '#8B0000'; ctx.fillRect(ex + 3, e.y + 22, e.w - 6, 10);
-        ctx.fillStyle = '#555'; ctx.fillRect(ex + e.w - 2, e.y + 20, 12, 5);
-        ctx.fillStyle = '#6b3333';
-        const le = p.onGround ? Math.sin(frame * 0.25) * 2 : 0;
-        ctx.fillRect(ex + 3, e.y + 32, 10, 4 + le);
-        ctx.fillRect(ex + e.w - 13, e.y + 32, 10, 4 - le);
+        // Enemy soldier - detailed pixel art
+        // Boots
+        ctx.fillStyle = '#1a1408';
+        ctx.fillRect(ex + 2, e.y + e.h - 8 + legOff, 11, 8);
+        ctx.fillRect(ex + e.w - 13, e.y + e.h - 8 - legOff, 11, 8);
+        // Legs
+        ctx.fillStyle = '#4a3020';
+        ctx.fillRect(ex + 3, e.y + 22, 10, 12 + legOff);
+        ctx.fillRect(ex + e.w - 13, e.y + 22, 10, 12 - legOff);
+        // Body - enemy uniform (dark red)
+        ctx.fillStyle = '#6a1810';
+        ctx.fillRect(ex + 3, e.y + 13, e.w - 6, 12);
+        ctx.fillStyle = '#4a1008';
+        ctx.fillRect(ex + 4, e.y + 14, 5, 9);
+        // Gun
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(ex + e.w - 2, e.y + 17, 16, 5);
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(ex + e.w + 10, e.y + 18, 5, 3);
+        // Arm
+        ctx.fillStyle = '#6a1810';
+        ctx.fillRect(ex + e.w - 2, e.y + 15, 5, 8);
+        // Helmet - enemy style
+        ctx.fillStyle = '#4a2808';
+        ctx.fillRect(ex + 4, e.y + 2, e.w - 8, 10);
+        ctx.fillRect(ex + 3, e.y + 8, e.w - 6, 5);
+        ctx.fillStyle = '#3a1a04';
+        ctx.fillRect(ex + 2, e.y + 11, e.w - 4, 3);
+        // Face
+        ctx.fillStyle = '#c89060';
+        ctx.fillRect(ex + 5, e.y + 12, e.w - 10, 8);
+        // Eye
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(ex + 8, e.y + 14, 4, 4);
       }
       ctx.restore();
     }
