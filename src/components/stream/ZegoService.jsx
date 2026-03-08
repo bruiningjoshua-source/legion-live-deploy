@@ -24,6 +24,7 @@ class ZegoStreamingService {
     this.roomEventCallbacks = [];
     this.isPublishing = false;
     this.isScreenSharing = false;
+    this.publishStreamId = null;   // Track the actual publish stream ID (BUG-2 fix)
     this.currentCamera = null;
     this.cameras = [];
     this.microphones = [];
