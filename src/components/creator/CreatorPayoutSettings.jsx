@@ -333,7 +333,9 @@ export default function CreatorPayoutSettings({ creator, user }) {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Payout History */}
       {payoutHistory.length > 0 && (
