@@ -14,10 +14,11 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import CurrencyPackages from '@/components/wallet/CurrencyPackages';
+import CurrencyPackages, { VIP_TIERS, getVipTier, getNextVipTier, DENARII_PER_DOLLAR } from '@/components/wallet/CurrencyPackages';
 import GlassCard from '@/components/shared/GlassCard';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
+import VIPBadge from '@/components/stream/VIPBadge';
 
 export default function Wallet() {
   // Handle successful purchase redirect
@@ -97,17 +98,12 @@ export default function Wallet() {
     }
   });
 
-  const vipLevelThresholds = [0, 100, 500, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000];
-  const getVIPLevel = (spent) => {
-    for (let i = vipLevelThresholds.length - 1; i >= 0; i--) {
-      if (spent >= vipLevelThresholds[i]) return i;
-    }
-    return 0;
-  };
-
-  const vipLevel = getVIPLevel(wallet?.total_spent || 0);
-  const vipNames = ['Recruit', 'Bronze', 'Silver', 'Gold', 'Diamond', 'Royal', 'Centurion', 'Praetor', 'Senator', 'Augustus', 'Divine'];
-  const vipColors = ['stone', 'amber', 'gray', 'amber', 'cyan', 'purple', 'red', 'pink', 'blue', 'orange', 'yellow'];
+  const vipPoints = wallet?.vip_points || 0;
+  const vipTier = getVipTier(vipPoints);
+  const nextTier = getNextVipTier(vipPoints);
+  const vipProgress = nextTier
+    ? ((vipPoints - vipTier.minPoints) / (nextTier.minPoints - vipTier.minPoints)) * 100
+    : 100;
 
   // Loading state
   if (walletLoading) {
