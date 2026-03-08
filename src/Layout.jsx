@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { initLegionForge, legionBus, legionStorage } from '@/components/core/legion';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
 import LoadingScreen from '@/components/shared/LoadingScreen';
@@ -29,18 +30,24 @@ export default function Layout({ children, currentPageName }) {
   const [showShieldMenu, setShowShieldMenu] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   
-  // Single initializer for all localStorage-backed preferences
+  // Single initializer for all localStorage-backed preferences (via legionStorage)
   const [prefs, setPrefs] = useState(() => ({
-    theme: localStorage.getItem('legion_theme') || 'roman',
-    particles: localStorage.getItem('legion_particles') || 'medium',
-    animatedBg: localStorage.getItem('legion_animated_bg') !== 'false',
+    theme:      legionStorage.get('theme', 'roman'),
+    particles:  legionStorage.get('particles', 'medium'),
+    animatedBg: legionStorage.get('animated_bg', true),
   }));
   const currentTheme = prefs.theme;
   const particleIntensity = prefs.particles;
   const animatedBg = prefs.animatedBg;
-  const setCurrentTheme = useCallback((v) => { localStorage.setItem('legion_theme', v); setPrefs(p => ({ ...p, theme: v })); }, []);
-  const setParticleIntensity = useCallback((v) => { localStorage.setItem('legion_particles', v); setPrefs(p => ({ ...p, particles: v })); }, []);
-  const setAnimatedBg = useCallback((v) => { localStorage.setItem('legion_animated_bg', String(v)); setPrefs(p => ({ ...p, animatedBg: v })); }, []);
+  const setCurrentTheme     = useCallback((v) => { legionStorage.set('theme', v);       setPrefs(p => ({ ...p, theme: v })); }, []);
+  const setParticleIntensity= useCallback((v) => { legionStorage.set('particles', v);    setPrefs(p => ({ ...p, particles: v })); }, []);
+  const setAnimatedBg       = useCallback((v) => { legionStorage.set('animated_bg', v);  setPrefs(p => ({ ...p, animatedBg: v })); }, []);
+
+  // Boot the Legion forge fingerprint + tamper detection
+  useEffect(() => {
+    const cleanup = initLegionForge();
+    return cleanup;
+  }, []);
 
   // Preserve scroll positions across navigation for native-like back stack
   useScrollPreservation();
@@ -152,15 +159,21 @@ export default function Layout({ children, currentPageName }) {
 
   // CSS variables and animations are now in globals.css
 
-  // Listen for theme changes from Settings page
+  // Listen for theme changes via the Legion event bus (Settings page)
   useEffect(() => {
-    const handler = (e) => {
-      if (e.detail?.theme) setCurrentTheme(e.detail.theme);
-      if (e.detail?.particles) setParticleIntensity(e.detail.particles);
+    const unsub = legionBus.on('theme-change', ({ theme, particles, animatedBg: bg }) => {
+      if (theme)             setCurrentTheme(theme);
+      if (particles)         setParticleIntensity(particles);
+      if (bg !== undefined)  setAnimatedBg(bg);
+    });
+    // Also keep the legacy DOM-event listener for backward compat
+    const domHandler = (e) => {
+      if (e.detail?.theme)              setCurrentTheme(e.detail.theme);
+      if (e.detail?.particles)          setParticleIntensity(e.detail.particles);
       if (e.detail?.animatedBg !== undefined) setAnimatedBg(e.detail.animatedBg);
     };
-    window.addEventListener('legion-theme-change', handler);
-    return () => window.removeEventListener('legion-theme-change', handler);
+    window.addEventListener('legion-theme-change', domHandler);
+    return () => { unsub(); window.removeEventListener('legion-theme-change', domHandler); };
   }, [setCurrentTheme, setParticleIntensity, setAnimatedBg]);
 
   const handleTutorialComplete = () => {

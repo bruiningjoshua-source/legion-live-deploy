@@ -79,6 +79,7 @@ import Explore from './pages/Explore';
 import FanClubs from './pages/FanClubs';
 import Following from './pages/Following';
 import ForumPost from './pages/ForumPost';
+import GamesExpo from './pages/GamesExpo';
 import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import HelpAndInfo from './pages/HelpAndInfo';
@@ -114,7 +115,6 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import GamesExpo from './pages/GamesExpo';
 import __Layout from './Layout.jsx';
 
 
@@ -151,6 +151,7 @@ export const PAGES = {
     "FanClubs": FanClubs,
     "Following": Following,
     "ForumPost": ForumPost,
+    "GamesExpo": GamesExpo,
     "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "HelpAndInfo": HelpAndInfo,
@@ -186,7 +187,6 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "GamesExpo": GamesExpo,
 }
 
 export const pagesConfig = {
