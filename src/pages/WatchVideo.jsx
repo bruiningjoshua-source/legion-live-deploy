@@ -279,8 +279,8 @@ export default function WatchVideo() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
           {/* Main Video Area */}
           <div className="lg:col-span-2 space-y-4">
             {/* Video/Music Player */}
@@ -319,20 +319,20 @@ export default function WatchVideo() {
             </div>
 
             {/* Video Info */}
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardContent className="p-6">
-                <h1 className="text-2xl font-bold text-amber-100 mb-4">{video.title}</h1>
+             <Card className="bg-stone-800/30 border-amber-600/20">
+               <CardContent className="p-4 sm:p-6">
+                <h1 className="text-xl sm:text-2xl font-bold text-amber-100 mb-4">{video.title}</h1>
                 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center justify-between flex-1">
-                     <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                     <Link to={createPageUrl(`CreatorProfile?id=${creator?.id}`)} className="flex-1">
                        <div className="flex items-center gap-3">
                          {creator?.avatar_url && (
-                           <img src={creator.avatar_url} className="w-12 h-12 rounded-full" alt="" />
+                           <img src={creator.avatar_url} className="w-10 sm:w-12 h-10 sm:h-12 rounded-full flex-shrink-0" alt="" />
                          )}
-                         <div>
-                           <p className="text-amber-100 font-semibold">{creator?.display_name}</p>
-                           <p className="text-amber-400/60 text-sm">{creator?.follower_count ? (creator.follower_count >= 1000 ? (creator.follower_count / 1000).toFixed(1) + 'K' : creator.follower_count) : 0} followers</p>
+                         <div className="min-w-0">
+                           <p className="text-amber-100 font-semibold text-sm sm:text-base truncate">{creator?.display_name}</p>
+                           <p className="text-amber-400/60 text-xs sm:text-sm">{creator?.follower_count ? (creator.follower_count >= 1000 ? (creator.follower_count / 1000).toFixed(1) + 'K' : creator.follower_count) : 0} followers</p>
                          </div>
                        </div>
                      </Link>
@@ -356,6 +356,7 @@ export default function WatchVideo() {
                          }
                        }}
                        className={subscription ? 'bg-stone-600 hover:bg-stone-700' : 'bg-red-600 hover:bg-red-700'}
+                       size="sm"
                      >
                        {subscription ? 'Subscribed' : 'Subscribe'}
                      </Button>
@@ -370,27 +371,26 @@ export default function WatchVideo() {
                         size="sm"
                       />
                     )}
-                    <div className="flex items-center bg-stone-800 rounded-lg overflow-hidden">
+                    <div className="flex items-center bg-stone-800 rounded-lg overflow-hidden text-xs sm:text-sm">
                       <Button
                         onClick={() => user && likeMutation.mutate()}
                         variant="ghost"
-                        className={`rounded-none border-r border-stone-700 ${hasLiked ? 'text-blue-400' : 'text-amber-200'}`}
+                        size="sm"
+                        className={`rounded-none border-r border-stone-700 h-8 sm:h-9 ${hasLiked ? 'text-blue-400' : 'text-amber-200'}`}
                       >
-                        <ThumbsUp className={`w-4 h-4 mr-2 ${hasLiked ? 'fill-current' : ''}`} />
-                        {video.like_count || 0}
+                        <ThumbsUp className={`w-4 h-4 ${hasLiked ? 'fill-current' : ''}`} />
+                        <span className="hidden sm:inline ml-1">{video.like_count || 0}</span>
                       </Button>
                       <Button
                         onClick={() => user && dislikeMutation.mutate()}
                         variant="ghost"
-                        className={`rounded-none ${hasDisliked ? 'text-red-400' : 'text-amber-200'}`}
+                        size="sm"
+                        className={`rounded-none h-8 sm:h-9 ${hasDisliked ? 'text-red-400' : 'text-amber-200'}`}
                       >
                         <ThumbsDown className={`w-4 h-4 ${hasDisliked ? 'fill-current' : ''}`} />
-                        {video.dislike_count > 0 && (
-                          <span className="ml-1">{video.dislike_count}</span>
-                        )}
                       </Button>
                     </div>
-                    <Button variant="outline" className="border-amber-600/30 text-amber-200">
+                    <Button variant="outline" size="sm" className="border-amber-600/30 text-amber-200 h-8 sm:h-9">
                       <Share2 className="w-4 h-4" />
                     </Button>
                   </div>
