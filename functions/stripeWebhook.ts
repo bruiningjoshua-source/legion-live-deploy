@@ -148,8 +148,6 @@ Deno.serve(async (req) => {
         // ── Denarii Purchase ──
         if (metadata.purchase_type === 'denarii' && metadata.user_email) {
           const denariiAmount = parseInt(metadata.denarii_amount) || 0;
-          const bonusDenarii = parseInt(metadata.bonus_denarii) || 0;
-          const totalDenarii = denariiAmount + bonusDenarii;
           const priceUsd = (session.amount_total || 0) / 100;
 
           if (denariiAmount <= 0 || denariiAmount > 1000000) {
@@ -157,10 +155,23 @@ Deno.serve(async (req) => {
             break;
           }
 
-          if (bonusDenarii < 0 || bonusDenarii > 1000000) {
-            console.error('[stripeWebhook] Invalid bonus amount:', metadata.bonus_denarii);
-            break;
+          // REVENUE FIX: Calculate bonus server-side to prevent client-side manipulation
+          let bonusDenarii = 0;
+          if (priceUsd >= 100) {
+            bonusDenarii = Math.floor(denariiAmount * 0.35); // 35% for $100+
+          } else if (priceUsd >= 50) {
+            bonusDenarii = Math.floor(denariiAmount * 0.25); // 25% for $50+
+          } else if (priceUsd >= 20) {
+            bonusDenarii = Math.floor(denariiAmount * 0.20); // 20% for $20+
+          } else if (priceUsd >= 10) {
+            bonusDenarii = Math.floor(denariiAmount * 0.15); // 15% for $10+
+          } else if (priceUsd >= 5) {
+            bonusDenarii = Math.floor(denariiAmount * 0.12); // 12% for $5+
+          } else {
+            bonusDenarii = Math.floor(denariiAmount * 0.10); // 10% for <$5
           }
+
+          const totalDenarii = denariiAmount + bonusDenarii;
 
           // Duplicate payment intent guard (check both payment_intent and session id)
           const existingPurchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
@@ -175,9 +186,9 @@ Deno.serve(async (req) => {
             { user_email: metadata.user_email }, null, 1
           );
 
-          // VIP points and lotto tickets from metadata
-          const vipPointsAwarded = parseInt(metadata.vip_points) || Math.floor(priceUsd * 10);
-          const lottoTicketsAwarded = parseInt(metadata.lotto_tickets) || Math.floor(priceUsd / 10);
+          // REVENUE FIX: Calculate VIP/lotto server-side (prevent inflation)
+          const vipPointsAwarded = Math.floor(priceUsd * 10); // 10 points per $1 (locked)
+          const lottoTicketsAwarded = Math.floor(priceUsd / 10); // 1 ticket per $10 (locked)
 
           if (wallets[0]) {
             const newVipPoints = (wallets[0].vip_points || 0) + vipPointsAwarded;
@@ -210,16 +221,20 @@ Deno.serve(async (req) => {
             });
           }
 
+          // REVENUE FIX: Record vip_multiplier and conversion rate for audit
           await base44.asServiceRole.entities.CurrencyPurchase.create({
             user_email: metadata.user_email,
             package_name: metadata.package_id || metadata.package_name || 'Denarii Package',
             denarii_amount: denariiAmount,
             bonus_denarii: bonusDenarii,
             price_usd: priceUsd,
-            stripe_payment_intent: session.payment_intent
+            stripe_payment_intent: session.payment_intent,
+            conversion_rate: denariiAmount / priceUsd, // Track rate for analytics
+            vip_multiplier_applied: 1.0, // Always 1.0 (no multiplier boost at purchase time)
+            timestamp_usd_per_denarii: 1 / 260 // Fixed rate: 260 Denarii/$1
           });
 
-          console.log('[stripeWebhook] Denarii purchased:', totalDenarii, 'for', metadata.user_email);
+          console.log('[stripeWebhook] Denarii purchased:', totalDenarii, 'for', metadata.user_email, '| base:', denariiAmount, '+ bonus:', bonusDenarii, '@ ratio', (denariiAmount / priceUsd).toFixed(0), ':1');
 
           // Send purchase confirmation email
           try {
