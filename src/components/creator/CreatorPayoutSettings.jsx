@@ -247,63 +247,24 @@ export default function CreatorPayoutSettings({ creator, user }) {
         </CardContent>
       </Card>
 
-      {/* Stripe Connect - Recommended */}
-      <Card className="bg-gradient-to-br from-indigo-900/40 to-stone-900 border-indigo-500/30">
-        <CardHeader>
-          <CardTitle className="text-indigo-100 flex items-center gap-2">
-            🏦 Direct Bank Deposits
-            <Badge className="bg-green-600/20 text-green-300 border-green-500/30 text-xs">
-              Recommended
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {stripeStatus?.payouts_enabled ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-green-400">
-                <Check className="w-5 h-5" />
-                <span>Bank account connected - instant payouts enabled</span>
-              </div>
-              <Button
-                onClick={handleStripeLogin}
-                variant="outline"
-                className="border-indigo-500/30 text-indigo-300"
-                disabled={stripeLoading}
-              >
-                {stripeLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                View Stripe Dashboard
-              </Button>
-            </div>
-          ) : stripeStatus?.details_submitted ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-amber-400">
-                <AlertCircle className="w-5 h-5" />
-                <span>Verification in progress - payouts will be enabled soon</span>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-indigo-300/80 text-sm">
-                Connect your bank account for instant payouts. Funds arrive in 1-2 business days with no manual processing.
-              </p>
-              <Button
-                onClick={handleStripeConnect}
-                className="bg-indigo-600 hover:bg-indigo-700"
-                disabled={stripeLoading}
-              >
-                {stripeLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                )}
-                Connect Bank Account
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Other Payout Methods */}
+      {/* Stripe Connect KYC */}
+      <Tabs defaultValue="kyc" className="w-full">
+        <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full">
+          <TabsTrigger value="kyc" className="flex-1 data-[state=active]:bg-indigo-700">
+            <ShieldCheck className="w-4 h-4 mr-2" /> KYC & Bank Verification
+          </TabsTrigger>
+          <TabsTrigger value="other" className="flex-1 data-[state=active]:bg-amber-700">
+            <Wallet className="w-4 h-4 mr-2" /> Other Methods
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="kyc" className="mt-4">
+          <StripeConnectKYC
+            creator={creator}
+            onStatusChange={(s) => setStripeStatus(s)}
+          />
+        </TabsContent>
+        <TabsContent value="other" className="mt-4">
+          {/* Other Payout Methods */}
       <Card className="bg-stone-800/30 border-amber-600/20">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-amber-100 flex items-center gap-2">
