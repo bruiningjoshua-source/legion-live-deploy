@@ -418,7 +418,7 @@ Deno.serve(async (req) => {
       case 'charge.dispute.created': {
         const charge = event.data.object;
         console.error('[stripeWebhook] Chargeback initiated:', charge.id, 'amount:', charge.amount / 100);
-        
+
         // Find the related CurrencyPurchase by payment intent
         const purchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
           { stripe_payment_intent: charge.payment_intent }, null, 1
@@ -435,10 +435,25 @@ Deno.serve(async (req) => {
           );
 
           if (wallets[0]) {
-            const newBalance = Math.max(0, (wallets[0].denarii_balance || 0) - denarii);
+            const oldBalance = wallets[0].denarii_balance || 0;
+            const newBalance = Math.max(0, oldBalance - denarii);
             await base44.asServiceRole.entities.Wallet.update(wallets[0].id, {
               denarii_balance: newBalance
             });
+
+            // SECURITY FIX: Log chargeback to audit trail
+            await base44.asServiceRole.entities.WalletAuditLog.create({
+              user_email: userEmail,
+              wallet_id: wallets[0].id,
+              action: 'chargeback',
+              amount_denarii: -denarii,
+              previous_balance: oldBalance,
+              new_balance: newBalance,
+              related_entity_id: purchase.id,
+              reason: `Chargeback dispute: ${charge.id}`,
+              timestamp_utc: new Date().toISOString()
+            }).catch(e => console.warn('[stripeWebhook] Chargeback audit log failed:', e.message));
+
             console.log('[stripeWebhook] Chargeback: Reversed', denarii, 'denarii from', userEmail);
           }
 
@@ -449,6 +464,19 @@ Deno.serve(async (req) => {
               flagged_for_chargeback: true,
               chargeback_count: (users[0].chargeback_count || 0) + 1
             }).catch(e => console.warn('[stripeWebhook] User flag failed:', e.message));
+
+            // SECURITY FIX: Send chargeback notification to user
+            try {
+              await base44.asServiceRole.functions.invoke('transactionalEmail', {
+                action: 'send_chargeback_notice',
+                userEmail: userEmail,
+                userName: users[0].full_name || userEmail,
+                chargeId: charge.id,
+                reversedAmount: denarii
+              });
+            } catch (e) {
+              console.warn('[stripeWebhook] Chargeback notification email failed:', e.message);
+            }
           }
         }
         break;

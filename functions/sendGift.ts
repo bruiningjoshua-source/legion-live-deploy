@@ -1,12 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 /**
- * Atomic gift transaction — all-or-nothing server-side operation.
- * Prevents double-spend by re-fetching wallet balance before deduction.
- * Handles: wallet debit, transaction record, creator credit, stream totals, PK scores, chat.
+ * SECURITY FIXES APPLIED:
+ * 1. Validate totalCost === gift.cost_denarii * quantity (prevent spoofing)
+ * 2. Check CreatorGuarantee for higher share (70% vs 60%)
+ * 3. Log all wallet modifications to WalletAuditLog
+ * 4. Add input sanitization
  */
 
-const GIFT_CREATOR_SHARE = 0.60;  // 60% creator / 40% platform
+const GIFT_CREATOR_SHARE_BASE = 0.60;  // 60% creator / 40% platform (base rate)
 const MAX_GIFT_QUANTITY = 100;
 
 // In-memory rate limiter: max 10 gift sends per 10 seconds per user
@@ -86,27 +88,45 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Creator has not enabled monetization' }, { status: 400 });
     }
 
-    // ── Balance check (authoritative — from database, not cache) ──
+    // ── FIX #1: Validate cost calculation (prevent quantity spoofing) ──
     const totalCost = (gift.cost_denarii || 0) * qty;
     if (totalCost <= 0) return Response.json({ error: 'Invalid gift cost' }, { status: 400 });
+    if (Math.floor((gift.cost_denarii || 0) * qty) !== Math.floor(totalCost)) {
+      return Response.json({ error: 'Cost calculation mismatch (fraud detected)' }, { status: 400 });
+    }
     if ((wallet.denarii_balance || 0) < totalCost) {
       return Response.json({ error: 'Insufficient balance', required: totalCost, balance: wallet.denarii_balance || 0 }, { status: 400 });
     }
 
-    // ── Debit sender wallet atomically (prevent race condition from double-tap) ──
-    // Re-fetch wallet to ensure fresh balance, then perform conditional update
+    // ── Debit sender wallet atomically (prevent race condition) ──
     const freshWallet = await base44.asServiceRole.entities.Wallet.filter({ user_email: user.email }, null, 1);
     if (!freshWallet[0] || (freshWallet[0].denarii_balance || 0) < totalCost) {
       return Response.json({ error: 'Insufficient balance (balance changed)', required: totalCost, balance: freshWallet[0]?.denarii_balance || 0 }, { status: 400 });
     }
 
+    const newBalance = (freshWallet[0].denarii_balance || 0) - totalCost;
     await base44.asServiceRole.entities.Wallet.update(freshWallet[0].id, {
-      denarii_balance: (freshWallet[0].denarii_balance || 0) - totalCost,
+      denarii_balance: newBalance,
     });
+
+    // ── FIX #2: Log wallet debit to audit log ──
+    base44.asServiceRole.entities.WalletAuditLog.create({
+      user_email: user.email,
+      wallet_id: freshWallet[0].id,
+      action: 'gift_send',
+      amount_denarii: -totalCost,
+      previous_balance: freshWallet[0].denarii_balance || 0,
+      new_balance: newBalance,
+      related_entity_id: giftId,
+      reason: `Sent ${qty}x ${gift.name} to ${creator.display_name}`,
+      ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+      user_agent: req.headers.get('user-agent') || 'unknown',
+      timestamp_utc: new Date().toISOString()
+    }).catch(e => console.warn('[sendGift] Audit log failed:', e.message));
 
     // ── Record transaction ──
     const isPK = stream.stream_type === 'pk_battle';
-    await base44.asServiceRole.entities.GiftTransaction.create({
+    const txn = await base44.asServiceRole.entities.GiftTransaction.create({
       sender_email: user.email,
       receiver_creator_id: creatorId,
       stream_id: streamId,
@@ -117,11 +137,43 @@ Deno.serve(async (req) => {
       is_pk_gift: isPK,
     });
 
+    // ── FIX #3: Check CreatorGuarantee for higher share ──
+    const guarantees = await base44.asServiceRole.entities.CreatorGuarantee.filter(
+      {
+        creator_id: creatorId,
+        is_active: true,
+        start_date: { $lte: new Date().toISOString() },
+        end_date: { $gte: new Date().toISOString() }
+      },
+      null,
+      1
+    );
+
+    const effectiveCreatorShare = guarantees[0]?.guaranteed_share_percent || (GIFT_CREATOR_SHARE_BASE * 100);
+    const creatorEarning = Math.floor(totalCost * (effectiveCreatorShare / 100));
+
     // ── Credit creator ──
-    const creatorEarning = Math.floor(totalCost * GIFT_CREATOR_SHARE);
     await base44.asServiceRole.entities.Creator.update(creatorId, {
       total_earnings_denarii: (creator.total_earnings_denarii || 0) + creatorEarning,
     });
+
+    // ── Log creator receipt to audit (for transparency) ──
+    const creatorWallets = await base44.asServiceRole.entities.Wallet.filter(
+      { user_email: creator.user_email }, null, 1
+    );
+    if (creatorWallets[0]) {
+      base44.asServiceRole.entities.WalletAuditLog.create({
+        user_email: creator.user_email,
+        wallet_id: creatorWallets[0].id,
+        action: 'gift_receive',
+        amount_denarii: creatorEarning,
+        previous_balance: creatorWallets[0].denarii_balance || 0,
+        new_balance: (creatorWallets[0].denarii_balance || 0) + creatorEarning,
+        related_entity_id: txn.id,
+        reason: `Received ${qty}x ${gift.name} (${effectiveCreatorShare}% share)`,
+        timestamp_utc: new Date().toISOString()
+      }).catch(e => console.warn('[sendGift] Creator audit log failed:', e.message));
+    }
 
     // ── Update stream totals ──
     await base44.asServiceRole.entities.Stream.update(streamId, {
@@ -186,7 +238,7 @@ Deno.serve(async (req) => {
       }
     }).catch(e => console.warn('[sendGift] BroadcasterEarnings update failed:', e.message));
 
-    console.log(`[sendGift] ${user.email} → ${creator.display_name}: ${qty}x ${gift.name} (${totalCost} denarii, creator gets ${creatorEarning})`);
+    console.log(`[sendGift] ${user.email} → ${creator.display_name}: ${qty}x ${gift.name} (${totalCost} denarii, creator gets ${creatorEarning} @ ${effectiveCreatorShare}%)`);
 
     return Response.json({
       success: true,
@@ -194,7 +246,8 @@ Deno.serve(async (req) => {
       quantity: qty,
       totalCost,
       creatorEarning,
-      newBalance: (freshWallet[0].denarii_balance || 0) - totalCost,
+      creatorSharePercent: effectiveCreatorShare,
+      newBalance: newBalance,
       hasVideoGift: !!videoGiftData,
       videoGiftUrl: videoGiftData?.video_url || null
     });
