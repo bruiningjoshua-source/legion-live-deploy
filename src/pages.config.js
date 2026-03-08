@@ -118,6 +118,7 @@ import WatchVideo from './pages/WatchVideo';
 import CreatorPayouts from './pages/CreatorPayouts';
 import PlatformStatus from './pages/PlatformStatus';
 import ProductionReadiness from './pages/ProductionReadiness';
+import PayoutRouting from './pages/PayoutRouting';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +194,7 @@ export const PAGES = {
     "CreatorPayouts": CreatorPayouts,
     "PlatformStatus": PlatformStatus,
     "ProductionReadiness": ProductionReadiness,
+    "PayoutRouting": PayoutRouting,
 }
 
 export const pagesConfig = {
