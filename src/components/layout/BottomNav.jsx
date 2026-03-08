@@ -70,10 +70,10 @@ const BottomNav = memo(function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Background */}
-      <div className="absolute inset-0 bg-black/95 backdrop-blur-2xl" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/95 to-black/50 backdrop-blur-xl" />
       
       {/* Top border */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent" />
       
       <div className="relative flex items-center justify-around h-16 max-w-md mx-auto px-2 py-1.5">
         {navItems.map((item) => {
@@ -82,29 +82,31 @@ const BottomNav = memo(function BottomNav() {
           
           if (item.highlight) {
             return (
-              <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-4">
+              <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex items-center justify-center -mt-5">
                 <div className="relative active:scale-90 transition-transform">
-                  <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl ${
+                  <div className={`relative w-14 h-14 rounded-3xl flex items-center justify-center shadow-2xl backdrop-blur-xl border-2 ${
                     isLive
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600'
-                      : 'bg-gradient-to-br from-red-500 to-rose-600'
+                      ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-400/30 shadow-green-500/30'
+                      : 'bg-gradient-to-br from-red-500 to-rose-600 border-red-400/30 shadow-red-500/30'
                   }`}>
-                    <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+                    <Icon className="w-7 h-7 text-white" strokeWidth={2} />
                   </div>
-                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-black ${isLive ? 'bg-green-400' : 'bg-red-400'}`} />
+                  <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-black ${isLive ? 'bg-green-400 shadow-lg shadow-green-400/50' : 'bg-red-400 shadow-lg shadow-red-400/50'}`} />
                 </div>
               </a>
             );
           }
           
           return (
-            <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex-1 flex flex-col items-center justify-center py-1 min-w-0 active:scale-95 transition-transform">
-              <div className="flex flex-col items-center gap-0.5">
-                <Icon className={`w-[22px] h-[22px] transition-colors ${
-                  isActive ? 'text-white' : 'text-white/35'
-                }`} />
-                <span className={`text-[10px] font-medium ${
-                  isActive ? 'text-white' : 'text-white/35'
+            <a key={item.key} href={item.path} onClick={(e) => handleTabPress(item.path, e)} className="flex-1 flex flex-col items-center justify-center py-1.5 min-w-0 active:scale-95 transition-all">
+              <div className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${
+                isActive ? 'bg-white/[0.08] backdrop-blur-lg' : ''
+              }`}>
+                <Icon className={`w-5 h-5 transition-all ${
+                  isActive ? 'text-white' : 'text-white/40'
+                }`} strokeWidth={2} />
+                <span className={`text-[9px] font-bold tracking-wide ${
+                  isActive ? 'text-white' : 'text-white/40'
                 }`}>
                   {item.label}
                 </span>
