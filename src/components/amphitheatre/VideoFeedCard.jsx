@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Play, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import VideoContextMenu from './VideoContextMenu';
+import WatchLaterButton from '@/components/video/WatchLaterButton';
 
 const formatViews = (views) => {
   if (!views) return '0 views';
@@ -24,7 +25,7 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export default function VideoFeedCard({ content, isShort = false }) {
+export default function VideoFeedCard({ content, isShort = false, user = null }) {
   const [showPlaylistDialog, setShowPlaylistDialog] = useState(false);
   const videoUrl = content.type === 'music'
     ? createPageUrl(`WatchVideo?id=${content.id}&type=music`)
@@ -50,6 +51,11 @@ export default function VideoFeedCard({ content, isShort = false }) {
             <span className="absolute top-2 right-2 bg-black/70 text-white text-[11px] px-1.5 py-0.5 rounded font-medium">
               {formatDuration(content.duration_seconds)}
             </span>
+          )}
+          {user && (
+            <div className="absolute top-12 right-2">
+              <WatchLaterButton videoId={content.id} videoType="short" user={user} size="sm" />
+            </div>
           )}
         </div>
       </Link>
@@ -77,9 +83,14 @@ export default function VideoFeedCard({ content, isShort = false }) {
         {content.type === 'music' && (
           <Badge className="absolute top-2 left-2 bg-purple-600 border-0 text-[11px] py-0">♪ Music</Badge>
         )}
-        {content.creator?.is_live && (
-          <Badge className="absolute top-2 right-2 bg-red-600 border-0 text-[11px] py-0 animate-pulse">LIVE</Badge>
-        )}
+        <div className="absolute top-2 right-2 flex gap-1 items-center">
+          {content.creator?.is_live && (
+            <Badge className="bg-red-600 border-0 text-[11px] py-0 animate-pulse">LIVE</Badge>
+          )}
+          {user && (
+            <WatchLaterButton videoId={content.id} videoType="vlog" user={user} size="sm" />
+          )}
+        </div>
         {/* Hover play icon */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center">
