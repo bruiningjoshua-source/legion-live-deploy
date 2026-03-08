@@ -169,7 +169,9 @@ export default function Layout({ children, currentPageName }) {
 
   const renderContent = () => (
     <>
-      {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      <AnimatePresence>
+        {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      </AnimatePresence>
       
       {showTutorial && (
         <GettingStartedTutorial 
