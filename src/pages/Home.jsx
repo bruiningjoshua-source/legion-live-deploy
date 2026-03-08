@@ -58,7 +58,7 @@ const StreamSkeleton = memo(function StreamSkeleton() {
 const QUICK_ACCESS_ITEMS = [
   { to: 'Explore', icon: Radio, title: 'Live Streams', desc: 'Solo • PK • Group', color: 'red', gradient: 'from-red-500 to-rose-600' },
   { to: 'TheAmphitheatre', icon: Film, title: 'Videos', desc: 'Shorts • Long Form', color: 'blue', gradient: 'from-blue-500 to-cyan-600' },
-  { to: 'TheGamingHub', icon: Gamepad2, title: 'Gaming Hub', desc: 'OBS • Streamlabs', color: 'purple', gradient: 'from-purple-500 to-violet-600' },
+  { to: 'GamesExpo', icon: Gamepad2, title: 'Games Expo', desc: 'Arcade • AI Builder', color: 'purple', gradient: 'from-purple-500 to-violet-600' },
   { to: 'AffiliateHub', icon: ShoppingBag, title: 'Affiliate Hub', desc: 'Products • Brands', color: 'green', gradient: 'from-emerald-500 to-green-600' }
 ];
 
