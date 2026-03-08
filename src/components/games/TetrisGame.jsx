@@ -108,12 +108,25 @@ export default function TetrisGame() {
     const nctx = nextCanvas.getContext('2d');
 
     function drawBlock(context, x, y, color, size = BLOCK) {
+      const px = x * size, py = y * size;
+      // Main block fill
       context.fillStyle = color;
-      context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-      context.fillStyle = 'rgba(255,255,255,0.3)';
-      context.fillRect(x * size + 2, y * size + 2, size * 0.4, size * 0.15);
-      context.fillStyle = 'rgba(0,0,0,0.25)';
-      context.fillRect(x * size + size * 0.6, y * size + size * 0.6, size * 0.35, size * 0.35);
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      // Top-left bevel (light) - NES-style
+      context.fillStyle = 'rgba(255,255,255,0.45)';
+      context.fillRect(px + 1, py + 1, size - 2, 4);
+      context.fillRect(px + 1, py + 1, 4, size - 2);
+      // Bottom-right bevel (dark)
+      context.fillStyle = 'rgba(0,0,0,0.4)';
+      context.fillRect(px + 1, py + size - 5, size - 2, 4);
+      context.fillRect(px + size - 5, py + 1, 4, size - 2);
+      // Inner glow center
+      context.fillStyle = 'rgba(255,255,255,0.12)';
+      context.fillRect(px + 5, py + 5, size - 10, size - 10);
+      // Outer border
+      context.strokeStyle = 'rgba(0,0,0,0.5)';
+      context.lineWidth = 1;
+      context.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
     }
 
     function drawGhost(s) {
@@ -135,12 +148,22 @@ export default function TetrisGame() {
       const s = stateRef.current;
       if (!s) return;
 
-      // Board background
-      ctx.fillStyle = '#0a0a0e';
+      // Board background - deep dark with subtle grid
+      ctx.fillStyle = '#080810';
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-      // Grid lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      // Side glow - NES-style border glow
+      const leftGlow = ctx.createLinearGradient(0, 0, 20, 0);
+      leftGlow.addColorStop(0, 'rgba(80,60,180,0.3)');
+      leftGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = leftGlow; ctx.fillRect(0, 0, 20, CANVAS_H);
+      const rightGlow = ctx.createLinearGradient(CANVAS_W, 0, CANVAS_W - 20, 0);
+      rightGlow.addColorStop(0, 'rgba(80,60,180,0.3)');
+      rightGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = rightGlow; ctx.fillRect(CANVAS_W - 20, 0, 20, CANVAS_H);
+
+      // Grid lines - very subtle
+      ctx.strokeStyle = 'rgba(255,255,255,0.035)';
       ctx.lineWidth = 1;
       for (let r = 0; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r * BLOCK); ctx.lineTo(CANVAS_W, r * BLOCK); ctx.stroke(); }
       for (let c = 0; c < COLS; c++) { ctx.beginPath(); ctx.moveTo(c * BLOCK, 0); ctx.lineTo(c * BLOCK, CANVAS_H); ctx.stroke(); }
