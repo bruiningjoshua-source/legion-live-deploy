@@ -85,27 +85,52 @@ export default function MarioGame() {
     const ctx = canvas.getContext('2d');
 
     function drawBackground(camX) {
-      // Sky
+      // Sky gradient - classic Nintendo blue
       const sky = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-      sky.addColorStop(0, '#1a6bc4');
-      sky.addColorStop(1, '#6eb5f7');
+      sky.addColorStop(0, '#5c94fc');
+      sky.addColorStop(0.6, '#8bb8fc');
+      sky.addColorStop(1, '#b8d8fc');
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-      // Clouds
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      [[200, 60, camX * 0.3], [500, 80, camX * 0.3], [900, 50, camX * 0.3], [1400, 70, camX * 0.3]].forEach(([bx, by, offset]) => {
-        const cx = ((bx - offset) % CANVAS_W + CANVAS_W) % CANVAS_W;
-        ctx.beginPath(); ctx.arc(cx, by, 28, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(cx + 25, by + 8, 20, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(cx - 25, by + 8, 20, 0, Math.PI * 2); ctx.fill();
+      // Clouds - Nintendo-style puffy pixel clouds
+      const cloudPositions = [[180, 55], [480, 75], [820, 45], [1200, 65], [1550, 52]];
+      cloudPositions.forEach(([bx, by]) => {
+        const cx = ((bx - camX * 0.25) % (CANVAS_W + 300) + CANVAS_W + 300) % (CANVAS_W + 300) - 100;
+        // Cloud shadow
+        ctx.fillStyle = 'rgba(180,210,255,0.6)';
+        ctx.fillRect(cx - 28, by + 18, 80, 12);
+        // Main cloud body - pixel art chunky style
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 20, by + 8, 64, 20);
+        ctx.fillRect(cx - 8, by, 42, 12);
+        ctx.fillRect(cx + 4, by - 8, 24, 12);
+        // Highlight
+        ctx.fillStyle = '#e8f4ff';
+        ctx.fillRect(cx - 16, by + 10, 20, 6);
       });
 
-      // Hills
-      ctx.fillStyle = '#3a8c3f';
-      [[150, GROUND_Y + 20, 100, camX * 0.5], [600, GROUND_Y + 10, 140, camX * 0.5], [1100, GROUND_Y + 15, 120, camX * 0.5]].forEach(([hx, hy, r, offset]) => {
-        const cx = hx - offset;
-        ctx.beginPath(); ctx.arc(cx, hy, r, 0, Math.PI * 2); ctx.fill();
+      // Hills - NES style rounded bumps with lighter top
+      const hillData = [[120, 110, camX * 0.45], [480, 130, camX * 0.45], [900, 95, camX * 0.45], [1300, 120, camX * 0.45]];
+      hillData.forEach(([hx, hr, offset]) => {
+        const cx = ((hx - offset) % (CANVAS_W + 300) + CANVAS_W + 300) % (CANVAS_W + 300) - 100;
+        const hy = GROUND_Y;
+        ctx.fillStyle = '#5ea832';
+        ctx.beginPath(); ctx.arc(cx, hy, hr, Math.PI, 0); ctx.fill();
+        // Hill highlight
+        ctx.fillStyle = '#78c844';
+        ctx.beginPath(); ctx.arc(cx - hr * 0.2, hy - hr * 0.55, hr * 0.4, Math.PI, 0); ctx.fill();
+        // Dots on hills (NES detail)
+        ctx.fillStyle = '#4a9228';
+        ctx.fillRect(cx + 10, hy - hr + 10, 6, 6);
+        ctx.fillRect(cx - 20, hy - hr + 25, 6, 6);
+      });
+
+      // Distant mountains
+      ctx.fillStyle = '#7ba8e0';
+      [[700, camX * 0.1], [1100, camX * 0.1]].forEach(([mx, off]) => {
+        const px = ((mx - off) % (CANVAS_W + 400) + CANVAS_W + 400) % (CANVAS_W + 400) - 150;
+        ctx.beginPath(); ctx.moveTo(px - 60, GROUND_Y); ctx.lineTo(px, GROUND_Y - 80); ctx.lineTo(px + 60, GROUND_Y); ctx.fill();
       });
     }
 
@@ -114,23 +139,47 @@ export default function MarioGame() {
         const px = p.x - camX;
         if (px + p.w < 0 || px > CANVAS_W) return;
         if (p.h >= 50) {
-          // Ground
-          ctx.fillStyle = '#5c4033';
+          // Ground - NES style dirt + grass
+          ctx.fillStyle = '#a05828';
           ctx.fillRect(px, p.y, p.w, p.h);
-          ctx.fillStyle = '#4caf50';
-          ctx.fillRect(px, p.y, p.w, 14);
-          ctx.fillStyle = '#388e3c';
-          for (let bx = 0; bx < p.w; bx += 40) {
-            ctx.fillRect(px + bx, p.y + 14, 38, 4);
+          // Dirt texture blocks
+          ctx.fillStyle = '#8c4820';
+          for (let bx = 0; bx < p.w; bx += 32) {
+            for (let by = 18; by < p.h; by += 16) {
+              if ((Math.floor(bx / 32) + Math.floor(by / 16)) % 2 === 0)
+                ctx.fillRect(px + bx, p.y + by, 30, 14);
+            }
           }
+          // Grass top - chunky 3-layer
+          ctx.fillStyle = '#5ea832';
+          ctx.fillRect(px, p.y, p.w, 16);
+          ctx.fillStyle = '#78c844';
+          ctx.fillRect(px, p.y, p.w, 8);
+          // Grass bumps
+          ctx.fillStyle = '#5ea832';
+          for (let bx = 4; bx < p.w - 4; bx += 16) {
+            ctx.fillRect(px + bx, p.y - 4, 8, 6);
+          }
+          // Ground outline
+          ctx.fillStyle = '#4a9228';
+          ctx.fillRect(px, p.y + 16, p.w, 3);
         } else {
-          // Brick
-          const grad = ctx.createLinearGradient(px, p.y, px, p.y + p.h);
-          grad.addColorStop(0, '#e07c39'); grad.addColorStop(1, '#c0522a');
-          ctx.fillStyle = grad;
+          // Brick platform - authentic SMB style
+          ctx.fillStyle = '#c84c28';
           ctx.fillRect(px, p.y, p.w, p.h);
-          ctx.strokeStyle = '#a0421f'; ctx.lineWidth = 1;
-          ctx.strokeRect(px, p.y, p.w, p.h);
+          // Top highlight
+          ctx.fillStyle = '#e86030';
+          ctx.fillRect(px, p.y, p.w, 4);
+          // Brick mortar lines
+          ctx.fillStyle = '#a03820';
+          ctx.fillRect(px, p.y + p.h / 2, p.w, 2);
+          for (let bx = 0; bx < p.w; bx += 16) {
+            ctx.fillRect(px + bx, p.y, 2, p.h);
+          }
+          // Offset mortar on bottom half
+          for (let bx = 8; bx < p.w; bx += 16) {
+            ctx.fillRect(px + bx, p.y + p.h / 2, 2, p.h / 2);
+          }
         }
       });
     }
@@ -140,11 +189,28 @@ export default function MarioGame() {
         if (c.collected) return;
         const cx = c.x - camX;
         if (cx < -20 || cx > CANVAS_W + 20) return;
-        const pulse = Math.abs(Math.sin(frame * 0.08)) * 2;
-        ctx.fillStyle = '#FFD700';
-        ctx.beginPath(); ctx.arc(cx, c.y - pulse, 9, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#FFF9C4';
-        ctx.beginPath(); ctx.arc(cx - 2, c.y - pulse - 2, 3, 0, Math.PI * 2); ctx.fill();
+        const bob = Math.sin(frame * 0.12) * 3;
+        // Spin effect - coin width oscillates
+        const spinW = Math.abs(Math.cos(frame * 0.15)) * 10 + 4;
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath(); ctx.ellipse(cx, c.y + 12, 7, 3, 0, 0, Math.PI * 2); ctx.fill();
+        // Coin body
+        ctx.fillStyle = '#e8a800';
+        ctx.fillRect(cx - spinW / 2, c.y - 11 + bob, spinW, 20);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(cx - spinW / 2 + 1, c.y - 11 + bob, spinW - 2, 14);
+        // Shine
+        if (spinW > 8) {
+          ctx.fillStyle = '#fff9c4';
+          ctx.fillRect(cx - spinW / 2 + 2, c.y - 9 + bob, 3, 6);
+        }
+        // Star symbol on coin
+        ctx.fillStyle = '#c88800';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        if (spinW > 7) ctx.fillText('★', cx, c.y + 3 + bob);
+        ctx.textAlign = 'left';
       });
     }
 
@@ -153,31 +219,77 @@ export default function MarioGame() {
         if (!e.alive) return;
         const ex = e.x - camX;
         if (ex < -40 || ex > CANVAS_W + 40) return;
+        const walk = Math.sin(frame * 0.22) * 2;
         if (e.type === 'goomba') {
-          ctx.fillStyle = '#8B4513';
-          ctx.beginPath(); ctx.arc(ex + 15, e.y + 10, 14, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#FF6B35';
-          ctx.fillRect(ex + 4, e.y + 16, 22, 14);
-          // Eyes
+          // Shadow
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.beginPath(); ctx.ellipse(ex + 15, e.y + 31, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+          // Feet - walk animation
+          ctx.fillStyle = '#3d1a00';
+          ctx.fillRect(ex + 3, e.y + 22, 11, 9 + walk);
+          ctx.fillRect(ex + 16, e.y + 22, 11, 9 - walk);
+          // Body
+          ctx.fillStyle = '#a05000';
+          ctx.fillRect(ex + 2, e.y + 12, 26, 14);
+          // Belly
+          ctx.fillStyle = '#c87840';
+          ctx.fillRect(ex + 6, e.y + 14, 18, 9);
+          // Head - NES goomba mushroom shape
+          ctx.fillStyle = '#8c3800';
+          ctx.fillRect(ex, e.y, 30, 14);
+          ctx.fillRect(ex + 2, e.y - 4, 26, 6);
+          // White eyes with angry brow
           ctx.fillStyle = 'white';
-          ctx.fillRect(ex + 6, e.y + 8, 7, 6); ctx.fillRect(ex + 18, e.y + 8, 7, 6);
+          ctx.fillRect(ex + 5, e.y + 3, 8, 7);
+          ctx.fillRect(ex + 17, e.y + 3, 8, 7);
           ctx.fillStyle = '#1a1a2e';
-          ctx.fillRect(ex + 8, e.y + 10, 4, 4); ctx.fillRect(ex + 20, e.y + 10, 4, 4);
-          // Feet
-          const legOff = Math.sin(frame * 0.2) * 3;
-          ctx.fillStyle = '#5D2E0C';
-          ctx.fillRect(ex + 4, e.y + 28, 9, 5 + legOff);
-          ctx.fillRect(ex + 18, e.y + 28, 9, 5 - legOff);
+          ctx.fillRect(ex + 7, e.y + 5, 4, 5);
+          ctx.fillRect(ex + 19, e.y + 5, 4, 5);
+          // Angry eyebrows
+          ctx.fillStyle = '#3d1a00';
+          ctx.fillRect(ex + 4, e.y + 1, 10, 3);
+          ctx.fillRect(ex + 16, e.y + 1, 10, 3);
+          // Tooth
+          ctx.fillStyle = '#ffffc0';
+          ctx.fillRect(ex + 8, e.y + 11, 5, 4);
+          ctx.fillRect(ex + 17, e.y + 11, 5, 4);
         } else {
-          // Koopa
-          ctx.fillStyle = '#2e7d32';
-          ctx.beginPath(); ctx.arc(ex + 17, e.y + 14, 16, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#66BB6A';
-          ctx.fillRect(ex + 5, e.y + 20, 24, 14);
-          ctx.fillStyle = '#fff9c4';
-          ctx.beginPath(); ctx.arc(ex + 17, e.y + 6, 9, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = 'black';
-          ctx.fillRect(ex + 12, e.y + 4, 4, 5); ctx.fillRect(ex + 20, e.y + 4, 4, 5);
+          // Koopa Troopa - green shell, white head
+          const walk2 = Math.sin(frame * 0.2) * 3;
+          // Shadow
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.beginPath(); ctx.ellipse(ex + 17, e.y + 35, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+          // Feet/shoes - brown
+          ctx.fillStyle = '#5a3010';
+          ctx.fillRect(ex + 4, e.y + 26, 10, 10 + walk2);
+          ctx.fillRect(ex + 20, e.y + 26, 10, 10 - walk2);
+          // Shell body - dark green base
+          ctx.fillStyle = '#1e6e1e';
+          ctx.fillRect(ex + 3, e.y + 10, 28, 20);
+          // Shell highlight
+          ctx.fillStyle = '#2ea832';
+          ctx.fillRect(ex + 5, e.y + 12, 22, 12);
+          // Shell hexagon pattern
+          ctx.fillStyle = '#1a5a1a';
+          ctx.fillRect(ex + 11, e.y + 12, 12, 6);
+          // Shell rim outline
+          ctx.strokeStyle = '#0a3a0a';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(ex + 3, e.y + 10, 28, 20);
+          // Neck
+          ctx.fillStyle = '#d8b060';
+          ctx.fillRect(ex + 11, e.y + 4, 12, 8);
+          // Head - round
+          ctx.fillStyle = '#d8b060';
+          ctx.beginPath(); ctx.arc(ex + 17, e.y + 4, 10, 0, Math.PI * 2); ctx.fill();
+          // Eye
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(ex + 20, e.y + 0, 6, 6);
+          ctx.fillStyle = '#1a1a2e';
+          ctx.fillRect(ex + 22, e.y + 1, 3, 4);
+          // Beak
+          ctx.fillStyle = '#e08040';
+          ctx.fillRect(ex + 24, e.y + 4, 6, 3);
         }
       });
     }
@@ -187,33 +299,88 @@ export default function MarioGame() {
       const { w, h, facingRight, invincible } = player;
       if (invincible > 0 && Math.floor(invincible / 4) % 2 === 0) return;
 
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath(); ctx.ellipse(px + w / 2, player.y + h + 2, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+
       ctx.save();
       if (!facingRight) { ctx.translate(px + w / 2, player.y + h / 2); ctx.scale(-1, 1); ctx.translate(-(px + w / 2), -(player.y + h / 2)); }
 
-      // Hat
-      ctx.fillStyle = '#cc0000';
-      ctx.fillRect(px + 2, player.y, w - 4, 10);
-      ctx.fillRect(px - 2, player.y + 6, w + 4, 6);
+      const legOff = player.onGround ? Math.sin(frame * 0.28) * 4 : 0;
+      const jump = !player.onGround;
+
+      // Shoes - brown
+      ctx.fillStyle = '#6b3010';
+      ctx.fillRect(px + 2, player.y + h - 8 + legOff, 12, 8);
+      ctx.fillRect(px + w - 14, player.y + h - 8 - legOff, 12, 8);
+
+      // Legs - blue overalls
+      ctx.fillStyle = '#3050cc';
+      ctx.fillRect(px + 4, player.y + h - 16, 10, 10 + legOff);
+      ctx.fillRect(px + w - 14, player.y + h - 16, 10, 10 - legOff);
+
+      // Body / overalls (blue)
+      ctx.fillStyle = '#3050cc';
+      ctx.fillRect(px + 4, player.y + 24, w - 8, 14);
+
+      // Shirt (red) visible at sides
+      ctx.fillStyle = '#dd2020';
+      ctx.fillRect(px + 2, player.y + 24, 5, 12);
+      ctx.fillRect(px + w - 7, player.y + 24, 5, 12);
+
+      // Overall straps
+      ctx.fillStyle = '#3050cc';
+      ctx.fillRect(px + 8, player.y + 18, 5, 8);
+      ctx.fillRect(px + w - 13, player.y + 18, 5, 8);
+
+      // Arms
+      ctx.fillStyle = '#dd2020';
+      ctx.fillRect(px, player.y + 24, 5, 10);
+      ctx.fillRect(px + w - 5, player.y + 24, 5, 10);
+
+      // Hands
+      ctx.fillStyle = '#f5c0a0';
+      ctx.fillRect(px - 2, player.y + 32, 6, 6);
+      ctx.fillRect(px + w - 4, player.y + 32, 6, 6);
+
       // Head
-      ctx.fillStyle = '#f5c5a0';
-      ctx.fillRect(px + 4, player.y + 12, w - 8, 14);
-      // Eyes / Moustache
+      ctx.fillStyle = '#f5c0a0';
+      ctx.fillRect(px + 6, player.y + 12, w - 12, 14);
+
+      // Hair/sideburns
+      ctx.fillStyle = '#7a3a10';
+      ctx.fillRect(px + 6, player.y + 18, 4, 8);
+
+      // Eye
       ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(px + 7, player.y + 14, 4, 5);
-      ctx.fillStyle = '#5D2E0C';
-      ctx.fillRect(px + 4, player.y + 20, 18, 4);
-      // Body
-      ctx.fillStyle = '#0000aa';
-      ctx.fillRect(px + 4, player.y + 26, w - 8, 10);
-      // Overalls
-      ctx.fillStyle = '#cc0000';
-      ctx.fillRect(px + 2, player.y + 28, 9, 8);
-      ctx.fillRect(px + w - 11, player.y + 28, 9, 8);
-      // Legs
-      const legOff = player.onGround ? Math.sin(frame * 0.3) * 4 : 0;
-      ctx.fillStyle = '#0000aa';
-      ctx.fillRect(px + 4, player.y + 36, 10, 4 + legOff);
-      ctx.fillRect(px + w - 14, player.y + 36, 10, 4 - legOff);
+      ctx.fillRect(px + 8, player.y + 14, 4, 4);
+      // Eyebrow
+      ctx.fillStyle = '#7a3a10';
+      ctx.fillRect(px + 7, player.y + 12, 7, 2);
+
+      // Nose
+      ctx.fillStyle = '#e09070';
+      ctx.fillRect(px + 14, player.y + 18, 5, 4);
+
+      // Moustache
+      ctx.fillStyle = '#7a3a10';
+      ctx.fillRect(px + 6, player.y + 20, 18, 4);
+      ctx.fillRect(px + 9, player.y + 22, 5, 3);
+      ctx.fillRect(px + 16, player.y + 22, 5, 3);
+
+      // Hat - red with brim
+      ctx.fillStyle = '#dd2020';
+      ctx.fillRect(px + 4, player.y + 2, w - 8, 12);
+      ctx.fillRect(px - 2, player.y + 10, w + 4, 4);
+      // Hat highlight
+      ctx.fillStyle = '#ff4040';
+      ctx.fillRect(px + 6, player.y + 3, 8, 4);
+      // 'M' on hat (classic detail)
+      ctx.fillStyle = '#ffffc0';
+      ctx.font = 'bold 7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('M', px + w / 2, player.y + 10);
+      ctx.textAlign = 'left';
 
       ctx.restore();
     }
@@ -221,25 +388,74 @@ export default function MarioGame() {
     function drawFlag(flagX, camX) {
       const fx = flagX - camX;
       if (fx < -20 || fx > CANVAS_W + 20) return;
+      // Pole
+      ctx.fillStyle = '#aaaaaa';
+      ctx.fillRect(fx - 1, GROUND_Y - 190, 8, 192);
+      ctx.fillStyle = '#888888';
+      ctx.fillRect(fx + 3, GROUND_Y - 190, 4, 192);
+      // Ball on top
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath(); ctx.arc(fx + 3, GROUND_Y - 192, 7, 0, Math.PI * 2); ctx.fill();
+      // Flag - animated wave
+      ctx.fillStyle = '#22cc44';
+      ctx.beginPath();
+      ctx.moveTo(fx + 7, GROUND_Y - 185);
+      ctx.lineTo(fx + 50, GROUND_Y - 168);
+      ctx.lineTo(fx + 7, GROUND_Y - 148);
+      ctx.fill();
+      // Flag stripe
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(fx + 7, GROUND_Y - 175, 38, 6);
+      // Castle at end
+      ctx.fillStyle = '#aaaaaa';
+      ctx.fillRect(fx + 60, GROUND_Y - 90, 70, 90);
       ctx.fillStyle = '#888';
-      ctx.fillRect(fx, GROUND_Y - 180, 6, 180);
-      ctx.fillStyle = '#00c853';
-      ctx.beginPath(); ctx.moveTo(fx + 6, GROUND_Y - 180); ctx.lineTo(fx + 50, GROUND_Y - 155); ctx.lineTo(fx + 6, GROUND_Y - 130); ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('⛳', fx + 10, GROUND_Y - 148);
+      ctx.fillRect(fx + 58, GROUND_Y - 100, 14, 14);
+      ctx.fillRect(fx + 80, GROUND_Y - 106, 14, 18);
+      ctx.fillRect(fx + 100, GROUND_Y - 100, 14, 14);
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(fx + 85, GROUND_Y - 30, 20, 30);
     }
 
     function drawHUD(s) {
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(0, 0, CANVAS_W, 36);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 13px monospace';
-      ctx.fillText(`SCORE: ${s.score}`, 12, 22);
-      ctx.fillText(`🪙 ${s.coins}`, 220, 22);
-      ctx.fillText(`❤️ ${s.lives}`, 380, 22);
+      // HUD bar
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0, 0, CANVAS_W, 38);
+      ctx.strokeStyle = 'rgba(255,200,0,0.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, CANVAS_W, 38);
+
       ctx.fillStyle = '#ffd700';
-      ctx.fillText('LEGION BROS', CANVAS_W / 2 - 50, 22);
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('MARIO', 12, 14);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText(String(s.score).padStart(6, '0'), 12, 30);
+
+      // Coins
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath(); ctx.arc(200, 20, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff9c4';
+      ctx.beginPath(); ctx.arc(198, 18, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(`×${s.coins}`, 212, 24);
+
+      // Lives
+      ctx.fillStyle = '#ff3030';
+      ctx.beginPath(); ctx.arc(320, 20, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`×${s.lives}`, 332, 24);
+
+      // World label
+      ctx.fillStyle = '#ffd700';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText('WORLD 1-1', CANVAS_W / 2, 15);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('LEGION BROS', CANVAS_W / 2, 30);
+      ctx.textAlign = 'left';
     }
 
     function update() {
