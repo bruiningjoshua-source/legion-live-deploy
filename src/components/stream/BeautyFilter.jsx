@@ -112,16 +112,16 @@ function BeautyFilter({ videoRef, onFilterChange }) {
           >
             <div className="bg-black/60 backdrop-blur-xl rounded-2xl border border-white/10 p-4 mt-2 space-y-4">
               {[
-                { key: 'smooth', label: 'Smoothing', icon: Droplets, min: 0, max: 80 },
-                { key: 'brightness', label: 'Brightness', icon: Sun, min: 80, max: 120 },
-                { key: 'contrast', label: 'Contrast', icon: Palette, min: 80, max: 140 },
-                { key: 'saturate', label: 'Saturation', icon: Sparkles, min: 60, max: 160 },
-                { key: 'warmth', label: 'Warmth', icon: Sun, min: -20, max: 30 },
-              ].map(({ key, label, icon: Icon, min, max }) => (
+                { key: 'smooth', label: 'Smoothing', iconName: 'droplets', min: 0, max: 80 },
+                { key: 'brightness', label: 'Brightness', iconName: 'sun', min: 80, max: 120 },
+                { key: 'contrast', label: 'Contrast', iconName: 'palette', min: 80, max: 140 },
+                { key: 'saturate', label: 'Saturation', iconName: 'sparkles', min: 60, max: 160 },
+                { key: 'warmth', label: 'Warmth', iconName: 'sun2', min: -20, max: 30 },
+              ].map(({ key, label, min, max }) => (
                 <div key={key} className="space-y-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Icon className="w-3 h-3 text-white/40" />
+                      <Sparkles className="w-3 h-3 text-white/40" />
                       <span className="text-white/70 text-xs">{label}</span>
                     </div>
                     <span className="text-amber-400 text-xs font-mono">{filters[key]}</span>
