@@ -3,138 +3,125 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, Users, Trophy, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Trophy, Clock, ArrowRight, Coins } from 'lucide-react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 import { motion } from 'framer-motion';
 
-const eventTypeIcons = {
-  tournament: '⚔️',
-  special_stream: '🎬',
-  holiday: '🎉',
-  collab: '🤝',
-  challenge: '🏆'
+const TYPE_META = {
+  tournament:     { icon: '⚔️', gradient: 'from-red-900 to-orange-900',    border: 'border-red-500/20',    label: 'Tournament'    },
+  special_stream: { icon: '🎬', gradient: 'from-purple-900 to-pink-900',   border: 'border-purple-500/20', label: 'Special Stream' },
+  holiday:        { icon: '🎉', gradient: 'from-green-900 to-emerald-900', border: 'border-green-500/20',  label: 'Holiday'       },
+  collab:         { icon: '🤝', gradient: 'from-blue-900 to-cyan-900',     border: 'border-blue-500/20',   label: 'Collab'        },
+  challenge:      { icon: '🏆', gradient: 'from-amber-900 to-yellow-900',  border: 'border-amber-500/20',  label: 'Challenge'     },
 };
 
-const eventTypeColors = {
-  tournament: 'from-red-600 to-orange-600',
-  special_stream: 'from-purple-600 to-pink-600',
-  holiday: 'from-green-600 to-emerald-600',
-  collab: 'from-blue-600 to-cyan-600',
-  challenge: 'from-amber-600 to-yellow-600'
-};
+const DEFAULT_META = { icon: '🎭', gradient: 'from-stone-800 to-stone-900', border: 'border-white/10', label: 'Event' };
+
+function StatusBadge({ start, end }) {
+  const now = new Date();
+  const isActive   = start && end  && isBefore(start, now) && isAfter(end, now);
+  const isUpcoming = start && isAfter(start, now);
+  const isEnded    = end   && isBefore(end, now);
+
+  if (isActive)   return <Badge className="bg-green-500/90 text-white border-0 text-[10px] font-bold tracking-wide flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE</Badge>;
+  if (isUpcoming) return <Badge className="bg-amber-500/80 text-white border-0 text-[10px] font-bold tracking-wide">UPCOMING</Badge>;
+  if (isEnded)    return <Badge className="bg-white/10 text-white/50 border-0 text-[10px] font-semibold">ENDED</Badge>;
+  return null;
+}
 
 export default function EventCard({ event }) {
-  const now = new Date();
+  const meta      = TYPE_META[event.event_type] || DEFAULT_META;
   const startDate = event.start_date ? parseISO(event.start_date) : null;
-  const endDate = event.end_date ? parseISO(event.end_date) : null;
-  
-  const isUpcoming = startDate && isAfter(startDate, now);
-  const isActive = startDate && endDate && isBefore(startDate, now) && isAfter(endDate, now);
-  const isEnded = endDate && isBefore(endDate, now);
-
-  const getStatus = () => {
-    if (isActive) return { label: 'LIVE NOW', color: 'bg-green-500', pulse: true };
-    if (isUpcoming) return { label: 'UPCOMING', color: 'bg-amber-500', pulse: false };
-    if (isEnded) return { label: 'ENDED', color: 'bg-stone-500', pulse: false };
-    return { label: 'TBA', color: 'bg-stone-600', pulse: false };
-  };
-
-  const status = getStatus();
+  const endDate   = event.end_date   ? parseISO(event.end_date)   : null;
+  const topPrize  = event.prizes?.[0];
+  const totalPool = event.prizes?.reduce((s, p) => s + (p.denarii_value || 0), 0) || 0;
 
   return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
-      transition={{ duration: 0.2 }}
-    >
-      <Card className={`overflow-hidden bg-gradient-to-br ${eventTypeColors[event.event_type] || 'from-stone-700 to-stone-800'} border-0 shadow-xl`}>
-        {/* Banner */}
-        <div className="relative h-40 overflow-hidden">
+    <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.18 }}>
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${meta.gradient} border ${meta.border} shadow-xl flex flex-col h-full`}>
+
+        {/* ── Banner ── */}
+        <div className="relative h-44 overflow-hidden flex-shrink-0">
           {event.banner_url ? (
-            <img 
-              src={event.banner_url} 
+            <img
+              src={event.banner_url}
               alt={event.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-8xl opacity-30">{eventTypeIcons[event.event_type] || '🎭'}</span>
+              <span className="text-7xl opacity-20 select-none">{meta.icon}</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          
-          {/* Status Badge */}
-          <div className="absolute top-3 left-3">
-            <Badge className={`${status.color} text-white border-0 ${status.pulse ? 'animate-pulse' : ''}`}>
-              {status.label}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+          {/* Top badges */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+            <StatusBadge start={startDate} end={endDate} />
+            <Badge variant="outline" className="bg-black/40 backdrop-blur text-white/70 border-white/15 text-[10px] capitalize">
+              {meta.label}
             </Badge>
           </div>
 
-          {/* Event Type */}
-          <div className="absolute top-3 right-3">
-            <Badge variant="outline" className="bg-black/40 text-white border-white/20 capitalize">
-              {event.event_type?.replace('_', ' ')}
-            </Badge>
-          </div>
-
-          {/* Title */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-white font-bold text-xl">{event.title}</h3>
+          {/* Title overlay */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+            <h3 className="text-white font-bold text-lg leading-snug line-clamp-2">{event.title}</h3>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 bg-stone-900/80 backdrop-blur">
-          {/* Description */}
-          <p className="text-amber-100/80 text-sm line-clamp-2 mb-4">
-            {event.description || 'Join this exciting event and compete for glory!'}
-          </p>
+        {/* ── Body ── */}
+        <div className="flex flex-col flex-1 p-4 bg-black/40 backdrop-blur-sm gap-3">
+          {event.description && (
+            <p className="text-white/60 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+          )}
 
-          {/* Date & Time */}
-          <div className="flex items-center gap-4 text-sm mb-4">
+          {/* Metadata row */}
+          <div className="flex flex-wrap gap-3 text-xs text-white/50">
             {startDate && (
-              <div className="flex items-center gap-1.5 text-amber-300">
-                <Calendar className="w-4 h-4" />
-                <span>{format(startDate, 'MMM d, yyyy')}</span>
-              </div>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-white/30" />
+                {format(startDate, 'MMM d, yyyy')}
+              </span>
             )}
             {startDate && (
-              <div className="flex items-center gap-1.5 text-amber-300/70">
-                <Clock className="w-4 h-4" />
-                <span>{format(startDate, 'h:mm a')}</span>
-              </div>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-white/30" />
+                {format(startDate, 'h:mm a')}
+              </span>
+            )}
+            {event.participating_creators?.length > 0 && (
+              <span className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-white/30" />
+                {event.participating_creators.length} competing
+              </span>
             )}
           </div>
 
-          {/* Prizes Preview */}
-          {event.prizes && event.prizes.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-300 text-sm">
-                Prizes up to {event.prizes[0]?.denarii_value?.toLocaleString() || '???'} Denarii
-              </span>
+          {/* Prize pool */}
+          {totalPool > 0 && (
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
+              <Coins className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <div>
+                <p className="text-amber-300 font-bold text-sm leading-none">
+                  {totalPool.toLocaleString()} Denarii
+                </p>
+                <p className="text-amber-400/50 text-[10px] mt-0.5">Total prize pool</p>
+              </div>
             </div>
           )}
 
-          {/* Participants */}
-          {event.participating_creators && event.participating_creators.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-300/70 text-sm">
-                {event.participating_creators.length} Creator{event.participating_creators.length > 1 ? 's' : ''} participating
-              </span>
-            </div>
-          )}
-
-          {/* Action Button */}
-          <Link to={createPageUrl(`EventDetails?id=${event.id}`)}>
-            <Button className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
-              View Details
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          {/* CTA */}
+          <div className="mt-auto pt-1">
+            <Link to={createPageUrl(`EventDetails?id=${event.id}`)}>
+              <Button className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-xl h-9 text-sm font-medium transition-colors">
+                View Details
+                <ArrowRight className="w-3.5 h-3.5 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 }
