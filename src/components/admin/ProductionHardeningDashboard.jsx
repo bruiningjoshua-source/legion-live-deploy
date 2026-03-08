@@ -291,7 +291,7 @@ export default function ProductionHardeningDashboard() {
                     <span>□</span> Kill switch for Stripe documented
                   </li>
                   <li>
-                    <span>□</span> Rollback procedure tested (< 5 min)
+                    <span>□</span> Rollback procedure tested (&lt; 5 min)
                   </li>
                   <li>
                     <span>□</span> Incident response team briefed
