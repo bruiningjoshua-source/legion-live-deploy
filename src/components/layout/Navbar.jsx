@@ -26,6 +26,11 @@ import {
   ChevronLeft,
   Headphones,
   Search,
+  Mic,
+  Video,
+  Zap,
+  Star,
+  ChevronDown,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import NotificationBell from '@/components/social/NotificationBell';
@@ -39,11 +44,16 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
   const mainNavLinks = [
     { name: 'Home', path: createPageUrl('Home'), icon: Home },
     { name: 'Live', path: createPageUrl('Explore'), icon: Radio },
-    { name: 'Videos', path: createPageUrl('TheAmphitheatre'), icon: Film },
-    { name: 'Gaming', path: createPageUrl('TheGamingHub'), icon: Gamepad2 },
-    { name: 'Arcade', path: createPageUrl('GamesExpo'), icon: Gamepad2 },
-    { name: 'Shop', path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
+    { name: 'Watch', path: createPageUrl('TheAmphitheatre'), icon: Film },
     { name: 'Podcasts', path: createPageUrl('Podcasts'), icon: Headphones },
+    { name: 'Games', path: createPageUrl('GamesExpo'), icon: Gamepad2 },
+    { name: 'Shop', path: createPageUrl('AffiliateMarketplace'), icon: ShoppingBag },
+  ];
+
+  const creatorLinks = [
+    { name: 'Creator Studio', path: createPageUrl('CreatorStudio'), icon: Video },
+    { name: 'Podcast Studio', path: createPageUrl('PodcastStudio'), icon: Mic },
+    { name: 'Go Live', path: createPageUrl('GoLive'), icon: Radio },
   ];
 
   const isActive = (path) => location.pathname === path;
