@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createSignedRequest } from '@/components/security/RequestSigner';
 import {
   Select,
   SelectContent,
@@ -146,52 +147,40 @@ export default function CreatorPayoutSettings({ creator, user }) {
 
   const requestPayoutMutation = useMutation({
     mutationFn: async ({ amount, method }) => {
-      // If Stripe Connect, process instantly
-      if (method.method_type === 'stripe_connect' && method.stripe_payouts_enabled) {
-        const response = await base44.functions.invoke('stripeConnectPayout', {
-          creatorId: creator.id,
-          amountDenarii: amount
-        });
-        
-        if (response.data?.error) {
-          throw new Error(response.data.error);
-        }
-        
-        return response.data;
-      }
-      
-      // Otherwise create pending payout request
-      const payoutUsd = amount * DENARII_TO_USD * CREATOR_SHARE;
-      
-      await base44.entities.Creator.update(creator.id, {
-        total_earnings_denarii: (creator.total_earnings_denarii || 0) - amount,
-        pending_withdrawal: (creator.pending_withdrawal || 0) + payoutUsd
-      });
+      const amountUsd = amount * DENARII_TO_USD * CREATOR_SHARE;
 
-      return base44.entities.CreatorPayout.create({
-        creator_id: creator.id,
-        user_email: user.email,
-        amount_denarii: amount,
-        payout_usd: payoutUsd,
-        payout_method: method.method_type,
-        payout_identifier: method.identifier,
-        status: 'pending'
-      });
+      // Create signed request for sensitive payout operation
+      const signedPayload = createSignedRequest(
+        { amount_usd: amountUsd },
+        user.email
+      );
+
+      // Use processPayoutWithKyc endpoint
+      const response = await base44.functions.invoke('processPayoutWithKyc', signedPayload);
+      
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(['payout-history']);
       queryClient.invalidateQueries(['my-creator']);
       setShowCashout(false);
       setCashoutAmount('');
-      
-      if (data?.transfer_id) {
-        toast.success('Payout sent! Funds will arrive in 1-2 business days.');
-      } else {
-        toast.success('Payout request submitted! Processing within 3-5 business days.');
-      }
+      toast.success(data?.message || 'Payout request submitted!');
     },
     onError: (error) => {
-      toast.error(error.message || 'Payout failed');
+      const errorMsg = error.message || 'Payout failed';
+      // Handle rate limit errors specially
+      if (errorMsg.includes('Rate limited')) {
+        toast.error('You can only request one payout per 24 hours');
+      } else if (errorMsg.includes('KYC')) {
+        toast.error('Complete KYC verification to request payouts');
+      } else {
+        toast.error(errorMsg);
+      }
     }
   });
 
