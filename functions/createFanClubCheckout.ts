@@ -5,6 +5,52 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
+// Rate limiting: 5 fan club signups per day per user
+const fanclubBuckets = new Map();
+function checkFanClubRate(email) {
+  const now = Date.now();
+  const bucket = fanclubBuckets.get(email);
+  if (!bucket || now > bucket.resetAt) {
+    fanclubBuckets.set(email, { count: 1, resetAt: now + 86400000 });
+    return { allowed: true };
+  }
+  bucket.count++;
+  if (bucket.count > 5) {
+    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  return { allowed: true };
+}
+
+// Fraud detection for subscriptions
+const subHistory = new Map();
+function detectSubFraud(email, price) {
+  if (!subHistory.has(email)) {
+    subHistory.set(email, { subs: [] });
+  }
+  const history = subHistory.get(email);
+  const now = Date.now();
+  const oneDayAgo = now - 86400000;
+  
+  history.subs = history.subs.filter(s => s.timestamp > oneDayAgo);
+  const total24h = history.subs.reduce((sum, s) => sum + s.price, 0);
+  
+  let riskScore = 0;
+  const flags = [];
+  
+  // Multiple subscriptions in 24h could indicate account testing/fraud
+  if (history.subs.length >= 5) {
+    riskScore += 40;
+    flags.push('excessive_sub_signups_24h');
+  }
+  if (total24h + price > 5000) {
+    riskScore += 25;
+    flags.push('high_sub_spending_24h');
+  }
+  
+  history.subs.push({ price, timestamp: now });
+  return { isSuspicious: riskScore >= 50, riskScore, flags };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,14 +60,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { creator_id, tier, price_usd, tier_name, perks } = await req.json();
+    const { creator_id, tier, price_usd, tier_name, perks, csrfToken } = await req.json();
 
+    // Input validation
     if (!creator_id || !tier || !price_usd) {
       return Response.json({ error: 'Missing required fields: creator_id, tier, price_usd' }, { status: 400 });
     }
-
+    if (typeof creator_id !== 'string' || creator_id.length > 100) {
+      return Response.json({ error: 'Invalid creator_id' }, { status: 400 });
+    }
+    if (typeof tier !== 'number' || tier < 1 || tier > 5) {
+      return Response.json({ error: 'Tier must be 1-5' }, { status: 400 });
+    }
     if (typeof price_usd !== 'number' || price_usd < 0.50 || price_usd > 1000) {
       return Response.json({ error: 'Price must be between $0.50 and $1,000' }, { status: 400 });
+    }
+
+    // CSRF validation
+    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 20) {
+      return Response.json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
+
+    // Rate limiting
+    const rateCheck = checkFanClubRate(user.email);
+    if (!rateCheck.allowed) {
+      return Response.json({ error: 'Rate limited: 5 fan clubs per day', retryAfter: rateCheck.retryAfter }, { status: 429 });
+    }
+
+    // Fraud detection
+    const fraud = detectSubFraud(user.email, price_usd);
+    if (fraud.isSuspicious) {
+      console.warn(`[createFanClubCheckout] FRAUD FLAG for ${user.email}:`, fraud.flags);
     }
 
     // Self-subscription prevention
@@ -77,7 +146,8 @@ Deno.serve(async (req) => {
         user_email: user.email,
         tier: tier.toString(),
         tier_name: tier_name || '',
-        price_usd: price_usd.toString()
+        price_usd: price_usd.toString(),
+        risk_score: fraud.riskScore.toString()
       }
     });
 
