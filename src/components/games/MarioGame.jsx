@@ -261,7 +261,7 @@ export default function MarioGame() {
       else if (right) { player.vx = PLAYER_SPEED; player.facingRight = true; }
       else { player.vx *= 0.82; }
 
-      if (jump && player.onGround) { player.vy = JUMP_FORCE; player.onGround = false; }
+      if (jump && player.onGround) { player.vy = JUMP_FORCE; player.onGround = false; GameAudio.jump(); }
 
       player.vy += GRAVITY;
       player.x += player.vx;
@@ -288,7 +288,8 @@ export default function MarioGame() {
       // Fell off
       if (player.y > CANVAS_H + 50) {
         s.lives--;
-        if (s.lives <= 0) { s.gameOver = true; setUi({ score: s.score, lives: 0, coins: s.coins, gameOver: true, win: false }); return; }
+        if (s.lives <= 0) { s.gameOver = true; GameAudio.gameOver(); setUi({ score: s.score, lives: 0, coins: s.coins, gameOver: true, win: false }); return; }
+        GameAudio.hit();
         player.x = 80; player.y = GROUND_Y - 40; player.vx = 0; player.vy = 0; s.camera.x = 0;
       }
 
@@ -309,7 +310,7 @@ export default function MarioGame() {
 
         if (rectOverlap(player, e)) {
           if (player.vy > 0 && player.y + player.h < e.y + e.h * 0.5) {
-            e.alive = false; s.score += 100; player.vy = JUMP_FORCE * 0.6;
+            e.alive = false; s.score += 100; player.vy = JUMP_FORCE * 0.6; GameAudio.stomp();
           } else if (player.invincible === 0) {
             player.invincible = 90; s.lives--;
             if (s.lives <= 0) { s.gameOver = true; setUi({ score: s.score, lives: 0, coins: s.coins, gameOver: true, win: false }); return; }
@@ -321,13 +322,13 @@ export default function MarioGame() {
       s.coins_obj.forEach((c) => {
         if (c.collected) return;
         if (Math.abs(player.x + player.w / 2 - c.x) < 20 && Math.abs(player.y + player.h / 2 - c.y) < 20) {
-          c.collected = true; s.coins++; s.score += 50;
+          c.collected = true; s.coins++; s.score += 50; GameAudio.coin();
         }
       });
 
       // Flag
       if (player.x + player.w >= s.flagX) {
-        s.win = true; s.score += 1000;
+        s.win = true; s.score += 1000; GameAudio.win();
         setUi({ score: s.score, lives: s.lives, coins: s.coins, gameOver: false, win: true });
         return;
       }
