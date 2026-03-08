@@ -16,22 +16,33 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import CurrencyPackages, { getVipTier, getNextVipTier, DENARII_PER_DOLLAR } from '@/components/wallet/CurrencyPackages';
 import GlassCard from '@/components/shared/GlassCard';
+import TermsOfServiceGate from '@/components/legal/TermsOfServiceGate';
+import CreatorEarningsHub from '@/components/monetization/CreatorEarningsHub';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 
 export default function Wallet() {
+  const [showTosGate, setShowTosGate] = useState(false);
+  const [tosAccepted, setTosAccepted] = useState(false);
+
   // Handle successful purchase redirect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
       toast.success('🎉 Purchase successful! Your Denarii have been added to your wallet.');
-      // Clean URL
       window.history.replaceState({}, '', window.location.pathname);
     } else if (urlParams.get('cancelled') === 'true') {
       toast.info('Purchase cancelled');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
+
+  // Check if user has accepted TOS on first load
+  useEffect(() => {
+    if (!tosAccepted && !localStorage.getItem('tos_accepted')) {
+      setShowTosGate(true);
+    }
+  }, [tosAccepted]);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('buy');
 
@@ -118,6 +129,22 @@ export default function Wallet() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (!tosAccepted) {
+    return (
+      <>
+        <TermsOfServiceGate
+          isOpen={showTosGate}
+          onAccept={() => {
+            setTosAccepted(true);
+            setShowTosGate(false);
+            localStorage.setItem('tos_accepted', 'true');
+          }}
+          onDismiss={() => setShowTosGate(false)}
+        />
+      </>
     );
   }
 
@@ -274,7 +301,12 @@ export default function Wallet() {
             />
           </TabsContent>
 
-          <TabsContent value="history" className="mt-0">
+          <TabsContent value="history" className="mt-0 space-y-6">
+            {/* Creator Earnings (if creator) */}
+            {user?.role === 'admin' && (
+              <CreatorEarningsHub creatorId={user.email} />
+            )}
+
             <GlassCard>
               <div className="flex items-center gap-2 mb-6">
                 <History className="w-5 h-5 text-amber-400" />
