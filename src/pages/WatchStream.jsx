@@ -428,9 +428,10 @@ export default function WatchStream() {
         <>
           <button
             onClick={() => setShowEndDialog(true)}
-            className="absolute top-3 left-3 z-30 w-10 h-10 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white"
+            className="absolute top-3 left-3 z-30 w-11 h-11 bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+            style={{ marginTop: 'env(safe-area-inset-top)' }}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-red-400" />
           </button>
 
           <div className="absolute top-3 left-14 z-30">

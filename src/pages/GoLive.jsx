@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { 
-  Radio, FlipHorizontal, Sparkles, Wand2, Gamepad2, Music, Gift, ArrowRight
+  Radio, FlipHorizontal, Sparkles, Wand2, Gamepad2, Music, Gift, ArrowRight, X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -312,7 +312,15 @@ export default function GoLive() {
 
   // ── Pre-permission state ──
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-black flex items-center justify-center relative">
+      {/* Back / Close button */}
+      <button
+        onClick={() => navigate(createPageUrl('Home'))}
+        className="absolute top-4 left-4 z-10 w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+        style={{ marginTop: 'env(safe-area-inset-top)' }}
+      >
+        <X className="w-5 h-5" />
+      </button>
       <div className="text-center px-6">
         <div className="w-20 h-20 bg-amber-500/15 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
           <Radio className="w-10 h-10 text-amber-400" />

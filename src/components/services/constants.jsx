@@ -5,7 +5,7 @@
 
 // ─── Currency System ─────────────────────────────────────────
 export const CURRENCY = {
-  DENARII_PER_USD: 100,
+  DENARII_PER_USD: 180,        // 180 Denarii = $1 USD
   STARTER_BALANCE: 500,
   MAX_GIFT_QUANTITY: 100,
   MIN_TIP_USD: 1,
@@ -14,8 +14,8 @@ export const CURRENCY = {
 
 // ─── Platform Fees ───────────────────────────────────────────
 export const FEES = {
-  GIFT_CREATOR_SHARE: 0.50,   // Creator gets 50% of gift value
-  TIP_PLATFORM_FEE: 0.15,     // 15% platform fee on tips
+  GIFT_CREATOR_SHARE: 0.60,   // Creator gets 60% of gift value
+  TIP_PLATFORM_FEE: 0.10,     // 10% platform fee on tips (40% platform base)
 };
 
 // ─── Streaming ───────────────────────────────────────────────

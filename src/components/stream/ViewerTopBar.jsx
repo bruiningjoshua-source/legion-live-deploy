@@ -23,9 +23,9 @@ export default function ViewerTopBar({
         <div className="flex items-center gap-1.5">
           <button
             onClick={onClose}
-            className="w-8 h-8 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white/70 active:scale-90 transition-transform"
+            className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
 
           <Link to={createPageUrl(`CreatorProfile?id=${creator.id}`)}>

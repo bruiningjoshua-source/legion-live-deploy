@@ -204,8 +204,8 @@ export default function Wallet() {
 
                   {/* Conversion info */}
                   <p className="text-white/30 text-xs mt-4">
-                   Total value: {formatCount((wallet?.denarii_balance || 0) * 100 + (wallet?.as_balance || 0))} As
-                   {(wallet?.total_spent || 0) > 0 && ` · $${(wallet.total_spent / 100).toFixed(2)} lifetime spend`}
+                  ≈ ${((wallet?.denarii_balance || 0) / 180).toFixed(2)} USD value
+                  {(wallet?.total_spent || 0) > 0 && ` · $${(wallet.total_spent / 180).toFixed(2)} lifetime spend`}
                   </p>
                 </div>
 

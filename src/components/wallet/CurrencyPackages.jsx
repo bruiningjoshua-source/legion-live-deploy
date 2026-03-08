@@ -1,83 +1,109 @@
 import React, { useState, useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { motion } from 'framer-motion';
-import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2 } from 'lucide-react';
+import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2, Zap } from 'lucide-react';
 import GlassCard from '@/components/shared/GlassCard';
 
-// Currency ratio: 200 coins per $1 USD
-const COINS_PER_DOLLAR = 200;
+// Currency ratio: 180 Denarii per $1 USD
+const DENARII_PER_DOLLAR = 180;
 
 const packages = [
   {
-    id: 'starter',
-    name: 'Recruit\'s Pouch',
-    denarii: 200,        // $0.99 × 200 = 198, rounded to 200
-    bonus: 50,
-    bonusPercent: 25,
+    id: 'micro',
+    name: 'Bronze Pouch',
+    denarii: 99,
+    bonus: 0,
+    bonusPercent: 0,
     price: 0.99,
     icon: '🪙',
     popular: false,
     color: 'from-stone-600 to-stone-700',
-    border: 'border-stone-500',
-    value: 'Starter pack'
+    border: 'border-stone-500/50',
+    value: 'Try it out'
+  },
+  {
+    id: 'starter',
+    name: 'Soldier\'s Chest',
+    denarii: 520,
+    bonus: 70,
+    bonusPercent: 13,
+    price: 2.99,
+    icon: '💰',
+    popular: false,
+    color: 'from-emerald-700 to-emerald-800',
+    border: 'border-emerald-500/50',
+    value: '13% bonus'
   },
   {
     id: 'basic',
-    name: 'Soldier\'s Chest',
-    denarii: 1000,       // $4.99 × 200 = 998, rounded to 1000
-    bonus: 250,
-    bonusPercent: 25,
+    name: 'Centurion\'s Bounty',
+    denarii: 900,
+    bonus: 180,
+    bonusPercent: 20,
     price: 4.99,
-    icon: '💰',
+    icon: '⚔️',
     popular: false,
-    color: 'from-green-700 to-green-800',
-    border: 'border-green-500',
-    value: 'Great starter'
+    color: 'from-blue-700 to-blue-800',
+    border: 'border-blue-500/50',
+    value: '20% bonus'
   },
   {
     id: 'popular',
-    name: 'Centurion\'s Treasury',
-    denarii: 2000,       // $9.99 × 200 = 1998, rounded to 2000
-    bonus: 660,
-    bonusPercent: 33,
+    name: 'Praetorian Treasury',
+    denarii: 1800,
+    bonus: 540,
+    bonusPercent: 30,
     price: 9.99,
-    icon: '⚔️',
+    icon: '🏛️',
     popular: true,
     color: 'from-amber-600 to-amber-700',
     border: 'border-amber-400',
-    value: '33% bonus + best value'
+    value: 'Best value — 30% bonus'
   },
   {
     id: 'premium',
-    name: 'Praetor\'s Vault',
-    denarii: 5000,       // $24.99 × 200 = 4998, rounded to 5000
-    bonus: 1850,
-    bonusPercent: 37,
-    price: 24.99,
-    icon: '🏛️',
+    name: 'Senator\'s Vault',
+    denarii: 3600,
+    bonus: 1260,
+    bonusPercent: 35,
+    price: 19.99,
+    icon: '🏆',
     popular: false,
     color: 'from-purple-700 to-purple-800',
-    border: 'border-purple-500',
-    value: '37% bonus savings'
+    border: 'border-purple-500/50',
+    value: '35% bonus'
   },
   {
     id: 'elite',
-    name: 'Senator\'s Fortune',
-    denarii: 10000,      // $49.99 × 200 = 9998, rounded to 10000
-    bonus: 4000,
+    name: 'Consul\'s Fortune',
+    denarii: 5400,
+    bonus: 2160,
     bonusPercent: 40,
-    price: 49.99,
+    price: 29.99,
     icon: '👑',
     popular: false,
     color: 'from-rose-600 to-rose-700',
-    border: 'border-rose-400',
-    value: '40% bonus + VIP status'
+    border: 'border-rose-400/50',
+    value: '40% bonus'
+  },
+  {
+    id: 'whale',
+    name: 'Imperator\'s Hoard',
+    denarii: 9000,
+    bonus: 4050,
+    bonusPercent: 45,
+    price: 49.99,
+    icon: '🦅',
+    popular: false,
+    color: 'from-cyan-600 to-teal-700',
+    border: 'border-cyan-400/50',
+    value: '45% bonus + VIP boost'
   },
   {
     id: 'ultimate',
     name: 'Emperor\'s Legacy',
-    denarii: 20000,      // $99.99 × 200 = 19998, rounded to 20000
-    bonus: 10000,
+    denarii: 18000,
+    bonus: 9000,
     bonusPercent: 50,
     price: 99.99,
     icon: '✨',
@@ -86,6 +112,20 @@ const packages = [
     border: 'border-amber-300',
     premium: true,
     value: '50% LEGENDARY bonus'
+  },
+  {
+    id: 'titan',
+    name: 'Divine Ascension',
+    denarii: 90000,
+    bonus: 54000,
+    bonusPercent: 60,
+    price: 499.99,
+    icon: '⚡',
+    popular: false,
+    color: 'from-yellow-500 via-red-500 to-pink-600',
+    border: 'border-yellow-300',
+    premium: true,
+    value: '60% DIVINE bonus — top supporter'
   }
 ];
 
@@ -121,10 +161,13 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         <div className="flex items-center gap-4 bg-white/5 rounded-full px-6 py-2">
           <div className="flex items-center gap-2 text-white/80">
             <span className="text-lg">🪙</span>
-            <span>200 Denarii = $1 USD</span>
+            <span>180 Denarii = $1 USD</span>
           </div>
         </div>
-        <p className="text-white/40 text-xs">Buy more, save more • Larger packages = better value</p>
+        <div className="flex items-center gap-2 text-white/40 text-xs">
+          <Zap className="w-3 h-3 text-amber-400" />
+          <span>Creators earn 60% of all gifts • Bigger packages = better value</span>
+        </div>
       </div>
 
       {/* Package Grid */}
@@ -134,7 +177,7 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
             key={pkg.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
             whileHover={isMobile ? {} : { y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => handlePurchase(pkg)}
@@ -161,47 +204,45 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
                 />
               )}
 
-              <div className={`p-6 ${pkg.popular ? 'pt-10' : ''} relative`}>
+              <div className={`p-5 ${pkg.popular ? 'pt-10' : ''} relative`}>
                 {/* Icon & Name */}
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-3 mb-4">
                   <motion.span 
-                    className="text-5xl drop-shadow-lg"
+                    className="text-4xl drop-shadow-lg"
                     animate={pkg.premium ? { rotate: [0, 5, -5, 0] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     {pkg.icon}
                   </motion.span>
                   <div>
-                    <h3 className="text-white font-bold text-lg">{pkg.name}</h3>
-                    <p className="text-white/50 text-xs">One-time purchase</p>
+                    <h3 className="text-white font-bold text-base">{pkg.name}</h3>
+                    <p className="text-white/50 text-xs">{pkg.value}</p>
                   </div>
                 </div>
 
                 {/* Denarii Amount */}
-                <div className="space-y-3 mb-5">
+                <div className="space-y-2 mb-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-white drop-shadow-lg">{pkg.denarii.toLocaleString()}</span>
-                    <span className="text-white/60 font-medium">Denarii</span>
+                    <span className="text-3xl font-black text-white drop-shadow-lg">{pkg.denarii.toLocaleString()}</span>
+                    <span className="text-white/60 font-medium text-sm">Denarii</span>
                   </div>
                   
                   {pkg.bonus > 0 && (
-                    <div className="space-y-2">
-                      <motion.div 
-                        className="inline-flex items-center gap-1.5 bg-green-500/30 text-green-200 border border-green-400/40 rounded-full px-3 py-1 text-xs font-bold"
-                        animate={{ scale: [1, 1.02, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        +{pkg.bonusPercent}% BONUS ({pkg.bonus.toLocaleString()})
-                      </motion.div>
-                      <p className="text-xs text-green-200/90 font-semibold">{pkg.value}</p>
-                    </div>
+                    <motion.div 
+                      className="inline-flex items-center gap-1.5 bg-green-500/30 text-green-200 border border-green-400/40 rounded-full px-3 py-1 text-xs font-bold"
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      +{pkg.bonus.toLocaleString()} BONUS ({pkg.bonusPercent}%)
+                    </motion.div>
                   )}
                 </div>
 
                 {/* Total value */}
-                <p className="text-white/40 text-xs text-center mb-4">
+                <p className="text-white/40 text-xs text-center mb-3">
                   Total: {(pkg.denarii + pkg.bonus).toLocaleString()} Denarii
+                  {pkg.price > 0 && ` · $${((pkg.denarii + pkg.bonus) / DENARII_PER_DOLLAR).toFixed(2)} value`}
                 </p>
 
                 {/* Price Button */}
@@ -234,7 +275,7 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { icon: Gift, color: 'pink', text: 'Send stunning animated gifts to your favorite creators' },
+            { icon: Gift, color: 'pink', text: 'Send stunning animated gifts — creators keep 60%' },
             { icon: TrendingUp, color: 'green', text: 'Climb VIP ranks for exclusive badges and perks' },
             { icon: Star, color: 'amber', text: 'Influence PK battles and stand out in chat' }
           ].map((item, i) => (

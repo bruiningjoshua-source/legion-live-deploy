@@ -47,8 +47,8 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
   const isActive = (path) => location.pathname === path;
 
-  // Show back button on child routes (not main tabs)
-  const mainPaths = [createPageUrl('Home'), createPageUrl('Explore'), createPageUrl('Profile')];
+  // Show back button on all non-home pages
+  const mainPaths = [createPageUrl('Home')];
   const showBackButton = !mainPaths.includes(location.pathname);
 
   const handleLogout = async () => {
@@ -63,9 +63,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
           {showBackButton && (
             <button
               onClick={() => navigate(-1)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors lg:hidden"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors active:scale-90"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
           )}
           <button 

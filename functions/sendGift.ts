@@ -6,7 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  * Handles: wallet debit, transaction record, creator credit, stream totals, PK scores, chat.
  */
 
-const GIFT_CREATOR_SHARE = 0.50;
+const GIFT_CREATOR_SHARE = 0.60;  // 60% creator / 40% platform
 const MAX_GIFT_QUANTITY = 100;
 
 // In-memory rate limiter: max 10 gift sends per 10 seconds per user
