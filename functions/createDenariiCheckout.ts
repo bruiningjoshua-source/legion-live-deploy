@@ -21,6 +21,13 @@ Deno.serve(async (req) => {
     const bonus = Number(body.bonus) || 0;
     const price = Number(body.price);
     const packageName = String(body.packageName || '').trim().substring(0, 100);
+    const csrfToken = String(body.csrfToken || '').trim();
+
+    // CSRF validation
+    if (!csrfToken || csrfToken.length < 20) {
+      console.error('[createDenariiCheckout] Invalid CSRF token');
+      return Response.json({ error: 'Invalid security token' }, { status: 403 });
+    }
 
     // Validate all inputs
     if (!packageId || !denarii || !price) {
