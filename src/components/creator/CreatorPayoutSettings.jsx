@@ -339,7 +339,6 @@ export default function CreatorPayoutSettings({ creator, user }) {
 
       {/* Payout History */}
       {payoutHistory.length > 0 && (
-
         <Card className="bg-stone-800/30 border-amber-600/20">
           <CardHeader>
             <CardTitle className="text-amber-100">Payout History</CardTitle>
