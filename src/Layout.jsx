@@ -194,11 +194,15 @@ export default function Layout({ children, currentPageName }) {
       
       <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       
-      <main className={`min-h-screen ${currentPageName === 'GoLive' || currentPageName === 'WatchStream' ? '' : 'pb-24'}`}>
+      <main className={`${
+        currentPageName === 'GoLive' || currentPageName === 'WatchStream' || currentPageName === 'VideoEditor'
+          ? 'h-screen overflow-hidden'
+          : 'min-h-screen pb-24'
+      }`}>
         {children}
       </main>
       
-      {currentPageName !== 'GoLive' && currentPageName !== 'WatchStream' && <BottomNav />}
+      {!['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName) && <BottomNav />}
       
       <InstallPrompt />
       
