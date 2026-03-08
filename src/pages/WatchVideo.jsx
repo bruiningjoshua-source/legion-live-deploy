@@ -17,7 +17,6 @@ import {
   ShoppingBag,
   ExternalLink
 } from 'lucide-react';
-import { toast } from 'sonner';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import TipButton from '@/components/stream/TipButton';
 import VideoCommentSystem from '@/components/community/VideoCommentSystem';
