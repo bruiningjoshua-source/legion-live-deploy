@@ -343,6 +343,9 @@ export default function MetalSlugGame() {
     <div className="bg-black flex flex-col items-center">
       <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H}
         className="w-full max-w-full block" style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }} tabIndex={0} />
+      <div className="w-full bg-black/80 border-t border-white/10">
+        <GameMobileControls keysRef={keysRef} variant="shooter" />
+      </div>
       {(ui.gameOver || ui.win) && (
         <div className="p-4">
           <button onClick={resetGame} className="px-8 py-2.5 rounded-full bg-gradient-to-r from-yellow-600 to-amber-500 text-white font-bold text-sm hover:opacity-90">

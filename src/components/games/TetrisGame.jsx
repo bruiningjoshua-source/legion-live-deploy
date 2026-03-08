@@ -264,42 +264,52 @@ export default function TetrisGame() {
   }, []);
 
   return (
-    <div className="bg-[#0a0a0e] flex items-start justify-center gap-6 p-4 min-h-[680px]">
-      <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="block rounded-lg border border-white/10" tabIndex={0} />
-      <div className="flex flex-col gap-4 min-w-[120px]">
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
-          <p className="text-white/40 text-xs mb-1">SCORE</p>
-          <p className="text-white font-bold text-xl tabular-nums">{ui.score.toLocaleString()}</p>
+    <div className="bg-[#0a0a0e] flex flex-col items-center">
+      {/* Desktop: side-by-side with stats panel */}
+      <div className="hidden sm:flex items-start justify-center gap-6 p-4">
+        <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="block rounded-lg border border-white/10" tabIndex={0} />
+        <div className="flex flex-col gap-4 min-w-[120px]">
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
+            <p className="text-white/40 text-xs mb-1">SCORE</p>
+            <p className="text-white font-bold text-xl tabular-nums">{ui.score.toLocaleString()}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
+            <p className="text-white/40 text-xs mb-1">LEVEL</p>
+            <p className="text-white font-bold text-xl">{ui.level}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
+            <p className="text-white/40 text-xs mb-1">LINES</p>
+            <p className="text-white font-bold text-xl">{ui.lines}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
+            <p className="text-white/40 text-xs mb-2">NEXT</p>
+            <canvas ref={nextCanvasRef} width={120} height={120} className="block rounded" />
+          </div>
+          {ui.gameOver && (
+            <button onClick={resetGame} className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold text-sm hover:opacity-90">Restart</button>
+          )}
         </div>
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
-          <p className="text-white/40 text-xs mb-1">LEVEL</p>
-          <p className="text-white font-bold text-xl">{ui.level}</p>
+      </div>
+
+      {/* Mobile: stacked */}
+      <div className="sm:hidden w-full">
+        {/* Mini stats bar */}
+        <div className="flex justify-around py-1.5 px-3 bg-black/60 text-xs text-white/60 font-mono">
+          <span>SCORE <span className="text-white font-bold">{ui.score.toLocaleString()}</span></span>
+          <span>LVL <span className="text-white font-bold">{ui.level}</span></span>
+          <span>LINES <span className="text-white font-bold">{ui.lines}</span></span>
         </div>
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
-          <p className="text-white/40 text-xs mb-1">LINES</p>
-          <p className="text-white font-bold text-xl">{ui.lines}</p>
-        </div>
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10">
-          <p className="text-white/40 text-xs mb-2">NEXT</p>
-          <canvas ref={nextCanvasRef} width={120} height={120} className="block rounded" />
+        <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="w-full block" style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }} tabIndex={0} />
+        {/* Hidden next canvas for mobile (logic still uses it) */}
+        <canvas ref={nextCanvasRef} width={120} height={120} className="hidden" />
+        <div className="bg-black/80 border-t border-white/10">
+          <GameMobileControls keysRef={keysRef} variant="tetris" />
         </div>
         {ui.gameOver && (
-          <button
-            onClick={resetGame}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold text-sm hover:opacity-90 transition-opacity"
-          >
-            Restart
-          </button>
+          <div className="p-3 flex justify-center">
+            <button onClick={resetGame} className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold text-sm">Restart</button>
+          </div>
         )}
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 space-y-1.5">
-          <p className="text-white/40 text-xs font-medium mb-2">CONTROLS</p>
-          {[['← →','Move'],['↑','Rotate'],['↓','Soft Drop'],['Space','Hard Drop']].map(([k,v]) => (
-            <div key={k} className="flex items-center justify-between gap-2">
-              <span className="px-1.5 py-0.5 bg-white/10 rounded text-white/70 text-xs font-mono">{k}</span>
-              <span className="text-white/30 text-xs">{v}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

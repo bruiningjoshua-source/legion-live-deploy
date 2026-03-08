@@ -389,6 +389,9 @@ export default function MarioGame() {
         style={{ imageRendering: 'pixelated', aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
         tabIndex={0}
       />
+      <div className="w-full bg-black/80 border-t border-white/10">
+        <GameMobileControls keysRef={keysRef} variant="platformer" />
+      </div>
       {(ui.gameOver || ui.win) && (
         <div className="p-4 w-full flex justify-center">
           <button
