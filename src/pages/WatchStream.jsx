@@ -13,6 +13,7 @@ import {
   useStreamPKBattle, useSendGift, useToggleFollow, useEndStream,
 } from '@/components/hooks/useStreamData';
 import ChatService from '@/components/services/ChatService';
+import { getVipTier } from '@/components/wallet/CurrencyPackages';
 
 import BulletChat from '@/components/stream/BulletChat';
 import FloatingHearts from '@/components/stream/FloatingHearts';
@@ -33,6 +34,7 @@ import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
+import ViewerLotto from '@/components/stream/ViewerLotto';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -40,7 +42,6 @@ export default function WatchStream() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Core state
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
@@ -55,13 +56,11 @@ export default function WatchStream() {
   const videoRef = useRef(null);
   const liveStreamRef = useRef(null);
 
-  // Lock body scroll
   useEffect(() => {
     document.body.classList.add('fullscreen-lock');
     return () => document.body.classList.remove('fullscreen-lock');
   }, []);
 
-  // Data queries
   const { data: user } = useCurrentUser();
   const { data: stream, isLoading: streamLoading } = useStream(streamId);
   const { data: creator } = useCreator(stream?.creator_id);
@@ -77,15 +76,12 @@ export default function WatchStream() {
   const isBroadcaster = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
+  const userVipPoints = wallet?.vip_points || 0;
 
-  // Cleanup fullscreen lock when stream ends or is not found
   useEffect(() => {
-    if (!stream || streamEnded) {
-      document.body.classList.remove('fullscreen-lock');
-    }
+    if (!stream || streamEnded) document.body.classList.remove('fullscreen-lock');
   }, [stream, streamEnded]);
 
-  // Warn broadcaster on tab close
   useEffect(() => {
     if (!isBroadcaster || !stream?.id) return;
     const handler = (e) => { e.preventDefault(); e.returnValue = 'You are live!'; };
@@ -93,7 +89,7 @@ export default function WatchStream() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isBroadcaster, stream?.id]);
 
-  // Viewer count — atomic join/leave via backend function (prevents race conditions)
+  // Viewer count
   const viewerJoinedRef = useRef(false);
   const streamIdRef = useRef(null);
   useEffect(() => {
@@ -115,7 +111,7 @@ export default function WatchStream() {
     };
   }, [stream?.id, isBroadcaster, user?.email, stream?.status]);
 
-  // Chat sync — only seed from initial fetch, don't overwrite live messages
+  // Chat seed
   const chatSeeded = useRef(false);
   useEffect(() => {
     if (initialMessages?.length && !chatSeeded.current) {
@@ -131,14 +127,13 @@ export default function WatchStream() {
     });
   }, [streamId]);
 
-  // Zego viewer init
+  // Zego viewer
   const zegoInitAttempted = useRef(false);
   useEffect(() => {
     let mounted = true;
     if (stream?.status !== 'live' || isBroadcaster || !streamId) return;
     if (zegoInitAttempted.current) return;
     zegoInitAttempted.current = true;
-
     const init = async () => {
       const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
       const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
@@ -151,24 +146,18 @@ export default function WatchStream() {
       if (!mounted) return;
       ZegoService.onRoomEvent((event) => {
         if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
-          // Host ended or connection lost — refetch stream to get ended state
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
         }
         if (event.type === 'streamUpdate' && event.updateType === 'DELETE') {
-          // All remote streams removed — stream is ending
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
           ZegoService.leave().catch(() => {});
         }
       });
-      // Wait for remote stream list to populate, then retry once more
       setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 1500);
       setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 4000);
       if (mounted) setLiveStream(true);
     };
-    init().catch(error => {
-      console.error('[WatchStream] Join failed:', error);
-      if (mounted) setLiveStream(true);
-    });
+    init().catch(err => { console.error('[WatchStream] Join failed:', err); if (mounted) setLiveStream(true); });
     return () => {
       mounted = false;
       zegoInitAttempted.current = false;
@@ -177,12 +166,9 @@ export default function WatchStream() {
     };
   }, [stream?.status, streamId, isBroadcaster]);
 
-  // BUG-5 fix: Broadcaster camera — reuse ZegoService's already-active stream
-  // instead of opening a duplicate getUserMedia which causes hardware conflicts
+  // Broadcaster camera
   useEffect(() => {
     if (stream?.status !== 'live' || !isBroadcaster) return;
-    
-    // ZegoService already owns the camera from GoLive — just get the local stream for preview
     const zegoStream = ZegoService.getLocalStream();
     if (zegoStream) {
       liveStreamRef.current = zegoStream;
@@ -194,7 +180,6 @@ export default function WatchStream() {
         videoRef.current.play().catch(() => {});
       }
     } else {
-      // Fallback: Zego stream not ready yet, wait and retry
       const retryTimer = setInterval(() => {
         const s = ZegoService.getLocalStream();
         if (s) {
@@ -211,7 +196,6 @@ export default function WatchStream() {
       }, 500);
       return () => clearInterval(retryTimer);
     }
-    // No cleanup of tracks here — ZegoService owns the stream lifecycle
   }, [stream?.status, isBroadcaster]);
 
   // Mutations
@@ -233,9 +217,8 @@ export default function WatchStream() {
 
   const followMutation = useToggleFollow({ user, creator, isFollowing });
   const _endStream = useEndStream({ stream, creator, pkBattle, liveStream });
-  const endStream = () => _endStream.mutate(null, { 
+  const endStream = () => _endStream.mutate(null, {
     onSuccess: () => {
-      // Stop any remaining media
       if (liveStreamRef.current && typeof liveStreamRef.current !== 'boolean') {
         liveStreamRef.current.getTracks().forEach(t => t.stop());
         liveStreamRef.current = null;
@@ -245,7 +228,6 @@ export default function WatchStream() {
     }
   });
 
-  // Reactions
   const handleDoubleTap = useCallback(() => {
     const emojis = ['❤️', '🔥', '💜', '✨', '🌟'];
     setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji: emojis[Math.floor(Math.random() * emojis.length)] }]);
@@ -257,7 +239,15 @@ export default function WatchStream() {
     return () => clearInterval(iv);
   }, []);
 
-  // Loading
+  // Lotto deduct helper
+  const handleLottoDeduct = useCallback(async (amount) => {
+    if (!wallet?.id) throw new Error('No wallet');
+    await base44.entities.Wallet.update(wallet.id, {
+      denarii_balance: Math.max(0, (wallet.denarii_balance || 0) - amount)
+    });
+    queryClient.invalidateQueries({ queryKey: ['wallet', user?.email] });
+  }, [wallet, queryClient, user?.email]);
+
   if (streamLoading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -266,7 +256,6 @@ export default function WatchStream() {
     );
   }
 
-  // Ended / Not found
   if (!stream || streamEnded) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -285,10 +274,10 @@ export default function WatchStream() {
             {streamEnded ? `${creator?.display_name || 'The host'} ended this broadcast.` : "This stream doesn't exist."}
           </p>
           {streamEnded && stream && (
-            <div className="flex items-center justify-center gap-5 text-white/40 text-sm mb-6">
-              {stream.duration_minutes > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.duration_minutes}m</p><p className="text-[11px]">Duration</p></div>}
-              {stream.peak_viewers > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.peak_viewers}</p><p className="text-[11px]">Peak Viewers</p></div>}
-              {stream.total_gifts_received > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.total_gifts_received}</p><p className="text-[11px]">Gifts</p></div>}
+            <div className="flex items-center justify-center gap-5 text-sm mb-6">
+              {stream.duration_minutes > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.duration_minutes}m</p><p className="text-white/40 text-[11px]">Duration</p></div>}
+              {stream.peak_viewers > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.peak_viewers}</p><p className="text-white/40 text-[11px]">Peak Viewers</p></div>}
+              {stream.total_gifts_received > 0 && <div className="text-center"><p className="text-white font-bold text-lg">{stream.total_gifts_received}</p><p className="text-white/40 text-[11px]">Gifts</p></div>}
             </div>
           )}
           <div className="flex items-center justify-center gap-3">
@@ -304,9 +293,10 @@ export default function WatchStream() {
     );
   }
 
-  // ── RENDER ──
+  // ── MAIN RENDER ────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
+
       {/* Gift Animation */}
       <AnimatePresence>
         {giftAnimation && (
@@ -317,7 +307,7 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      {/* Video Layer — full-screen native feed */}
+      {/* ── VIDEO LAYER ───────────────────────────────────────────────── */}
       <div className="absolute inset-0 bg-black">
         <div className="relative w-full h-full">
           <video
@@ -330,7 +320,6 @@ export default function WatchStream() {
             onDoubleClick={handleDoubleTap}
           />
 
-          {/* Multi-panel */}
           {stream.stream_type === 'multi_panel' && (
             <div className="absolute inset-0 z-10">
               <DiscordStylePanel
@@ -342,55 +331,78 @@ export default function WatchStream() {
             </div>
           )}
 
-          {/* PK Battle */}
           {stream.stream_type === 'pk_battle' && (
             <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
               <PKBattleOverlay
-                streamId={streamId}
-                hostCreator={creator}
-                opponentCreator={opponentCreator}
-                initialBattle={pkBattle}
-                isBroadcaster={isBroadcaster}
+                streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
+                initialBattle={pkBattle} isBroadcaster={isBroadcaster}
               />
             </div>
           )}
         </div>
 
-        {/* Loading */}
         {!liveStream && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-5">
             <div className="text-center">
               <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-white/50 text-sm">Connecting...</p>
+              <p className="text-white/50 text-sm">Connecting to stream...</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Gradient overlays */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
+      {/* ── GRADIENT OVERLAYS ─────────────────────────────────────────── */}
+      {/* Top gradient — for top bar readability */}
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-10 pointer-events-none" />
+      {/* Bottom gradient — for chat + action bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
 
       {/* Floating reactions */}
       <FloatingHearts reactions={floatingReactions} />
 
-      {/* ── VIEWER UI ── */}
+      {/* ── VIEWER UI ─────────────────────────────────────────────────── */}
       {!isBroadcaster && (
         <>
+          {/* Top bar */}
           <ViewerTopBar
             creator={creator} stream={stream}
             isFollowing={isFollowing}
             onFollowClick={() => followMutation.mutate()}
             onClose={() => navigate(createPageUrl('Home'))}
             viewerCount={stream.viewer_count || 0}
+            userVipPoints={userVipPoints}
           />
 
+          {/* Wallet — top right */}
           {wallet && (
-            <div className="absolute top-3 right-3 z-30">
+            <div className="absolute top-3 right-14 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
               <ViewerWallet denariiBalance={wallet.denarii_balance || 0} userEmail={user?.email} />
             </div>
           )}
 
+          {/* Lotto widget — below top bar, left aligned */}
+          <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 90px)', left: '12px' }}>
+            <ViewerLotto
+              streamId={streamId}
+              hostCreatorId={creator?.id}
+              currentUser={user}
+              walletBalance={walletBalance}
+              isBroadcaster={false}
+              vipPoints={userVipPoints}
+              onDeductDenarii={handleLottoDeduct}
+            />
+          </div>
+
+          {/* Gift leaderboard — top right below wallet */}
+          <div
+            className="absolute z-20 w-44"
+            style={{ top: 'calc(env(safe-area-inset-top) + 56px)', right: '12px' }}
+            onClick={() => setShowExpandedLeaderboard(true)}
+          >
+            <GiftLeaderboard streamId={streamId} compact />
+          </div>
+
+          {/* Right action bar */}
           <StreamActionBar
             onGiftClick={() => {
               if (!creatorCanReceiveGifts) { toast.error('Creator has not enabled monetization.'); return; }
@@ -403,16 +415,14 @@ export default function WatchStream() {
               else navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'));
             }}
             onChatToggle={() => setShowChat(!showChat)}
+            onLeaderboardClick={() => setShowExpandedLeaderboard(true)}
             isLiked={isFollowing}
             likeCount={creator?.follower_count || 0}
             giftDisabled={!creatorCanReceiveGifts}
             showChat={showChat}
           />
 
-          <div className="absolute top-16 right-3 z-20 w-44" onClick={() => setShowExpandedLeaderboard(true)}>
-            <GiftLeaderboard streamId={streamId} compact />
-          </div>
-
+          {/* Chat */}
           {showChat && (
             <BulletChat
               messages={chatMessages}
@@ -427,18 +437,20 @@ export default function WatchStream() {
         </>
       )}
 
-      {/* ── BROADCASTER UI ── */}
+      {/* ── BROADCASTER UI ────────────────────────────────────────────── */}
       {isBroadcaster && (
         <>
+          {/* End stream button — top left */}
           <button
             onClick={() => setShowEndDialog(true)}
-            className="absolute top-3 left-3 z-30 w-11 h-11 bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+            className="absolute top-3 left-3 z-30 w-10 h-10 bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
             style={{ marginTop: 'env(safe-area-inset-top)' }}
           >
             <X className="w-5 h-5 text-red-400" />
           </button>
 
-          <div className="absolute top-3 left-14 z-30">
+          {/* Top bar (title + thumbnail) */}
+          <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 12px)', left: '60px' }}>
             <BroadcasterTopBar
               stream={stream} viewerCount={stream.viewer_count || 0}
               onUpdateStream={async (updates) => {
@@ -448,19 +460,40 @@ export default function WatchStream() {
             />
           </div>
 
-          {/* Creator tools */}
-          <div className="absolute top-16 left-3 z-20 flex gap-1.5 flex-wrap" style={{ maxWidth: '240px' }}>
+          {/* Broadcaster tool buttons — below top */}
+          <div
+            className="absolute z-30 flex flex-col gap-2"
+            style={{ top: 'calc(env(safe-area-inset-top) + 70px)', left: '12px' }}
+          >
+            {/* Lotto launcher */}
+            <ViewerLotto
+              streamId={streamId}
+              hostCreatorId={creator?.id}
+              currentUser={user}
+              walletBalance={walletBalance}
+              isBroadcaster={true}
+              vipPoints={userVipPoints}
+              onDeductDenarii={handleLottoDeduct}
+            />
+
+            {/* Co-stream */}
             <button onClick={() => setShowCoStreamPanel(true)}
-              className="w-9 h-9 bg-black/50 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
+              className="w-9 h-9 bg-black/60 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
               <Users className="w-4 h-4" />
             </button>
+
+            {/* Moderation */}
             <button onClick={() => setShowModerationPanel(true)}
-              className="w-9 h-9 bg-black/50 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
+              className="w-9 h-9 bg-black/60 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
               <Shield className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="absolute top-16 right-3 z-20">
+          {/* Broadcaster wallet — top right */}
+          <div
+            className="absolute z-30"
+            style={{ top: 'calc(env(safe-area-inset-top) + 70px)', right: '12px' }}
+          >
             <BroadcasterWallet
               totalEarnings={creator?.total_earnings_denarii || 0}
               sessionEarnings={stream?.total_denarii_earned || 0}
@@ -469,6 +502,7 @@ export default function WatchStream() {
             />
           </div>
 
+          {/* Broadcast control panel */}
           <BroadcastControlPanel
             stream={stream}
             streamStats={{
@@ -478,14 +512,8 @@ export default function WatchStream() {
                 : '0:00',
               bitrate: 0
             }}
-            onToggleMic={(on) => {
-              // BUG-4 fix: route through ZegoService so Zego's internal stream is toggled too
-              ZegoService.toggleMic(on);
-            }}
-            onToggleCamera={(on) => {
-              // BUG-4 fix: route through ZegoService so Zego's internal stream is toggled too
-              ZegoService.toggleCamera(on);
-            }}
+            onToggleMic={(on) => ZegoService.toggleMic(on)}
+            onToggleCamera={(on) => ZegoService.toggleCamera(on)}
             onToggleScreenShare={async (on) => {
               if (on) {
                 try {
@@ -508,6 +536,7 @@ export default function WatchStream() {
             onUpdateSettings={() => {}}
           />
 
+          {/* Chat */}
           <BulletChat
             messages={chatMessages}
             onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
@@ -534,23 +563,29 @@ export default function WatchStream() {
 
       {/* Expanded leaderboard */}
       <AnimatePresence>
-        {showExpandedLeaderboard && <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />}
+        {showExpandedLeaderboard && (
+          <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />
+        )}
       </AnimatePresence>
 
-      {/* Co-Stream panel */}
+      {/* Co-stream panel */}
       <AnimatePresence>
-        {showCoStreamPanel && <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />}
+        {showCoStreamPanel && (
+          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />
+        )}
       </AnimatePresence>
 
-      {/* Gift Panel */}
+      {/* Gift Panel — BigO style bottom sheet */}
       <AnimatePresence>
         {showGiftPanel && (
           <>
             <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowGiftPanel(false)} />
             <div className="fixed bottom-0 left-0 right-0 z-50">
-              <GiftPanel gifts={gifts} walletBalance={walletBalance}
+              <GiftPanel
+                gifts={gifts} walletBalance={walletBalance}
                 onSendGift={(gift, qty) => sendGift({ gift, quantity: qty })}
-                onClose={() => setShowGiftPanel(false)} />
+                onClose={() => setShowGiftPanel(false)}
+              />
             </div>
           </>
         )}
