@@ -281,7 +281,7 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </div>
         <p className="text-white/40 text-xs flex items-center gap-1">
           <Flame className="w-3 h-3 text-amber-400" />
-          TikTok-parity pricing · More generous bonuses · Earn VIP points on every purchase
+          180 Denarii = $1 internal rate · Creators earn 60% · VIP points on every purchase
         </p>
       </div>
 
