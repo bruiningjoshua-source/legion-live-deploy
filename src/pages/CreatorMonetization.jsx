@@ -155,6 +155,11 @@ export default function CreatorMonetization() {
         {/* Subscription Status */}
         {!isMonetizationActive ? (
           <>
+            {/* Earnings Projection — visible to all, no gate */}
+            <div className="mb-10">
+              <CreatorEarningsProjection />
+            </div>
+
             {/* Monetization Showcase */}
             <div className="mb-12">
               <MonetizationShowcase />
