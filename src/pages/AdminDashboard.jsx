@@ -29,6 +29,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
+import FraudMonitoringDashboard from '@/components/admin/FraudMonitoringDashboard';
 
 // Authorized admin emails - update these as needed
 // Authorized admin emails - add your admin emails here
@@ -229,7 +230,10 @@ export default function AdminDashboard() {
                 Controls
               </TabsTrigger>
               <TabsTrigger value="payouts" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
-                Payouts
+               Payouts
+              </TabsTrigger>
+              <TabsTrigger value="fraud" className="data-[state=active]:bg-white data-[state=active]:text-black rounded-full px-4 text-white/70 text-sm">
+               🛡️ Fraud Monitor
               </TabsTrigger>
             </TabsList>
           </div>
@@ -383,8 +387,13 @@ export default function AdminDashboard() {
           <TabsContent value="payouts">
             <PayoutConfigManager />
           </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
+
+          {/* Fraud Monitoring */}
+          <TabsContent value="fraud">
+            <FraudMonitoringDashboard />
+          </TabsContent>
+          </Tabs>
+          </div>
+          </div>
+          );
+          }
