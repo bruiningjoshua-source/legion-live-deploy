@@ -275,6 +275,7 @@ export default function ZeldaGame() {
         player.attackTimer = 10;
         const angles = [Math.PI / 2, 0, -Math.PI / 2, Math.PI];
         player.attackAngle = angles[player.dir] ?? 0;
+        GameAudio.sword();
       }
       if (player.attack) {
         player.attackTimer--;
@@ -315,7 +316,7 @@ export default function ZeldaGame() {
             e.hp--;
             e.vx = (e.x - player.x) * 0.08;
             e.vy = (e.y - player.y) * 0.08;
-            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 500 : 100; }
+            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 500 : 100; GameAudio.stomp(); }
           }
         }
 
@@ -323,8 +324,9 @@ export default function ZeldaGame() {
         if (player.iframes === 0 && dist(player, e) < (player.w + e.w) / 2 - 2) {
           player.hp--;
           player.iframes = 80;
+          GameAudio.hit();
           if (player.hp <= 0) {
-            s.gameOver = true;
+            s.gameOver = true; GameAudio.gameOver();
             setUi({ hp: 0, score: s.score, rupees: s.rupeeCount, gameOver: true, win: false });
           }
         }
@@ -333,12 +335,12 @@ export default function ZeldaGame() {
       // Rupees
       s.rupees.forEach((r) => {
         if (r.collected) return;
-        if (dist(player, r) < 20) { r.collected = true; s.rupeeCount++; s.score += 25; }
+        if (dist(player, r) < 20) { r.collected = true; s.rupeeCount++; s.score += 25; GameAudio.rupee(); }
       });
 
       // Win condition
       if (s.enemies.every(e => !e.alive)) {
-        s.win = true;
+        s.win = true; GameAudio.win();
         setUi({ hp: s.player.hp, score: s.score, rupees: s.rupeeCount, gameOver: false, win: true });
       }
 
