@@ -209,44 +209,112 @@ export default function ProductionHardeningDashboard() {
           </Card>
         )}
 
-        {/* Checklist */}
+        {/* Critical Path Checklist */}
         <Card className="bg-stone-800/30 border-amber-600/20 mt-6">
           <CardHeader>
-            <CardTitle className="text-amber-100">Pre-Launch Checklist</CardTitle>
+            <CardTitle className="text-amber-100">🔴 CRITICAL PATH - Pre-Launch Checklist</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-amber-200/70 text-sm">
-              <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.database?.status === 'PASS' ? 'text-green-400' : ''}`}>
-                <span className="text-lg">□</span> Database CRUD operations verified
-              </li>
-              <li className={`flex items-center gap-2 ${stripeResults?.data?.success ? 'text-green-400' : ''}`}>
-                <span className="text-lg">□</span> Stripe live mode & webhooks tested
-              </li>
-              <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.security?.status === 'PASS' ? 'text-green-400' : ''}`}>
-                <span className="text-lg">□</span> Security hardening measures in place
-              </li>
-              <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.monitoring?.status === 'PASS' ? 'text-green-400' : ''}`}>
-                <span className="text-lg">□</span> Monitoring & alerting configured
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Creator account 2FA enforcement enabled
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Rate limiting tested across endpoints
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Database backups & restore tested
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Mobile device testing (iOS/Android) completed
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Incident response team briefed
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-lg">□</span> Rollback procedures documented
-              </li>
-            </ul>
+            <div className="space-y-6">
+              {/* Stripe Validation */}
+              <div>
+                <h4 className="text-amber-400 font-semibold mb-3">1. Stripe Live Mode Validation</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${stripeResults?.data?.success ? 'text-green-400' : ''}`}>
+                    <span>□</span> Full payment cycle test ($1 charge)
+                  </li>
+                  <li>
+                    <span>□</span> Webhook endpoint active and receiving events
+                  </li>
+                  <li>
+                    <span>□</span> Creator wallet credited within 2 seconds of payment
+                  </li>
+                  <li>
+                    <span>□</span> Refund/chargeback flow tested
+                  </li>
+                </ul>
+              </div>
+
+              {/* Database */}
+              <div>
+                <h4 className="text-amber-400 font-semibold mb-3">2. Database Integrity</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.database?.status === 'PASS' ? 'text-green-400' : ''}`}>
+                    <span>□</span> CRUD operations on all critical entities
+                  </li>
+                  <li>
+                    <span>□</span> Backup/restore cycle tested
+                  </li>
+                  <li>
+                    <span>□</span> Index performance verified
+                  </li>
+                </ul>
+              </div>
+
+              {/* Security */}
+              <div>
+                <h4 className="text-amber-400 font-semibold mb-3">3. Security Hardening</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.security?.status === 'PASS' ? 'text-green-400' : ''}`}>
+                    <span>□</span> CSRF, rate limiting, fraud detection active
+                  </li>
+                  <li>
+                    <span>□</span> 2FA required for creators with payouts
+                  </li>
+                  <li>
+                    <span>□</span> SSL/TLS certificates valid
+                  </li>
+                </ul>
+              </div>
+
+              {/* Monitoring */}
+              <div>
+                <h4 className="text-amber-400 font-semibold mb-3">4. Monitoring & Alerting</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.monitoring?.status === 'PASS' ? 'text-green-400' : ''}`}>
+                    <span>□</span> Error tracking, network monitoring, analytics live
+                  </li>
+                  <li>
+                    <span>□</span> Critical alerts configured (payment failures, latency)
+                  </li>
+                  <li>
+                    <span>□</span> Production dashboard accessible
+                  </li>
+                </ul>
+              </div>
+
+              {/* Failover */}
+              <div>
+                <h4 className="text-amber-400 font-semibold mb-3">5. Failover & Incident Response</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.failover?.status === 'PASS' ? 'text-green-400' : ''}`}>
+                    <span>□</span> Kill switch for Stripe documented
+                  </li>
+                  <li>
+                    <span>□</span> Rollback procedure tested (< 5 min)
+                  </li>
+                  <li>
+                    <span>□</span> Incident response team briefed
+                  </li>
+                </ul>
+              </div>
+
+              {/* High Priority */}
+              <div className="border-t border-amber-600/20 pt-4">
+                <h4 className="text-amber-300 font-semibold mb-3">🟡 HIGH PRIORITY</h4>
+                <ul className="space-y-1 text-amber-200/70 text-sm ml-4">
+                  <li className={`flex items-center gap-2 ${auditResults?.data?.checks?.performance?.status === 'PASS' ? 'text-green-400' : ''}`}>
+                    <span>□</span> Load test (1000 concurrent) passed
+                  </li>
+                  <li>
+                    <span>□</span> Mobile testing (iOS/Android) completed
+                  </li>
+                  <li>
+                    <span>□</span> Creator 2FA enforcement active
+                  </li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

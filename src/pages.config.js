@@ -117,6 +117,7 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import CreatorPayouts from './pages/CreatorPayouts';
 import PlatformStatus from './pages/PlatformStatus';
+import ProductionReadiness from './pages/ProductionReadiness';
 import __Layout from './Layout.jsx';
 
 
@@ -191,6 +192,7 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "CreatorPayouts": CreatorPayouts,
     "PlatformStatus": PlatformStatus,
+    "ProductionReadiness": ProductionReadiness,
 }
 
 export const pagesConfig = {
