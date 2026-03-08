@@ -209,8 +209,8 @@ export default function GamesExpo() {
             className="flex items-center justify-center gap-6 mt-5"
           >
             {[
-              { icon: Trophy, label: '5 Games', value: 'Arcade' },
-              { icon: Users, label: '53K+', value: 'Players' },
+              { icon: Trophy, label: '7 Games', value: 'Arcade' },
+              { icon: Users, label: '75K+', value: 'Players' },
               { icon: Wand2, label: 'AI Builder', value: 'Create' },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
