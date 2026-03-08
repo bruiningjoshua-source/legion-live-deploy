@@ -1,6 +1,6 @@
 import React, { useState, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Sun, Droplets, Palette, X, ChevronUp } from 'lucide-react';
+import { Sparkles, ChevronUp } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
 import { FILTER_PRESETS } from './ARFilterEngine';
 
