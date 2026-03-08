@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import { scrollPositions } from '@/components/navigation/useScrollPreservation';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { QK, STALE } from '@/components/core/queryKeys';
 import { 
   Home, 
   Compass,
@@ -18,19 +19,18 @@ const BottomNav = memo(function BottomNav() {
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
-  // Check if user is authenticated and if they're live
   const { data: currentUser } = useQuery({
-    queryKey: ['current-user'],
+    queryKey: QK.user(),
     queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.SLOW,
     retry: 1,
   });
 
   const { data: creator } = useQuery({
-    queryKey: ['bottom-nav-creator', currentUser?.email],
+    queryKey: QK.creators.byEmail(currentUser?.email),
     queryFn: () => base44.entities.Creator.filter({ user_email: currentUser.email }, null, 1).then(r => r[0] || null),
     enabled: !!currentUser?.email,
-    staleTime: 60000,
+    staleTime: STALE.MEDIUM,
     retry: 1,
   });
 
