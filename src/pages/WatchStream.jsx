@@ -479,10 +479,12 @@ export default function WatchStream() {
               bitrate: 0
             }}
             onToggleMic={(on) => {
-              if (liveStream && typeof liveStream !== 'boolean') liveStream.getAudioTracks().forEach(t => t.enabled = on);
+              // BUG-4 fix: route through ZegoService so Zego's internal stream is toggled too
+              ZegoService.toggleMic(on);
             }}
             onToggleCamera={(on) => {
-              if (liveStream && typeof liveStream !== 'boolean') liveStream.getVideoTracks().forEach(t => t.enabled = on);
+              // BUG-4 fix: route through ZegoService so Zego's internal stream is toggled too
+              ZegoService.toggleCamera(on);
             }}
             onToggleScreenShare={async (on) => {
               if (on) {
