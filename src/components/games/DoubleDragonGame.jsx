@@ -192,8 +192,8 @@ export default function DoubleDragonGame() {
       if (keys['ArrowUp'] || keys['KeyW']) vy = -PLAYER_SPEED * 0.6;
       if (keys['ArrowDown'] || keys['KeyS']) vy = PLAYER_SPEED * 0.6;
 
-      if (keys['KeyZ'] && player.attackTimer === 0) { player.attackType = 'punch'; player.attackTimer = 12; }
-      if (keys['KeyX'] && player.kickTimer === 0) { player.attackType = 'kick'; player.kickTimer = 14; player.attackTimer = 14; }
+      if (keys['KeyZ'] && player.attackTimer === 0) { player.attackType = 'punch'; player.attackTimer = 12; GameAudio.attack(); }
+      if (keys['KeyX'] && player.kickTimer === 0) { player.attackType = 'kick'; player.kickTimer = 14; player.attackTimer = 14; GameAudio.kick(); }
 
       player.x = clamp(player.x + vx, 0, WORLD_W - player.w);
       player.y = clamp(player.y + vy, GROUND_Y - 80, GROUND_Y - player.h);
@@ -207,7 +207,7 @@ export default function DoubleDragonGame() {
           const yDist = Math.abs(e.y - player.y);
           if (eDist < range && yDist < 40) {
             e.hp--; e.stateTimer = 30; e.state = 'stagger';
-            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1000 : e.type === 'heavy' ? 300 : 100; }
+            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1000 : e.type === 'heavy' ? 300 : 100; GameAudio.stomp(); }
           }
         });
       }
@@ -220,7 +220,7 @@ export default function DoubleDragonGame() {
           if (eDist < range && yDist < 50) {
             e.hp -= 2; e.stateTimer = 40; e.state = 'stagger';
             e.x += player.facing * 30;
-            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1500 : e.type === 'heavy' ? 400 : 150; }
+            if (e.hp <= 0) { e.alive = false; s.score += e.type === 'boss' ? 1500 : e.type === 'heavy' ? 400 : 150; GameAudio.stomp(); }
           }
         });
       }
@@ -251,8 +251,8 @@ export default function DoubleDragonGame() {
           const yRange = 40;
           if (d < hitRange && Math.abs(dy) < yRange && player.iframes === 0) {
             const dmg = e.type === 'boss' ? 2 : 1;
-            player.hp -= dmg; player.iframes = 70;
-            if (player.hp <= 0) { s.gameOver = true; setUi({ hp: 0, score: s.score, gameOver: true, win: false }); return; }
+            player.hp -= dmg; player.iframes = 70; GameAudio.hit();
+            if (player.hp <= 0) { s.gameOver = true; GameAudio.gameOver(); setUi({ hp: 0, score: s.score, gameOver: true, win: false }); return; }
           }
         }
 
@@ -266,7 +266,7 @@ export default function DoubleDragonGame() {
       s.camera.x = Math.max(0, Math.min(s.camera.x, WORLD_W - CANVAS_W));
 
       if (s.enemies.every(e => !e.alive)) {
-        s.win = true; setUi({ hp: player.hp, score: s.score, gameOver: false, win: true }); return;
+        s.win = true; GameAudio.win(); setUi({ hp: player.hp, score: s.score, gameOver: false, win: true }); return;
       }
       setUi({ hp: player.hp, score: s.score, gameOver: false, win: false });
     }
