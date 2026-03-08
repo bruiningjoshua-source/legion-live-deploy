@@ -14,11 +14,10 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import CurrencyPackages, { VIP_TIERS, getVipTier, getNextVipTier, DENARII_PER_DOLLAR } from '@/components/wallet/CurrencyPackages';
+import CurrencyPackages, { getVipTier, getNextVipTier, DENARII_PER_DOLLAR } from '@/components/wallet/CurrencyPackages';
 import GlassCard from '@/components/shared/GlassCard';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
-import VIPBadge from '@/components/stream/VIPBadge';
 
 export default function Wallet() {
   // Handle successful purchase redirect
