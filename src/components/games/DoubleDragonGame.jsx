@@ -64,99 +64,259 @@ export default function DoubleDragonGame() {
     const ctx = canvas.getContext('2d');
 
     function drawBg(camX) {
-      const sky = ctx.createLinearGradient(0, 0, 0, CANVAS_H * 0.6);
-      sky.addColorStop(0, '#1a1a2e'); sky.addColorStop(1, '#2d1b4e');
-      ctx.fillStyle = sky; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H * 0.6);
-      // Neon signs
-      [[100, 40, '#ff0080', 'DANGER'], [350, 60, '#00ffcc', 'NO EXIT'], [600, 30, '#ffaa00', 'FIGHT!']].forEach(([bx, by, col, text]) => {
-        const rx = ((bx - camX * 0.2) % (CANVAS_W + 300) + CANVAS_W + 300) % (CANVAS_W + 300) - 150;
-        ctx.fillStyle = col + '22'; ctx.fillRect(rx - 10, by - 6, text.length * 12 + 20, 28);
-        ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-        ctx.strokeRect(rx - 10, by - 6, text.length * 12 + 20, 28);
-        ctx.fillStyle = col; ctx.font = 'bold 14px monospace';
-        ctx.fillText(text, rx, by + 14);
+      // Double Dragon - gritty 80s street night scene
+      // Night sky gradient
+      const sky = ctx.createLinearGradient(0, 0, 0, CANVAS_H * 0.55);
+      sky.addColorStop(0, '#08081a');
+      sky.addColorStop(0.5, '#1a1030');
+      sky.addColorStop(1, '#2a1838');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Moon
+      ctx.fillStyle = 'rgba(200,200,255,0.6)';
+      ctx.beginPath(); ctx.arc(80, 45, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(220,220,255,0.9)';
+      ctx.beginPath(); ctx.arc(80, 45, 18, 0, Math.PI * 2); ctx.fill();
+      // Moon shadow
+      ctx.fillStyle = 'rgba(20,10,40,0.6)';
+      ctx.beginPath(); ctx.arc(88, 42, 16, 0, Math.PI * 2); ctx.fill();
+
+      // Stars
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      [[150,20],[250,15],[380,25],[480,10],[550,30],[650,18],[720,22],[760,8]].forEach(([sx,sy]) => {
+        ctx.fillRect(sx, sy, 2, 2);
       });
-      // Alley walls
-      ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0, CANVAS_H * 0.6, CANVAS_W, CANVAS_H * 0.4);
-      // Ground
-      ctx.fillStyle = '#2a2a3a'; ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
-      ctx.fillStyle = '#3a3a4a'; ctx.fillRect(0, GROUND_Y, CANVAS_W, 4);
-      for (let lx = -camX % 80; lx < CANVAS_W; lx += 80) {
-        ctx.fillStyle = '#4a4a5a'; ctx.fillRect(lx, GROUND_Y + 10, 40, 3);
-      }
-      // Background buildings
-      ctx.fillStyle = 'rgba(30,20,50,0.8)';
-      [[0, 200, 60, 200, camX*0.35], [120, 180, 80, 220, camX*0.35], [280, 160, 60, 240, camX*0.35],
-       [500, 190, 70, 210, camX*0.35], [700, 170, 90, 230, camX*0.35]].forEach(([bx, by, bw, bh, off]) => {
-        const rx = ((bx - off) % (CANVAS_W + 200) + CANVAS_W + 200) % (CANVAS_W + 200) - 100;
+
+      // Background buildings - dark silhouette
+      const bldgData = [
+        [0, 200, 60, 200], [80, 170, 80, 230], [200, 155, 55, 245],
+        [300, 185, 70, 215], [420, 160, 65, 240], [530, 175, 75, 225],
+        [660, 150, 85, 250], [780, 168, 60, 232]
+      ];
+      bldgData.forEach(([bx, by, bw, bh]) => {
+        const rx = ((bx - camX * 0.3) % (CANVAS_W + 250) + CANVAS_W + 250) % (CANVAS_W + 250) - 100;
+        ctx.fillStyle = '#140c24';
         ctx.fillRect(rx, by, bw, bh);
-        ctx.fillStyle = 'rgba(255,200,50,0.3)';
+        // Rooftop details - water tanks, antennas
+        ctx.fillStyle = '#1e1430';
+        ctx.fillRect(rx + bw * 0.6, by - 15, 12, 18);
+        ctx.fillRect(rx + bw * 0.2, by - 8, 5, 12);
+        // Windows - varied brightness
         for (let wy = by + 15; wy < by + bh - 10; wy += 22) {
-          for (let wx = rx + 8; wx < rx + bw - 8; wx += 18) ctx.fillRect(wx, wy, 8, 12);
+          for (let wx = rx + 8; wx < rx + bw - 8; wx += 18) {
+            const litVal = (Math.floor(wx / 18) * 3 + Math.floor(wy / 22)) % 7;
+            if (litVal < 2) {
+              ctx.fillStyle = 'rgba(255,220,100,0.8)';
+            } else if (litVal < 3) {
+              ctx.fillStyle = 'rgba(100,180,255,0.6)';
+            } else {
+              ctx.fillStyle = '#0a0818';
+            }
+            ctx.fillRect(wx, wy, 9, 13);
+          }
         }
-        ctx.fillStyle = 'rgba(30,20,50,0.8)';
       });
+
+      // Neon signs - vibrant glow
+      [[90, 42, '#ff0088', 'DANGER'], [320, 55, '#00ffcc', 'NO EXIT'], [570, 38, '#ffaa00', 'FIGHT!'], [750, 48, '#ff4444', 'GAME']].forEach(([bx, by, col, text]) => {
+        const rx = ((bx - camX * 0.2) % (CANVAS_W + 300) + CANVAS_W + 300) % (CANVAS_W + 300) - 150;
+        // Glow effect
+        ctx.fillStyle = col + '18';
+        ctx.fillRect(rx - 14, by - 10, text.length * 13 + 28, 36);
+        // Sign border
+        ctx.strokeStyle = col + 'cc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx - 10, by - 6, text.length * 13 + 20, 28);
+        // Flicker effect using frame (not available here but sign always on)
+        ctx.fillStyle = col;
+        ctx.font = 'bold 15px monospace';
+        ctx.fillText(text, rx, by + 15);
+      });
+
+      // Mid-ground alley floor
+      ctx.fillStyle = '#1c1c30';
+      ctx.fillRect(0, CANVAS_H * 0.55, CANVAS_W, CANVAS_H * 0.45);
+
+      // Wall/floor seam
+      ctx.fillStyle = '#0c0c1a';
+      ctx.fillRect(0, CANVAS_H * 0.55, CANVAS_W, 4);
+
+      // Ground - dark pavement
+      ctx.fillStyle = '#1a1a28';
+      ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+      // Ground surface highlights
+      ctx.fillStyle = '#282838';
+      ctx.fillRect(0, GROUND_Y, CANVAS_W, 5);
+
+      // Pavement cracks / lines
+      for (let lx = -camX % 64; lx < CANVAS_W; lx += 64) {
+        ctx.fillStyle = '#222232';
+        ctx.fillRect(lx, GROUND_Y + 6, 30, 2);
+        ctx.fillRect(lx + 32, GROUND_Y + 18, 20, 2);
+      }
+
+      // Puddle reflections
+      for (let px2 = -camX % 220; px2 < CANVAS_W; px2 += 220) {
+        const puddleGrad = ctx.createLinearGradient(px2, GROUND_Y + 5, px2, GROUND_Y + 25);
+        puddleGrad.addColorStop(0, 'rgba(100,80,180,0.3)');
+        puddleGrad.addColorStop(1, 'rgba(50,40,100,0.1)');
+        ctx.fillStyle = puddleGrad;
+        ctx.beginPath(); ctx.ellipse(px2 + 50, GROUND_Y + 15, 40, 10, 0, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Trash/debris on floor
+      ctx.fillStyle = '#2a2038';
+      for (let dx = -camX % 150; dx < CANVAS_W; dx += 150) {
+        ctx.fillRect(dx, GROUND_Y - 3, 16, 6);
+        ctx.fillRect(dx + 70, GROUND_Y - 2, 10, 5);
+      }
     }
 
     function drawCharacter(ctx, x, y, w, h, facing, options = {}) {
-      const { color = '#e8a030', shirtColor = '#cc2020', hitFlash = false, type = 'grunt', isPlayer = false, frame = 0, attackType = null, attackTimer = 0 } = options;
+      const { color = '#e8a030', shirtColor = '#cc2020', hitFlash = false, type = 'grunt', isPlayer = false, frame = 0, attackType = null, attackTimer = 0, kickTimer = 0 } = options;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath(); ctx.ellipse(x + w / 2, y + h + 2, w / 2 - 2, 4, 0, 0, Math.PI * 2); ctx.fill();
+
       ctx.save();
       if (facing < 0) { ctx.translate(x + w / 2, y + h / 2); ctx.scale(-1, 1); ctx.translate(-(x + w / 2), -(y + h / 2)); }
 
-      const legOff = Math.sin(frame * 0.22) * 5;
-      const bob = Math.abs(Math.sin(frame * 0.22)) * 2;
+      const legOff = Math.sin(frame * 0.24) * 5;
+      const bob = Math.abs(Math.sin(frame * 0.24)) * 2;
 
-      if (hitFlash) { ctx.globalAlpha = 0.6 + Math.sin(frame * 0.8) * 0.3; }
+      if (hitFlash) { ctx.globalAlpha = 0.5 + Math.abs(Math.sin(frame * 1.2)) * 0.5; }
 
-      const scale = type === 'boss' ? 1.2 : type === 'heavy' ? 1.1 : 1;
-      const ow = w / scale, oh = h / scale;
-      const ox = x + (w - ow) / 2, oy = y + h - oh;
+      const scale = type === 'boss' ? 1.0 : type === 'heavy' ? 1.0 : 1.0;
+      const ox = x, oy = y;
+      const ow = w, oh = h;
 
-      // Legs
-      ctx.fillStyle = '#333'; ctx.fillRect(ox + 2, oy + oh * 0.65, ow * 0.3, oh * 0.35 + legOff);
-      ctx.fillRect(ox + ow * 0.4, oy + oh * 0.65, ow * 0.3, oh * 0.35 - legOff);
-      // Boots
+      // -- BOOTS --
+      const bootColor = isPlayer ? '#1a1a2e' : (type === 'boss' ? '#1a0808' : '#1a1008');
+      ctx.fillStyle = bootColor;
+      ctx.fillRect(ox + 1, oy + oh - 9 + legOff, ow * 0.38, 9);
+      ctx.fillRect(ox + ow * 0.42, oy + oh - 9 - legOff, ow * 0.38, 9);
+      // Boot highlight
+      ctx.fillStyle = type === 'boss' ? '#3a1010' : '#2a2810';
+      ctx.fillRect(ox + 2, oy + oh - 9 + legOff, ow * 0.2, 4);
+      ctx.fillRect(ox + ow * 0.43, oy + oh - 9 - legOff, ow * 0.2, 4);
+
+      // -- PANTS/LEGS --
+      const pantsColor = isPlayer ? '#1e3a6e' : (type === 'boss' ? '#3a1010' : (type === 'heavy' ? '#2a2820' : '#2a2030'));
+      ctx.fillStyle = pantsColor;
+      ctx.fillRect(ox + 2, oy + oh * 0.56, ow * 0.35, oh * 0.32 + legOff);
+      ctx.fillRect(ox + ow * 0.42, oy + oh * 0.56, ow * 0.35, oh * 0.32 - legOff);
+      // Knee detail
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(ox + 3, oy + oh * 0.64, ow * 0.28, 4);
+      ctx.fillRect(ox + ow * 0.44, oy + oh * 0.64, ow * 0.28, 4);
+
+      // -- BELT --
       ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(ox + 1, oy + oh - 8 + legOff, ow * 0.32 + 2, 8);
-      ctx.fillRect(ox + ow * 0.38, oy + oh - 8 - legOff, ow * 0.32 + 2, 8);
-      // Body
+      ctx.fillRect(ox + 1, oy + oh * 0.53, ow - 2, 6);
+      // Buckle
+      ctx.fillStyle = isPlayer ? '#d4a820' : '#888';
+      ctx.fillRect(ox + ow / 2 - 5, oy + oh * 0.53, 10, 6);
+
+      // -- BODY / SHIRT --
       ctx.fillStyle = shirtColor;
-      ctx.fillRect(ox + 3, oy + oh * 0.3 - bob, ow - 6, oh * 0.35 + bob);
-      // Belt
-      ctx.fillStyle = '#222'; ctx.fillRect(ox + 2, oy + oh * 0.62, ow - 4, 5);
-      ctx.fillStyle = '#888'; ctx.fillRect(ox + ow / 2 - 4, oy + oh * 0.62, 8, 5);
-      // Arms
-      const punchX = attackType === 'punch' ? (ow * 0.4 + (10 - attackTimer) * 2.5) : ow * 0.4;
-      const kickX = attackType === 'kick' ? ow * 0.1 + (10 - (options.kickTimer || 0)) * 4 : ow * 0.1;
+      ctx.fillRect(ox + 2, oy + oh * 0.28 - bob, ow - 4, oh * 0.27 + bob);
+      // Shirt shadow/detail
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fillRect(ox + ow * 0.55, oy + oh * 0.28 - bob, ow * 0.38, oh * 0.27 + bob);
+      // Shirt highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(ox + 3, oy + oh * 0.28 - bob, ow * 0.25, oh * 0.12);
+
+      // -- KICK LEG --
+      if (attackType === 'kick' && kickTimer > 8) {
+        ctx.fillStyle = pantsColor;
+        const kickExtend = (14 - kickTimer) * 5;
+        ctx.fillRect(ox + ow * 0.3, oy + oh * 0.6, kickExtend, 12);
+        ctx.fillStyle = bootColor;
+        ctx.fillRect(ox + ow * 0.3 + kickExtend, oy + oh * 0.6, 14, 10);
+      }
+
+      // -- ARMS --
       if (type === 'boss') {
-        ctx.fillStyle = '#cc4400'; ctx.fillRect(ox - 4, oy + oh * 0.3, 10, oh * 0.3);
-        ctx.fillRect(ox + ow - 6, oy + oh * 0.3, 10, oh * 0.3);
+        ctx.fillStyle = '#aa3a10';
+        ctx.fillRect(ox - 6, oy + oh * 0.28, 10, oh * 0.28);
+        ctx.fillRect(ox + ow - 4, oy + oh * 0.28, 10, oh * 0.28);
+        // Spiked shoulders
+        ctx.fillStyle = '#cc4a14';
+        ctx.beginPath(); ctx.arc(ox - 2, oy + oh * 0.26, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(ox + ow + 2, oy + oh * 0.26, 8, 0, Math.PI * 2); ctx.fill();
       } else {
         ctx.fillStyle = color;
-        ctx.fillRect(ox - 4, oy + oh * 0.3 - bob, 10, oh * 0.28);
-        ctx.fillRect(ox + ow - 6, oy + oh * 0.3 - bob, 10, oh * 0.28);
+        ctx.fillRect(ox - 5, oy + oh * 0.28 - bob, 9, oh * 0.25);
+        ctx.fillRect(ox + ow - 4, oy + oh * 0.28 - bob, 9, oh * 0.25);
         // Punch arm extend
-        if (attackType === 'punch') ctx.fillRect(ox + punchX, oy + oh * 0.32 - bob, ow * 0.45, 10);
-        if (attackType === 'kick') ctx.fillRect(ox + kickX, oy + oh * 0.65, ow * 0.5, 10);
+        if (attackType === 'punch' && attackTimer > 6) {
+          const punchExt = (12 - attackTimer) * 4;
+          ctx.fillRect(ox + ow - 2, oy + oh * 0.28 - bob, punchExt, 10);
+          // Fist
+          ctx.beginPath(); ctx.arc(ox + ow - 2 + punchExt, oy + oh * 0.33 - bob, 8, 0, Math.PI * 2); ctx.fill();
+          // Impact sparks
+          if (attackTimer < 4) {
+            ctx.fillStyle = '#ffee00';
+            ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('✦', ox + ow + punchExt, oy + oh * 0.3 - bob);
+            ctx.textAlign = 'left';
+          }
+        } else {
+          // Resting fists
+          ctx.beginPath(); ctx.arc(ox - 1, oy + oh * 0.5 - bob, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(ox + ow + 1, oy + oh * 0.5 - bob, 6, 0, Math.PI * 2); ctx.fill();
+        }
       }
-      // Fists
+
+      // -- HEAD --
+      const headR = ow * 0.3;
       ctx.fillStyle = color;
-      if (attackType === 'punch') {
-        ctx.beginPath(); ctx.arc(ox + punchX + ow * 0.45, oy + oh * 0.37 - bob, 7, 0, Math.PI * 2); ctx.fill();
-      }
-      // Head
-      ctx.fillStyle = color;
-      ctx.beginPath(); ctx.arc(ox + ow / 2, oy + oh * 0.14 - bob, ow * 0.28, 0, Math.PI * 2); ctx.fill();
-      // Eyes
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(ox + ow / 2 + 3, oy + oh * 0.1 - bob, 5, 5);
+      ctx.beginPath(); ctx.arc(ox + ow / 2, oy + headR + 2 - bob, headR, 0, Math.PI * 2); ctx.fill();
+      // Jaw/chin shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.beginPath(); ctx.arc(ox + ow / 2, oy + headR * 1.5 - bob, headR * 0.7, 0, Math.PI); ctx.fill();
+
+      // -- EYES --
+      ctx.fillStyle = '#1a1010';
+      ctx.fillRect(ox + ow / 2 + 2, oy + headR * 0.7 - bob, 5, 5);
+      ctx.fillRect(ox + ow / 2 - 7, oy + headR * 0.7 - bob, 5, 5);
+      // Eye shine
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(ox + ow / 2 + 3, oy + headR * 0.7 - bob + 1, 2, 2);
       if (type === 'boss') {
         ctx.fillStyle = '#ff0000';
-        ctx.fillRect(ox + ow / 2 + 4, oy + oh * 0.11 - bob, 3, 3);
+        ctx.fillRect(ox + ow / 2 + 3, oy + headR * 0.7 - bob, 3, 4);
+        ctx.fillRect(ox + ow / 2 - 6, oy + headR * 0.7 - bob, 3, 4);
       }
-      // Hair / head band
-      ctx.fillStyle = isPlayer ? '#1a1a2e' : '#8B0000';
-      ctx.fillRect(ox + ow / 2 - ow * 0.28, oy + oh * 0.04 - bob, ow * 0.56, ow * 0.12);
+
+      // -- HAIR / HEADBAND --
+      if (isPlayer) {
+        // Player headband - red ninja style
+        ctx.fillStyle = '#cc2020';
+        ctx.fillRect(ox + ow / 2 - headR, oy + 2 - bob, headR * 2, headR * 0.45);
+        // Dark hair
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(ox + ow / 2 - headR + 2, oy - bob, headR * 2 - 4, 5);
+        // Headband tails
+        ctx.fillStyle = '#cc2020';
+        ctx.fillRect(ox + ow - 3, oy + headR * 0.2 - bob, 8, 5);
+      } else if (type === 'boss') {
+        ctx.fillStyle = '#2a0808';
+        ctx.fillRect(ox + ow / 2 - headR, oy - bob, headR * 2, headR * 0.5);
+        // Mohawk/spikes
+        ctx.fillStyle = '#ff2200';
+        for (let si = 0; si < 3; si++) {
+          ctx.fillRect(ox + ow / 2 - 5 + si * 6, oy - 10 - bob, 4, 12);
+        }
+      } else {
+        ctx.fillStyle = '#8B0000';
+        ctx.fillRect(ox + ow / 2 - headR, oy + headR * 0.1 - bob, headR * 2, headR * 0.4);
+        ctx.fillStyle = '#400000';
+        ctx.fillRect(ox + ow / 2 - headR + 2, oy - 2 - bob, headR * 2 - 4, 6);
+      }
 
       ctx.restore();
     }
