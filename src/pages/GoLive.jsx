@@ -154,10 +154,11 @@ export default function GoLive() {
       const { appId: ZEGO_APP_ID, token, serverUrl } = tokenResponse.data || {};
       if (!ZEGO_APP_ID || !token) throw new Error('Invalid token response');
 
-      // BUG-3 fix: Stop preview camera BEFORE Zego opens its own camera
-      // On iOS/Android, holding two getUserMedia handles causes the second to fail
+      // Stop preview camera BEFORE Zego opens its own camera.
+      // On iOS/Android holding two getUserMedia handles causes the second to fail silently.
       if (cameraStream) {
         cameraStream.getTracks().forEach(t => t.stop());
+        setCameraStream(null); // clear ref so cleanup useEffect doesn't double-stop
       }
 
       await ZegoService.initialize(ZEGO_APP_ID, serverUrl);
@@ -188,7 +189,6 @@ export default function GoLive() {
         message_type: 'system'
       }).catch(() => {});
 
-      // Preview camera already stopped above before Zego init (BUG-3 fix)
       return stream;
     },
     onSuccess: (stream) => navigate(createPageUrl(`WatchStream?id=${stream.id}`)),

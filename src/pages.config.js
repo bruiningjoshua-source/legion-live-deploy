@@ -67,6 +67,7 @@ import CreatorAnalytics from './pages/CreatorAnalytics';
 import CreatorCommunity from './pages/CreatorCommunity';
 import CreatorMonetization from './pages/CreatorMonetization';
 import CreatorOnboarding from './pages/CreatorOnboarding';
+import CreatorPayouts from './pages/CreatorPayouts';
 import CreatorProfile from './pages/CreatorProfile';
 import CreatorStudio from './pages/CreatorStudio';
 import CreatorSuccessProgram from './pages/CreatorSuccessProgram';
@@ -89,13 +90,16 @@ import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
 import Leaderboard from './pages/Leaderboard';
 import MusicStudio from './pages/MusicStudio';
 import PPVEvents from './pages/PPVEvents';
+import PayoutRouting from './pages/PayoutRouting';
 import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
 import PlatformAnalytics from './pages/PlatformAnalytics';
+import PlatformStatus from './pages/PlatformStatus';
 import PlaylistView from './pages/PlaylistView';
 import Playlists from './pages/Playlists';
 import PodcastStudio from './pages/PodcastStudio';
 import Podcasts from './pages/Podcasts';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ProductionReadiness from './pages/ProductionReadiness';
 import Profile from './pages/Profile';
 import Quests from './pages/Quests';
 import Settings from './pages/Settings';
@@ -115,10 +119,6 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import CreatorPayouts from './pages/CreatorPayouts';
-import PlatformStatus from './pages/PlatformStatus';
-import ProductionReadiness from './pages/ProductionReadiness';
-import PayoutRouting from './pages/PayoutRouting';
 import __Layout from './Layout.jsx';
 
 
@@ -143,6 +143,7 @@ export const PAGES = {
     "CreatorCommunity": CreatorCommunity,
     "CreatorMonetization": CreatorMonetization,
     "CreatorOnboarding": CreatorOnboarding,
+    "CreatorPayouts": CreatorPayouts,
     "CreatorProfile": CreatorProfile,
     "CreatorStudio": CreatorStudio,
     "CreatorSuccessProgram": CreatorSuccessProgram,
@@ -165,13 +166,16 @@ export const PAGES = {
     "Leaderboard": Leaderboard,
     "MusicStudio": MusicStudio,
     "PPVEvents": PPVEvents,
+    "PayoutRouting": PayoutRouting,
     "PlatformAdminAnalytics": PlatformAdminAnalytics,
     "PlatformAnalytics": PlatformAnalytics,
+    "PlatformStatus": PlatformStatus,
     "PlaylistView": PlaylistView,
     "Playlists": Playlists,
     "PodcastStudio": PodcastStudio,
     "Podcasts": Podcasts,
     "PrivacyPolicy": PrivacyPolicy,
+    "ProductionReadiness": ProductionReadiness,
     "Profile": Profile,
     "Quests": Quests,
     "Settings": Settings,
@@ -191,10 +195,6 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "CreatorPayouts": CreatorPayouts,
-    "PlatformStatus": PlatformStatus,
-    "ProductionReadiness": ProductionReadiness,
-    "PayoutRouting": PayoutRouting,
 }
 
 export const pagesConfig = {
