@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -532,9 +533,12 @@ export default function WatchStream() {
                 try {
                   const screenStream = await ZegoService.startScreenShare(streamId);
                   if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
-                } catch (e) { console.warn('[ScreenShare] Failed:', e); }
+                } catch (e) {
+                  toast.error('Screen share failed. Please try again.');
+                  console.warn('[ScreenShare] Failed:', e);
+                }
               } else {
-                await ZegoService.stopScreenShare();
+                await ZegoService.stopScreenShare().catch(() => {});
                 const localStream = ZegoService.getLocalStream();
                 if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
               }
