@@ -218,14 +218,10 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
           
           <Button
             onClick={handleSend}
-            disabled={!newMessage.trim() || isCheckingMessage}
+            disabled={!newMessage.trim()}
             className="bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
           >
-            {isCheckingMessage ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
+            <Send className="w-4 h-4" />
           </Button>
         </div>
       </div>
