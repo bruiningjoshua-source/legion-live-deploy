@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X, Plus, Minus, Send, Coins, Wallet, Zap, Crown, Flame, Heart, Star, Diamond } from 'lucide-react';
+import { toast } from 'sonner';
 
 const tierConfig = {
   common: { gradient: 'from-slate-500 to-slate-600', glow: '', border: 'border-slate-500/30', label: 'Common' },
@@ -95,7 +96,7 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
           await onSendGift(gift, quantity);
         } catch (e) {
           // Stop sending remaining gifts if one fails (likely insufficient balance)
-          console.error('[GiftPanel] Send failed:', e.message);
+          toast.error(e.message || 'Failed to send gift. Please try again.');
           break;
         }
       }
