@@ -66,6 +66,21 @@ class ErrorBoundary extends React.Component {
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    // Inline mode: used when ErrorBoundary wraps a sub-section (not the whole page)
+    if (this.props.inline) {
+      return (
+        <div className="flex items-center justify-center p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+          <div className="text-center">
+            <AlertTriangle className="w-6 h-6 text-red-400 mx-auto mb-1" />
+            <p className="text-red-300 text-xs">Section unavailable</p>
+            <button onClick={this.handleRetry} className="text-white/40 text-xs mt-1 hover:text-white/70 underline">
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     const { icon: Icon, label, color, hint } = classifyError(this.state.error);
     const msg = this.state.error?.message ?? 'Unknown error';
     const retries = this.state.retries;
@@ -95,7 +110,6 @@ class ErrorBoundary extends React.Component {
             <h2 className="text-xl font-bold text-white mb-1">{label}</h2>
             <p className="text-white/40 text-sm mb-4">{hint}</p>
 
-            {/* Error detail */}
             <div className="bg-black/30 rounded-xl p-3 mb-5 text-left">
               <p className="text-red-400/70 text-xs font-mono break-all line-clamp-3">{msg}</p>
             </div>
@@ -122,7 +136,6 @@ class ErrorBoundary extends React.Component {
             </div>
           </div>
 
-          {/* Component stack (dev mode only) */}
           {import.meta.env.DEV && this.state.errorInfo && (
             <details className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <summary className="text-white/30 text-xs cursor-pointer select-none">Component Stack</summary>
