@@ -200,19 +200,18 @@ export default function Home() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="flex justify-center">
-            <div className="inline-flex bg-gradient-to-r from-white/[0.08] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] p-1.5 rounded-2xl min-w-max shadow-lg shadow-black/20">
+            <TabsList className="inline-flex bg-gradient-to-r from-white/[0.08] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] p-1.5 rounded-2xl min-w-max shadow-lg shadow-black/20 h-auto gap-1">
               {TAB_ITEMS.map((tab) => (
-                <TabsList key={tab.value} className="bg-transparent p-0">
-                  <TabsTrigger 
-                    value={tab.value}
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-white data-[state=active]:to-white/90 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-white/20 rounded-xl px-5 py-2 text-white/50 hover:text-white/80 transition-all duration-300 text-sm font-semibold"
-                  >
-                    <tab.icon className="w-4 h-4 mr-2" />
-                    {tab.label}
-                  </TabsTrigger>
-                </TabsList>
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-white data-[state=active]:to-white/90 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-white/20 rounded-xl px-5 py-2 text-white/50 hover:text-white/80 transition-all duration-300 text-sm font-semibold"
+                >
+                  <tab.icon className="w-4 h-4 mr-2" />
+                  {tab.label}
+                </TabsTrigger>
               ))}
-            </div>
+            </TabsList>
           </div>
 
           {/* For You */}

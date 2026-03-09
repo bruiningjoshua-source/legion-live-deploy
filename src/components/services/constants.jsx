@@ -7,7 +7,7 @@
 export const CURRENCY = {
   DENARII_PER_USD: 180,        // 180 Denarii = $1 USD
   STARTER_BALANCE: 500,
-  MAX_GIFT_QUANTITY: 100,
+  MAX_GIFT_QUANTITY: 99,
   MIN_TIP_USD: 1,
   MAX_TIP_USD: 10000,
 };
@@ -43,13 +43,13 @@ export const CACHE = {
 
 // ─── Error Codes ─────────────────────────────────────────────
 export const ERROR = {
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  INSUFFICIENT_BALANCE: 'INSUFFICIENT_BALANCE',
-  STREAM_ENDED: 'STREAM_ENDED',
-  MONETIZATION_DISABLED: 'MONETIZATION_DISABLED',
-  INVALID_INPUT: 'INVALID_INPUT',
-  RATE_LIMITED: 'RATE_LIMITED',
-  SELF_ACTION: 'SELF_ACTION',
+  UNAUTHORIZED: 'Please sign in to continue',
+  INSUFFICIENT_BALANCE: 'Insufficient Denarii balance',
+  STREAM_ENDED: 'This stream has ended',
+  MONETIZATION_DISABLED: 'This creator has not enabled monetization',
+  INVALID_INPUT: 'Invalid input — please check your values',
+  RATE_LIMITED: 'Too many requests — please slow down',
+  SELF_ACTION: 'You cannot perform this action on yourself',
 };
 
 // ─── Validation ──────────────────────────────────────────────
@@ -62,7 +62,7 @@ export const VALIDATION = {
   MAX_CHAT_LENGTH: 500,
   MAX_TITLE_LENGTH: 100,
   MAX_BIO_LENGTH: 1000,
-  MAX_GIFT_QUANTITY: 99,
+  MAX_GIFT_QUANTITY: 99,  // Unified: matches VALIDATION.MAX_GIFT_QUANTITY
 };
 
 // ─── Stream Categories ──────────────────────────────────────

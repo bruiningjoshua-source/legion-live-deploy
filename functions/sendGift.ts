@@ -100,8 +100,6 @@ function validateCSRF(csrfToken, sessionId) {
   return { valid: true };
 }
 
-const giftBuckets = new Map();
-
 // Periodic cleanup
 setInterval(() => {
   const now = Date.now();

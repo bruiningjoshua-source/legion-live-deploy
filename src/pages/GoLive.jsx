@@ -250,7 +250,7 @@ export default function GoLive() {
             <span className="text-white/50 text-[10px]">Beauty</span>
           </button>
           <button className="flex flex-col items-center gap-0.5" onClick={() => setShowBeauty(!showBeauty)}>
-            <div className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center">
+            <div className={`w-11 h-11 rounded-full backdrop-blur-xl border flex items-center justify-center ${showBeauty ? 'bg-purple-500/30 border-purple-400/50' : 'bg-black/50 border-white/10'}`}>
               <Wand2 className="w-5 h-5 text-white" />
             </div>
             <span className="text-white/50 text-[10px]">Filter</span>

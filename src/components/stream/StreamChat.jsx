@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Gift, Crown, Star, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useChatModeration } from '@/components/moderation/useChatModeration';
 import { toast } from 'sonner';
 
 const vipColors = [

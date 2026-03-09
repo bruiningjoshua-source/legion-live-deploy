@@ -28,7 +28,7 @@ export function useCurrentUser() {
 export function useStream(streamId) {
   return useQuery({
     queryKey: ['stream', streamId],
-    queryFn: () => base44.entities.Stream.get(streamId),
+    queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0] || null),
     enabled: !!streamId,
     staleTime: 10 * 1000,
     refetchInterval: 10000,
