@@ -18,6 +18,7 @@ const GIFT_RATE_WINDOW = 10000;
 
 // Fraud detection: track user activity
 const fraudActivity = new Map(); // email -> { gifts: [], chargebacks: [] }
+const giftBuckets = new Map(); // MUST be declared before checkGiftRate
 
 function checkGiftRate(email) {
   const now = Date.now();

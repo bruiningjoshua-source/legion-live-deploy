@@ -26,12 +26,16 @@ class GiftService {
     if (totalCost <= 0) throw new Error(ERROR.INVALID_INPUT);
     if (totalCost > (wallet.denarii_balance || 0)) throw new Error(ERROR.INSUFFICIENT_BALANCE);
 
+    // Generate CSRF token required by backend
+    const csrfToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     // Server-side atomic transaction
     const response = await base44.functions.invoke('sendGift', {
       giftId: gift.id,
       quantity,
       creatorId: creator.id,
       streamId: stream.id,
+      csrfToken,
     });
 
     const result = response.data;

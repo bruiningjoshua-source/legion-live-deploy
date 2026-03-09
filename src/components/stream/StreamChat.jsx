@@ -38,7 +38,6 @@ const vipBadges = {
 export default function StreamChat({ messages, onSendMessage, onOpenGifts, currentUser, streamId, mutedUsers = [] }) {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef(null);
-  const { moderateMessage } = useChatModeration(streamId);
 
   const isMuted = (email) => {
     return mutedUsers.some(action => 

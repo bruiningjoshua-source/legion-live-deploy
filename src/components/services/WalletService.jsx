@@ -52,8 +52,10 @@ class WalletService {
       throw new Error('Purchases only work from the published app. Please open in a new tab.');
     }
 
+    // Generate a simple CSRF token (UUID-like) required by the backend
+    const csrfToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     return base44.functions.invoke('createDenariiCheckout', {
-      packageId, denarii, bonus, price, packageName,
+      packageId, denarii, bonus, price, packageName, csrfToken,
     });
   }
 }
