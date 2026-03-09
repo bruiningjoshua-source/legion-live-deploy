@@ -37,7 +37,6 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
-    // Non-blocking error report — won't crash the handler itself
     try {
       console.error(
         `%c[Legion-Forged] Error Boundary Caught\n${FORGE_TAG}`,
@@ -45,6 +44,14 @@ class ErrorBoundary extends React.Component {
         '\nError:', error?.message,
         '\nStack:', error?.stack?.split('\n').slice(0,4).join('\n'),
       );
+      // Forward to ErrorTrackerService (non-blocking, won't re-throw)
+      import('@/components/monitoring/ErrorTracker').then(({ default: errorTracker }) => {
+        errorTracker.captureError(error, {
+          source: 'ErrorBoundary',
+          componentStack: errorInfo?.componentStack?.split('\n').slice(0, 6).join('\n'),
+          label: this.props.label || 'unknown',
+        });
+      }).catch(() => {});
     } catch {}
   }
 
