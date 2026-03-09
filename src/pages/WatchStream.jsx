@@ -111,7 +111,7 @@ export default function WatchStream() {
     };
   }, [stream?.id, isBroadcaster, user?.email, stream?.status]);
 
-  // Chat seed
+  // Chat seed from initial fetch
   const chatSeeded = useRef(false);
   useEffect(() => {
     if (initialMessages?.length && !chatSeeded.current) {
@@ -120,12 +120,25 @@ export default function WatchStream() {
     }
   }, [initialMessages]);
 
+  // Realtime chat subscription (single source of truth — no polling)
   useEffect(() => {
     if (!streamId) return;
     return ChatService.subscribe(streamId, (msg) => {
       setChatMessages(prev => ChatService.addToBuffer(prev, msg));
     });
   }, [streamId]);
+
+  // Realtime viewer count — subscribe to stream entity changes for live count
+  useEffect(() => {
+    if (!streamId) return;
+    return base44.entities.Stream.subscribe((event) => {
+      if (event.id === streamId && event.type === 'update' && event.data?.viewer_count !== undefined) {
+        queryClient.setQueryData(['stream', streamId], (old) => 
+          old ? { ...old, viewer_count: event.data.viewer_count, peak_viewers: event.data.peak_viewers ?? old.peak_viewers } : old
+        );
+      }
+    });
+  }, [streamId, queryClient]);
 
   // Zego viewer
   const zegoInitAttempted = useRef(false);
