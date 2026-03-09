@@ -19,7 +19,8 @@ export function useCurrentUser() {
     queryFn: () => base44.auth.me(),
     staleTime: CACHE.USER,
     refetchOnWindowFocus: false,
-    retry: 1,
+    retry: 2,              // Extra retry to prevent false logged-out flash on network blip
+    retryDelay: 1000,
   });
 }
 
@@ -27,10 +28,10 @@ export function useCurrentUser() {
 export function useStream(streamId) {
   return useQuery({
     queryKey: ['stream', streamId],
-    queryFn: () => base44.entities.Stream.filter({ id: streamId }, null, 1).then(r => r[0]),
+    queryFn: () => base44.entities.Stream.get(streamId),
     enabled: !!streamId,
-    staleTime: 30 * 1000,
-    refetchInterval: 30000,
+    staleTime: 10 * 1000,
+    refetchInterval: 10000,
     refetchOnWindowFocus: false,
   });
 }
@@ -104,13 +105,14 @@ export function useGifts() {
 }
 
 // ─── Chat ─────────────────────────────────────────────────────
+// Fetches initial messages only — live updates come via ChatService.subscribe (realtime)
 export function useChatMessages(streamId) {
   return useQuery({
     queryKey: ['chat-messages', streamId],
     queryFn: () => base44.entities.ChatMessage.filter({ stream_id: streamId }, 'created_date', 100),
     enabled: !!streamId,
-    staleTime: CACHE.CHAT_MESSAGES,
-    refetchInterval: CACHE.CHAT_MESSAGES,
+    staleTime: Infinity,    // Never stale — realtime subscription handles updates
+    refetchInterval: false, // No polling — avoids duplicates with subscription
     refetchOnWindowFocus: false,
   });
 }
