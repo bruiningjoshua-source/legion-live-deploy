@@ -347,7 +347,7 @@ export default function WatchStream() {
 
           {stream.stream_type === 'pk_battle' && (
             <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
-              <ErrorBoundary label="pk-overlay">
+              <ErrorBoundary label="pk-overlay" inline>
                 <PKBattleOverlay
                   streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
                   initialBattle={pkBattle} isBroadcaster={isBroadcaster}
@@ -440,7 +440,7 @@ export default function WatchStream() {
 
           {/* Chat */}
           {showChat && (
-            <ErrorBoundary label="viewer-chat">
+            <ErrorBoundary label="viewer-chat" inline>
               <BulletChat
                 messages={chatMessages}
                 onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
@@ -558,7 +558,7 @@ export default function WatchStream() {
           />
 
           {/* Chat */}
-          <ErrorBoundary label="broadcaster-chat">
+          <ErrorBoundary label="broadcaster-chat" inline>
             <BulletChat
               messages={chatMessages}
               onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
