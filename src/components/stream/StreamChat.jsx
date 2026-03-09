@@ -40,7 +40,6 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef(null);
   const { moderateMessage } = useChatModeration(streamId);
-  const [isCheckingMessage, setIsCheckingMessage] = useState(false);
 
   const isMuted = (email) => {
     return mutedUsers.some(action => 
@@ -61,52 +60,16 @@ export default function StreamChat({ messages, onSendMessage, onOpenGifts, curre
 
     const userEmail = currentUser?.email || 'anonymous';
     
-    // Check if user is muted from chat
     if (isMuted(userEmail)) {
-      toast.error('You are muted in this stream', {
-        icon: <Shield className="w-4 h-4" />
-      });
+      toast.error('You are muted in this stream', { icon: <Shield className="w-4 h-4" /> });
       return;
     }
 
     const messageText = newMessage.trim();
-    setIsCheckingMessage(true);
-
-    try {
-      const modResult = await moderateMessage.mutateAsync({
-        message: messageText,
-        senderEmail: userEmail,
-        senderName: currentUser?.full_name || 'Guest'
-      });
-
-      if (modResult.approved === false) {
-        if (modResult.action === 'banned') {
-          toast.error('You have been banned from this stream', {
-            icon: <Shield className="w-4 h-4" />
-          });
-        } else if (modResult.action === 'message_removed') {
-          toast.error(`Message not allowed: ${modResult.reason}`, {
-            description: 'Please follow community guidelines',
-            icon: <Shield className="w-4 h-4" />
-          });
-        }
-        setNewMessage('');
-      } else {
-        onSendMessage(messageText);
-        setNewMessage('');
-        if (modResult.flagged) {
-          toast.info(`Flagged: ${modResult.flag_reason}`, {
-            duration: 2000
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Moderation check failed:', error);
-      onSendMessage(messageText);
-      setNewMessage('');
-    } finally {
-      setIsCheckingMessage(false);
-    }
+    // Optimistically clear input immediately for snappy UX
+    setNewMessage('');
+    onSendMessage(messageText);
+    // NOTE: moderation is handled downstream in ChatService.sendMessage (single path, no double-call)
   };
 
   const handleKeyPress = (e) => {
