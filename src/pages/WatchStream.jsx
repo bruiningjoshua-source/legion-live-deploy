@@ -347,10 +347,12 @@ export default function WatchStream() {
 
           {stream.stream_type === 'pk_battle' && (
             <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
-              <PKBattleOverlay
-                streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
-                initialBattle={pkBattle} isBroadcaster={isBroadcaster}
-              />
+              <ErrorBoundary label="pk-overlay">
+                <PKBattleOverlay
+                  streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
+                  initialBattle={pkBattle} isBroadcaster={isBroadcaster}
+                />
+              </ErrorBoundary>
             </div>
           )}
         </div>
@@ -438,15 +440,17 @@ export default function WatchStream() {
 
           {/* Chat */}
           {showChat && (
-            <BulletChat
-              messages={chatMessages}
-              onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-              currentUser={user}
-              isAuthenticated={!!user}
-              disabled={sendMessageMutation.isPending}
-              isHost={false}
-              recentChatters={ChatService.getRecentChatters(chatMessages)}
-            />
+            <ErrorBoundary label="viewer-chat">
+              <BulletChat
+                messages={chatMessages}
+                onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+                currentUser={user}
+                isAuthenticated={!!user}
+                disabled={sendMessageMutation.isPending}
+                isHost={false}
+                recentChatters={ChatService.getRecentChatters(chatMessages)}
+              />
+            </ErrorBoundary>
           )}
         </>
       )}
@@ -554,13 +558,15 @@ export default function WatchStream() {
           />
 
           {/* Chat */}
-          <BulletChat
-            messages={chatMessages}
-            onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-            currentUser={user} isAuthenticated={!!user}
-            disabled={sendMessageMutation.isPending} isHost={true}
-            recentChatters={ChatService.getRecentChatters(chatMessages)}
-          />
+          <ErrorBoundary label="broadcaster-chat">
+            <BulletChat
+              messages={chatMessages}
+              onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
+              currentUser={user} isAuthenticated={!!user}
+              disabled={sendMessageMutation.isPending} isHost={true}
+              recentChatters={ChatService.getRecentChatters(chatMessages)}
+            />
+          </ErrorBoundary>
 
           <EndStreamDialog isOpen={showEndDialog} onConfirm={endStream} onCancel={() => setShowEndDialog(false)} isPending={_endStream.isPending} />
 
