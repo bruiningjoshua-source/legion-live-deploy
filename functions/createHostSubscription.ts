@@ -1,136 +1,86 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@17.5.0';
+import { generateIdempotencyKey, checkIdempotency, recordIdempotency } from './idempotencyManager.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
-// Rate limiting: 1 host subscription per day per user
-const hostBuckets = new Map();
-function checkHostSubRate(email) {
+const MISSING_VARS = ['STRIPE_SECRET_KEY'].filter(v => !Deno.env.get(v));
+if (MISSING_VARS.length > 0) console.error('[STARTUP] CRITICAL: Missing env vars:', MISSING_VARS.join(', '));
+
+async function checkPersistentRateLimit(base44, email, fnName, maxCount, windowMs) {
   const now = Date.now();
-  const bucket = hostBuckets.get(email);
-  if (!bucket || now > bucket.resetAt) {
-    hostBuckets.set(email, { count: 1, resetAt: now + 86400000 });
-    return { allowed: true };
+  const logs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+    { user_email: email, action: 'rate_limit_check', reason: { $regex: `.*${fnName}.*` } },
+    '-timestamp_utc', 1
+  ).catch(() => []);
+  const record = logs[0];
+  let count = 1, resetAt = now + windowMs;
+  if (record) {
+    const data = JSON.parse(record.related_entity_id || '{}');
+    if (now < data.resetAt) { count = (data.count || 0) + 1; resetAt = data.resetAt; }
   }
-  bucket.count++;
-  if (bucket.count > 1) {
-    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
-  }
+  if (count > maxCount) return { allowed: false, retryAfter: Math.ceil((resetAt - now) / 1000) };
+  base44.asServiceRole.entities.WalletAuditLog.create({
+    user_email: email, action: 'rate_limit_check', amount_denarii: 0, new_balance: 0,
+    related_entity_id: JSON.stringify({ count, resetAt }), reason: `rate_limit:${fnName}`,
+    timestamp_utc: new Date().toISOString()
+  }).catch(() => {});
   return { allowed: true };
 }
 
 Deno.serve(async (req) => {
+  if (MISSING_VARS.length > 0) return Response.json({ error: 'Payment service temporarily unavailable' }, { status: 503 });
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!user) {
-      console.error('[createHostSubscription] Unauthorized');
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const users = await base44.asServiceRole.entities.User.filter({ email: user.email }, null, 1).catch(() => []);
+    if (users[0]?.isSuspended) return Response.json({ error: `Account suspended: ${users[0].suspensionReason || 'Policy violation'}` }, { status: 403 });
 
     const { plan, creatorId, csrfToken } = await req.json();
+    if (!plan || !['monthly', 'yearly'].includes(plan)) return Response.json({ error: 'Invalid plan. Must be "monthly" or "yearly".' }, { status: 400 });
+    if (creatorId && (typeof creatorId !== 'string' || creatorId.length > 100)) return Response.json({ error: 'Invalid creatorId' }, { status: 400 });
+    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 20) return Response.json({ error: 'Invalid CSRF token' }, { status: 403 });
 
-    // Input validation
-    if (!plan || !['monthly', 'yearly'].includes(plan)) {
-      return Response.json({ error: 'Invalid plan. Must be "monthly" or "yearly".' }, { status: 400 });
-    }
-    if (creatorId && (typeof creatorId !== 'string' || creatorId.length > 100)) {
-      return Response.json({ error: 'Invalid creatorId' }, { status: 400 });
-    }
+    const rateCheck = await checkPersistentRateLimit(base44, user.email, 'createHostSubscription', 1, 86400000);
+    if (!rateCheck.allowed) return Response.json({ error: 'Rate limited: 1 host subscription per day', retryAfter: rateCheck.retryAfter }, { status: 429 });
 
-    // CSRF validation
-    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 20) {
-      return Response.json({ error: 'Invalid CSRF token' }, { status: 403 });
-    }
-
-    // Rate limiting
-    const rateCheck = checkHostSubRate(user.email);
-    if (!rateCheck.allowed) {
-      return Response.json({ error: 'Rate limited: 1 host subscription per day', retryAfter: rateCheck.retryAfter }, { status: 429 });
-    }
-
-    // Check for existing active subscription
-    const existingSubs = await base44.asServiceRole.entities.CreatorSubscription.filter({
-      user_email: user.email,
-      status: 'active'
-    }, '-created_date', 1);
-
-    if (existingSubs.length > 0) {
-      return Response.json({ error: 'You already have an active host subscription' }, { status: 400 });
-    }
-
-    const prices = {
-      monthly: { amount: 500, interval: 'month', name: 'Legion Host — Monthly' },
-      yearly: { amount: 1200, interval: 'year', name: 'Legion Host — Yearly' }
-    };
-
+    const prices = { monthly: { amount: 500, interval: 'month', name: 'Legion Host — Monthly' }, yearly: { amount: 1200, interval: 'year', name: 'Legion Host — Yearly' } };
     const selectedPrice = prices[plan];
 
-    // Get or create Stripe customer
+    const idempotencyKey = await generateIdempotencyKey(user.email, `host_sub_${plan}`, selectedPrice.amount / 100);
+    const idempotencyCheck = await checkIdempotency(base44, idempotencyKey);
+    if (idempotencyCheck.isDuplicate) return Response.json({ duplicate: true, originalId: idempotencyCheck.originalId, message: 'Duplicate host subscription checkout' }, { status: 409 });
+
+    const existingSubs = await base44.asServiceRole.entities.CreatorSubscription.filter({ user_email: user.email, status: 'active' }, '-created_date', 1);
+    if (existingSubs.length > 0) return Response.json({ error: 'You already have an active host subscription' }, { status: 400 });
+
     let stripeCustomer;
     const existingCustomers = await stripe.customers.list({ email: user.email, limit: 1 });
-
     if (existingCustomers.data.length > 0) {
       stripeCustomer = existingCustomers.data[0];
     } else {
-      stripeCustomer = await stripe.customers.create({
-        email: user.email,
-        name: user.full_name || user.email,
-        metadata: {
-          base44_app_id: Deno.env.get("BASE44_APP_ID"),
-          user_email: user.email
-        }
-      });
+      stripeCustomer = await stripe.customers.create({ email: user.email, name: user.full_name || user.email, metadata: { base44_app_id: Deno.env.get("BASE44_APP_ID"), user_email: user.email } });
     }
 
     const origin = req.headers.get('origin') || 'https://app.base44.com';
-
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomer.id,
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: selectedPrice.name,
-            description: 'Unlock monetization: Go live, receive gifts, cash out earnings'
-          },
-          unit_amount: selectedPrice.amount,
-          recurring: { interval: selectedPrice.interval }
-        },
-        quantity: 1
-      }],
+      line_items: [{ price_data: { currency: 'usd', product_data: { name: selectedPrice.name, description: 'Unlock monetization: Go live, receive gifts, cash out earnings' }, unit_amount: selectedPrice.amount, recurring: { interval: selectedPrice.interval } }, quantity: 1 }],
       mode: 'subscription',
       success_url: `${origin}/Profile?subscription=success`,
       cancel_url: `${origin}/Profile?subscription=cancelled`,
-      metadata: {
-        base44_app_id: Deno.env.get("BASE44_APP_ID"),
-        user_email: user.email,
-        creator_id: creatorId || '',
-        plan_type: plan,
-        subscription_type: 'host_subscription',
-        timestamp: Date.now().toString()
-      },
-      subscription_data: {
-        metadata: {
-          base44_app_id: Deno.env.get("BASE44_APP_ID"),
-          user_email: user.email,
-          creator_id: creatorId || '',
-          plan_type: plan,
-          timestamp: Date.now().toString()
-        }
-      }
+      metadata: { base44_app_id: Deno.env.get("BASE44_APP_ID"), user_email: user.email, creator_id: creatorId || '', plan_type: plan, subscription_type: 'host_subscription', timestamp: Date.now().toString() },
+      subscription_data: { metadata: { base44_app_id: Deno.env.get("BASE44_APP_ID"), user_email: user.email, creator_id: creatorId || '', plan_type: plan, timestamp: Date.now().toString() } }
     });
 
+    await recordIdempotency(base44, idempotencyKey, session.id);
     console.log('[createHostSubscription] Session:', session.id, user.email, plan);
-
-    return Response.json({
-      sessionId: session.id,
-      url: session.url
-    });
+    return Response.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('[createHostSubscription] Error:', error.message, error.stack);
     return Response.json({ error: error.message }, { status: 500 });
