@@ -51,29 +51,28 @@ function generateToken04(appId, userId, secret, effectiveTimeInSeconds, payload)
   return '04' + Buffer.concat([b1, b2, nonce, b3, encryptBuf, b4]).toString('base64');
 }
 
-// ─── Rate limiter: prevent token spam ───
-const tokenRequests = new Map(); // userId → { count, resetAt }
-const MAX_TOKENS_PER_MINUTE = 10;
-
-function checkRateLimit(userId) {
+// ─── Persistent DB-backed rate limiter (survives cold starts) ───
+async function checkRateLimit(base44, email) {
   const now = Date.now();
-  const record = tokenRequests.get(userId);
-  if (!record || now > record.resetAt) {
-    tokenRequests.set(userId, { count: 1, resetAt: now + 60000 });
-    return true;
+  const windowMs = 60000;
+  const maxCount = 10;
+  const logs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+    { user_email: email, action: 'rate_limit_check', reason: 'rate_limit:generateZegoToken' }, '-timestamp_utc', 1
+  ).catch(() => []);
+  const record = logs[0];
+  let count = 1, resetAt = now + windowMs;
+  if (record) {
+    const data = JSON.parse(record.related_entity_id || '{}');
+    if (now < (data.resetAt || 0)) { count = (data.count || 0) + 1; resetAt = data.resetAt; }
   }
-  record.count++;
-  if (record.count > MAX_TOKENS_PER_MINUTE) return false;
+  if (count > maxCount) return false;
+  base44.asServiceRole.entities.WalletAuditLog.create({
+    user_email: email, action: 'rate_limit_check', amount_denarii: 0, new_balance: 0,
+    related_entity_id: JSON.stringify({ count, resetAt }), reason: 'rate_limit:generateZegoToken',
+    timestamp_utc: new Date().toISOString()
+  }).catch(() => {});
   return true;
 }
-
-// Periodic cleanup of stale rate-limit entries
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, val] of tokenRequests) {
-    if (now > val.resetAt) tokenRequests.delete(key);
-  }
-}, 120000);
 
 Deno.serve(async (req) => {
   try {
@@ -102,8 +101,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid roomId or userId after sanitization' }, { status: 400 });
     }
 
-    // Rate limit
-    if (!checkRateLimit(user.email)) {
+    // Rate limit (persistent)
+    if (!await checkRateLimit(base44, user.email)) {
       console.warn('[ZegoToken] Rate limited:', user.email);
       return Response.json({ error: 'Too many token requests. Please wait.' }, { status: 429 });
     }

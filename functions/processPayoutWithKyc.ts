@@ -9,19 +9,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  * - Logs all payout requests to audit trail
  */
 
-// Rate limit: 1 payout per user per 24 hours
-const payoutBuckets = new Map();
-function checkPayoutRate(email) {
+// Persistent DB-backed rate limit (survives cold starts)
+async function checkPayoutRate(base44, email) {
   const now = Date.now();
-  const bucket = payoutBuckets.get(email);
-  if (!bucket || now > bucket.resetAt) {
-    payoutBuckets.set(email, { count: 1, resetAt: now + 86400000 });
-    return { allowed: true };
+  const windowMs = 86400000;
+  const logs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+    { user_email: email, action: 'rate_limit_check', reason: 'rate_limit:processPayoutWithKyc' }, '-timestamp_utc', 1
+  ).catch(() => []);
+  const record = logs[0];
+  let count = 1, resetAt = now + windowMs;
+  if (record) {
+    const data = JSON.parse(record.related_entity_id || '{}');
+    if (now < (data.resetAt || 0)) { count = (data.count || 0) + 1; resetAt = data.resetAt; }
   }
-  if (bucket.count >= 1) {
-    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
-  }
-  bucket.count++;
+  if (count > 1) return { allowed: false, retryAfter: Math.ceil((resetAt - now) / 1000) };
+  base44.asServiceRole.entities.WalletAuditLog.create({
+    user_email: email, action: 'rate_limit_check', amount_denarii: 0, new_balance: 0,
+    related_entity_id: JSON.stringify({ count, resetAt }), reason: 'rate_limit:processPayoutWithKyc',
+    timestamp_utc: new Date().toISOString()
+  }).catch(() => {});
   return { allowed: true };
 }
 
@@ -48,8 +54,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Request timestamp invalid or stale' }, { status: 403 });
     }
 
-    // Rate limiting: 1 payout per 24 hours
-    const rateCheck = checkPayoutRate(user.email);
+    // Rate limiting: 1 payout per 24 hours (persistent)
+    const rateCheck = await checkPayoutRate(base44, user.email);
     if (!rateCheck.allowed) {
       return Response.json({
         error: 'Rate limited: 1 payout per 24 hours',
@@ -77,12 +83,41 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Creator profile not found' }, { status: 404 });
     }
 
-    // SECURITY FIX: Enforce KYC verification before payout
-    if (creator.kyc_status !== 'verified') {
+    // ── KYC Gate with audit logging ──
+    const kycStatus = creator.kyc_status || 'not_started';
+    let kycBlocked = false;
+    let kycBlockReason = '';
+
+    if (kycStatus === 'not_started') {
+      kycBlocked = true;
+      kycBlockReason = 'KYC not started — please complete identity verification to enable withdrawals';
+    } else if (kycStatus === 'pending') {
+      kycBlocked = true;
+      kycBlockReason = 'KYC under review — payouts will be unlocked once your identity is verified (typically 2-5 business days)';
+    } else if (kycStatus === 'rejected' || kycStatus === 'expired') {
+      kycBlocked = true;
+      kycBlockReason = `KYC ${kycStatus} — please resubmit your identity documents to enable withdrawals`;
+    }
+
+    // Log every KYC gate check
+    base44.asServiceRole.entities.WalletAuditLog.create({
+      user_email: user.email,
+      action: 'admin_adjustment',
+      amount_denarii: 0,
+      new_balance: creator.total_earnings_denarii || 0,
+      reason: `KYC gate check: ${kycBlocked ? 'BLOCKED' : 'PASSED'} — status=${kycStatus}${kycBlocked ? ` | ${kycBlockReason}` : ''}`,
+      timestamp_utc: new Date().toISOString()
+    }).catch(() => {});
+
+    if (kycBlocked) {
       return Response.json({
-        error: 'KYC verification required before payout',
-        kyc_status: creator.kyc_status,
-        details: 'Submit KYC documentation to enable withdrawals'
+        error: kycBlockReason,
+        kyc_status: kycStatus,
+        next_steps: kycStatus === 'not_started'
+          ? 'Go to Settings → Identity Verification to submit your documents'
+          : kycStatus === 'pending'
+          ? 'Your documents are being reviewed. Check back soon.'
+          : 'Go to Settings → Identity Verification to resubmit your documents'
       }, { status: 403 });
     }
 

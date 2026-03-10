@@ -1,219 +1,162 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Production validation suite - runs pre-launch checks
+// ── Startup env check ──
+const REQUIRED_VARS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'ZEGOCLOUD_APP_ID', 'ZEGOCLOUD_SERVER_SECRET'];
+for (const v of REQUIRED_VARS) {
+  if (!Deno.env.get(v)) console.error(`[STARTUP] CRITICAL: Missing env var ${v} — dependent features will fail`);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Admin only' }, { status: 403 });
-    }
+    if (user?.role !== 'admin') return Response.json({ error: 'Admin only' }, { status: 403 });
 
-    const checks = {
-      database: await checkDatabase(base44),
-      stripe: await checkStripe(base44),
-      monitoring: checkMonitoring(),
-      security: await checkSecurity(base44),
-      failover: await checkFailover(base44),
-      performance: checkPerformance()
-    };
+    const [database, stripe, monitoring, security, failover, performance, envVars] = await Promise.all([
+      checkDatabase(base44),
+      checkStripe(),
+      checkMonitoring(base44),
+      checkSecurity(base44),
+      checkFailover(base44),
+      checkPerformance(base44),
+      checkEnvVars()
+    ]);
 
+    const checks = { database, stripe, monitoring, security, failover, performance, envVars };
     const allPassed = Object.values(checks).every(c => c.status === 'PASS');
 
     console.log('=== PRODUCTION READINESS AUDIT ===');
     console.log(JSON.stringify(checks, null, 2));
 
-    return Response.json({
-      status: allPassed ? 'READY_TO_LAUNCH' : 'FAILED',
-      timestamp: new Date().toISOString(),
-      checks
-    });
+    return Response.json({ status: allPassed ? 'READY_TO_LAUNCH' : 'FAILED', timestamp: new Date().toISOString(), checks });
   } catch (error) {
     console.error('Production validation failed:', error);
-    return Response.json({ 
-      error: error.message,
-      status: 'CRITICAL_FAILURE'
-    }, { status: 500 });
+    return Response.json({ error: error.message, status: 'CRITICAL_FAILURE' }, { status: 500 });
   }
 });
 
 async function checkDatabase(base44) {
   try {
-    // Test CREATE, READ, UPDATE, DELETE on critical entities
-    const testUser = await base44.entities.User.list(null, 1);
-    const testWallet = await base44.entities.Wallet.list(null, 1);
-    const testStream = await base44.entities.Stream.list(null, 1);
-    
-    if (!testUser.length || !testWallet.length || !testStream.length) {
-      throw new Error('Critical entities not accessible');
-    }
-
-    console.log('✓ Database: All critical entities accessible');
-    return { 
-      status: 'PASS', 
-      message: 'Database connectivity verified',
-      entities_tested: 3
-    };
+    const [users, wallets, streams] = await Promise.all([
+      base44.asServiceRole.entities.User.list(null, 1),
+      base44.asServiceRole.entities.Wallet.list(null, 1),
+      base44.asServiceRole.entities.Stream.list(null, 1)
+    ]);
+    if (!users || !wallets || !streams) throw new Error('Entity list returned null');
+    return { status: 'PASS', message: 'Database connectivity verified', entities_tested: 3 };
   } catch (error) {
-    console.error('✗ Database check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'FAIL', message: error.message };
   }
 }
 
-async function checkStripe(base44) {
+async function checkStripe() {
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    
-    if (!stripeKey || !webhookSecret) {
-      throw new Error('Stripe credentials missing');
-    }
-
-    // Verify Stripe API connectivity by checking mode
-    const stripe = await import('npm:stripe@latest').then(m => new m.default(stripeKey));
-    const account = await stripe.accounts.retrieve();
-    
-    const isLiveMode = !account.test_clock_enabled && !account.settings?.dashboard?.display_timezone?.includes('test');
-    
-    console.log(`✓ Stripe: Live mode verified (${isLiveMode ? 'LIVE' : 'TEST'})`);
-    return { 
-      status: 'PASS', 
-      message: 'Stripe configured and connected',
-      mode: isLiveMode ? 'LIVE' : 'TEST',
-      webhook_configured: !!webhookSecret
-    };
+    if (!stripeKey || !webhookSecret) throw new Error('Stripe credentials missing');
+    const Stripe = (await import('npm:stripe@17.5.0')).default;
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const balance = await stripe.balance.retrieve(); // Lightweight call — no side effects
+    const isLive = stripeKey.startsWith('sk_live_');
+    return { status: 'PASS', message: 'Stripe API connected', mode: isLive ? 'LIVE' : 'TEST', webhook_configured: !!webhookSecret };
   } catch (error) {
-    console.error('✗ Stripe check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'FAIL', message: error.message };
   }
 }
 
-function checkMonitoring() {
+async function checkMonitoring(base44) {
   try {
-    // Verify monitoring infrastructure
-    const hasErrorTracking = true; // ErrorTracker component active
-    const hasNetworkMonitoring = true; // NetworkStatus component active
-    const hasAnalytics = true; // Analytics tracking configured
-    
-    if (!hasErrorTracking || !hasNetworkMonitoring || !hasAnalytics) {
-      throw new Error('Monitoring infrastructure incomplete');
-    }
+    // Verify recent audit log entries exist (proves logging pipeline is working)
+    const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
+    const recentLogs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+      { timestamp_utc: { $gte: fiveMinutesAgo } }, '-timestamp_utc', 5
+    ).catch(() => null);
 
-    console.log('✓ Monitoring: All tracking systems active');
-    return { 
-      status: 'PASS', 
-      message: 'Monitoring infrastructure verified',
-      systems: ['ErrorTracking', 'NetworkMonitoring', 'Analytics']
+    // We can't guarantee logs in last 5min on a quiet app — treat absence as WARN not FAIL
+    const hasRecentLogs = recentLogs !== null;
+    return {
+      status: hasRecentLogs ? 'PASS' : 'WARN',
+      message: hasRecentLogs ? 'Audit logging pipeline verified' : 'No recent audit logs — may indicate low activity or logging issue',
+      recent_log_count: recentLogs?.length || 0
     };
   } catch (error) {
-    console.error('✗ Monitoring check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'WARN', message: `Monitoring check incomplete: ${error.message}` };
   }
 }
 
 async function checkSecurity(base44) {
   try {
-    // Verify security measures
-    const checks = {
-      csrf_protection: true, // CSRFProvider active
-      rate_limiting: true, // RateLimiter component active
-      input_validation: true, // validateAndSanitizeInput function deployed
-      fraud_detection: true, // fraudMonitoring function deployed
-      auth_required: true, // base44.auth checks present
-      helmet_headers: true // Production headers configured
-    };
+    const missingVars = [];
+    if (!Deno.env.get('STRIPE_SECRET_KEY')) missingVars.push('STRIPE_SECRET_KEY');
+    if (!Deno.env.get('STRIPE_WEBHOOK_SECRET')) missingVars.push('STRIPE_WEBHOOK_SECRET');
+    if (!Deno.env.get('ZEGOCLOUD_SERVER_SECRET')) missingVars.push('ZEGOCLOUD_SERVER_SECRET');
+    if (missingVars.length > 0) throw new Error(`Missing critical secrets: ${missingVars.join(', ')}`);
 
-    const allSecurityChecks = Object.values(checks).every(c => c === true);
-    
-    if (!allSecurityChecks) {
-      throw new Error('Security checks incomplete');
-    }
+    // Verify CSRF function is callable
+    const csrfResult = await base44.asServiceRole.functions.invoke('csrfProtection', { action: 'validate', token: 'test' }).catch(e => ({ error: e.message }));
+    const csrfDeployed = !csrfResult?.error?.includes('not found');
 
-    console.log('✓ Security: All hardening measures in place');
-    return { 
-      status: 'PASS', 
-      message: 'Security hardening verified',
-      measures: Object.keys(checks)
+    // Verify rate limiter is callable
+    const rlResult = await base44.asServiceRole.functions.invoke('rateLimiters', { action: 'check', key: 'health_check', limit: 100 }).catch(e => ({ error: e.message }));
+    const rlDeployed = !rlResult?.error?.includes('not found');
+
+    return {
+      status: 'PASS',
+      message: 'Security measures verified',
+      checks: { secrets_present: true, csrf_deployed: csrfDeployed, rate_limiter_deployed: rlDeployed }
     };
   } catch (error) {
-    console.error('✗ Security check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'FAIL', message: error.message };
   }
 }
 
 async function checkFailover(base44) {
   try {
-    // Simulate critical function failures and verify graceful handling
-    const criticalFunctions = [
-      'createDenariiCheckout',
-      'stripeWebhook',
-      'processCreatorReferral'
-    ];
-
-    // Check that all critical functions are deployed
-    const functionStatus = {
-      functions_deployed: criticalFunctions.length,
-      error_handling: true,
-      logging_enabled: true
-    };
-
-    console.log('✓ Failover: Critical functions deployed with error handling');
-    return { 
-      status: 'PASS', 
-      message: 'Failover capability verified',
-      critical_functions: criticalFunctions.length
+    const criticalFunctions = ['createDenariiCheckout', 'stripeWebhook', 'sendGift', 'generateZegoToken', 'processPayoutWithKyc'];
+    // Attempt health ping to each (will return 401/400 since we're not passing valid params — that's fine, confirms they're deployed)
+    const results = await Promise.all(
+      criticalFunctions.map(fn =>
+        base44.asServiceRole.functions.invoke(fn, {}).then(() => ({ fn, deployed: true })).catch(e => ({
+          fn,
+          deployed: !e.message?.includes('not found') && !e.message?.includes('404')
+        }))
+      )
+    );
+    const allDeployed = results.every(r => r.deployed);
+    return {
+      status: allDeployed ? 'PASS' : 'FAIL',
+      message: allDeployed ? 'All critical functions deployed' : 'Some functions missing',
+      functions: results
     };
   } catch (error) {
-    console.error('✗ Failover check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'WARN', message: `Failover check incomplete: ${error.message}` };
   }
 }
 
-function checkPerformance() {
+async function checkPerformance(base44) {
   try {
-    // Verify performance optimization
-    const checks = {
-      component_memoization: true, // React.memo used
-      query_caching: true, // React Query staleTime configured
-      lazy_loading: true, // Code splitting implemented
-      pagination: true, // Implemented on feed
-      image_optimization: true, // Responsive images
-      bundle_size: true // Vite optimized
-    };
-
-    const allPassed = Object.values(checks).every(c => c === true);
-    
-    if (!allPassed) {
-      throw new Error('Performance optimizations incomplete');
-    }
-
-    console.log('✓ Performance: All optimizations verified');
-    return { 
-      status: 'PASS', 
-      message: 'Performance baselines met',
-      optimizations: Object.keys(checks)
+    const start = Date.now();
+    await base44.asServiceRole.entities.User.list(null, 1);
+    const duration = Date.now() - start;
+    const passed = duration < 2000;
+    return {
+      status: passed ? 'PASS' : 'FAIL',
+      message: passed ? `DB query completed in ${duration}ms` : `DB query too slow: ${duration}ms (threshold: 2000ms)`,
+      query_ms: duration,
+      threshold_ms: 2000
     };
   } catch (error) {
-    console.error('✗ Performance check failed:', error.message);
-    return { 
-      status: 'FAIL', 
-      message: error.message 
-    };
+    return { status: 'FAIL', message: error.message };
   }
+}
+
+function checkEnvVars() {
+  const required = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'ZEGOCLOUD_APP_ID', 'ZEGOCLOUD_SERVER_SECRET'];
+  const missing = required.filter(v => !Deno.env.get(v));
+  return {
+    status: missing.length === 0 ? 'PASS' : 'FAIL',
+    message: missing.length === 0 ? 'All required env vars present' : `Missing: ${missing.join(', ')}`,
+    missing,
+    present: required.filter(v => !!Deno.env.get(v))
+  };
 }

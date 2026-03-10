@@ -510,15 +510,32 @@ Deno.serve(async (req) => {
             console.log('[stripeWebhook] Chargeback: Reversed', denarii, 'denarii from', userEmail);
           }
 
-          // Flag the user for review
+          // Flag the user and auto-suspend at 3+ chargebacks
           const users = await base44.asServiceRole.entities.User.filter({ email: userEmail }, null, 1);
           if (users[0]) {
+            const newChargebackCount = (users[0].chargeback_count || 0) + 1;
+            const shouldSuspend = newChargebackCount >= 3;
+
             await base44.asServiceRole.entities.User.update(users[0].id, {
               flagged_for_chargeback: true,
-              chargeback_count: (users[0].chargeback_count || 0) + 1
+              chargeback_count: newChargebackCount,
+              ...(shouldSuspend ? { isSuspended: true, suspensionReason: '3+ chargebacks' } : {})
             }).catch(e => console.warn('[stripeWebhook] User flag failed:', e.message));
 
-            // SECURITY FIX: Send chargeback notification to user
+            if (shouldSuspend) {
+              console.error(`[stripeWebhook] AUTO-SUSPENDED ${userEmail} — ${newChargebackCount} chargebacks`);
+              // Create admin notification record
+              await base44.asServiceRole.entities.Notification.create({
+                user_email: 'admin',
+                type: 'chargeback_auto_suspend',
+                title: 'User Auto-Suspended: 3+ Chargebacks',
+                message: `${userEmail} was automatically suspended after ${newChargebackCount} chargebacks. Dispute: ${charge.id}`,
+                is_read: false,
+                created_date: new Date().toISOString()
+              }).catch(e => console.warn('[stripeWebhook] Admin notification failed:', e.message));
+            }
+
+            // Send chargeback notification to user
             try {
               await base44.asServiceRole.functions.invoke('transactionalEmail', {
                 action: 'send_chargeback_notice',
