@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DollarSign, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function TipButton({ creatorId, streamId, variant = "default", size = "default" }) {
   const [open, setOpen] = useState(false);
@@ -27,25 +28,29 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
         throw new Error('IFRAME_BLOCKED');
       }
 
+      const csrfToken = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+
       const response = await base44.functions.invoke('createTipCheckout', {
         creatorId,
         amount,
         message,
         streamId,
-        isAnonymous
+        isAnonymous,
+        csrfToken
       });
 
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        throw new Error('Failed to create checkout');
+        throw new Error(response.data?.error || 'Failed to create checkout');
       }
     },
     onError: (error) => {
       if (error.message === 'IFRAME_BLOCKED') {
-        alert('⚠️ Tipping only works in the published app.');
+        toast.warning('Tipping is only available in the published app. Please open the app directly.');
       } else {
-        alert('Tip failed. Please try again.');
+        toast.error(error.message || 'Tip failed. Please try again.');
       }
     }
   });
@@ -69,7 +74,6 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Quick amounts */}
           <div>
             <Label className="text-amber-200 mb-2 block">Quick Amount</Label>
             <div className="grid grid-cols-3 gap-2">
@@ -86,7 +90,6 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
             </div>
           </div>
 
-          {/* Custom amount */}
           <div>
             <Label className="text-amber-200">Custom Amount (USD)</Label>
             <Input
@@ -98,7 +101,6 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
             />
           </div>
 
-          {/* Message */}
           <div>
             <Label className="text-amber-200">Message (optional)</Label>
             <Textarea
@@ -111,7 +113,6 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
             <p className="text-xs text-amber-400/60 mt-1">{message.length}/200</p>
           </div>
 
-          {/* Anonymous */}
           <div className="flex items-center gap-2">
             <Checkbox
               id="anonymous"
@@ -123,7 +124,6 @@ export default function TipButton({ creatorId, streamId, variant = "default", si
             </Label>
           </div>
 
-          {/* Submit */}
           <Button
             onClick={() => tipMutation.mutate()}
             disabled={!amount || amount < 1 || tipMutation.isPending}

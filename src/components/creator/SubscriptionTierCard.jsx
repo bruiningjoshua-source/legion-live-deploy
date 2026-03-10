@@ -4,8 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Star, Sparkles } from 'lucide-react';
+import { Check, Crown, Star, Sparkles, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const tierConfig = {
   bronze: {
@@ -30,7 +31,7 @@ const tierConfig = {
 
 export default function SubscriptionTierCard({ tier, creatorId, isSubscribed }) {
   const queryClient = useQueryClient();
-  const config = tierConfig[tier.tier_name];
+  const config = tierConfig[tier.tier_name?.toLowerCase()] || tierConfig.bronze;
   const Icon = config.icon;
 
   const subscribeMutation = useMutation({
@@ -39,12 +40,32 @@ export default function SubscriptionTierCard({ tier, creatorId, isSubscribed }) 
         throw new Error('IFRAME_BLOCKED');
       }
 
-      // In production, this would call a Stripe checkout function
-      alert('Subscription checkout coming soon! This will redirect to Stripe.');
+      const csrfToken = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const response = await base44.functions.invoke('createFanClubCheckout', {
+        creator_id: creatorId,
+        tier: tier.tier_level || 1,
+        price_usd: tier.price_usd,
+        tier_name: tier.display_name || tier.tier_name,
+        perks: tier.perks?.map(p => typeof p === 'string' ? p : p.name) || [],
+        csrfToken
+      });
+
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error(response.data?.error || 'Failed to create checkout session');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creator-subscription'] });
     },
     onError: (error) => {
       if (error.message === 'IFRAME_BLOCKED') {
-        alert('⚠️ Subscriptions only work in the published app.');
+        toast.warning('Subscriptions are only available in the published app. Please open the app directly.');
+      } else {
+        toast.error(error.message || 'Subscription failed. Please try again.');
       }
     }
   });
@@ -63,7 +84,7 @@ export default function SubscriptionTierCard({ tier, creatorId, isSubscribed }) 
               <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-white capitalize">{tier.tier_name}</CardTitle>
+              <CardTitle className="text-white capitalize">{tier.display_name || tier.tier_name}</CardTitle>
               <p className="text-white/80 text-sm">${tier.price_usd}/month</p>
             </div>
           </div>
@@ -73,7 +94,7 @@ export default function SubscriptionTierCard({ tier, creatorId, isSubscribed }) 
             {tier.perks?.map((perk, idx) => (
               <div key={idx} className="flex items-start gap-2 text-white/90 text-sm">
                 <Check className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{perk}</span>
+                <span>{typeof perk === 'string' ? perk : perk.name}</span>
               </div>
             ))}
           </div>
@@ -82,7 +103,9 @@ export default function SubscriptionTierCard({ tier, creatorId, isSubscribed }) 
             disabled={isSubscribed || subscribeMutation.isPending}
             className={`w-full ${config.buttonClass} text-white`}
           >
-            {isSubscribed ? 'Subscribed' : 'Subscribe'}
+            {subscribeMutation.isPending ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+            ) : isSubscribed ? 'Subscribed' : 'Subscribe'}
           </Button>
         </CardContent>
       </Card>
