@@ -20,6 +20,7 @@ import TermsOfServiceGate from '@/components/legal/TermsOfServiceGate';
 import CreatorEarningsHub from '@/components/monetization/CreatorEarningsHub';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
+import RetryPaymentPanel from '@/components/wallet/RetryPaymentPanel';
 
 // CSRF token generation
 function generateCSRFToken() {
@@ -328,6 +329,9 @@ export default function Wallet() {
             {user?.role === 'admin' && (
               <CreatorEarningsHub creatorId={user.email} />
             )}
+
+            {/* Retry failed/incomplete payments */}
+            {user?.email && <RetryPaymentPanel userEmail={user.email} />}
 
             <GlassCard>
               <div className="flex items-center gap-2 mb-6">
