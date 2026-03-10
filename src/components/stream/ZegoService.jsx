@@ -80,8 +80,20 @@ class ZegoStreamingService {
         const backoff = Math.min(3000 * Math.pow(1.5, this._reconnectAttempts - 1), 15000);
         console.warn(`[Zego] Unexpected disconnect — attempt ${this._reconnectAttempts}/${maxRetries} in ${backoff}ms`);
         if (this._reconnectTimeout) clearTimeout(this._reconnectTimeout);
-        this._reconnectTimeout = setTimeout(() => {
+        this._reconnectTimeout = setTimeout(async () => {
           if (!this._leaving && this.engine && this.roomId) {
+            // If token may have expired (> 50 min old), fetch a fresh one before reconnecting
+            const tokenAge = Date.now() - (this._tokenIssuedAt || 0);
+            const TOKEN_REFRESH_THRESHOLD = 50 * 60 * 1000; // 50 minutes
+            if (tokenAge > TOKEN_REFRESH_THRESHOLD && this._tokenRefreshFn) {
+              try {
+                const freshToken = await this._tokenRefreshFn();
+                if (freshToken) this._lastToken = freshToken;
+                console.log('[Zego] Token refreshed before reconnect');
+              } catch (e) {
+                console.warn('[Zego] Token refresh failed, using existing token:', e.message);
+              }
+            }
             this.engine.loginRoom(this.roomId, this._lastToken, {
               userID: this.userId,
               userName: this._lastUserName || this.userId
@@ -161,13 +173,15 @@ class ZegoStreamingService {
 
   // ─── ROOM ───────────────────────────────────────────────────────
 
-  async loginRoom(roomId, userId, userName, token) {
+  async loginRoom(roomId, userId, userName, token, tokenRefreshFn = null) {
     if (!this.engine) throw new Error('Engine not initialized');
     if (!roomId || !userId || !token) throw new Error('Missing roomId, userId, or token');
 
     this.roomId = roomId;
     this.userId = userId;
     this._lastToken = token;
+    this._tokenIssuedAt = Date.now();
+    this._tokenRefreshFn = tokenRefreshFn; // optional async fn that returns a fresh token
     this._lastUserName = userName || userId;
     this._leaving = false; // Reset leaving flag on new login
 

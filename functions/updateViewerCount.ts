@@ -30,12 +30,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Stream is not live' }, { status: 400 });
     }
 
-    const currentCount = stream.viewer_count || 0;
+    // Re-fetch immediately before write to minimise race-condition window
+    const freshStreams = await base44.asServiceRole.entities.Stream.filter({ id: streamId }, null, 1);
+    const fresh = freshStreams[0] || stream;
+    const currentCount = fresh.viewer_count || 0;
     let newCount;
 
     if (action === 'join') {
       newCount = currentCount + 1;
-      const peakViewers = Math.max(stream.peak_viewers || 0, newCount);
+      const peakViewers = Math.max(fresh.peak_viewers || 0, newCount);
       await base44.asServiceRole.entities.Stream.update(streamId, {
         viewer_count: newCount,
         peak_viewers: peakViewers,
