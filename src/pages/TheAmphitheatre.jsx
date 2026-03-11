@@ -82,7 +82,7 @@ function ShortCard({ item, onAddToWatchLater, onAddToPlaylist, onDownload, onSha
           />
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
