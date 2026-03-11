@@ -243,23 +243,23 @@ export default function AffiliateHub() {
   const tierInfo = TIER_BENEFITS[partner.tier] || TIER_BENEFITS.bronze;
 
   return (
-    <div className="min-h-screen pt-20 pb-12">
+    <div className="min-h-screen pt-16 pb-24">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-8 mb-8"
         >
           <div>
-            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/40 rounded-full px-4 py-1.5 mb-3">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span className="text-emerald-200 text-sm font-medium">Partner Dashboard</span>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-px w-8 bg-gradient-to-r from-transparent to-amber-700/40" />
+              <span className="text-amber-600/50 text-[10px] font-bold uppercase tracking-widest">Merchant Hub</span>
             </div>
-            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-400 flex items-center gap-3">
+            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400">
               Affiliate Hub
             </h1>
-            <p className="text-white/50">Manage campaigns, track earnings, go live</p>
+            <p className="text-white/40 text-sm">Manage campaigns, track earnings, go live</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
