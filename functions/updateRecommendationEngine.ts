@@ -36,10 +36,13 @@ Deno.serve(async (req) => {
       categoryMetrics[cat].streamCount += 1;
     }
 
-    // Get trending (increase in viewers/streams vs last hour)
-    const cachedMetrics = localStorage?.getItem('last_metrics') 
-      ? JSON.parse(localStorage.getItem('last_metrics'))
-      : {};
+    // Get trending (increase in viewers/streams vs last hour) from DB cache
+    const cacheKey = 'recommendation_metrics_cache';
+    const cachedRecord = await base44.asServiceRole.entities.PlatformAnalytics.filter(
+      { metric_key: cacheKey }, '-created_date', 1
+    ).catch(() => []);
+
+    const cachedMetrics = cachedRecord.length > 0 ? JSON.parse(cachedRecord[0].metric_value || '{}') : {};
 
     const trendingCategories = [];
     for (const [cat, metrics] of Object.entries(categoryMetrics)) {
@@ -55,9 +58,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Store for next hour's comparison
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('last_metrics', JSON.stringify(categoryMetrics));
+    // Store for next hour's comparison in DB
+    try {
+      await base44.asServiceRole.entities.PlatformAnalytics.create({
+        metric_key: cacheKey,
+        metric_value: JSON.stringify(categoryMetrics),
+        metric_date: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('[updateRecommendationEngine] Cache write failed:', e.message);
     }
 
     // Build personalized recommendations for each user

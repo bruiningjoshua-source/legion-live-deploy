@@ -126,6 +126,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[predictStreamerChurn] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: 'Churn prediction failed',
+      code: 'CHURN_PREDICTION_ERROR',
+      message: error.message 
+    }, { status: 500 });
   }
 });

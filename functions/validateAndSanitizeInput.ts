@@ -1,72 +1,80 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+/**
+ * Input Validation & Sanitization Utilities
+ * Used across all payment and user-facing functions
+ */
 
-Deno.serve(async (req) => {
-  if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+export const validators = {
+  // Stripe payment intent ID format: pi_xxxxx
+  paymentIntentId: (id) => {
+    if (!id || typeof id !== 'string') return null;
+    const match = id.match(/^pi_[a-zA-Z0-9]{20,}$/);
+    return match ? id : null;
+  },
+
+  // Email validation
+  email: (email) => {
+    if (!email || typeof email !== 'string') return null;
+    const match = email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+    return match ? email.toLowerCase() : null;
+  },
+
+  // USD amount validation (0.01 to 100,000)
+  usdAmount: (amount) => {
+    const num = Number(amount);
+    return !isNaN(num) && num > 0 && num <= 100000 ? num : null;
+  },
+
+  // IP address validation (basic)
+  ipAddress: (ip) => {
+    if (!ip || typeof ip !== 'string') return null;
+    const match = ip.match(/^(\d{1,3}\.){3}\d{1,3}$/);
+    if (!match) return null;
+    const parts = ip.split('.').map(Number);
+    return parts.every(p => p >= 0 && p <= 255) ? ip : null;
+  },
+
+  // Country code (ISO 3166-1 alpha-2)
+  countryCode: (code) => {
+    if (!code || typeof code !== 'string') return null;
+    return code.match(/^[A-Z]{2}$/) ? code : null;
+  },
+
+  // Device fingerprint (hex string, 32+ chars)
+  deviceFingerprint: (fp) => {
+    if (!fp || typeof fp !== 'string') return null;
+    return fp.match(/^[a-f0-9]{32,}$/i) ? fp : null;
   }
+};
 
-  try {
-    const base44 = createClientFromRequest(req);
-    const body = await req.json();
+export const sanitize = {
+  // Remove XSS/SQL injection chars
+  text: (str, maxLen = 2000) => {
+    if (typeof str !== 'string') return '';
+    return str
+      .trim()
+      .replace(/[<>\"'`]/g, '') // Remove HTML/SQL chars
+      .substring(0, maxLen);
+  },
 
-    // Validate user is authenticated
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  // Safe string ID (alphanumeric + underscore/dash)
+  id: (str) => {
+    if (typeof str !== 'string') return '';
+    return String(str).replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 255);
+  },
+
+  // Safe category name
+  category: (str) => {
+    if (typeof str !== 'string') return '';
+    return String(str).toLowerCase().replace(/[^a-z_]/g, '').substring(0, 50);
+  }
+};
+
+export const validateRequest = (req, requiredFields) => {
+  const errors = [];
+  for (const field of requiredFields) {
+    if (!req[field]) {
+      errors.push(`Missing required field: ${field}`);
     }
-
-    // Input validation rules
-    const validations = {
-      email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-      url: (val) => {
-        try {
-          new URL(val);
-          return true;
-        } catch {
-          return false;
-        }
-      },
-      alphanumeric: (val) => /^[a-zA-Z0-9_-]+$/.test(val),
-      noScripts: (val) => !/<script|javascript:|onerror=/i.test(val),
-      maxLength: (max) => (val) => typeof val === 'string' && val.length <= max,
-      minLength: (min) => (val) => typeof val === 'string' && val.length >= min
-    };
-
-    // Common input patterns
-    const rules = {
-      creator_id: [validations.alphanumeric],
-      video_id: [validations.alphanumeric],
-      email: [validations.email],
-      title: [validations.noScripts, validations.maxLength(500)],
-      description: [validations.noScripts, validations.maxLength(5000)],
-      url: [validations.url],
-      username: [validations.alphanumeric, validations.minLength(3), validations.maxLength(32)]
-    };
-
-    // Validate inputs against rules
-    const validateInput = (field, value, fieldRules) => {
-      if (!fieldRules) return true;
-      return fieldRules.every(rule => rule(value));
-    };
-
-    // Return validation utility
-    return Response.json({
-      validate: (field, value) => validateInput(field, value, rules[field]),
-      sanitize: (str) => {
-        if (typeof str !== 'string') return str;
-        return str
-          .replace(/[<>\"']/g, (match) => ({
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#x27;'
-          })[match])
-          .trim();
-      },
-      rules
-    });
-  } catch (error) {
-    console.error('Validation error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
   }
-});
+  return errors.length > 0 ? { valid: false, errors } : { valid: true };
+};

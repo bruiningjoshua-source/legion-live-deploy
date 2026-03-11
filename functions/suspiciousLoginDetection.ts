@@ -19,8 +19,12 @@ Deno.serve(async (req) => {
       userAgent 
     } = await req.json();
 
-    if (!ipAddress || !deviceFingerprint) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate inputs
+    if (!ipAddress || typeof ipAddress !== 'string' || !ipAddress.match(/^(\d{1,3}\.){3}\d{1,3}$/)) {
+      return Response.json({ error: 'Invalid IP address', code: 'INVALID_IP' }, { status: 400 });
+    }
+    if (!deviceFingerprint || typeof deviceFingerprint !== 'string' || deviceFingerprint.length < 10) {
+      return Response.json({ error: 'Invalid device fingerprint', code: 'INVALID_FINGERPRINT' }, { status: 400 });
     }
 
     let suspicionScore = 0;

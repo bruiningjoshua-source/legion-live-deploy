@@ -14,25 +14,43 @@ Deno.serve(async (req) => {
 
     const { action, contentId, contentType, appealReason } = await req.json();
 
+    // Input validation & sanitization
+    const sanitize = (str) => {
+      if (typeof str !== 'string') return '';
+      return str.trim().replace(/[<>\"'`]/g, '').substring(0, 2000);
+    };
+
     if (action === 'create_appeal') {
-      if (!contentId || !contentType || !appealReason) {
-        return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      const sanitizedReason = sanitize(appealReason);
+      const sanitizedContentId = String(contentId).replace(/[^a-zA-Z0-9_-]/g, '');
+      const sanitizedType = String(contentType).replace(/[^a-z_]/g, '');
+
+      if (!sanitizedContentId || !sanitizedType || sanitizedReason.length < 20) {
+        return Response.json({ 
+          error: 'Invalid input: reason must be 20+ chars, content ID & type required',
+          code: 'VALIDATION_ERROR'
+        }, { status: 400 });
       }
 
-      if (appealReason.length < 20 || appealReason.length > 2000) {
-        return Response.json({ error: 'Appeal reason must be 20-2000 characters' }, { status: 400 });
+      // Create appeal record with retry logic
+      let appeal = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          appeal = await base44.asServiceRole.entities.WalletAuditLog.create({
+            user_email: user.email,
+            action: 'moderation_appeal',
+            amount_denarii: 0,
+            new_balance: 0,
+            reason: sanitizedReason,
+            related_entity_id: JSON.stringify({ contentId: sanitizedContentId, contentType: sanitizedType, appealDate: Date.now() }),
+            timestamp_utc: new Date().toISOString()
+          });
+          break;
+        } catch (e) {
+          if (attempt === 2) throw new Error(`Appeal creation failed after 3 attempts: ${e.message}`);
+          await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+        }
       }
-
-      // Create appeal record
-      const appeal = await base44.asServiceRole.entities.WalletAuditLog.create({
-        user_email: user.email,
-        action: 'moderation_appeal',
-        amount_denarii: 0,
-        new_balance: 0,
-        reason: appealReason,
-        related_entity_id: JSON.stringify({ contentId, contentType, appealDate: Date.now() }),
-        timestamp_utc: new Date().toISOString()
-      });
 
       // Notify moderators
       await base44.asServiceRole.entities.Notification.create({

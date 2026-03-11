@@ -19,8 +19,12 @@ Deno.serve(async (req) => {
       countryCode 
     } = await req.json();
 
-    if (!paymentIntentId || !amountUsd) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate inputs
+    if (!paymentIntentId || typeof paymentIntentId !== 'string' || !paymentIntentId.match(/^pi_[a-zA-Z0-9]+$/)) {
+      return Response.json({ error: 'Invalid payment intent ID', code: 'INVALID_PAYMENT_ID' }, { status: 400 });
+    }
+    if (!amountUsd || typeof amountUsd !== 'number' || amountUsd <= 0 || amountUsd > 100000) {
+      return Response.json({ error: 'Invalid amount (0-100000)', code: 'INVALID_AMOUNT' }, { status: 400 });
     }
 
     let riskScore = 0;
@@ -96,19 +100,28 @@ Deno.serve(async (req) => {
     // Determine if SCA required
     const requiresSca = riskScore > 40 || amountUsd > 1000;
 
-    // Store assessment
-    const assessment = await base44.asServiceRole.entities.PaymentRiskAssessment.create({
-      user_email: user.email,
-      payment_intent_id: paymentIntentId,
-      risk_score: Math.min(riskScore, 100),
-      risk_factors: riskFactors,
-      requires_sca: requiresSca,
-      amount_usd: amountUsd,
-      device_fingerprint: deviceFingerprint || null,
-      ip_address: ipAddress || null,
-      country_code: countryCode || null,
-      assessment_date: new Date().toISOString()
-    });
+    // Store assessment with retry logic
+    let assessment = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        assessment = await base44.asServiceRole.entities.PaymentRiskAssessment.create({
+          user_email: user.email,
+          payment_intent_id: paymentIntentId,
+          risk_score: Math.min(riskScore, 100),
+          risk_factors: riskFactors,
+          requires_sca: requiresSca,
+          amount_usd: amountUsd,
+          device_fingerprint: deviceFingerprint || null,
+          ip_address: ipAddress || null,
+          country_code: countryCode || null,
+          assessment_date: new Date().toISOString()
+        });
+        break;
+      } catch (e) {
+        if (attempt === 2) throw new Error(`Risk assessment creation failed: ${e.message}`);
+        await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+      }
+    }
 
     console.log(`[assessPaymentRisk] ${user.email}: score=${riskScore}, sca=${requiresSca}`);
 

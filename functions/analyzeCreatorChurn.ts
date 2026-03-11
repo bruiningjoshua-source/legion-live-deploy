@@ -108,6 +108,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[analyzeCreatorChurn] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: 'Churn analysis failed',
+      code: 'CHURN_ANALYSIS_ERROR',
+      message: error.message 
+    }, { status: 500 });
   }
 });

@@ -151,6 +151,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[checkCreatorMilestones] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: 'Milestone check failed',
+      code: 'MILESTONE_CHECK_ERROR',
+      message: error.message 
+    }, { status: 500 });
   }
 });

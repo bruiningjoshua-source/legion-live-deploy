@@ -111,6 +111,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[gdprCompliance] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: 'GDPR operation failed',
+      code: 'GDPR_ERROR',
+      message: error.message 
+    }, { status: 500 });
   }
 });
