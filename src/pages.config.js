@@ -51,7 +51,6 @@ import Achievements from './pages/Achievements';
 import AdminDashboard from './pages/AdminDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import AffiliateGoLive from './pages/AffiliateGoLive';
-import AffiliateHub from './pages/AffiliateHub';
 import AffiliateMarketplace from './pages/AffiliateMarketplace';
 import AmbassadorProgram from './pages/AmbassadorProgram';
 import BrandCampaigns from './pages/BrandCampaigns';
@@ -60,7 +59,6 @@ import ChannelAnalytics from './pages/ChannelAnalytics';
 import Clips from './pages/Clips';
 import CollabMatching from './pages/CollabMatching';
 import CollaborationHub from './pages/CollaborationHub';
-import CommunityForums from './pages/CommunityForums';
 import CommunityGuidelines from './pages/CommunityGuidelines';
 import ContentModerationAdmin from './pages/ContentModerationAdmin';
 import CreatorAnalytics from './pages/CreatorAnalytics';
@@ -80,12 +78,10 @@ import Explore from './pages/Explore';
 import FanClubs from './pages/FanClubs';
 import Following from './pages/Following';
 import ForumPost from './pages/ForumPost';
-import GamesExpo from './pages/GamesExpo';
 import GamingSetup from './pages/GamingSetup';
 import GoLive from './pages/GoLive';
 import HelpAndInfo from './pages/HelpAndInfo';
 import Highlights from './pages/Highlights';
-import Home from './pages/Home';
 import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
 import Leaderboard from './pages/Leaderboard';
 import MusicStudio from './pages/MusicStudio';
@@ -104,8 +100,6 @@ import Profile from './pages/Profile';
 import Quests from './pages/Quests';
 import Settings from './pages/Settings';
 import TermsOfService from './pages/TermsOfService';
-import TheAmphitheatre from './pages/TheAmphitheatre';
-import TheGamingHub from './pages/TheGamingHub';
 import UpcomingStreams from './pages/UpcomingStreams';
 import VideoEditor from './pages/VideoEditor';
 import VideoUpload from './pages/VideoUpload';
@@ -127,7 +121,6 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "AffiliateDashboard": AffiliateDashboard,
     "AffiliateGoLive": AffiliateGoLive,
-    "AffiliateHub": AffiliateHub,
     "AffiliateMarketplace": AffiliateMarketplace,
     "AmbassadorProgram": AmbassadorProgram,
     "BrandCampaigns": BrandCampaigns,
@@ -136,7 +129,6 @@ export const PAGES = {
     "Clips": Clips,
     "CollabMatching": CollabMatching,
     "CollaborationHub": CollaborationHub,
-    "CommunityForums": CommunityForums,
     "CommunityGuidelines": CommunityGuidelines,
     "ContentModerationAdmin": ContentModerationAdmin,
     "CreatorAnalytics": CreatorAnalytics,
@@ -156,12 +148,10 @@ export const PAGES = {
     "FanClubs": FanClubs,
     "Following": Following,
     "ForumPost": ForumPost,
-    "GamesExpo": GamesExpo,
     "GamingSetup": GamingSetup,
     "GoLive": GoLive,
     "HelpAndInfo": HelpAndInfo,
     "Highlights": Highlights,
-    "Home": Home,
     "ImportYouTubeLibrary": ImportYouTubeLibrary,
     "Leaderboard": Leaderboard,
     "MusicStudio": MusicStudio,
@@ -180,8 +170,6 @@ export const PAGES = {
     "Quests": Quests,
     "Settings": Settings,
     "TermsOfService": TermsOfService,
-    "TheAmphitheatre": TheAmphitheatre,
-    "TheGamingHub": TheGamingHub,
     "UpcomingStreams": UpcomingStreams,
     "VideoEditor": VideoEditor,
     "VideoUpload": VideoUpload,
@@ -198,7 +186,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "Achievements",
     Pages: PAGES,
     Layout: __Layout,
 };
