@@ -83,7 +83,7 @@ export default function TermsOfServiceGate({ isOpen, onAccept, onDismiss }) {
               <strong>Exchange Rate:</strong> Virtual currency conversion rates are as follows:
             </p>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Denarii: 260 Denarii = $1 USD (base rate, subject to change with notice)</li>
+              <li>Denarii: 180 Denarii = $1 USD (base rate, subject to change with notice)</li>
               <li>Conversion upon withdrawal at current market rate on withdrawal date</li>
               <li>Legion Live reserves the right to adjust rates with 30 days' notice</li>
             </ul>
