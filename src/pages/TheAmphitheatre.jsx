@@ -239,7 +239,7 @@ export default function TheAmphitheatre() {
                       </div>
                       <div>
                         <p className="text-white text-sm font-semibold line-clamp-2 mb-1">{item.title}</p>
-                        <p className="text-white/70 text-xs">{item.artist || 'YouTube'}</p>
+                        <p className="text-white/70 text-xs">{item.artist}</p>
                       </div>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export default function TheAmphitheatre() {
                       </div>
                       <div className="px-0.5">
                         <p className="text-white text-xs font-semibold line-clamp-2 leading-snug">{item.title}</p>
-                        <p className="text-white/60 text-[11px] mt-1">{item.artist || 'YouTube Music'}</p>
+                        <p className="text-white/60 text-[11px] mt-1">{item.artist}</p>
                       </div>
                     </div>
                   </Link>
