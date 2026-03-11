@@ -150,10 +150,10 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                     : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <NavIcon className="w-3.5 h-3.5" />
                 {name}
               </button>
-            ))}
+              ))}
 
             {/* Platforms dropdown */}
             <div className="relative" ref={platformRef}>
