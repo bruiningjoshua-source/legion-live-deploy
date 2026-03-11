@@ -153,7 +153,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
                 <NavIcon className="w-3.5 h-3.5" />
                 {name}
               </button>
-              ))}
+            ))}
 
             {/* Platforms dropdown */}
             <div className="relative" ref={platformRef}>
