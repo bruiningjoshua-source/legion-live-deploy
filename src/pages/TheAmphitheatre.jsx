@@ -7,6 +7,7 @@ import {
   Play, Radio, Eye, MoreVertical, Search, Bell, Cast,
   Tv, Flame, Music2, Mic2, Shuffle, ChevronRight
 } from 'lucide-react';
+import VideoContextMenu from '@/components/amphitheatre/VideoContextMenu';
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 function formatCount(n) {
