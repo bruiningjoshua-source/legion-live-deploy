@@ -156,7 +156,7 @@ export default function Wallet() {
   }
 
   return (
-    <>
+    <div className="min-h-screen pt-16 pb-24">
       <TermsOfServiceGate
         isOpen={showTosGate && !tosAccepted}
         onAccept={() => {
@@ -166,7 +166,6 @@ export default function Wallet() {
         }}
         onDismiss={() => setShowTosGate(false)}
       />
-    <div className="min-h-screen pt-16 pb-24">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* Header */}
         <motion.div 
