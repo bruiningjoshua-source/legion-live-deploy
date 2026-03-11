@@ -5,23 +5,23 @@ import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2, Zap, Co
 import GlassCard from '@/components/shared/GlassCard';
 
 // ── Pricing Philosophy ──────────────────────────────────────────────────────
-// Internal rate:  180 Denarii = $1 USD  (used for creator earnings calculations)
-// Purchase rate:  260 Denarii = $1 USD  (what buyers get — generous entry)
-// Creators earn:  60% of the 180 Denarii/$1 internal rate = 108 Denarii per $1 spent
-// Bonuses:        Scale from 10% → 35% (35% locked in on all packs $100+)
+// Single rate:    180 Denarii = $1 USD  (purchase and earnings base)
+// Creators earn:  60% of face value = $0.60 per $1 gifted
+// Platform keeps: 40%
+// Bonuses:        Scale from 10% → 35% (35% on all packs $100+)
 // Top pack:       $999.99
 // ─────────────────────────────────────────────────────────────────────────────
-export const DENARII_PER_DOLLAR = 180;        // internal rate used for USD display
-export const PURCHASE_RATE = 260;             // Denarii buyers receive per $1 before bonus
-export const CREATOR_SHARE = 0.60;            // 60% of internal rate goes to creator
+export const DENARII_PER_DOLLAR = 180;        // unified rate for purchase and earnings
+export const PURCHASE_RATE = 180;             // Denarii buyers receive per $1 before bonus
+export const CREATOR_SHARE = 0.60;            // 60% of face value goes to creator
 
 export const packages = [
   {
-    // $0.99 → 260 base (≈ $1.44 internal value — great entry deal)
+    // $0.99 → 178 base + 10%
     id: 'micro',
     name: 'Rookie Pack',
-    denarii: 260,
-    bonus: 26,
+    denarii: 178,
+    bonus: 18,
     bonusPercent: 10,
     price: 0.99,
     vipPoints: 15,
@@ -33,11 +33,11 @@ export const packages = [
     perks: ['+10% bonus Denarii', '+15 VIP points']
   },
   {
-    // $4.99 → 1,300 base + 12%
+    // $4.99 → 898 base + 12%
     id: 'starter',
     name: 'Recruit Pack',
-    denarii: 1300,
-    bonus: 156,
+    denarii: 898,
+    bonus: 108,
     bonusPercent: 12,
     price: 4.99,
     vipPoints: 75,
@@ -49,11 +49,11 @@ export const packages = [
     perks: ['+12% bonus Denarii', '+75 VIP points']
   },
   {
-    // $9.99 → 2,600 base + 15%
+    // $9.99 → 1,798 base + 15%
     id: 'basic',
     name: 'Soldier Pack',
-    denarii: 2600,
-    bonus: 390,
+    denarii: 1798,
+    bonus: 270,
     bonusPercent: 15,
     price: 9.99,
     vipPoints: 160,
@@ -65,11 +65,11 @@ export const packages = [
     perks: ['+15% bonus', '+160 VIP pts', '1 lotto ticket']
   },
   {
-    // $19.99 → 5,200 base + 20%
+    // $19.99 → 3,598 base + 20%
     id: 'popular',
     name: 'Centurion Pack',
-    denarii: 5200,
-    bonus: 1040,
+    denarii: 3598,
+    bonus: 720,
     bonusPercent: 20,
     price: 19.99,
     vipPoints: 350,
@@ -81,11 +81,11 @@ export const packages = [
     perks: ['+20% bonus', '+350 VIP pts', '3 lotto tickets', 'VIP1 fast track']
   },
   {
-    // $49.99 → 13,000 base + 25%
+    // $49.99 → 8,998 base + 25%
     id: 'premium',
     name: 'Praetorian Pack',
-    denarii: 13000,
-    bonus: 3250,
+    denarii: 8998,
+    bonus: 2250,
     bonusPercent: 25,
     price: 49.99,
     vipPoints: 850,
@@ -97,11 +97,11 @@ export const packages = [
     perks: ['+25% bonus', '+850 VIP pts', '6 lotto tickets', 'VIP badge']
   },
   {
-    // $99.99 → 26,000 base + 30%
+    // $99.99 → 17,998 base + 30%
     id: 'elite',
     name: 'Senator Pack',
-    denarii: 26000,
-    bonus: 7800,
+    denarii: 17998,
+    bonus: 5400,
     bonusPercent: 30,
     price: 99.99,
     vipPoints: 1800,
@@ -113,11 +113,11 @@ export const packages = [
     perks: ['+30% bonus', '+1800 VIP pts', '12 lotto tickets', 'SVIP fast track']
   },
   {
-    // $149.99 → 39,000 base + 35% (hits the $100+ bonus tier)
+    // $149.99 → 26,998 base + 35%
     id: 'whale',
     name: 'Consul Pack',
-    denarii: 39000,
-    bonus: 13650,
+    denarii: 26998,
+    bonus: 9450,
     bonusPercent: 35,
     price: 149.99,
     vipPoints: 3000,
@@ -127,14 +127,15 @@ export const packages = [
     border: 'border-cyan-400/50',
     tag: null,
     premium: true,
+    whale: true,
     perks: ['+35% MEGA bonus', '+3000 VIP pts', '20 lotto tickets', 'SVIP badge']
   },
   {
-    // $299.99 → 78,000 base + 35%
+    // $299.99 → 53,998 base + 35%
     id: 'ultimate',
     name: 'Imperator Pack',
-    denarii: 78000,
-    bonus: 27300,
+    denarii: 53998,
+    bonus: 18900,
     bonusPercent: 35,
     price: 299.99,
     vipPoints: 7000,
@@ -144,14 +145,15 @@ export const packages = [
     border: 'border-amber-300',
     tag: 'LEGENDARY',
     premium: true,
+    whale: true,
     perks: ['+35% LEGENDARY bonus', '+7000 VIP pts', '40 lotto tickets', 'DIVINE badge']
   },
   {
-    // $499.99 → 130,000 base + 35%
+    // $499.99 → 89,998 base + 35%
     id: 'titan',
     name: 'Triumvir Pack',
-    denarii: 130000,
-    bonus: 45500,
+    denarii: 89998,
+    bonus: 31500,
     bonusPercent: 35,
     price: 499.99,
     vipPoints: 14000,
@@ -161,14 +163,15 @@ export const packages = [
     border: 'border-orange-300',
     tag: '🔱 TITAN',
     premium: true,
+    whale: true,
     perks: ['+35% TITAN bonus', '+14K VIP pts', '80 lotto tickets', 'Emperor crown']
   },
   {
-    // $999.99 → 260,000 base + 35%
+    // $999.99 → 179,998 base + 35%
     id: 'emperor',
     name: "Emperor's Ascension",
-    denarii: 260000,
-    bonus: 91000,
+    denarii: 179998,
+    bonus: 63000,
     bonusPercent: 35,
     price: 999.99,
     vipPoints: 32000,
@@ -178,6 +181,7 @@ export const packages = [
     border: 'border-yellow-300',
     tag: '⚡ DIVINE',
     premium: true,
+    whale: true,
     perks: ['+35% DIVINE bonus', '+32K VIP pts', '200 lotto tickets', 'Divine Emperor status']
   }
 ];
