@@ -503,6 +503,17 @@ Deno.serve(async (req) => {
       case 'charge.dispute.created': {
         const charge = event.data.object;
         console.error('[stripeWebhook] Chargeback initiated:', charge.id, 'amount:', charge.amount / 100);
+        
+        // Send admin alert
+        try {
+          await base44.asServiceRole.functions.invoke('stripeAlertNotifier', {
+            event_type: 'charge.dispute.created',
+            charge_id: charge.id,
+            amount_usd: charge.amount / 100
+          });
+        } catch (e) {
+          console.warn('[stripeWebhook] Alert notifier failed:', e.message);
+        }
 
         // Find the related CurrencyPurchase by payment intent
         const purchases = await base44.asServiceRole.entities.CurrencyPurchase.filter(
@@ -565,6 +576,17 @@ Deno.serve(async (req) => {
                 is_read: false,
                 created_date: new Date().toISOString()
               }).catch(e => console.warn('[stripeWebhook] Admin notification failed:', e.message));
+              
+              // Send alert notification
+              try {
+                await base44.asServiceRole.functions.invoke('stripeAlertNotifier', {
+                  event_type: 'auto_suspend',
+                  user_email: userEmail,
+                  chargeback_count: newChargebackCount
+                });
+              } catch (e) {
+                console.warn('[stripeWebhook] Alert notifier failed:', e.message);
+              }
             }
 
             // Send chargeback notification to user
