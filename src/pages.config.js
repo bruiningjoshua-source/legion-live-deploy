@@ -113,6 +113,11 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import Home from './pages/Home';
+import TheAmphitheatre from './pages/TheAmphitheatre';
+import CommunityForums from './pages/CommunityForums';
+import GamesExpo from './pages/GamesExpo';
+import AffiliateHub from './pages/AffiliateHub';
 import __Layout from './Layout.jsx';
 
 
@@ -183,6 +188,11 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "Home": Home,
+    "TheAmphitheatre": TheAmphitheatre,
+    "CommunityForums": CommunityForums,
+    "GamesExpo": GamesExpo,
+    "AffiliateHub": AffiliateHub,
 }
 
 export const pagesConfig = {
