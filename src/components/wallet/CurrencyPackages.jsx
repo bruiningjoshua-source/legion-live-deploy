@@ -278,7 +278,7 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         <div className="flex items-center gap-4 bg-white/5 rounded-full px-6 py-2 border border-white/10">
           <div className="flex items-center gap-2 text-white/80 text-sm">
             <span className="text-base">🪙</span>
-            <span>260 Denarii = $1 spent</span>
+            <span>180 Denarii = $1</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/80 text-sm">
@@ -288,7 +288,7 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         </div>
         <p className="text-white/40 text-xs flex items-center gap-1">
           <Flame className="w-3 h-3 text-amber-400" />
-          180 Denarii = $1 internal rate · Creators earn 60% · VIP points on every purchase
+          Creators keep $0.60 per $1 gifted · VIP points on every purchase
         </p>
       </div>
 
