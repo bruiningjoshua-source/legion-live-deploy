@@ -7,23 +7,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Premium Dark Theme — Legion Live Design System */
+/* BIGO-Style Design System */
 :root {
-  --color-bg-primary: #09090b;
-  --color-bg-secondary: #0d0d10;
-  --color-bg-tertiary: #131316;
-  --color-bg-card: rgba(255,255,255,0.03);
-  --color-border: rgba(255,255,255,0.07);
-  --color-accent: #f59e0b;
-  --color-accent-hover: #fbbf24;
-  --color-accent-dim: rgba(245,158,11,0.15);
-  --card-radius: 1rem;
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-tertiary: #1a1a26;
+  --color-bg-card: rgba(139, 92, 246, 0.08);
+  --color-border: rgba(168, 85, 247, 0.15);
+  --color-accent: #a855f7;
+  --color-accent-hover: #c084fc;
+  --color-accent-dim: rgba(168, 85, 247, 0.2);
+  --color-primary-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --color-secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
+  --card-radius: 1.5rem;
   --nav-height: 56px;
   --bottom-nav-height: 64px;
 }
 
 html, body {
-  background: #09090b;
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a0f2e 100%);
   color: #f5f5fa;
   font-feature-settings: 'cv11' 1, 'ss01' 1;
   -webkit-font-smoothing: antialiased;
@@ -177,19 +179,33 @@ video::-webkit-media-controls {
   overscroll-behavior: contain;
 }
 
-/* Glass morphism utility */
+/* Glass morphism — BIGO style */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(168, 85, 247, 0.06);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(168, 85, 247, 0.1);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+/* BIGO Card */
+.bigo-card {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 1.5rem;
+}
+
+/* BIGO Overlay */
+.bigo-overlay {
+  background: rgba(10, 10, 15, 0.8);
   backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Premium gradient text */
@@ -212,25 +228,31 @@ video::-webkit-media-controls {
               0 0 40px rgba(239, 68, 68, 0.1);
 }
 
-/* Premium button hover effect */
-.btn-premium {
+/* BIGO button hover effect */
+.btn-bigo {
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  border: none;
 }
 
-.btn-premium::before {
+.btn-bigo::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s ease;
 }
 
-.btn-premium:hover::before {
+.btn-bigo:hover::before {
   left: 100%;
+}
+
+.btn-bigo:active {
+  transform: scale(0.96);
 }
 
 /* Animated gradient border */
