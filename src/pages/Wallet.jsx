@@ -34,7 +34,7 @@ function generateCSRFToken() {
 
 export default function Wallet() {
   const [showTosGate, setShowTosGate] = useState(false);
-  const [tosAccepted, setTosAccepted] = useState(false);
+  const [tosAccepted, setTosAccepted] = useState(() => !!localStorage.getItem('tos_accepted'));
   const [csrfToken, setCsrfToken] = useState('');
 
   // Generate CSRF token on mount
