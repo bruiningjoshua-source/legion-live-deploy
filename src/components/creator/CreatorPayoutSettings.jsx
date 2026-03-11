@@ -327,12 +327,6 @@ export default function CreatorPayoutSettings({ creator, user }) {
         </TabsContent>
       </Tabs>
 
-      {/* Active Subscription Management */}
-      {(() => {
-        const activeSub = payoutHistory.find ? null : null; // placeholder
-        return null;
-      })()}
-
       {/* Payout History */}
       {payoutHistory.length > 0 && (
         <Card className="bg-stone-800/30 border-amber-600/20">
