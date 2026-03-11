@@ -2,16 +2,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
 
-const POPULAR_SEARCHES = [
-  { q: 'top hits 2024', genre: 'pop' },
-  { q: 'hip hop rap best', genre: 'hip_hop' },
-  { q: 'rock music hits', genre: 'rock' },
-  { q: 'indie pop songs', genre: 'indie' },
-  { q: 'r&b best songs', genre: 'r_and_b' },
-  { q: 'electronic dance music', genre: 'electronic' },
-  { q: 'jazz standards', genre: 'jazz' },
-  { q: 'classical music best', genre: 'classical' },
-  { q: 'ambient chill music', genre: 'ambient' },
+const POPULAR_PLAYLISTS = [
+  { q: 'top hits 2024 playlist', genre: 'pop' },
+  { q: 'hip hop rap playlist best', genre: 'hip_hop' },
+  { q: 'rock music hits playlist', genre: 'rock' },
+  { q: 'indie pop playlist', genre: 'indie' },
+  { q: 'r&b best songs playlist', genre: 'r_and_b' },
+  { q: 'electronic dance music playlist', genre: 'electronic' },
+  { q: 'jazz standards playlist', genre: 'jazz' },
+  { q: 'classical music playlist', genre: 'classical' },
+  { q: 'ambient chill music playlist', genre: 'ambient' },
 ];
 
 function extractVideoId(url) {
