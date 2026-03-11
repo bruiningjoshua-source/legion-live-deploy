@@ -36,7 +36,7 @@ function ytThumb(url) {
 }
 
 // ── Short card (portrait 9:16) ────────────────────────────────────────────────
-function ShortCard({ item }) {
+function ShortCard({ item, onAddToWatchLater, onAddToPlaylist, onDownload, onShare }) {
   const thumb = item.cover_url || ytThumb(item.video_url);
   return (
     <a href={item.video_url || '#'} target="_blank" rel="noopener noreferrer">
@@ -74,10 +74,10 @@ function ShortCard({ item }) {
         <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <VideoContextMenu 
             video={item}
-            onAddToWatchLater={handleAddToWatchLater}
-            onAddToPlaylist={handleAddToPlaylist}
-            onDownload={handleDownload}
-            onShare={handleShare}
+            onAddToWatchLater={onAddToWatchLater}
+            onAddToPlaylist={onAddToPlaylist}
+            onDownload={onDownload}
+            onShare={onShare}
           />
         </div>
       </div>
