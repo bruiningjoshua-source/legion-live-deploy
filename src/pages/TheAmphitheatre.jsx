@@ -119,9 +119,15 @@ function MixCard({ item, showNew = false }) {
         )}
 
         {/* More */}
-        <button className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full">
-          <MoreVertical className="w-3.5 h-3.5 text-white" />
-        </button>
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <VideoContextMenu 
+            video={item}
+            onAddToWatchLater={handleAddToWatchLater}
+            onAddToPlaylist={handleAddToPlaylist}
+            onDownload={handleDownload}
+            onShare={handleShare}
+          />
+        </div>
       </div>
 
       {/* Info row */}
