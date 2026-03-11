@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 
 const tabs = [
   { name: 'Home',   path: createPageUrl('Home'),            icon: Home,     label: 'Home' },
-  { name: 'Live',   path: createPageUrl('TheAmphitheatre'), icon: Tv,       label: 'Live' },
+  { name: 'Gaming', path: createPageUrl('GamingHub'),       icon: Gamepad2, label: 'Gaming' },
   { name: 'GoLive', path: createPageUrl('GoLive'),          icon: Radio,    label: 'Go Live', highlight: true },
-  { name: 'Senate', path: createPageUrl('CommunityForums'), icon: Users,    label: 'Senate' },
+  { name: 'Live',   path: createPageUrl('TheAmphitheatre'), icon: Tv,       label: 'Live' },
   { name: 'Explore',path: createPageUrl('Explore'),         icon: Search,   label: 'Explore' },
 ];
 
