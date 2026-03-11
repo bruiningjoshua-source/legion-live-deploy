@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Crown, Plus, Check, X, Eye, ChevronDown, Share2, Flag, UserPlus, MoreHorizontal } from 'lucide-react';
+import { Crown, Plus, Check, X, ChevronDown, Share2, Flag, UserPlus, MoreHorizontal } from 'lucide-react';
 import VIPBadge from '@/components/stream/VIPBadge';
 
 // ── BigO Live-style Viewer Top Bar ────────────────────────────────────────
