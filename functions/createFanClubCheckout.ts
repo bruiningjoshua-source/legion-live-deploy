@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
 
     const users = await base44.asServiceRole.entities.User.filter({ email: user.email }, null, 1).catch(() => []);
     if (users[0]?.isSuspended) return Response.json({ error: `Account suspended: ${users[0].suspensionReason || 'Policy violation'}` }, { status: 403 });
+    if (!users[0]?.tos_accepted) return Response.json({ error: 'You must accept the Terms of Service before making purchases.', tos_required: true }, { status: 403 });
 
     const { creator_id, tier, price_usd, tier_name, perks, csrfToken } = await req.json();
     if (!creator_id || !tier || !price_usd) return Response.json({ error: 'Missing required fields' }, { status: 400 });

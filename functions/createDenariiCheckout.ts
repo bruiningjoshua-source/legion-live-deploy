@@ -15,6 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // TOS enforcement — must accept before any purchase
+    const userRecord = await base44.asServiceRole.entities.User.filter({ email: user.email }, null, 1).catch(() => []);
+    if (!userRecord[0]?.tos_accepted) {
+      return Response.json({ error: 'You must accept the Terms of Service before making purchases.', tos_required: true }, { status: 403 });
+    }
+
     const body = await req.json();
     const packageId = String(body.packageId || '').trim();
     const denarii = Number(body.denarii);
