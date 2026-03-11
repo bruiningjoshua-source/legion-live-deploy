@@ -162,8 +162,14 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                    <span className="text-sm">👤</span>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 overflow-hidden flex items-center justify-center">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-white">
+                        {user?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                      </span>
+                    )}
                   </div>
                 </Button>
               </DropdownMenuTrigger>

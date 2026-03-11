@@ -67,8 +67,9 @@ export default function Explore() {
   });
 
   const { data: recordedVideos = [] } = useQuery({
-    queryKey: ['recorded-streams'],
-    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-created_date', 30)
+    queryKey: ['recorded-videos'],
+    queryFn: () => base44.entities.VlogVideo.filter({ is_published: true }, '-view_count', 30),
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery({
