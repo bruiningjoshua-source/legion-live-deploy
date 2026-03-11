@@ -106,6 +106,16 @@ Deno.serve(async (req) => {
       status: 'completed'
     });
 
+    // Send payout notification email (non-blocking)
+    base44.asServiceRole.functions.invoke('transactionalEmail', {
+      action: 'send_payout_notification',
+      creatorEmail: user.email,
+      creatorName: creator.display_name || user.full_name || user.email,
+      amount: payoutUsd.toFixed(2),
+      payoutMethod: 'Bank Transfer (Stripe Connect)',
+      reference: transfer.id
+    }).catch(e => console.warn('[stripeConnectPayout] Payout email failed:', e.message));
+
     console.log('[stripeConnectPayout] Payout completed successfully:', transfer.id);
     return Response.json({
       success: true,

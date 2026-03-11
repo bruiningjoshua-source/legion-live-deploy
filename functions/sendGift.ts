@@ -13,24 +13,30 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const GIFT_CREATOR_SHARE_BASE = 0.60;
 const MAX_GIFT_QUANTITY = 100;
-const GIFT_RATE_LIMIT = 10;
-const GIFT_RATE_WINDOW = 10000;
 
-// Fraud detection: track user activity
-const fraudActivity = new Map(); // email -> { gifts: [], chargebacks: [] }
-const giftBuckets = new Map(); // MUST be declared before checkGiftRate
+// Fraud detection: track user activity (in-memory, best-effort only — not the primary guard)
+const fraudActivity = new Map();
 
-function checkGiftRate(email) {
+// DB-backed rate limit (survives cold starts) — 10 gifts per 10 seconds
+async function checkGiftRate(base44, email) {
   const now = Date.now();
-  const bucket = giftBuckets.get(email);
-  if (!bucket || now > bucket.resetAt) {
-    giftBuckets.set(email, { count: 1, resetAt: now + GIFT_RATE_WINDOW });
-    return { allowed: true };
+  const windowMs = 10000;
+  const maxCount = 10;
+  const logs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+    { user_email: email, action: 'rate_limit_check', reason: 'rate_limit:sendGift' }, '-timestamp_utc', 1
+  ).catch(() => []);
+  const record = logs[0];
+  let count = 1, resetAt = now + windowMs;
+  if (record) {
+    const data = JSON.parse(record.related_entity_id || '{}');
+    if (now < (data.resetAt || 0)) { count = (data.count || 0) + 1; resetAt = data.resetAt; }
   }
-  bucket.count++;
-  if (bucket.count > GIFT_RATE_LIMIT) {
-    return { allowed: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
-  }
+  if (count > maxCount) return { allowed: false, retryAfter: Math.ceil((resetAt - now) / 1000) };
+  base44.asServiceRole.entities.WalletAuditLog.create({
+    user_email: email, action: 'rate_limit_check', amount_denarii: 0, new_balance: 0,
+    related_entity_id: JSON.stringify({ count, resetAt }), reason: 'rate_limit:sendGift',
+    timestamp_utc: new Date().toISOString()
+  }).catch(() => {});
   return { allowed: true };
 }
 
@@ -132,8 +138,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: csrfCheck.reason }, { status: 403 });
     }
 
-    // ── Rate limiting ──
-    const rateCheck = checkGiftRate(user.email);
+    // ── Rate limiting (DB-backed, cold-start safe) ──
+    const rateCheck = await checkGiftRate(base44, user.email);
     if (!rateCheck.allowed) {
       return Response.json({ error: 'Rate limited', retryAfter: rateCheck.retryAfter }, { status: 429 });
     }
