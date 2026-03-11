@@ -21,6 +21,7 @@ import CreatorEarningsHub from '@/components/monetization/CreatorEarningsHub';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import RetryPaymentPanel from '@/components/wallet/RetryPaymentPanel';
+import FailedPaymentRetry from '@/components/wallet/FailedPaymentRetry';
 
 // CSRF token generation
 function generateCSRFToken() {
@@ -322,6 +323,9 @@ export default function Wallet() {
             {user && (
               <CreatorEarningsHub creatorId={user.email} />
             )}
+
+            {/* Failed payment retry widget */}
+            {user?.email && <FailedPaymentRetry userEmail={user.email} />}
 
             {/* Retry failed/incomplete payments */}
             {user?.email && <RetryPaymentPanel userEmail={user.email} />}
