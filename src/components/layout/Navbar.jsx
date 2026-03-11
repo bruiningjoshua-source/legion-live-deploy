@@ -54,7 +54,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
   };
 
   const balance = wallet?.denarii_balance || 0;
-  const usdValue = (balance / 180).toFixed(2);
+  const usdValue = (balance / 65).toFixed(2);
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${

@@ -19,7 +19,7 @@ function TournamentCard({ tournament }) {
     finished: { bg: 'bg-white/[0.03]',  border: 'border-white/[0.07]',  text: 'text-white/40',   badge: 'bg-white/20' },
   };
   const s = statusColors[tournament.status] || statusColors.upcoming;
-  const prize = ((tournament.prize_pool_denarii || 0) / 180).toFixed(0);
+  const prize = ((tournament.prize_pool_denarii || 0) / 65 * 0.7).toFixed(0);
 
   return (
     <div className={`relative p-4 rounded-2xl ${s.bg} border ${s.border} hover:border-opacity-60 transition-all duration-200 group active:scale-[0.98]`}>
