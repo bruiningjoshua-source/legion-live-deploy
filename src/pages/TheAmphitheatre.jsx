@@ -37,15 +37,15 @@ function ytThumb(url) {
 function LiveCard({ stream }) {
   return (
     <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`} className="block group">
-      <div className="relative w-full rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15] transition-all mb-2" style={{ aspectRatio: '16/9' }}>
+      <div className="relative w-full rounded-xl overflow-hidden bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/20 hover:border-purple-400/40 transition-all mb-2" style={{ aspectRatio: '16/9' }}>
         {stream.thumbnail_url ? (
           <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-red-950 to-black flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-purple-950 to-black flex items-center justify-center">
             <Tv className="w-10 h-10 text-white/10" />
           </div>
         )}
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+        <div className="absolute top-2 left-2 flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
           <span className="w-1 h-1 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {stream.viewer_count > 0 && (
@@ -74,7 +74,7 @@ function LiveCard({ stream }) {
   );
 }
 
-function SectionHeader({ icon: Icon, title, iconColor = 'text-red-500' }) {
+function SectionHeader({ icon: Icon, title, iconColor = 'text-purple-400' }) {
   return (
     <div className="flex items-center gap-2 mb-4">
       <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -141,10 +141,10 @@ export default function TheAmphitheatre() {
   return (
     <div className="min-h-screen bg-[#0f0f10] text-white pb-24">
 
-      <div className="sticky top-0 z-40 bg-[#0f0f10]/98 backdrop-blur-xl border-b border-white/[0.05]">
+      <div className="sticky top-0 z-40 bigo-overlay border-b border-purple-500/20 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           {showSearch ? (
-            <div className="flex-1 flex items-center gap-2 bg-white/[0.07] border border-white/[0.1] rounded-full px-3 h-9">
+            <div className="flex-1 flex items-center gap-2 bigo-card px-3 h-9 border-purple-400/30">
               <Search className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
               <input
                 autoFocus
@@ -159,8 +159,8 @@ export default function TheAmphitheatre() {
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-red-600" />
-                <span className="text-white font-bold text-base">Premium</span>
+                <Play className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400" />
+                <span className="text-white font-bold text-base">Live</span>
               </div>
               <div className="flex items-center gap-4">
                 <button className="text-white/60 hover:text-white transition-colors"><Cast className="w-5 h-5" /></button>
@@ -172,15 +172,14 @@ export default function TheAmphitheatre() {
         </div>
 
         <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide items-center">
-          <div className="text-white/40 text-lg flex-shrink-0">@</div>
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'bg-white text-black'
-                  : 'bg-white/[0.12] text-white/90 hover:bg-white/[0.18]'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
+                  : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.15] border border-white/10'
               }`}
             >
               {tab.label}
