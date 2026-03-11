@@ -27,6 +27,8 @@ import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard
 import AlertNotifications from '@/components/moderation/AlertNotifications';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
+import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
+import BigoBottomBar from '@/components/stream/BigoBottomBar';
 import ZegoService from '@/components/stream/ZegoService';
 import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
@@ -335,13 +337,23 @@ export default function WatchStream() {
           />
 
           {stream.stream_type === 'multi_panel' && (
-            <div className="absolute inset-0 z-10">
-              <DiscordStylePanel
-                hostStream={stream} hostCreator={creator} currentUser={user}
-                panelParticipants={[]}
-                onLeaveCall={() => navigate(createPageUrl('Explore'))}
-                isHost={isBroadcaster} maxParticipants={8}
-              />
+            <div className="absolute inset-0 z-10 flex flex-col">
+              {/* BIGO-style top ~55% panel grid */}
+              <div style={{ height: '55%' }}>
+                <BigoMultiPanel
+                  hostStream={stream}
+                  hostCreator={creator}
+                  currentUser={user}
+                  panelParticipants={stream.panel_creators || []}
+                  onInviteToPanel={() => setShowCoStreamPanel(true)}
+                  onLeaveCall={() => navigate(createPageUrl('Explore'))}
+                  isHost={isBroadcaster}
+                  layout="grid"
+                  maxParticipants={4}
+                />
+              </div>
+              {/* Bottom ~45% is transparent for chat + action bar */}
+              <div className="flex-1 pointer-events-none" />
             </div>
           )}
 
@@ -418,24 +430,21 @@ export default function WatchStream() {
             <GiftLeaderboard streamId={streamId} compact />
           </div>
 
-          {/* Right action bar */}
-          <StreamActionBar
+          {/* BIGO-style bottom action bar */}
+          <BigoBottomBar
+            onChatToggle={() => setShowChat(!showChat)}
+            onEmojiClick={(em) => sendMessageMutation.mutate({ message: em, message_type: 'text' })}
+            onMenuClick={() => setShowExpandedLeaderboard(true)}
             onGiftClick={() => {
               if (!creatorCanReceiveGifts) { toast.error('Creator has not enabled monetization.'); return; }
               setShowGiftPanel(true);
             }}
-            onLikeClick={handleDoubleTap}
-            onShareClick={() => {
-              const url = window.location.href;
-              if (navigator.share) navigator.share({ title: stream.title, url });
-              else navigator.clipboard.writeText(url).then(() => toast.success('Link copied!'));
-            }}
-            onChatToggle={() => setShowChat(!showChat)}
-            onLeaderboardClick={() => setShowExpandedLeaderboard(true)}
-            isLiked={isFollowing}
-            likeCount={creator?.follower_count || 0}
-            giftDisabled={!creatorCanReceiveGifts}
+            onPKClick={() => toast.info('PK Battle — challenge a creator!')}
+            onShopClick={() => navigate(createPageUrl('AffiliateHub'))}
+            onInboxClick={() => setShowExpandedLeaderboard(true)}
             showChat={showChat}
+            giftDisabled={!creatorCanReceiveGifts}
+            hasPK={stream.stream_type === 'pk_battle'}
           />
 
           {/* Chat */}
