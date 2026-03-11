@@ -140,7 +140,9 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
 
           {/* Center: Core Nav + Platforms Hub */}
           <div className="hidden lg:flex items-center gap-1">
-            {CORE_NAV.map(({ name, path, icon: Icon }) => (
+            {CORE_NAV.map(({ name, path, icon: NavIcon }) => {
+            const Icon = NavIcon;
+            return (
               <button
                 key={path}
                 onClick={() => navigate(createPageUrl(path))}
