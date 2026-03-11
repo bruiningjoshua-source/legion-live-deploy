@@ -217,7 +217,10 @@ export function getNextVipTier(points) {
 export default function CurrencyPackages({ onPurchase, isProcessing }) {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [showVipInfo, setShowVipInfo] = useState(false);
+  const [showWhale, setShowWhale] = useState(false);
   const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
+
+  const visiblePackages = showWhale ? packages : packages.filter(p => !p.whale);
 
   const handlePurchase = (pkg) => {
     setSelectedPackage(pkg.id);
