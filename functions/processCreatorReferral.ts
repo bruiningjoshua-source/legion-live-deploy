@@ -56,6 +56,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Idempotency: check if this user already received a referral bonus ──
+    const existingBonus = await base44.asServiceRole.entities.WalletAuditLog.filter(
+      { user_email: user.email, action: 'referral_bonus', related_entity_id: referral.id }, null, 1
+    ).catch(() => []);
+    if (existingBonus[0]) {
+      return Response.json({ error: 'Referral bonus already claimed' }, { status: 400 });
+    }
+
     // ── Award 5000 Denarii to referred creator (immediate) ──
     const referredWallets = await base44.asServiceRole.entities.Wallet.filter(
       { user_email: user.email }, null, 1
