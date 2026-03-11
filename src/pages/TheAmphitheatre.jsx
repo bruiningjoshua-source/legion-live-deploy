@@ -209,7 +209,7 @@ export default function TheAmphitheatre() {
   });
 
   // Derived lists
-  const shorts = useMemo(() => musicVideos.filter(m => m.is_music_video).slice(0, 10), [musicVideos]);
+  const shorts = useMemo(() => musicVideos.slice(0, 10), [musicVideos]);
   const mixes  = useMemo(() => musicVideos.slice(0, 20), [musicVideos]);
   const musicFiltered = useMemo(() => {
     if (!search) return musicVideos;
