@@ -296,7 +296,14 @@ export default function TheAmphitheatre() {
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {shorts.slice(0, 6).map((item, i) => (
-                <ShortCard key={item.id || i} item={item} />
+                <ShortCard 
+                  key={item.id || i} 
+                  item={item}
+                  onAddToWatchLater={handleAddToWatchLater}
+                  onAddToPlaylist={handleAddToPlaylist}
+                  onDownload={handleDownload}
+                  onShare={handleShare}
+                />
               ))}
             </div>
           </section>
