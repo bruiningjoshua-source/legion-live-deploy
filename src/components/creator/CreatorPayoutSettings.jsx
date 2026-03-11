@@ -37,6 +37,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import StripeConnectKYC from './StripeConnectKYC';
+import CancelSubscriptionModal from '@/components/monetization/CancelSubscriptionModal';
 
 const PAYOUT_METHODS = [
   { id: 'stripe_connect', name: 'Bank Account (Stripe)', icon: '🏦', placeholder: 'Connect your bank', recommended: true },
@@ -45,10 +46,10 @@ const PAYOUT_METHODS = [
   { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' }
 ];
 
-// Platform takes 50%, creator gets 50%
-const CREATOR_SHARE = 0.50;
-const DENARII_TO_USD = 0.01; // 1 Denarii = $0.01 base value
-const MIN_PAYOUT_DENARII = 1000; // Minimum 1000 Denarii ($5 payout)
+// 260 Denarii sold per $1 USD; creator earns 60% of gift value
+const CREATOR_SHARE = 0.60;
+const DENARII_TO_USD = (1 / 260) * CREATOR_SHARE; // ~$0.002308 per Denarii
+const MIN_PAYOUT_DENARII = 2600; // ~$6 minimum payout
 
 export default function CreatorPayoutSettings({ creator, user }) {
   const queryClient = useQueryClient();
@@ -209,7 +210,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <span className="text-green-300/70">Denarii</span>
               </div>
               <p className="text-green-400/60 text-sm mt-2">
-                ≈ ${(availableBalance * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)} USD (50% creator share)
+                ≈ ${(availableBalance * DENARII_TO_USD).toFixed(2)} USD (60% creator share)
               </p>
             </div>
             
@@ -450,7 +451,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <p className="text-green-300/70 text-sm mb-1">You'll receive</p>
                 <p className="text-3xl font-bold text-green-100">${estimatedPayout.toFixed(2)}</p>
                 <p className="text-green-400/60 text-xs mt-1">
-                  ({cashoutNum.toLocaleString()} × $0.01 × 50%)
+                  ({cashoutNum.toLocaleString()} Denarii × 60% share ÷ 260)
                 </p>
               </div>
             )}
