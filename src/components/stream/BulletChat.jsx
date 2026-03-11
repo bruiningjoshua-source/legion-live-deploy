@@ -158,7 +158,7 @@ export default function BulletChat({
     : [];
 
   return (
-    <div className={`absolute bottom-0 left-0 z-30 w-full pointer-events-none ${className}`} style={{ maxWidth: '340px' }}>
+    <div className={`absolute left-0 z-30 w-full pointer-events-none ${className}`} style={{ maxWidth: '340px', bottom: 72 }}>
       <div className="flex flex-col px-3 pb-3">
         {/* Bullet messages */}
         <div
