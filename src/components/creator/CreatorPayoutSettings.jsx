@@ -148,7 +148,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
 
   const requestPayoutMutation = useMutation({
     mutationFn: async ({ amount, method }) => {
-      const amountUsd = amount * DENARII_TO_USD * CREATOR_SHARE;
+      // DENARII_TO_USD already includes CREATOR_SHARE — do NOT multiply again
+      const amountUsd = amount * DENARII_TO_USD;
 
       // Create signed request for sensitive payout operation
       const signedPayload = createSignedRequest(
@@ -187,7 +188,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
 
   const availableBalance = creator?.total_earnings_denarii || 0;
   const cashoutNum = parseInt(cashoutAmount) || 0;
-  const estimatedPayout = cashoutNum * DENARII_TO_USD * CREATOR_SHARE;
+  // DENARII_TO_USD already includes CREATOR_SHARE — do NOT multiply again
+  const estimatedPayout = cashoutNum * DENARII_TO_USD;
   const defaultMethod = payoutMethods.find(m => m.is_default) || payoutMethods[0];
 
   const canCashout = cashoutNum >= MIN_PAYOUT_DENARII && 

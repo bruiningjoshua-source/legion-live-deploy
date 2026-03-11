@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
     );
 
     // REVENUE FIX: Calculate actual earnings with guarantee
-    const baseEarnings = (creator.total_earnings_denarii || 0) / 100; // Convert to USD (100 Denarii/$1 = $0.01 per Denarii)
+    // 260 Denarii per $1 USD, creator earns 60% share = $0.002308 per Denarii
+    const baseEarnings = (creator.total_earnings_denarii || 0) * (1 / 260) * 0.60;
     const guaranteeEarnings = guarantees[0] ? guarantees[0].earnings_during_guarantee || 0 : 0;
 
     // Payout can only be withdrawn from actual earnings
