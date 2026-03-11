@@ -326,7 +326,7 @@ export default function Wallet() {
 
           <TabsContent value="history" className="mt-0 space-y-6">
             {/* Creator Earnings (if creator) */}
-            {user?.role === 'admin' && (
+            {user && (
               <CreatorEarningsHub creatorId={user.email} />
             )}
 
@@ -401,7 +401,7 @@ export default function Wallet() {
                         </div>
                         <div className="text-right">
                           <p className="text-amber-400 font-bold text-lg">-{formatCount(tx.total_as_value)}</p>
-                          <p className="text-white/40 text-xs">As</p>
+                          <p className="text-white/40 text-xs">Denarii</p>
                         </div>
                       </motion.div>
                     ))}

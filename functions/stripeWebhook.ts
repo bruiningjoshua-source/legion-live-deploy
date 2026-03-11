@@ -585,8 +585,8 @@ Deno.serve(async (req) => {
       }
 
       case 'charge.dispute.updated': {
-        const charge = event.data.object;
-        console.error('[stripeWebhook] Dispute status updated:', charge.id, '→', charge.dispute.status);
+        const dispute = event.data.object;
+        console.error('[stripeWebhook] Dispute status updated:', dispute.id, '→', dispute.status);
         break;
       }
 
