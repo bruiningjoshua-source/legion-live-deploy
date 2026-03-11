@@ -279,38 +279,45 @@ Deno.serve(async (req) => {
       }
 
       case 'send_weekly_digest': {
-        // Send weekly digest to all creators
-        const user = await base44.auth.me();
-        if (user?.role !== 'admin') {
+        // Allow both: direct admin call (with user session) AND scheduled automation (no session)
+        const digestUser = await base44.auth.me().catch(() => null);
+        if (digestUser && digestUser.role !== 'admin') {
           return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const creators = await base44.asServiceRole.entities.Creator.list('-follower_count', 1000);
-        let sent = 0;
-
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-        for (const creator of creators) {
-          try {
-            // Get real creator stats for the week
-            let weeklyGifts = 0;
-            let weeklyEarnings = 0;
-            let newFollowers = 0;
-            try {
-              const gifts = await base44.asServiceRole.entities.GiftTransaction.filter(
-                { receiver_creator_id: creator.id }, '-created_date', 200
-              );
-              weeklyGifts = gifts.filter(g => g.created_date >= oneWeekAgo).length;
-              weeklyEarnings = gifts.filter(g => g.created_date >= oneWeekAgo)
-                .reduce((sum, g) => sum + (g.total_as_value || 0), 0);
+        // Fetch all data in bulk upfront — avoids N×3 sequential DB queries per creator
+        const [creators, recentGifts, recentFollows] = await Promise.all([
+          base44.asServiceRole.entities.Creator.list('-follower_count', 500),
+          base44.asServiceRole.entities.GiftTransaction.filter(
+            { created_date: { $gte: oneWeekAgo } }, '-created_date', 5000
+          ).catch(() => []),
+          base44.asServiceRole.entities.Follow.filter(
+            { created_date: { $gte: oneWeekAgo } }, '-created_date', 5000
+          ).catch(() => []),
+        ]);
 
-              const follows = await base44.asServiceRole.entities.Follow.filter(
-                { following_creator_id: creator.id }, '-created_date', 200
-              );
-              newFollowers = follows.filter(f => f.created_date >= oneWeekAgo).length;
-            } catch (e) {
-              console.warn(`[digest] Stats fetch failed for ${creator.display_name}:`, e.message);
-            }
+        // Index gifts and follows by creator for O(1) lookup
+        const giftsByCreator = {};
+        for (const g of recentGifts) {
+          if (!giftsByCreator[g.receiver_creator_id]) giftsByCreator[g.receiver_creator_id] = [];
+          giftsByCreator[g.receiver_creator_id].push(g);
+        }
+        const followsByCreator = {};
+        for (const f of recentFollows) {
+          if (!followsByCreator[f.following_creator_id]) followsByCreator[f.following_creator_id] = [];
+          followsByCreator[f.following_creator_id].push(f);
+        }
+
+        let sent = 0;
+        for (const creator of creators) {
+          if (!creator.user_email) continue;
+          try {
+            const creatorGifts = giftsByCreator[creator.id] || [];
+            const weeklyGifts = creatorGifts.length;
+            const weeklyEarnings = creatorGifts.reduce((sum, g) => sum + (g.total_as_value || 0), 0);
+            const newFollowers = (followsByCreator[creator.id] || []).length;
 
             const template = getEmailTemplate('weekly_digest', {
               name: creator.display_name,
@@ -327,7 +334,7 @@ Deno.serve(async (req) => {
             });
             sent++;
           } catch (e) {
-            console.error(`Failed to send digest to ${creator.user_email}:`, e);
+            console.error(`[digest] Failed to send to ${creator.user_email}:`, e.message);
           }
         }
 
