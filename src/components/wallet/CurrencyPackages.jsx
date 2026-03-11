@@ -398,6 +398,17 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
         ))}
       </div>
 
+      {/* Whale packs toggle */}
+      <motion.button
+        onClick={() => setShowWhale(!showWhale)}
+        className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white/80 text-sm font-semibold transition-all flex items-center justify-center gap-2"
+        whileTap={{ scale: 0.98 }}
+      >
+        <Crown className="w-4 h-4 text-amber-400" />
+        {showWhale ? 'Hide Premium Packs' : 'Show Whale Packs ($149 – $999)'}
+        <Zap className={`w-4 h-4 text-amber-400 transition-transform ${showWhale ? 'rotate-180' : ''}`} />
+      </motion.button>
+
       {/* Lotto info callout */}
       <GlassCard padding="p-4" animate={false} glowColor="amber">
         <div className="flex items-start gap-3">
