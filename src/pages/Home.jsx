@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useCurrentUser, useLiveStreams, useCreators } from '@/components/hooks/useStreamData';
 import RecommendationEngine from '@/components/services/RecommendationEngine';
@@ -9,85 +9,110 @@ import PullToRefresh from '@/components/shared/PullToRefresh';
 import { fmt } from '@/components/core/legion';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, TrendingUp, Heart, Trophy, Film, Gamepad2, ShoppingBag, MessageSquare, Sparkles, Sword } from 'lucide-react';
+import {
+  Radio, TrendingUp, Heart, Trophy, Film, Gamepad2,
+  ShoppingBag, Sparkles, Sword, MessageSquare, ChevronRight,
+} from 'lucide-react';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import TrendingSection from '@/components/shared/TrendingSection';
 import CreatorsYouMayLike from '@/components/home/CreatorsYouMayLike';
 
-// ── Platform hub cards ────────────────────────────────────────────────────────
-const HUB_ITEMS = [
+// ── Platform Hubs ─────────────────────────────────────────────────────────────
+const PLATFORM_HUBS = [
   {
     to: 'Explore',
     icon: Radio,
-    title: 'Live Arena',
-    desc: 'Solo · PK · Multi-Host',
-    gradient: 'from-red-600 to-rose-700',
-    glow: 'shadow-red-500/20',
-    border: 'border-red-500/20',
+    title: 'Live Streams',
+    subtitle: 'Solo · PK · Multi-Host',
+    gradient: 'from-red-600/80 to-rose-700/60',
+    border: 'border-red-500/25',
+    glow: 'shadow-red-500/10',
+    badge: 'LIVE',
+    badgeColor: 'bg-red-500',
   },
   {
     to: 'TheAmphitheatre',
     icon: Film,
     title: 'The Colosseum',
-    desc: 'Videos · Shorts',
-    gradient: 'from-blue-600 to-cyan-700',
-    glow: 'shadow-blue-500/20',
-    border: 'border-blue-500/20',
+    subtitle: 'Videos · Shorts · Music',
+    gradient: 'from-blue-600/80 to-cyan-700/60',
+    border: 'border-blue-500/25',
+    glow: 'shadow-blue-500/10',
+    badge: 'WATCH',
+    badgeColor: 'bg-blue-500',
   },
   {
     to: 'TheGamingHub',
     icon: Gamepad2,
     title: 'Gaming Arena',
-    desc: 'Live Gaming Streams',
-    gradient: 'from-purple-600 to-violet-700',
-    glow: 'shadow-purple-500/20',
-    border: 'border-purple-500/20',
+    subtitle: 'Live Gaming · Streams',
+    gradient: 'from-purple-600/80 to-violet-700/60',
+    border: 'border-purple-500/25',
+    glow: 'shadow-purple-500/10',
+    badge: 'ARENA',
+    badgeColor: 'bg-purple-500',
   },
   {
     to: 'GamesExpo',
     icon: Sword,
     title: 'Games Expo',
-    desc: 'Arcade · AI Builder',
-    gradient: 'from-amber-500 to-orange-600',
-    glow: 'shadow-amber-500/20',
-    border: 'border-amber-500/20',
+    subtitle: 'Arcade · AI Builder',
+    gradient: 'from-amber-600/80 to-orange-700/60',
+    border: 'border-amber-500/25',
+    glow: 'shadow-amber-500/10',
+    badge: 'PLAY',
+    badgeColor: 'bg-amber-500',
   },
   {
     to: 'CommunityForums',
     icon: MessageSquare,
     title: 'The Senate',
-    desc: 'Forums · Community',
-    gradient: 'from-cyan-600 to-teal-700',
-    glow: 'shadow-cyan-500/20',
-    border: 'border-cyan-500/20',
+    subtitle: 'Forums · Discussions',
+    gradient: 'from-cyan-600/80 to-teal-700/60',
+    border: 'border-cyan-500/25',
+    glow: 'shadow-cyan-500/10',
+    badge: 'FORUM',
+    badgeColor: 'bg-cyan-500',
   },
   {
     to: 'AffiliateHub',
     icon: ShoppingBag,
     title: 'Merchant Hub',
-    desc: 'Brands · Affiliate',
-    gradient: 'from-emerald-600 to-green-700',
-    glow: 'shadow-emerald-500/20',
-    border: 'border-emerald-500/20',
+    subtitle: 'Brands · Affiliate',
+    gradient: 'from-emerald-600/80 to-green-700/60',
+    border: 'border-emerald-500/25',
+    glow: 'shadow-emerald-500/10',
+    badge: 'EARN',
+    badgeColor: 'bg-emerald-500',
   },
 ];
 
-const HubCard = memo(function HubCard({ item }) {
-  const Icon = item.icon;
+const PlatformCard = memo(function PlatformCard({ hub }) {
+  const Icon = hub.icon;
   return (
-    <Link to={createPageUrl(item.to)}>
-      <div className={`group cursor-pointer relative overflow-hidden rounded-2xl border ${item.border} bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300 shadow-lg ${item.glow} hover:shadow-xl`}>
-        {/* Gold shimmer on hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-amber-500/5 to-transparent" />
-        <div className="relative p-4 flex flex-col items-center text-center gap-3">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-            <Icon className="w-5 h-5 text-white" />
+    <Link to={createPageUrl(hub.to)}>
+      <div className={`group relative h-full overflow-hidden rounded-2xl border ${hub.border} bg-gradient-to-br ${hub.gradient} shadow-lg ${hub.glow} hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer`}>
+        {/* Stone texture overlay */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=20')] bg-cover bg-center opacity-5 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        <div className="relative p-4 flex flex-col h-full min-h-[110px]">
+          <div className="flex items-start justify-between mb-auto">
+            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center backdrop-blur-sm">
+              <Icon className="w-5 h-5 text-white" />
+            </div>
+            <span className={`${hub.badgeColor} text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-widest`}>
+              {hub.badge}
+            </span>
           </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">{item.title}</p>
-            <p className="text-white/40 text-[10px] font-medium mt-0.5">{item.desc}</p>
+          <div className="mt-3">
+            <p className="text-white font-bold text-sm leading-tight">{hub.title}</p>
+            <p className="text-white/50 text-[10px] mt-0.5 font-medium">{hub.subtitle}</p>
           </div>
         </div>
+
+        {/* Right-arrow hint */}
+        <ChevronRight className="absolute bottom-3 right-3 w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all" />
       </div>
     </Link>
   );
@@ -104,9 +129,9 @@ const StreamSkeleton = memo(function StreamSkeleton() {
 });
 
 const TAB_ITEMS = [
-  { value: 'personalized', icon: Heart,      label: 'For You'   },
-  { value: 'trending',     icon: TrendingUp, label: 'Trending'  },
-  { value: 'featured',     icon: Trophy,     label: 'Featured'  },
+  { value: 'personalized', icon: Heart,      label: 'For You'  },
+  { value: 'trending',     icon: TrendingUp, label: 'Trending' },
+  { value: 'featured',     icon: Trophy,     label: 'Featured' },
 ];
 
 export default function Home() {
@@ -135,7 +160,7 @@ export default function Home() {
 
   const creatorMap = useMemo(() => {
     const map = {};
-    for (const c of creators) map[c.id] = c;
+    creators.forEach(c => { map[c.id] = c; });
     return map;
   }, [creators]);
 
@@ -145,8 +170,7 @@ export default function Home() {
   );
 
   const featuredStreams = useMemo(() =>
-    streams
-      .filter(s => (s.viewer_count || 0) > 100 || s.is_featured)
+    streams.filter(s => (s.viewer_count || 0) > 100 || s.is_featured)
       .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
       .slice(0, 10),
     [streams]
@@ -154,24 +178,22 @@ export default function Home() {
 
   const renderStreamGrid = (list) => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-      {list.map((s, i) => (
-        <PremiumStreamCard key={s.id} stream={s} creator={creatorMap[s.creator_id]} index={i} />
+      {list.map((stream, i) => (
+        <PremiumStreamCard key={stream.id} stream={stream} creator={creatorMap[stream.creator_id]} index={i} />
       ))}
     </div>
   );
 
-  const renderEmpty = () => (
+  const renderEmptyLive = () => (
     <div className="text-center py-20 px-6">
-      {/* Roman archway decoration */}
-      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 flex items-center justify-center">
+      <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
         <Radio className="w-8 h-8 text-amber-500/40" />
       </div>
-      <h3 className="text-white font-bold text-xl mb-2">No Streams Live</h3>
-      <p className="text-white/40 text-sm mb-8 max-w-xs mx-auto">The arena awaits its champions. Be the first to step into the spotlight.</p>
+      <h3 className="text-white font-bold text-lg mb-2">No Streams Live</h3>
+      <p className="text-white/35 text-sm mb-6 max-w-xs mx-auto">The arena is empty. Be the first to enter and grow your following.</p>
       <Link to={createPageUrl('GoLive')}>
-        <button className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white rounded-xl px-8 py-3 text-sm font-bold shadow-lg shadow-red-500/20 transition-all border border-red-500/30">
-          <Radio className="w-4 h-4 inline mr-2" />
-          Enter the Arena
+        <button className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white rounded-xl px-6 py-2.5 text-sm font-bold shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 mx-auto">
+          <Radio className="w-4 h-4" /> Enter the Arena
         </button>
       </Link>
     </div>
@@ -182,106 +204,111 @@ export default function Home() {
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-          {/* ── Hero ─────────────────────────────────────────────────────── */}
-          <div className="text-center pt-8 pb-10 sm:pt-12 sm:pb-12">
-            {/* Live status pill */}
-            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-full px-4 py-1.5 mb-6 shadow-lg shadow-amber-500/5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400" />
+          {/* ── Hero ── */}
+          <div className="text-center pt-8 pb-6 sm:pt-10 sm:pb-8">
+            {/* Live indicator */}
+            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-full px-4 py-1.5 mb-5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400" />
               </span>
-              <span className="text-amber-300 text-[11px] font-bold tracking-widest uppercase">Platform Live</span>
+              <span className="text-amber-400/80 text-[10px] font-black uppercase tracking-[0.2em]">Platform Active</span>
             </div>
 
-            {/* Title — Roman serif-feel */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-2 leading-none">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 animate-gradient-x">
-                Legion Live
+            {/* Title — Roman carved lettering style */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-1">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600">
+                LEGION
               </span>
+              <span className="text-white/90 ml-3">LIVE</span>
             </h1>
-            <p className="text-white/40 text-sm sm:text-base font-semibold tracking-[0.2em] uppercase mt-2">
-              Stream · Compete · Conquer
+            <p className="text-amber-600/60 text-xs font-bold tracking-[0.35em] uppercase mb-6">
+              SENATUS POPULUSQUE ROMANUS · MMXXVI
             </p>
 
             {/* Stats bar */}
-            <div className="flex items-center justify-center gap-6 sm:gap-10 mt-8 px-5 py-4 bg-white/[0.03] backdrop-blur-xl border border-amber-500/10 rounded-2xl max-w-lg mx-auto shadow-inner">
+            <div className="inline-flex items-center gap-8 px-6 py-3 bg-gradient-to-r from-amber-900/20 via-stone-900/30 to-amber-900/20 border border-amber-700/20 rounded-2xl">
               <div className="text-center">
-                <p className="text-xl sm:text-2xl font-black text-red-400">{fmt.count(streams.length)}</p>
-                <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest mt-0.5">Live Now</p>
+                <p className="text-xl font-black text-amber-400">{fmt.count(streams.length)}</p>
+                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-0.5">Live Now</p>
               </div>
-              <div className="w-px h-8 bg-gradient-to-b from-transparent via-amber-700/30 to-transparent" />
+              <div className="w-px h-8 bg-amber-700/30" />
               <div className="text-center">
-                <p className="text-xl sm:text-2xl font-black text-white">{fmt.count(creators.length)}</p>
-                <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest mt-0.5">Creators</p>
+                <p className="text-xl font-black text-white">{fmt.count(creators.length)}</p>
+                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-0.5">Creators</p>
               </div>
-              <div className="w-px h-8 bg-gradient-to-b from-transparent via-amber-700/30 to-transparent" />
+              <div className="w-px h-8 bg-amber-700/30" />
               <div className="text-center">
-                <p className="text-xl sm:text-2xl font-black text-amber-400">60%</p>
-                <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest mt-0.5">Creator Cut</p>
+                <p className="text-xl font-black text-amber-400">60%</p>
+                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-0.5">Creator Cut</p>
               </div>
             </div>
           </div>
 
-          {/* ── Platform Hubs ─────────────────────────────────────────────── */}
+          {/* ── Platform Hubs Grid ── */}
           <section className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-700/20" />
-              <p className="text-amber-600/60 text-[10px] font-bold uppercase tracking-widest">Legion Platforms</p>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-700/20" />
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-700/30" />
+              <span className="text-amber-600/50 text-[10px] font-black tracking-[0.3em] uppercase">Platforms</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-700/30" />
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {HUB_ITEMS.map(item => <HubCard key={item.to} item={item} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {PLATFORM_HUBS.map(hub => (
+                <PlatformCard key={hub.to} hub={hub} />
+              ))}
             </div>
           </section>
 
-          {/* ── Creators You May Like ─────────────────────────────────────── */}
+          {/* ── Creators You May Like ── */}
           <CreatorsYouMayLike user={user} />
 
-          {/* ── Live Stream Tabs ──────────────────────────────────────────── */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-700/20" />
-              <TabsList className="inline-flex bg-white/[0.05] backdrop-blur-xl border border-amber-500/15 p-1 rounded-2xl gap-1 h-auto shadow-lg">
-                {TAB_ITEMS.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl px-4 py-2 text-white/40 hover:text-white/80 transition-all text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <tab.icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-700/20" />
+          {/* ── Live Feed Tabs ── */}
+          <section>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-700/30" />
+              <span className="text-amber-600/50 text-[10px] font-black tracking-[0.3em] uppercase">Live Arena</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-700/30" />
             </div>
 
-            <TabsContent value="personalized" className="mt-0">
-              {streamsLoading ? <StreamSkeleton /> :
-                personalizedStreams.length > 0
-                  ? renderStreamGrid(personalizedStreams.slice(0, 15))
-                  : renderEmpty()
-              }
-            </TabsContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
+              <div className="flex justify-center">
+                <TabsList className="inline-flex bg-amber-900/20 border border-amber-700/25 p-1 rounded-xl gap-0.5 h-auto">
+                  {TAB_ITEMS.map(tab => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border data-[state=active]:border-amber-500/30 data-[state=active]:shadow-none rounded-lg px-4 py-2 text-white/40 hover:text-white/70 transition-all text-sm font-semibold"
+                    >
+                      <tab.icon className="w-3.5 h-3.5 mr-1.5" />
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
-            <TabsContent value="trending" className="mt-0">
-              <TrendingSection />
-            </TabsContent>
+              <TabsContent value="personalized" className="mt-0">
+                {streamsLoading ? <StreamSkeleton /> :
+                  personalizedStreams.length > 0 ? renderStreamGrid(personalizedStreams.slice(0, 15)) : renderEmptyLive()
+                }
+              </TabsContent>
 
-            <TabsContent value="featured" className="mt-0">
-              {streamsLoading ? <StreamSkeleton /> :
-                featuredStreams.length >= 3
-                  ? renderStreamGrid(featuredStreams)
-                  : (
+              <TabsContent value="trending" className="mt-0">
+                <TrendingSection />
+              </TabsContent>
+
+              <TabsContent value="featured" className="mt-0">
+                {streamsLoading ? <StreamSkeleton /> :
+                  featuredStreams.length >= 3 ? renderStreamGrid(featuredStreams) : (
                     <div className="text-center py-16">
-                      <Sparkles className="w-12 h-12 text-amber-500/20 mx-auto mb-4" />
-                      <h3 className="text-white font-bold text-lg mb-1">No Featured Streams Yet</h3>
-                      <p className="text-white/35 text-sm">Featured when creators reach 100+ viewers.</p>
+                      <Sparkles className="w-10 h-10 text-amber-500/20 mx-auto mb-4" />
+                      <h3 className="text-white font-bold text-lg mb-1">No Featured Streams</h3>
+                      <p className="text-white/30 text-sm">Appears when creators reach 100+ viewers.</p>
                     </div>
                   )
-              }
-            </TabsContent>
-          </Tabs>
+                }
+              </TabsContent>
+            </Tabs>
+          </section>
 
         </div>
       </PullToRefresh>
