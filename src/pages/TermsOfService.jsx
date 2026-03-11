@@ -1,192 +1,143 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, Shield, Users, CreditCard, AlertTriangle, Scale } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, Users, CreditCard, Shield, AlertTriangle, Scale, ChevronDown, ArrowLeft } from 'lucide-react';
+
+const SECTIONS = [
+  {
+    icon: Users,
+    title: '1. Account Terms',
+    content: [
+      { heading: '1.1 Eligibility', body: 'You must be at least 18 years old to create an account and use Legion Live. By creating an account, you represent that you meet this age requirement and have the legal capacity to enter into this agreement.' },
+      { heading: '1.2 Account Responsibility', body: 'You are solely responsible for maintaining the security of your credentials, all activity under your account, and ensuring your account information is accurate and up to date. Do not share account access with others.' },
+      { heading: '1.3 Account Termination', body: 'We reserve the right to suspend or terminate accounts that violate these Terms, engage in fraudulent activity, harm the community, or otherwise compromise platform integrity. Serious violations result in immediate permanent bans.' },
+    ]
+  },
+  {
+    icon: FileText,
+    title: '2. Content Guidelines',
+    content: [
+      { heading: '2.1 Prohibited Content', body: 'Strictly prohibited: nudity or sexual content; violence, gore, or content promoting self-harm; harassment, bullying, or hate speech targeting any group; illegal activities; copyrighted material without permission; spam, scams, or deceptive content; any content involving minors in inappropriate contexts.' },
+      { heading: '2.2 Content Ownership', body: 'You retain full ownership of content you create. By posting content on Legion Live, you grant us a non-exclusive, worldwide, royalty-free license to display, distribute, and promote your content on the platform. We may remove any content that violates these guidelines without prior notice.' },
+      { heading: '2.3 DMCA Compliance', body: 'Legion Live complies with the Digital Millennium Copyright Act (DMCA). Copyright holders may submit takedown notices to legal@legionlive.com. Counter-notices may be submitted as permitted by law.' },
+    ]
+  },
+  {
+    icon: CreditCard,
+    title: '3. Payments & Monetization',
+    content: [
+      { heading: '3.1 Virtual Currency', body: 'Legion Live uses Denarii as its virtual currency. The rate is 65 Denarii = $1 USD. Denarii are used for in-app transactions including gifts, fan club subscriptions, and PPV events. Virtual currency has no independent monetary value outside the platform and cannot be redeemed for cash by viewers.' },
+      { heading: '3.2 Creator Earnings', body: 'Creators earn 70% of the face value of virtual gifts received. For every 65 Denarii gifted, creators receive $0.70 USD. Earnings are subject to a minimum payout threshold of 650 Denarii (~$10 USD). Payouts may be withheld for suspected fraud, chargebacks, or policy violations.' },
+      { heading: '3.3 Subscriptions & Fan Clubs', body: 'Fan club subscriptions are billed on the cycle selected. Cancellation takes effect at the end of the current billing period. Refunds are evaluated on a case-by-case basis by our support team.' },
+      { heading: '3.4 Chargebacks & Fraud', body: 'Fraudulent chargebacks will result in immediate account suspension, reversal of associated Denarii, and potential permanent ban. Legion Live cooperates fully with payment processors and law enforcement to investigate financial fraud.' },
+    ]
+  },
+  {
+    icon: Shield,
+    title: '4. Privacy & Data',
+    content: [
+      { heading: '4.1 Data Collection', body: 'We collect account information, usage data, payment details (processed via Stripe), content you create, and device/location data as described fully in our Privacy Policy.' },
+      { heading: '4.2 Data Use', body: 'Your data is used to provide and improve our services, process transactions, facilitate creator payouts, enforce these terms, and communicate with you about the platform.' },
+      { heading: '4.3 Data Protection', body: 'We implement AES-256 encryption at rest and TLS 1.3 in transit. For full details, see our Privacy Policy. You may request your data, corrections, or deletion at privacy@legionlive.com.' },
+    ]
+  },
+  {
+    icon: AlertTriangle,
+    title: '5. Disclaimers & Limitations',
+    content: [
+      { heading: '5.1 Service Availability', body: 'We target 99.9% uptime but do not guarantee uninterrupted service. Scheduled maintenance, third-party outages (streaming infrastructure, payment processors), or unforeseen technical events may temporarily affect access.' },
+      { heading: '5.2 Limitation of Liability', body: 'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW: Legion Live is provided "as is" without warranties of any kind. We are not liable for indirect, incidental, special, exemplary, or consequential damages. Our total aggregate liability is limited to the greater of $100 USD or the amount you paid us in the preceding 12 months.' },
+      { heading: '5.3 Indemnification', body: 'You agree to indemnify, defend, and hold harmless Legion Live Inc., Legion Software Smiths, and their officers from any claims, liabilities, damages, and expenses arising from your use of the service, your content, or your violation of these Terms.' },
+    ]
+  },
+  {
+    icon: Scale,
+    title: '6. Dispute Resolution',
+    content: [
+      { heading: '6.1 Governing Law', body: 'These Terms are governed by the laws of the State of Delaware, USA, without regard to conflict of law provisions.' },
+      { heading: '6.2 Binding Arbitration', body: 'Any dispute, claim, or controversy arising from these Terms or your use of Legion Live will be resolved by binding individual arbitration under the AAA Consumer Arbitration Rules, except claims eligible for small claims court.' },
+      { heading: '6.3 Class Action Waiver', body: 'You expressly waive any right to participate as a plaintiff or class member in any class, collective, or representative action or proceeding against Legion Live.' },
+      { heading: '6.4 Contact', body: 'Questions about these Terms? Contact: legal@legionlive.com' },
+    ]
+  }
+];
+
+function SectionCard({ icon: Icon, title, content }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] overflow-hidden">
+      <button
+        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-amber-400" />
+        </div>
+        <span className="text-white font-bold text-sm flex-1">{title}</span>
+        <motion.div animate={{ rotate: open ? 180 : 0 }}>
+          <ChevronDown className="w-4 h-4 text-white/30" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 space-y-4 border-t border-white/[0.05]">
+              {content.map((item, i) => (
+                <div key={i} className="pt-4">
+                  <p className="text-amber-300 text-xs font-bold uppercase tracking-wide mb-1.5">{item.heading}</p>
+                  <p className="text-white/60 text-sm leading-relaxed">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function TermsOfService() {
-  const lastUpdated = "January 30, 2026";
-  
-  const sections = [
-    {
-      icon: Users,
-      title: "1. Account Terms",
-      content: `
-**1.1 Eligibility**
-You must be at least 18 years old to create an account and use Legion Live. By creating an account, you represent and warrant that you meet this age requirement.
-
-**1.2 Account Responsibility**
-- You are responsible for maintaining the security of your account credentials
-- You must not share your account with others
-- You are responsible for all activities that occur under your account
-- You must notify us immediately of any unauthorized use
-
-**1.3 Account Termination**
-We reserve the right to suspend or terminate accounts that violate these terms, engage in fraudulent activity, or harm the community.
-      `
-    },
-    {
-      icon: FileText,
-      title: "2. Content Guidelines",
-      content: `
-**2.1 Prohibited Content**
-The following content is strictly prohibited:
-- Nudity, sexual content, or sexually suggestive material
-- Violence, gore, or content promoting harm
-- Harassment, bullying, or hate speech
-- Illegal activities or content promoting illegal acts
-- Copyrighted material without permission
-- Spam, scams, or misleading content
-- Content involving minors in inappropriate contexts
-
-**2.2 Content Ownership**
-- You retain ownership of content you create
-- By posting content, you grant Legion Live a license to display, distribute, and promote your content
-- We may remove content that violates our guidelines without notice
-
-**2.3 DMCA Compliance**
-We comply with the Digital Millennium Copyright Act. Copyright holders may submit takedown notices for infringing content.
-      `
-    },
-    {
-      icon: CreditCard,
-      title: "3. Payments & Monetization",
-      content: `
-**3.1 Virtual Currency**
-- Legion Live uses virtual currencies (Denarii, Sestertii, As) for in-app transactions
-- Virtual currency has no real-world value and cannot be exchanged for cash
-- Purchases of virtual currency are final and non-refundable except as required by law
-
-**3.2 Creator Earnings**
-- Creators earn a percentage of virtual gifts received during streams
-- Earnings are subject to applicable taxes and fees
-- Minimum payout thresholds apply
-- We reserve the right to withhold payouts for suspected fraud
-
-**3.3 Subscriptions**
-- Creator subscriptions are billed according to the selected plan
-- Cancellations take effect at the end of the billing period
-- Refunds are handled on a case-by-case basis
-
-**3.4 Chargebacks & Fraud**
-- Fraudulent chargebacks may result in account termination
-- We cooperate with payment processors to investigate fraud
-      `
-    },
-    {
-      icon: Shield,
-      title: "4. Privacy & Data",
-      content: `
-**4.1 Data Collection**
-We collect data as described in our Privacy Policy, including:
-- Account information
-- Usage data and analytics
-- Payment information
-- Content you create
-
-**4.2 Data Use**
-Your data is used to:
-- Provide and improve our services
-- Process payments
-- Communicate with you
-- Enforce our terms and policies
-
-**4.3 Data Protection**
-We implement industry-standard security measures to protect your data. See our Privacy Policy for details.
-      `
-    },
-    {
-      icon: AlertTriangle,
-      title: "5. Disclaimers & Limitations",
-      content: `
-**5.1 Service Availability**
-- We strive for high availability but do not guarantee uninterrupted service
-- We may modify or discontinue features at any time
-- Scheduled maintenance may temporarily affect access
-
-**5.2 Limitation of Liability**
-TO THE MAXIMUM EXTENT PERMITTED BY LAW:
-- Legion Live is provided "as is" without warranties
-- We are not liable for indirect, incidental, or consequential damages
-- Our total liability is limited to the amount you paid us in the past 12 months
-
-**5.3 Indemnification**
-You agree to indemnify and hold harmless Legion Live from claims arising from your use of the service or violation of these terms.
-      `
-    },
-    {
-      icon: Scale,
-      title: "6. Dispute Resolution",
-      content: `
-**6.1 Governing Law**
-These terms are governed by the laws of the State of Delaware, USA.
-
-**6.2 Arbitration**
-Any disputes will be resolved through binding arbitration rather than court, except for claims that qualify for small claims court.
-
-**6.3 Class Action Waiver**
-You agree to resolve disputes individually and waive the right to participate in class actions.
-
-**6.4 Contact**
-For questions about these terms, contact: legal@legionlive.com
-      `
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
+    <div className="min-h-screen pt-16 pb-24 bg-[#09090b]">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-amber-500/[0.04] rounded-full blur-3xl" />
+      </div>
+      <div className="relative z-10 max-w-3xl mx-auto px-4 pt-6">
+        <Link to={createPageUrl('HelpAndInfo')} className="inline-flex items-center gap-1.5 text-white/40 hover:text-white text-sm mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Help
+        </Link>
+
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-500/30 rounded-full px-4 py-2 mb-4">
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-1.5 mb-4">
             <FileText className="w-4 h-4 text-amber-400" />
-            <span className="text-amber-200 text-sm">Legal</span>
+            <span className="text-amber-300 text-sm font-medium">Legal</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Terms of Service</h1>
-          <p className="text-amber-400/70">Last updated: {lastUpdated}</p>
+          <h1 className="text-3xl font-black text-white mb-2">Terms of Service</h1>
+          <p className="text-white/35 text-sm">Last updated: March 11, 2026</p>
         </div>
 
-        {/* Introduction */}
-        <Card className="bg-stone-800/30 border-amber-600/20 mb-6">
-          <CardContent className="p-6">
-            <p className="text-amber-200/80 leading-relaxed">
-              Welcome to Legion Live. By accessing or using our platform, you agree to be bound by these 
-              Terms of Service. Please read them carefully before using our services. If you do not agree 
-              to these terms, you may not use Legion Live.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Sections */}
-        <div className="space-y-6">
-          {sections.map((section, index) => {
-            const Icon = section.icon;
-            return (
-              <Card key={index} className="bg-stone-800/30 border-amber-600/20">
-                <CardHeader>
-                  <CardTitle className="text-amber-100 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-amber-400" />
-                    </div>
-                    {section.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-amber-200/70 leading-relaxed whitespace-pre-line prose prose-invert prose-amber max-w-none">
-                    {section.content.split('**').map((part, i) => 
-                      i % 2 === 1 ? <strong key={i} className="text-amber-200">{part}</strong> : part
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="rounded-2xl bg-amber-900/15 border border-amber-500/20 p-5 mb-6">
+          <p className="text-white/70 text-sm leading-relaxed">
+            Welcome to Legion Live. By accessing or using our platform, you agree to be bound by these Terms of Service.
+            Please read them carefully. If you do not agree, you may not use Legion Live.
+            Legion Live is operated by Legion Live Inc., built by Legion Software Smiths.
+          </p>
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center text-amber-400/50 text-sm">
-          <p>By using Legion Live, you acknowledge that you have read and agree to these Terms of Service.</p>
-          <p className="mt-2">© 2026 Legion Live. All rights reserved.</p>
+        <div className="space-y-3">
+          {SECTIONS.map((s, i) => <SectionCard key={i} {...s} />)}
         </div>
+
+        <p className="text-center text-white/20 text-xs mt-8 pb-4">
+          © 2026 Legion Live Inc. · Built by Legion Software Smiths · All rights reserved.
+        </p>
       </div>
     </div>
   );
