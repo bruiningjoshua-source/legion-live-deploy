@@ -38,8 +38,9 @@ function ytThumb(url) {
 // ── Short card (portrait 9:16) ────────────────────────────────────────────────
 function ShortCard({ item, onAddToWatchLater, onAddToPlaylist, onDownload, onShare }) {
   const thumb = item.cover_url || ytThumb(item.video_url);
+  const videoUrl = createPageUrl(`WatchVideo?id=${item.id}&type=music`);
   return (
-    <a href={item.video_url || '#'} target="_blank" rel="noopener noreferrer">
+    <Link to={videoUrl}>
       <div className="group relative rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/20 transition-all" style={{ aspectRatio: '9/16' }}>
         {thumb ? (
           <img src={thumb} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
