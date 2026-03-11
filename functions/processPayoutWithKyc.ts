@@ -162,9 +162,9 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.WalletAuditLog.create({
       user_email: user.email,
       action: 'payout',
-      amount_denarii: -Math.floor(amount_usd * 180),
+      amount_denarii: -Math.floor(amount_usd * 260),
       previous_balance: creator.total_earnings_denarii || 0,
-      new_balance: (creator.total_earnings_denarii || 0) - Math.floor(amount_usd * 180),
+      new_balance: (creator.total_earnings_denarii || 0) - Math.floor(amount_usd * 260),
       related_entity_id: payout.id,
       reason: `Payout request: $${amount_usd} USD (KYC verified, request signed)`,
       ip_address: req.headers.get('x-forwarded-for') || 'unknown',

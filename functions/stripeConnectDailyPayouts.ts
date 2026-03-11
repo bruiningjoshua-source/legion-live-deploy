@@ -9,9 +9,10 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
-const CREATOR_SHARE = 0.50;
-const DENARII_TO_USD = 0.01;
-const MIN_AUTO_PAYOUT_DENARII = 5000; // $25 minimum for auto-payout
+// DENARII_TO_USD already encapsulates the 60% creator share — do NOT multiply by CREATOR_SHARE again.
+// 260 Denarii per $1 USD * 60% creator share = $0.002308 per Denarii
+const DENARII_TO_USD = (1 / 260) * 0.60; // ~$0.002308
+const MIN_AUTO_PAYOUT_DENARII = 5000; // ~$11.50 minimum for auto-payout
 
 Deno.serve(async (req) => {
   try {
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const payoutUsd = balance * DENARII_TO_USD * CREATOR_SHARE;
+        const payoutUsd = balance * DENARII_TO_USD;
         const payoutCents = Math.round(payoutUsd * 100);
 
         if (payoutCents < 100) { results.skipped++; continue; }
