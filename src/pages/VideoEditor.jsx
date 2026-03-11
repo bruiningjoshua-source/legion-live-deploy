@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner';
 import VideoTimeline from '@/components/editor/VideoTimeline';
 import VideoEffectsPanel from '@/components/editor/VideoEffectsPanel';
+import VideoColorGrader from '@/components/editor/VideoColorGrader';
 
 const CATEGORIES = [
   { value: 'gaming', label: '🎮 Gaming' },
@@ -156,9 +157,10 @@ export default function VideoEditor() {
   }
 
   const panelTabs = [
-    { id: 'details', label: 'Details', icon: Settings },
-    { id: 'timeline', label: 'Timeline', icon: Layers },
-    { id: 'export', label: 'Export', icon: Download },
+    { id: 'details',  label: 'Details',    icon: Settings },
+    { id: 'timeline', label: 'Edit',       icon: Layers },
+    { id: 'color',    label: 'Color',      icon: Crop },
+    { id: 'export',   label: 'Export',     icon: Download },
   ];
 
   return (
@@ -484,6 +486,28 @@ export default function VideoEditor() {
                   )}
                 </AnimatePresence>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── COLOR GRADING PANEL ── */}
+        {activePanel === 'color' && (
+          <div className="flex-1 flex min-h-0">
+            {/* Preview */}
+            <div className="w-72 shrink-0 border-r border-white/[0.06] bg-black flex flex-col">
+              <div className="flex-1 flex items-center justify-center relative">
+                {videoData?.thumbnail_url
+                  ? <img src={videoData.thumbnail_url} className="max-w-full max-h-full object-contain" alt="" style={{ filter: 'contrast(1.05) saturate(1.1)' }} />
+                  : <div className="text-white/10 text-center"><Crop className="w-12 h-12 mx-auto mb-2 opacity-20" /><p className="text-xs">No preview</p></div>
+                }
+              </div>
+              <div className="p-3 border-t border-white/[0.06] text-center">
+                <p className="text-white/30 text-xs">Color Grade Preview</p>
+              </div>
+            </div>
+            {/* Grader */}
+            <div className="flex-1 overflow-hidden">
+              <VideoColorGrader onGradeChange={(grade) => toast.info('Grade applied')} />
             </div>
           </div>
         )}
