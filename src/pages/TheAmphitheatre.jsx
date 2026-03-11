@@ -309,7 +309,12 @@ export default function TheAmphitheatre() {
         {/* SHORTS shelf */}
         {showShorts && shorts.length > 0 && (
           <section>
-            <SectionHeader icon={() => <span className="text-red-500 font-black text-lg">▶</span>} title="Shorts" iconColor="text-red-500" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-red-500 font-black text-lg leading-none">▶</span>
+                <h2 className="text-white font-bold text-base">Shorts</h2>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-2.5">
               {shorts.slice(0, 6).map((item, i) => (
                 <ShortCard key={item.id || i} item={item} />
