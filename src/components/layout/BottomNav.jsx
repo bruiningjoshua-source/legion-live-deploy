@@ -44,7 +44,7 @@ export default function BottomNav() {
                  )}
 
                 {highlight ? (
-                   /* Go Live special button */}
+                   /* Go Live special button */
                    <div className={`w-12 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-90 ${
                      active
                        ? 'bg-gradient-to-br from-pink-500 to-red-500 shadow-pink-500/40'
