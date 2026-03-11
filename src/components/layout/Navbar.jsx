@@ -139,7 +139,7 @@ export default function Navbar({ user, wallet, onOpenShieldMenu }) {
               <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-amber-500/10 to-amber-400/5 rounded-2xl px-4 py-2 hover:from-amber-500/15 hover:to-amber-400/10 transition-all border border-amber-500/20 backdrop-blur-lg">
                 <span className="text-base">🪙</span>
                 <span className="text-white font-bold text-sm">{(wallet.denarii_balance || 0).toLocaleString()}</span>
-                <span className="text-white/50 text-xs">≈${((wallet.denarii_balance || 0) * 0.01 * 0.5).toFixed(2)}</span>
+                <span className="text-white/50 text-xs">≈${((wallet.denarii_balance || 0) / 260 * 0.6).toFixed(2)}</span>
               </div>
             </Link>
           )}

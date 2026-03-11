@@ -185,29 +185,18 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case 'send': {
+        // Require admin auth for the generic send action to prevent abuse
+        const sendUser = await base44.auth.me();
+        if (sendUser?.role !== 'admin') {
+          return Response.json({ error: 'Forbidden' }, { status: 403 });
+        }
         const { templateName, recipientEmail, templateData } = data;
-        
         const template = getEmailTemplate(templateName, templateData);
-        
-        // Send email using Core integration
         await base44.integrations.Core.SendEmail({
           to: recipientEmail,
           subject: template.subject,
           body: template.html
         });
-
-        // Log email sent
-        await base44.asServiceRole.entities.PlatformAnalytics.create({
-          metric_type: 'email_sent',
-          metric_name: templateName,
-          metric_value: 1,
-          metadata: {
-            recipient: recipientEmail,
-            template: templateName,
-            sent_at: new Date().toISOString()
-          }
-        });
-
         return Response.json({ success: true, message: 'Email sent' });
       }
 
