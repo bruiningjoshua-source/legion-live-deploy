@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, X, ChevronDown, Shield, LogOut,
   User, Settings, Film, Wallet, Menu, Bell, Sword, Tv,
-  Gamepad2, Users, ShoppingBag, Home, Mic, HelpCircle
+  Gamepad2, Users, ShoppingBag, Home, Mic, HelpCircle, TrendingUp
 } from 'lucide-react';
 import NotificationBell from '@/components/social/NotificationBell';
 import {
@@ -194,12 +194,13 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
                 <div className="h-px bg-white/[0.06] mb-1" />
 
                 {[
-                  { to: 'Profile',       icon: User,        label: 'Profile' },
-                  { to: 'Wallet',        icon: Wallet,     label: 'Wallet' },
-                  { to: 'CreatorStudio', icon: Film,       label: 'Creator Studio' },
-                  { to: 'Settings',      icon: Settings,   label: 'Settings' },
-                  { to: 'HelpAndInfo',   icon: HelpCircle, label: 'Help & Info' },
-                ].map(({ to, icon: Icon, label }) => (
+                   { to: 'Profile',            icon: User,        label: 'Profile' },
+                   { to: 'EarningsDashboard',  icon: TrendingUp,  label: '💰 Earnings Hub' },
+                   { to: 'Wallet',             icon: Wallet,      label: 'Wallet' },
+                   { to: 'CreatorStudio',      icon: Film,        label: 'Creator Studio' },
+                   { to: 'Settings',           icon: Settings,    label: 'Settings' },
+                   { to: 'HelpAndInfo',        icon: HelpCircle,  label: 'Help & Info' },
+                 ].map(({ to, icon: Icon, label }) => (
                   <DropdownMenuItem key={to} asChild>
                     <Link
                       to={createPageUrl(to)}
