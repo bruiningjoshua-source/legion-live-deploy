@@ -79,7 +79,7 @@ export default function WithdrawalForm({ creator, earnings, payoutMethods }) {
             className="bg-stone-900 border-amber-600/20 text-amber-100"
           />
           {amountNum > 0 && (
-            <p className="text-amber-400/60 text-xs mt-1">≈ ${usdValue} USD (40% creator share)</p>
+            <p className="text-amber-400/60 text-xs mt-1">≈ ${usdValue} USD (60% creator share · 180 Denarii/$1)</p>
           )}
           <p className="text-amber-400/50 text-xs mt-1">Available: 🪙 {availableBalance.toLocaleString()}</p>
         </div>

@@ -46,10 +46,10 @@ const PAYOUT_METHODS = [
   { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' }
 ];
 
-// 260 Denarii sold per $1 USD; creator earns 60% of gift value
+// Platform economics: 180 Denarii = $1 USD; creator earns 60% of gift value
 const CREATOR_SHARE = 0.60;
-const DENARII_TO_USD = (1 / 260) * CREATOR_SHARE; // ~$0.002308 per Denarii
-const MIN_PAYOUT_DENARII = 2600; // ~$6 minimum payout
+const DENARII_TO_USD = (1 / 180) * CREATOR_SHARE; // ~$0.003333 per Denarii earned
+const MIN_PAYOUT_DENARII = 1500; // ~$5 minimum payout (matches backend MIN_PAYOUT_USD)
 
 export default function CreatorPayoutSettings({ creator, user }) {
   const queryClient = useQueryClient();
