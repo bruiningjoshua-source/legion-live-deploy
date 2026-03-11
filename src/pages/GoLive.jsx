@@ -131,17 +131,18 @@ export default function GoLive() {
       }
 
       // Create stream record
-      const stream = await base44.entities.Stream.create({
-        creator_id: creatorId,
-        title: trimmedTitle.substring(0, 100),
-        category,
-        stream_type: streamType,
-        status: 'live',
-        viewer_count: 0,
-        peak_viewers: 0,
-        total_gifts_received: 0,
-        total_denarii_earned: 0,
-      });
+       const stream = await base44.entities.Stream.create({
+         creator_id: creatorId,
+         title: trimmedTitle.substring(0, 100),
+         category,
+         stream_type: streamType,
+         platform_type: 'legion_live',
+         status: 'live',
+         viewer_count: 0,
+         peak_viewers: 0,
+         total_gifts_received: 0,
+         total_denarii_earned: 0,
+       });
 
       // Initialize ZegoCloud
       const userId = user.email.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32);
