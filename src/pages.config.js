@@ -122,6 +122,7 @@ import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import CreatorPayoutForecast from './pages/CreatorPayoutForecast';
+import EarningsDashboard from './pages/EarningsDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -201,6 +202,7 @@ export const PAGES = {
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
     "CreatorPayoutForecast": CreatorPayoutForecast,
+    "EarningsDashboard": EarningsDashboard,
 }
 
 export const pagesConfig = {
