@@ -136,9 +136,15 @@ function MixCard({ item, showNew = false }) {
           <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-0.5">{item.title}</p>
           <p className="text-white/45 text-xs line-clamp-1">{subtitle}</p>
         </div>
-        <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white transition-colors mt-0.5">
-          <MoreVertical className="w-4 h-4" />
-        </button>
+        <div className="shrink-0 mt-0.5">
+          <VideoContextMenu 
+            video={item}
+            onAddToWatchLater={handleAddToWatchLater}
+            onAddToPlaylist={handleAddToPlaylist}
+            onDownload={handleDownload}
+            onShare={handleShare}
+          />
+        </div>
       </div>
     </a>
   );
