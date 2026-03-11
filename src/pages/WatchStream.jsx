@@ -30,10 +30,10 @@ import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
 import BigoBottomBar from '@/components/stream/BigoBottomBar';
 import ZegoService from '@/components/stream/ZegoService';
-import HostWallet from '@/components/stream/HostWallet';
+import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
-import HostTopBar from '@/components/stream/HostTopBar';
-import LiveControlPanel from '@/components/stream/LiveControlPanel';
+import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
+import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
@@ -478,7 +478,7 @@ export default function WatchStream() {
 
           {/* Top bar (title + thumbnail) */}
           <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 12px)', left: '60px' }}>
-            <HostTopBar
+            <BroadcasterTopBar
               stream={stream} viewerCount={stream.viewer_count || 0}
               onUpdateStream={async (updates) => {
                 await base44.entities.Stream.update(stream.id, updates);
@@ -521,7 +521,7 @@ export default function WatchStream() {
             className="absolute z-30"
             style={{ top: 'calc(env(safe-area-inset-top) + 70px)', right: '12px' }}
           >
-            <HostWallet
+            <BroadcasterWallet
               totalEarnings={creator?.total_earnings_denarii || 0}
               sessionEarnings={stream?.total_denarii_earned || 0}
               giftsReceived={stream?.total_gifts_received || 0}
@@ -530,7 +530,7 @@ export default function WatchStream() {
           </div>
 
           {/* Live control panel */}
-          <LiveControlPanel
+          <BroadcastControlPanel
             stream={stream}
             streamStats={{
               viewers: stream?.viewer_count || 0,
