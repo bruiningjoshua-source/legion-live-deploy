@@ -5,10 +5,14 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
-const CREATOR_SHARE = 0.50;     // 50% to creator
-const PLATFORM_FEE = 0.50;      // 50% platform cut
-const DENARII_TO_USD = 0.01;    // 1 Denarii = $0.01
-const MIN_PAYOUT_DENARII = 1000; // $5 minimum payout
+// Platform economics: 260 Denarii sold per $1 USD
+// Creator earns 60% of gift value in Denarii
+// Payout: creator's Denarii balance → USD at 1 Denarii = $1/260 * 60% creator share
+// Effective payout rate: 1 Denarii = (1/260) * 0.60 ≈ $0.002308 per Denarii
+const DENARII_PER_USD = 260;      // sale price (how many Denarii per $1 purchased)
+const CREATOR_SHARE = 0.60;       // 60% revenue share
+const DENARII_TO_USD = (1 / DENARII_PER_USD) * CREATOR_SHARE; // ~$0.002308 per Denarii
+const MIN_PAYOUT_DENARII = 2600;  // ~$6 minimum payout ($6 = 2600 Denarii at creator rate)
 
 Deno.serve(async (req) => {
   try {

@@ -5,9 +5,8 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
-// ─── Idempotency: track processed event IDs ───
-const processedEvents = new Map(); // eventId → timestamp
-const IDEMPOTENCY_WINDOW = 3600000; // 1 hour
+// ─── Idempotency: DB-backed (cold-start safe), memory is fast-path only ───
+const processedEventsCache = new Map(); // eventId → timestamp (fast path only)
 
 // ─── Fraud detection for purchases ───
 const purchaseHistory = new Map(); // email -> { purchases: [], chargebacks: [] }
@@ -39,11 +38,11 @@ function validatePurchaseAmount(amount, email) {
   return true;
 }
 
-// Periodic cleanup
+// Periodic cache cleanup
 setInterval(() => {
-  const cutoff = Date.now() - IDEMPOTENCY_WINDOW;
-  for (const [key, ts] of processedEvents) {
-    if (ts < cutoff) processedEvents.delete(key);
+  const cutoff = Date.now() - 3600000;
+  for (const [key, ts] of processedEventsCache) {
+    if (ts < cutoff) processedEventsCache.delete(key);
   }
 }, 600000);
 
@@ -75,12 +74,35 @@ Deno.serve(async (req) => {
 
     eventId = event.id;
 
-    // Idempotency check
-    if (processedEvents.has(eventId)) {
-      console.log('[stripeWebhook] Duplicate event skipped:', eventId);
+    // Idempotency: memory fast-path first
+    if (processedEventsCache.has(eventId)) {
+      console.log('[stripeWebhook] Duplicate event skipped (cache):', eventId);
       return Response.json({ received: true, duplicate: true });
     }
-    processedEvents.set(eventId, Date.now());
+    // DB check — survives cold starts
+    try {
+      const existingLogs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+        { action: 'webhook_processed', related_entity_id: eventId }, null, 1
+      );
+      if (existingLogs.length > 0) {
+        console.log('[stripeWebhook] Duplicate event skipped (DB):', eventId);
+        processedEventsCache.set(eventId, Date.now());
+        return Response.json({ received: true, duplicate: true });
+      }
+    } catch (e) {
+      console.warn('[stripeWebhook] Idempotency DB check failed, proceeding:', e.message);
+    }
+    // Mark processed immediately before any async work
+    processedEventsCache.set(eventId, Date.now());
+    try {
+      await base44.asServiceRole.entities.WalletAuditLog.create({
+        user_email: 'system', action: 'webhook_processed', amount_denarii: 0, new_balance: 0,
+        related_entity_id: eventId, reason: `Stripe webhook: ${event.type}`,
+        timestamp_utc: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('[stripeWebhook] Failed to record webhook idempotency:', e.message);
+    }
 
     console.log('[stripeWebhook] Processing:', event.type, eventId);
 
