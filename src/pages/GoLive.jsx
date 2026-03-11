@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { 
-  Radio, FlipHorizontal, Sparkles, Wand2, Gift, ArrowRight, X
-} from 'lucide-react';
+import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
