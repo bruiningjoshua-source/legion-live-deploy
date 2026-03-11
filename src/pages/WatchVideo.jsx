@@ -288,16 +288,25 @@ export default function WatchVideo() {
               video.video_type === 'short' ? 'max-w-md mx-auto' : 'aspect-video'
             }`}>
               {isMusic ? (
-                // Music content - prefer video_url (music video) or show cover with audio
-                video.video_url || video.audio_url ? (
-                  <VideoPlayer 
-                    src={video.video_url || video.audio_url}
-                    poster={video.cover_url || video.thumbnail_url}
-                    className="w-full h-full"
-                    onEnded={() => setVideoEnded(true)}
-                  />
+                // Music content - embed YouTube player if audio_url is a YouTube link
+                video.audio_url ? (
+                  video.audio_url.includes('youtube') || video.audio_url.includes('youtu.be') ? (
+                    <YouTubePlayer
+                      url={video.audio_url}
+                      poster={video.cover_url || video.thumbnail_url}
+                      className="aspect-video"
+                      onEnded={() => setVideoEnded(true)}
+                    />
+                  ) : (
+                    <VideoPlayer 
+                      src={video.audio_url}
+                      poster={video.cover_url || video.thumbnail_url}
+                      className="w-full h-full"
+                      onEnded={() => setVideoEnded(true)}
+                    />
+                  )
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-amber-400/50">
+                  <div className="w-full aspect-video flex items-center justify-center text-amber-400/50">
                     Audio not available
                   </div>
                 )
