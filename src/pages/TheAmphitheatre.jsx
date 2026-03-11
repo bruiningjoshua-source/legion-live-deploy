@@ -329,7 +329,7 @@ export default function TheAmphitheatre() {
             />
             <div className="grid grid-cols-2 gap-4">
               {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 200 : 12).map((item, i) => (
-                <ShortCard key={item.id || i} item={item} />
+                <AmphitheatreVideoCard key={item.id || i} content={item} />
               ))}
             </div>
           </section>
