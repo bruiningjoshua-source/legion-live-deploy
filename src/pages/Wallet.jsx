@@ -414,6 +414,5 @@ export default function Wallet() {
         </Tabs>
       </div>
     </div>
-    </>
   );
 }
