@@ -139,19 +139,38 @@ export default function ViewerTopBar({
         </div>
       </div>
 
-      {/* Stream title strip (below top bar, semi-transparent) */}
-      {stream?.title && (
-        <div className="mx-3 mt-1">
-          <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1 inline-flex items-center gap-2 max-w-[70%]">
-            <span className="text-white/70 text-[10px] truncate">{stream.title}</span>
-            {stream.category && (
-              <span className="text-amber-400/70 text-[10px] bg-amber-500/10 rounded-full px-1.5 py-0.5 shrink-0">
-                {stream.category}
-              </span>
-            )}
+      {/* ── BIGO second row: Room Rank · Today's Task · Avatar stack ── */}
+      <div className="flex items-center justify-between px-3 mt-1 pb-1">
+        {/* Left chips */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/[0.08]">
+            <span className="text-[10px]">🏠</span>
+            <span className="text-white/70 text-[10px] font-medium">Room Rank</span>
+          </div>
+          <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/[0.08]">
+            <span className="text-[10px]">⭐</span>
+            <span className="text-white/70 text-[10px] font-medium truncate max-w-[80px]">
+              {stream?.title ? stream.title.slice(0, 14) : "Today's task"}
+            </span>
           </div>
         </div>
-      )}
+
+        {/* Right: recent viewer avatars + count */}
+        <div className="flex items-center">
+          {/* Stacked avatar placeholders */}
+          <div className="flex -space-x-2 mr-2">
+            {[0,1,2].map(i => (
+              <div
+                key={i}
+                className="w-6 h-6 rounded-full border-[1.5px] border-black bg-gradient-to-br from-slate-500 to-slate-700 overflow-hidden"
+              >
+                <div className="w-full h-full bg-gradient-to-br from-amber-400/60 to-pink-500/60" />
+              </div>
+            ))}
+          </div>
+          <span className="text-white/60 text-[11px] font-semibold">{viewerCount.toLocaleString()}</span>
+        </div>
+      </div>
     </div>
   );
 }
