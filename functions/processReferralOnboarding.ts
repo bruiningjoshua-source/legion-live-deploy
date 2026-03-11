@@ -3,6 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    // Auth first before touching any data
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { referralCode } = await req.json();
 
     if (!referralCode) {
@@ -22,12 +28,6 @@ Deno.serve(async (req) => {
     }
 
     const referralRecord = codes[0];
-
-    // Get current user
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     // Update referral record with new creator info
     await base44.asServiceRole.entities.ReferralCode.update(referralRecord.id, {
