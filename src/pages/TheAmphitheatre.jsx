@@ -350,7 +350,7 @@ export default function TheAmphitheatre() {
               onSeeAll={activeTab === 'all' ? () => setActiveTab('music') : undefined}
             />
             <div className="space-y-6">
-              {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 40 : 8).map((item, i) => (
+              {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 200 : 8).map((item, i) => (
                 <MixCard key={item.id || i} item={item} showNew={i < 2} />
               ))}
             </div>
