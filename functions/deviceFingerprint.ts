@@ -1,14 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { createHash } from 'npm:crypto';
 
 /**
  * Device Fingerprinting for Fraud Scoring
  * Creates a hash of device characteristics for risk assessment
  */
 
-function generateFingerprint(userAgent, acceptLanguage, timezone, screenResolution, webglRenderer) {
+async function generateFingerprint(userAgent, acceptLanguage, timezone, screenResolution, webglRenderer) {
   const combined = `${userAgent}|${acceptLanguage}|${timezone}|${screenResolution}|${webglRenderer}`;
-  return createHash('sha256').update(combined).digest('hex');
+  const encoder = new TextEncoder();
+  const data = encoder.encode(combined);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 Deno.serve(async (req) => {
@@ -28,7 +31,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing device parameters' }, { status: 400 });
     }
 
-    const fingerprint = generateFingerprint(userAgent, acceptLanguage, timezone, screenResolution || 'unknown', webglRenderer || 'unknown');
+    const fingerprint = await generateFingerprint(userAgent, acceptLanguage, timezone, screenResolution || 'unknown', webglRenderer || 'unknown');
 
     // Update user record with fingerprint
     const users = await base44.entities.User.filter({ email: user.email }, null, 1);
