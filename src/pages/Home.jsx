@@ -24,7 +24,7 @@ const hubs = [
   {
     name: 'Videos',
     sub: 'VOD & Shorts',
-    path: 'Videos',
+    path: 'TheAmphitheatre',
     icon: Film,
     color: '#8b5cf6',
     glow: 'rgba(139,92,246,0.35)',
