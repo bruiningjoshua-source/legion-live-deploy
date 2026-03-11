@@ -30,10 +30,10 @@ import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
 import BigoBottomBar from '@/components/stream/BigoBottomBar';
 import ZegoService from '@/components/stream/ZegoService';
-import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
+import HostWallet from '@/components/stream/HostWallet';
 import ViewerWallet from '@/components/stream/ViewerWallet';
-import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
-import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
+import HostTopBar from '@/components/stream/HostTopBar';
+import LiveControlPanel from '@/components/stream/LiveControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
@@ -76,7 +76,7 @@ export default function WatchStream() {
   const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
 
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || user?.role === 'admin';
-  const isBroadcaster = user?.email === creator?.user_email;
+  const isHost = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
   const userVipPoints = wallet?.vip_points || 0;
@@ -86,17 +86,17 @@ export default function WatchStream() {
   }, [stream, streamEnded]);
 
   useEffect(() => {
-    if (!isBroadcaster || !stream?.id) return;
+    if (!isHost || !stream?.id) return;
     const handler = (e) => { e.preventDefault(); e.returnValue = 'You are live!'; };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [isBroadcaster, stream?.id]);
+  }, [isHost, stream?.id]);
 
   // Viewer count
   const viewerJoinedRef = useRef(false);
   const streamIdRef = useRef(null);
   useEffect(() => {
-    if (!stream?.id || isBroadcaster || !user || stream.status !== 'live') return;
+    if (!stream?.id || isHost || !user || stream.status !== 'live') return;
     if (viewerJoinedRef.current && streamIdRef.current === stream.id) return;
     const sid = stream.id;
     streamIdRef.current = sid;
@@ -147,7 +147,7 @@ export default function WatchStream() {
   const zegoInitAttempted = useRef(false);
   useEffect(() => {
     let mounted = true;
-    if (stream?.status !== 'live' || isBroadcaster || !streamId) return;
+    if (stream?.status !== 'live' || isHost || !streamId) return;
     if (zegoInitAttempted.current) return;
     zegoInitAttempted.current = true;
     const init = async () => {
@@ -182,9 +182,9 @@ export default function WatchStream() {
     };
   }, [stream?.status, streamId, isBroadcaster]);
 
-  // Broadcaster camera
+  // Host camera
   useEffect(() => {
-    if (stream?.status !== 'live' || !isBroadcaster) return;
+    if (stream?.status !== 'live' || !isHost) return;
     const zegoStream = ZegoService.getLocalStream();
     if (zegoStream) {
       liveStreamRef.current = zegoStream;
@@ -346,8 +346,8 @@ export default function WatchStream() {
                   currentUser={user}
                   panelParticipants={stream.panel_creators || []}
                   onInviteToPanel={() => setShowCoStreamPanel(true)}
-                  onLeaveCall={() => navigate(createPageUrl('Explore'))}
-                  isHost={isBroadcaster}
+                    onLeaveCall={() => navigate(createPageUrl('Explore'))}
+                    isHost={isHost}
                   layout="grid"
                   maxParticipants={4}
                 />
@@ -362,7 +362,7 @@ export default function WatchStream() {
               <ErrorBoundary label="pk-overlay" inline>
                 <PKBattleOverlay
                   streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
-                  initialBattle={pkBattle} isBroadcaster={isBroadcaster}
+                  initialBattle={pkBattle} isHost={isHost}
                 />
               </ErrorBoundary>
             </div>
@@ -389,7 +389,7 @@ export default function WatchStream() {
       <FloatingHearts reactions={floatingReactions} />
 
       {/* ── VIEWER UI ─────────────────────────────────────────────────── */}
-      {!isBroadcaster && (
+      {!isHost && (
         <>
           {/* Top bar */}
           <ViewerTopBar
@@ -415,7 +415,7 @@ export default function WatchStream() {
               hostCreatorId={creator?.id}
               currentUser={user}
               walletBalance={walletBalance}
-              isBroadcaster={false}
+              isHost={false}
               vipPoints={userVipPoints}
               onDeductDenarii={handleLottoDeduct}
             />
@@ -465,7 +465,7 @@ export default function WatchStream() {
       )}
 
       {/* ── BROADCASTER UI ────────────────────────────────────────────── */}
-      {isBroadcaster && (
+      {isHost && (
         <>
           {/* End stream button — top left */}
           <button
@@ -478,7 +478,7 @@ export default function WatchStream() {
 
           {/* Top bar (title + thumbnail) */}
           <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 12px)', left: '60px' }}>
-            <BroadcasterTopBar
+            <HostTopBar
               stream={stream} viewerCount={stream.viewer_count || 0}
               onUpdateStream={async (updates) => {
                 await base44.entities.Stream.update(stream.id, updates);
@@ -498,7 +498,7 @@ export default function WatchStream() {
               hostCreatorId={creator?.id}
               currentUser={user}
               walletBalance={walletBalance}
-              isBroadcaster={true}
+              isHost={true}
               vipPoints={userVipPoints}
               onDeductDenarii={handleLottoDeduct}
             />
@@ -516,12 +516,12 @@ export default function WatchStream() {
             </button>
           </div>
 
-          {/* Broadcaster wallet — top right */}
+          {/* Host wallet — top right */}
           <div
             className="absolute z-30"
             style={{ top: 'calc(env(safe-area-inset-top) + 70px)', right: '12px' }}
           >
-            <BroadcasterWallet
+            <HostWallet
               totalEarnings={creator?.total_earnings_denarii || 0}
               sessionEarnings={stream?.total_denarii_earned || 0}
               giftsReceived={stream?.total_gifts_received || 0}
@@ -529,8 +529,8 @@ export default function WatchStream() {
             />
           </div>
 
-          {/* Broadcast control panel */}
-          <BroadcastControlPanel
+          {/* Live control panel */}
+          <LiveControlPanel
             stream={stream}
             streamStats={{
               viewers: stream?.viewer_count || 0,
