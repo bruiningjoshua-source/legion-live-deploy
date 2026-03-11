@@ -155,23 +155,17 @@ export default function Wallet() {
     );
   }
 
-  if (!tosAccepted) {
-    return (
-      <>
-        <TermsOfServiceGate
-          isOpen={showTosGate}
-          onAccept={() => {
-            setTosAccepted(true);
-            setShowTosGate(false);
-            localStorage.setItem('tos_accepted', 'true');
-          }}
-          onDismiss={() => setShowTosGate(false)}
-        />
-      </>
-    );
-  }
-
   return (
+    <>
+      <TermsOfServiceGate
+        isOpen={showTosGate && !tosAccepted}
+        onAccept={() => {
+          setTosAccepted(true);
+          setShowTosGate(false);
+          localStorage.setItem('tos_accepted', 'true');
+        }}
+        onDismiss={() => setShowTosGate(false)}
+      />
     <div className="min-h-screen pt-16 pb-24">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* Header */}
