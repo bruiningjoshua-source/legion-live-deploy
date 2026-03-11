@@ -3,96 +3,64 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreVertical, BookmarkIcon, Share2, Download, Flag, Clock } from 'lucide-react';
-import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical, BookmarkPlus, Download, Share2, ListPlus } from 'lucide-react';
 
-export default function VideoContextMenu({ video, onAddToPlaylist }) {
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
-  });
+export default function VideoContextMenu({ video, onAddToWatchLater, onAddToPlaylist, onDownload, onShare }) {
+  const [open, setOpen] = useState(false);
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/watch?id=${video.id}`;
-    if (navigator.share) {
-      navigator.share({ title: video.title, url });
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard');
-    }
+  const handleShare = () => {
+    onShare?.(video);
+    setOpen(false);
   };
 
-  const handleSaveToLater = async () => {
-    if (!user?.email) {
-      toast.error('Sign in to save videos');
-      return;
-    }
-    
-    try {
-      await base44.entities.WatchLater.create({
-        user_email: user.email,
-        video_id: video.id,
-        video_type: video.type === 'music' ? 'music' : 'vlog'
-      });
-      toast.success('Added to Watch Later');
-    } catch (error) {
-      console.error('Save to Watch Later failed:', error);
-      toast.error('Failed to save video');
-    }
+  const handleWatchLater = () => {
+    onAddToWatchLater?.(video);
+    setOpen(false);
   };
 
-  const handleReport = async () => {
-    if (!user?.email) {
-      toast.error('Sign in to report videos');
-      return;
-    }
+  const handlePlaylist = () => {
+    onAddToPlaylist?.(video);
+    setOpen(false);
+  };
 
-    await base44.entities.ModerationAlert.create({
-      reporter_email: user.email,
-      content_id: video.id,
-      content_type: 'video',
-      reason: 'user_flagged',
-      status: 'pending'
-    });
-    toast.success('Report submitted');
+  const handleDownload = () => {
+    onDownload?.(video);
+    setOpen(false);
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <MoreVertical className="w-4 h-4 text-white/70" />
-        </Button>
+        <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white transition-colors">
+          <MoreVertical className="w-4 h-4" />
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-stone-900 border-stone-700 w-48">
-        <DropdownMenuItem onClick={handleSaveToLater} className="text-stone-200 cursor-pointer">
-          <Clock className="w-4 h-4 mr-2" />
-          Save to Watch Later
+      <DropdownMenuContent align="end" className="w-48 bg-[#1a1a1e] border-white/[0.1]">
+        <DropdownMenuItem onClick={handleWatchLater} className="flex items-center gap-2 text-white/80 hover:text-white cursor-pointer">
+          <BookmarkPlus className="w-4 h-4" />
+          <span>Watch Later</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onAddToPlaylist} className="text-stone-200 cursor-pointer">
-          <BookmarkIcon className="w-4 h-4 mr-2" />
-          Save to Playlist
+        
+        <DropdownMenuItem onClick={handlePlaylist} className="flex items-center gap-2 text-white/80 hover:text-white cursor-pointer">
+          <ListPlus className="w-4 h-4" />
+          <span>Add to Playlist</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleShare} className="text-stone-200 cursor-pointer">
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
+
+        <DropdownMenuSeparator className="bg-white/[0.1]" />
+
+        <DropdownMenuItem onClick={handleDownload} className="flex items-center gap-2 text-white/80 hover:text-white cursor-pointer">
+          <Download className="w-4 h-4" />
+          <span>Download</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-stone-200 cursor-pointer">
-          <Download className="w-4 h-4 mr-2" />
-          Download
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-stone-700" />
-        <DropdownMenuItem onClick={handleReport} className="text-red-400 cursor-pointer">
-          <Flag className="w-4 h-4 mr-2" />
-          Report
+
+        <DropdownMenuSeparator className="bg-white/[0.1]" />
+
+        <DropdownMenuItem onClick={handleShare} className="flex items-center gap-2 text-white/80 hover:text-white cursor-pointer">
+          <Share2 className="w-4 h-4" />
+          <span>Share</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
