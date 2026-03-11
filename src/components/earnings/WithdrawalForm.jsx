@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpRight, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const DENARII_TO_USD = 0.01;
-const CREATOR_SHARE = 0.40;
-const MIN_WITHDRAWAL_DENARII = 5000; // Minimum ~$20
+// Platform economics: 180 Denarii = $1 USD; creator earns 60% of gift value
+const DENARII_PER_USD = 180;
+const CREATOR_SHARE = 0.60;
+const DENARII_TO_USD = (1 / DENARII_PER_USD) * CREATOR_SHARE; // ~$0.003333 per Denarii earned
+const MIN_WITHDRAWAL_DENARII = 1500; // ~$5 minimum (matches backend MIN_PAYOUT_USD)
 
 export default function WithdrawalForm({ creator, earnings, payoutMethods }) {
   const queryClient = useQueryClient();
