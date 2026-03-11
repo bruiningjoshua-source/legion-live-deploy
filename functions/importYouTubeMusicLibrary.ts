@@ -4,24 +4,43 @@ const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
 
 const POPULAR_PLAYLISTS = [
   // Rock & Metal
-  { id: 'PLny3IEbsr-rPmd0goOF5eQ_qJjcP-4wdT', genre: 'rock', name: 'Top 100 Rock Songs Of The 2010s' },
-  { id: 'PLny3IEbsr-rNORq2hCLEe7nDNH9QJ8ROb', genre: 'rock', name: 'Top 30 Metal Songs Of The 2000s' },
+  { q: 'classic rock 1960s 1970s 1980s playlist', genre: 'rock' },
+  { q: 'rock hits 1990s 2000s playlist', genre: 'rock' },
+  { q: 'best rock music 2010s 2020s playlist', genre: 'rock' },
+  { q: 'heavy metal greatest hits playlist', genre: 'rock' },
+  { q: 'metal masterpiece playlist 1980s 1990s', genre: 'rock' },
   
   // Pop & Synthwave
-  { id: 'PLBccjB8tUhRTGSCGQ_SH30apIiJxc04t5', genre: 'pop', name: 'Best Synthwave Music Playlist' },
+  { q: 'pop music 1960s 1970s 1980s hits playlist', genre: 'pop' },
+  { q: 'pop hits 1990s 2000s playlist', genre: 'pop' },
+  { q: 'best pop music 2010s 2020s playlist', genre: 'pop' },
+  { q: 'synthwave retro 80s 90s playlist', genre: 'pop' },
+  { q: 'synthpop greatest hits playlist', genre: 'pop' },
   
-  // Hip-Hop & Rap (using search as fallback for non-playlist videos)
+  // Hip-Hop & Rap
+  { q: 'hip hop rap classics 1990s 2000s playlist', genre: 'hip_hop' },
+  { q: 'hip hop hits 2010s 2020s playlist', genre: 'hip_hop' },
+  { q: 'best rap music of all time playlist', genre: 'hip_hop' },
+  { q: 'trap hip hop 2015 2026 playlist', genre: 'hip_hop' },
   
   // Disco & Funk
-  { id: 'PLqZ3rWFEe-iCpjKstxUAh2D_10WuKRhdQ', genre: 'other', name: 'Old Funk Music 70s 80s' },
-  { id: 'PLHUPapYSc2W21L4XQWQSYpftuDV5Wefis', genre: 'other', name: 'Classic 70s & 80s Funk/Disco/Soul' },
-  { id: 'PLVSmhKCk2xOcQ9sKSYKCOPY5tlOk8jjcP', genre: 'other', name: 'DISCO FUNK 70s & 80s' },
+  { q: 'disco classics 1970s 1980s playlist', genre: 'other' },
+  { q: 'best disco music ever playlist', genre: 'other' },
+  { q: 'funk soul disco hits playlist', genre: 'other' },
   
   // Electronic & Dance Music
-  { id: 'PLVw4XTfVCYQxopGUNtoLqFTF_xlgUStbd', genre: 'electronic', name: 'Best EDM & House Music Mix' },
+  { q: 'trance music greatest hits playlist', genre: 'electronic' },
+  { q: 'dance music 1990s 2000s 2010s playlist', genre: 'electronic' },
+  { q: 'house music classics playlist', genre: 'electronic' },
+  { q: 'edm electronic dance music best playlist', genre: 'electronic' },
+  { q: 'electro house minimal techno playlist', genre: 'electronic' },
+  { q: 'edm festival hits 2015 2026 playlist', genre: 'electronic' },
   
   // Country
-  { id: 'PL-EmT37PV82NpnVhlFLXpe-nGR3acmeHw', genre: 'other', name: 'Top 100 Classic Country Songs 60s 70s 80s 90s' },
+  { q: 'country music classics 1960s 1970s 1980s playlist', genre: 'other' },
+  { q: 'country hits 1990s 2000s 2010s playlist', genre: 'other' },
+  { q: 'best country music 2020s playlist', genre: 'other' },
+  { q: 'modern country pop playlist', genre: 'other' },
 ];
 
 function extractVideoId(url) {
@@ -47,88 +66,112 @@ Deno.serve(async (req) => {
     let imported = 0;
     const errors = [];
 
-    for (const { id: playlistId, genre, name } of POPULAR_PLAYLISTS) {
+    for (const { q, genre } of POPULAR_PLAYLISTS) {
       try {
-        // Get videos from this playlist
-        const itemsUrl = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
-        itemsUrl.searchParams.set('part', 'snippet,contentDetails');
-        itemsUrl.searchParams.set('playlistId', playlistId);
-        itemsUrl.searchParams.set('maxResults', '50');
-        itemsUrl.searchParams.set('key', YOUTUBE_API_KEY);
+        // Search for playlists
+        const playlistSearchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
+        playlistSearchUrl.searchParams.set('part', 'snippet');
+        playlistSearchUrl.searchParams.set('q', q);
+        playlistSearchUrl.searchParams.set('type', 'playlist');
+        playlistSearchUrl.searchParams.set('maxResults', '5');
+        playlistSearchUrl.searchParams.set('key', YOUTUBE_API_KEY);
+        playlistSearchUrl.searchParams.set('order', 'relevance');
 
-        const itemsRes = await fetch(itemsUrl.toString());
-        if (!itemsRes.ok) throw new Error(`Failed to fetch playlist items: ${itemsRes.statusText}`);
+        const playlistRes = await fetch(playlistSearchUrl.toString());
+        if (!playlistRes.ok) throw new Error(`Playlist search failed: ${playlistRes.statusText}`);
 
-        const itemsData = await itemsRes.json();
-        const playlistItems = itemsData.items || [];
+        const playlistData = await playlistRes.json();
+        const playlists = playlistData.items || [];
 
-        for (const item of playlistItems) {
+        for (const playlist of playlists) {
+          const playlistId = playlist.id.playlistId;
+          
           try {
-            const videoId = item.contentDetails?.videoId;
-            if (!videoId) continue;
+            // Get videos from this playlist
+            const itemsUrl = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
+            itemsUrl.searchParams.set('part', 'snippet,contentDetails');
+            itemsUrl.searchParams.set('playlistId', playlistId);
+            itemsUrl.searchParams.set('maxResults', '50');
+            itemsUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
-            const title = item.snippet.title;
-            const thumbnail = item.snippet.thumbnails?.high?.url;
-            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            const itemsRes = await fetch(itemsUrl.toString());
+            const itemsData = await itemsRes.json();
+            const playlistItems = itemsData.items || [];
 
-            // Get video details (duration)
-            const detailUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
-            detailUrl.searchParams.set('part', 'contentDetails');
-            detailUrl.searchParams.set('id', videoId);
-            detailUrl.searchParams.set('key', YOUTUBE_API_KEY);
+            for (const item of playlistItems) {
+              try {
+                const videoId = item.contentDetails?.videoId;
+                if (!videoId) continue;
 
-            const detailRes = await fetch(detailUrl.toString());
-            const detailData = await detailRes.json();
-            const durationStr = detailData.items?.[0]?.contentDetails?.duration || 'PT0S';
+                const title = item.snippet.title;
+                const thumbnail = item.snippet.thumbnails?.high?.url;
+                const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-            // Parse ISO 8601 duration
-            const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            const hours = parseInt(match?.[1] || 0);
-            const minutes = parseInt(match?.[2] || 0);
-            const seconds = parseInt(match?.[3] || 0);
-            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                // Get video details (duration)
+                const detailUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
+                detailUrl.searchParams.set('part', 'contentDetails');
+                detailUrl.searchParams.set('id', videoId);
+                detailUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
-            // Check if already exists
-            const existing = await base44.entities.Music.filter(
-              { audio_url: videoUrl },
-              null,
-              1
-            ).catch(() => []);
+                const detailRes = await fetch(detailUrl.toString());
+                const detailData = await detailRes.json();
+                const durationStr = detailData.items?.[0]?.contentDetails?.duration || 'PT0S';
 
-            if (existing.length > 0) continue;
+                // Parse ISO 8601 duration
+                const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                const hours = parseInt(match?.[1] || 0);
+                const minutes = parseInt(match?.[2] || 0);
+                const seconds = parseInt(match?.[3] || 0);
+                const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-            // Create music record
-            await base44.entities.Music.create({
-              creator_id: user.email,
-              title: title.substring(0, 200),
-              artist: 'YouTube',
-              description: `Imported from ${name}`,
-              audio_url: videoUrl,
-              cover_url: thumbnail || getThumbnailUrl(videoId),
-              duration_seconds: totalSeconds,
-              genre: genre,
-              is_published: true,
-              is_music_video: true,
-              video_url: videoUrl,
-              play_count: 0,
-              like_count: 0,
-              tags: [genre, 'imported', 'youtube']
-            });
+                // Check if already exists
+                const existing = await base44.entities.Music.filter(
+                  { audio_url: videoUrl },
+                  null,
+                  1
+                ).catch(() => []);
 
-            imported++;
+                if (existing.length > 0) continue;
+
+                // Create music record
+                await base44.entities.Music.create({
+                  creator_id: user.email,
+                  title: title.substring(0, 200),
+                  artist: 'YouTube',
+                  description: `Imported from YouTube playlist - ${title}`,
+                  audio_url: videoUrl,
+                  cover_url: thumbnail || getThumbnailUrl(videoId),
+                  duration_seconds: totalSeconds,
+                  genre: genre,
+                  is_published: true,
+                  is_music_video: true,
+                  video_url: videoUrl,
+                  play_count: 0,
+                  like_count: 0,
+                  tags: [genre, 'imported', 'youtube', 'playlist']
+                });
+
+                imported++;
+              } catch (err) {
+                errors.push(`Item error: ${err.message}`);
+              }
+
+              // Rate limiting between video imports
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
           } catch (err) {
-            errors.push(`Item error in ${name}: ${err.message}`);
+            errors.push(`Playlist import failed: ${err.message}`);
           }
 
-          // Rate limiting between video imports
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Rate limiting between playlists
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       } catch (err) {
-        errors.push(`Playlist "${name}" import failed: ${err.message}`);
+        errors.push(`Playlist search "${q}" failed: ${err.message}`);
       }
 
-      // Rate limiting between playlists
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Rate limiting between searches
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     return Response.json({
