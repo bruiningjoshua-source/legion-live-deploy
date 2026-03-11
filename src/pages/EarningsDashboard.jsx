@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, Wallet, CreditCard, Gift, BarChart3, 
-  Users, Download, Settings, ArrowRight, DollarSign 
+  Users, Download, Settings, ArrowRight, DollarSign, SendHorizontal,
+  CheckCircle, Clock, AlertCircle
 } from 'lucide-react';
 import PayoutForecast from '@/components/earnings/PayoutForecast';
 
@@ -78,6 +79,14 @@ export default function EarningsDashboard() {
       description: 'Summary & key metrics',
       color: 'from-blue-500/20 to-blue-600/10',
       gated: false
+    },
+    {
+      id: 'withdrawals',
+      label: '💸 Withdrawals',
+      icon: SendHorizontal,
+      description: 'Request & track withdrawals',
+      color: 'from-emerald-500/20 to-emerald-600/10',
+      gated: true
     },
     {
       id: 'forecast',
@@ -217,6 +226,134 @@ export default function EarningsDashboard() {
 
         {/* Tab Content */}
         <div className="space-y-6">
+          {/* Withdrawals Tab */}
+          {activeTab === 'withdrawals' && (
+            <Card className="border-white/10 bg-white/5 p-6">
+              <Button 
+                variant="outline" 
+                className="mb-4"
+                onClick={() => setActiveTab('overview')}
+              >
+                ← Back to Menu
+              </Button>
+              {!hasMonetization ? (
+                <div className="text-center py-8">
+                  <p className="text-2xl mb-2">🔒 Creator Monetization Required</p>
+                  <p className="text-gray-300 mb-6">Request and manage your earnings withdrawals</p>
+                  <Button className="gap-2" onClick={() => setActiveTab('subscriptions')}>
+                    Unlock Creator Monetization →
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">Withdrawals</h2>
+                      <p className="text-gray-400">Request and track your payout withdrawals</p>
+                    </div>
+                    <Button className="gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50">
+                      <SendHorizontal className="w-4 h-4" />
+                      Request Withdrawal
+                    </Button>
+                  </div>
+
+                  {/* Withdrawal Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card className="bg-white/5 border-white/10 p-4">
+                      <p className="text-xs text-white/50 mb-2">Available Balance</p>
+                      <p className="text-2xl font-bold text-emerald-400">${((walletData?.denarii_balance || 0) / 65).toFixed(2)}</p>
+                      <p className="text-xs text-white/30 mt-2">Ready to withdraw</p>
+                    </Card>
+                    <Card className="bg-white/5 border-white/10 p-4">
+                      <p className="text-xs text-white/50 mb-2">Minimum Withdrawal</p>
+                      <p className="text-2xl font-bold text-amber-400">$20.00</p>
+                      <p className="text-xs text-white/30 mt-2">Check your settings</p>
+                    </Card>
+                    <Card className="bg-white/5 border-white/10 p-4">
+                      <p className="text-xs text-white/50 mb-2">Processing Fee</p>
+                      <p className="text-2xl font-bold text-blue-400">1-2%</p>
+                      <p className="text-xs text-white/30 mt-2">Varies by method</p>
+                    </Card>
+                  </div>
+
+                  {/* Withdrawal Methods Setup */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-white mb-3">Connected Withdrawal Methods</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { icon: '🏦', name: 'Bank Account', status: 'connected', connected: true },
+                        { icon: '💳', name: 'PayPal', status: 'not_connected', connected: false },
+                        { icon: '₿', name: 'Cryptocurrency', status: 'not_connected', connected: false }
+                      ].map((method) => (
+                        <Card key={method.name} className={`p-4 border ${method.connected ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/5'}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{method.icon}</span>
+                              <div>
+                                <p className="font-semibold text-white">{method.name}</p>
+                                <p className={`text-xs ${method.connected ? 'text-emerald-300' : 'text-white/50'}`}>
+                                  {method.connected ? '✓ Connected' : 'Not connected'}
+                                </p>
+                              </div>
+                            </div>
+                            {method.connected && <CheckCircle className="w-4 h-4 text-emerald-400" />}
+                          </div>
+                          <Button className="w-full text-xs mt-2" variant={method.connected ? 'outline' : 'default'}>
+                            {method.connected ? 'Manage' : 'Connect'}
+                          </Button>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recent Withdrawal History */}
+                  <div>
+                    <h3 className="font-semibold text-white mb-3">Recent Withdrawals</h3>
+                    <div className="space-y-2">
+                      {[
+                        { amount: 100, status: 'completed', date: '2026-03-10', method: 'Bank Account' },
+                        { amount: 50, status: 'pending', date: '2026-03-08', method: 'Bank Account' },
+                        { amount: 75, status: 'processing', date: '2026-03-05', method: 'PayPal' }
+                      ].map((withdrawal, i) => (
+                        <Card key={i} className="bg-white/5 border-white/10 p-3 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {withdrawal.status === 'completed' && <CheckCircle className="w-5 h-5 text-emerald-400" />}
+                            {withdrawal.status === 'processing' && <Clock className="w-5 h-5 text-amber-400 animate-spin" />}
+                            {withdrawal.status === 'pending' && <Clock className="w-5 h-5 text-blue-400" />}
+                            <div>
+                              <p className="font-semibold text-white">${withdrawal.amount.toFixed(2)}</p>
+                              <p className="text-xs text-white/50">{withdrawal.method} • {withdrawal.date}</p>
+                            </div>
+                          </div>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            withdrawal.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
+                            withdrawal.status === 'processing' ? 'bg-amber-500/20 text-amber-300' :
+                            'bg-blue-500/20 text-blue-300'
+                          }`}>
+                            {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
+                          </span>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Setup Help */}
+                  <Card className="bg-blue-500/10 border-blue-500/30 p-4 mt-6">
+                    <div className="flex gap-3">
+                      <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-white mb-1">Withdrawals Guide</p>
+                        <p className="text-sm text-white/70">
+                          • Minimum withdrawal: $20 • Fees: 1-2% depending on method • Processing time: 3-5 business days • Set up at least one payment method in Payout Methods tab
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </>
+              )}
+            </Card>
+          )}
+
           {/* Forecast Tab */}
           {activeTab === 'forecast' && (
             <>
