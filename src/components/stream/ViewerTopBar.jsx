@@ -88,13 +88,8 @@ export default function ViewerTopBar({
           </motion.button>
         </div>
 
-        {/* RIGHT: viewer count + more menu */}
+        {/* RIGHT: more menu */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md rounded-full px-2.5 py-1 border border-white/10">
-            <Eye className="w-3 h-3 text-red-400" />
-            <span className="text-white text-[11px] font-semibold">{viewerCount.toLocaleString()}</span>
-          </div>
-
           {/* ⋯ More menu */}
           <div className="relative">
             <button
