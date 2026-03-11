@@ -424,9 +424,15 @@ export default function TheAmphitheatre() {
                       <span className="text-white/30 text-[11px]">{fmtDuration(ep.duration_seconds)}</span>
                     )}
                   </div>
-                  <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
+                  <div className="shrink-0">
+                    <VideoContextMenu 
+                      video={ep}
+                      onAddToWatchLater={handleAddToWatchLater}
+                      onAddToPlaylist={handleAddToPlaylist}
+                      onDownload={handleDownload}
+                      onShare={handleShare}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
