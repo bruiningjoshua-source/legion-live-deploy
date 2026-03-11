@@ -121,7 +121,7 @@ export default function CommunityForums() {
     onSuccess: () => queryClient.invalidateQueries(['forum-categories']),
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!categoriesLoading && categories.length === 0) initCategoriesMutation.mutate();
   }, [categoriesLoading, categories.length]);
 
