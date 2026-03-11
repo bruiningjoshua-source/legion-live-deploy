@@ -3,8 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, TrendingUp, ArrowUpRight, Coins } from 'lucide-react';
 import formatCount from '@/components/shared/FormatCount';
 
-const DENARII_TO_USD = 0.01; // 1 Denarii = $0.01
-const CREATOR_SHARE = 0.40; // 40% creator share
+// 65 Denarii = $1 USD; creator earns 70%
+const DENARII_TO_USD = (1 / 65);
+const CREATOR_SHARE = 0.70; // 70% creator share
 
 export default function EarningsBalanceCard({ earnings, payouts }) {
   const totalEarned = earnings?.total_earnings_denarii || 0;
