@@ -85,9 +85,16 @@ export default function CommunityForums() {
     : posts;
 
   return (
-    <div className="min-h-screen text-white pt-16">
+    <div className="min-h-screen text-white pt-16 bg-[#09090b]">
+      {/* Roman cinematic bg */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[#060810]" />
+        <div className="absolute top-0 left-0 right-0 h-[40vh] bg-gradient-to-b from-[#001535]/50 via-[#000d20]/30 to-transparent" />
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-[#0ea5e915] blur-[80px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#09090b] to-transparent" />
+      </div>
       {/* Header */}
-      <div className="sticky top-14 z-40 bg-[#0d0d10]/90 backdrop-blur-xl border-b border-white/[0.06]">
+      <div className="sticky top-14 z-40 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-screen-xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -133,7 +140,7 @@ export default function CommunityForums() {
         </div>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 py-5">
+      <div className="max-w-screen-xl mx-auto px-4 py-5 relative z-10">
         <div className="flex gap-5">
           {/* Main feed */}
           <div className="flex-1 min-w-0 space-y-2">
