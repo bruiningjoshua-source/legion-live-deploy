@@ -5,20 +5,18 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
   apiVersion: '2024-12-18.acacia'
 });
 
-// Platform economics: 260 Denarii sold per $1 USD
-// Creator earns 60% of gift value in Denarii
-// Payout: creator's Denarii balance → USD at 1 Denarii = $1/260 * 60% creator share
-// Effective payout rate: 1 Denarii = (1/260) * 0.60 ≈ $0.002308 per Denarii
-const DENARII_PER_USD = 260;      // sale price (how many Denarii per $1 purchased)
-const CREATOR_SHARE = 0.60;       // 60% revenue share
+// Platform economics: 260 Denarii sold per $1 USD; creator earns 60% of gift value.
+// DENARII_TO_USD already encapsulates the creator share — do NOT multiply by CREATOR_SHARE again.
+const DENARII_PER_USD = 260;
+const CREATOR_SHARE = 0.60;
+const PLATFORM_FEE = 1 - CREATOR_SHARE; // 0.40 — used for metadata only
 const DENARII_TO_USD = (1 / DENARII_PER_USD) * CREATOR_SHARE; // ~$0.002308 per Denarii
-const MIN_PAYOUT_DENARII = 2600;  // ~$6 minimum payout ($6 = 2600 Denarii at creator rate)
+const MIN_PAYOUT_DENARII = 2600; // ~$6.00 minimum
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
     if (!user) {
       console.error('[stripeConnectPayout] Unauthorized');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,28 +29,34 @@ Deno.serve(async (req) => {
     }
 
     if (amountDenarii < MIN_PAYOUT_DENARII) {
-      return Response.json({ error: `Minimum payout is ${MIN_PAYOUT_DENARII} Denarii ($${(MIN_PAYOUT_DENARII * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)})` }, { status: 400 });
+      return Response.json({
+        error: `Minimum payout is ${MIN_PAYOUT_DENARII} Denarii ($${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})`
+      }, { status: 400 });
     }
 
-    // Verify user owns creator profile
+    // Verify requesting user owns this creator profile
     const creators = await base44.entities.Creator.filter({ id: creatorId, user_email: user.email }, null, 1);
     if (!creators[0]) {
-      console.error('[stripeConnectPayout] Creator not found');
+      console.error('[stripeConnectPayout] Creator not found for user:', user.email);
       return Response.json({ error: 'Creator not found' }, { status: 404 });
     }
-
     const creator = creators[0];
 
     if ((creator.total_earnings_denarii || 0) < amountDenarii) {
-      return Response.json({ error: 'Insufficient balance' }, { status: 400 });
+      return Response.json({ error: 'Insufficient earnings balance' }, { status: 400 });
     }
 
-    // Get verified Stripe Connect account
-    const methods = await base44.entities.CreatorPayoutMethod.filter(
-      { creator_id: creatorId, method_type: 'stripe_connect', stripe_payouts_enabled: true },
-      null, 1
-    );
+    // Also verify the creator's Wallet has sufficient Denarii
+    const wallets = await base44.asServiceRole.entities.Wallet.filter({ user_email: user.email }, null, 1);
+    if (!wallets[0] || (wallets[0].denarii_balance || 0) < amountDenarii) {
+      return Response.json({ error: 'Insufficient wallet balance' }, { status: 400 });
+    }
+    const wallet = wallets[0];
 
+    // Require verified Stripe Connect account with payouts enabled
+    const methods = await base44.entities.CreatorPayoutMethod.filter(
+      { creator_id: creatorId, method_type: 'stripe_connect', stripe_payouts_enabled: true }, null, 1
+    );
     if (!methods[0]) {
       return Response.json({
         error: 'Stripe Connect not set up or payouts not enabled. Please complete KYC verification first.'
@@ -60,7 +64,8 @@ Deno.serve(async (req) => {
     }
 
     const stripeAccountId = methods[0].stripe_account_id;
-    const payoutUsd = amountDenarii * DENARII_TO_USD * CREATOR_SHARE;
+    // DENARII_TO_USD already includes the creator share — no additional multiplication needed
+    const payoutUsd = amountDenarii * DENARII_TO_USD;
     const payoutCents = Math.round(payoutUsd * 100);
 
     if (payoutCents < 100) {
@@ -71,7 +76,6 @@ Deno.serve(async (req) => {
       creatorId, amountDenarii, payoutUsd: `$${payoutUsd.toFixed(2)}`, stripeAccountId
     });
 
-    // Create Stripe transfer to connected account
     const transfer = await stripe.transfers.create({
       amount: payoutCents,
       currency: 'usd',
@@ -89,12 +93,14 @@ Deno.serve(async (req) => {
 
     console.log('[stripeConnectPayout] Transfer created:', transfer.id);
 
-    // Deduct from creator balance atomically
+    // Deduct from both the earnings counter and the spendable Wallet
     await base44.entities.Creator.update(creatorId, {
       total_earnings_denarii: (creator.total_earnings_denarii || 0) - amountDenarii
     });
+    await base44.asServiceRole.entities.Wallet.update(wallet.id, {
+      denarii_balance: (wallet.denarii_balance || 0) - amountDenarii
+    });
 
-    // Record payout
     await base44.entities.CreatorPayout.create({
       creator_id: creatorId,
       user_email: user.email,
@@ -106,7 +112,6 @@ Deno.serve(async (req) => {
       status: 'completed'
     });
 
-    // Send payout notification email (non-blocking)
     base44.asServiceRole.functions.invoke('transactionalEmail', {
       action: 'send_payout_notification',
       creatorEmail: user.email,
@@ -116,7 +121,7 @@ Deno.serve(async (req) => {
       reference: transfer.id
     }).catch(e => console.warn('[stripeConnectPayout] Payout email failed:', e.message));
 
-    console.log('[stripeConnectPayout] Payout completed successfully:', transfer.id);
+    console.log('[stripeConnectPayout] Payout completed:', transfer.id);
     return Response.json({
       success: true,
       transfer_id: transfer.id,
