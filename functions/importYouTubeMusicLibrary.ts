@@ -37,84 +37,112 @@ Deno.serve(async (req) => {
     let imported = 0;
     const errors = [];
 
-    for (const { q, genre } of POPULAR_SEARCHES) {
+    for (const { q, genre } of POPULAR_PLAYLISTS) {
       try {
-        const searchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
-        searchUrl.searchParams.set('part', 'snippet');
-        searchUrl.searchParams.set('q', q);
-        searchUrl.searchParams.set('type', 'video');
-        searchUrl.searchParams.set('maxResults', '15');
-        searchUrl.searchParams.set('key', YOUTUBE_API_KEY);
-        searchUrl.searchParams.set('order', 'relevance');
+        // Search for playlists
+        const playlistSearchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
+        playlistSearchUrl.searchParams.set('part', 'snippet');
+        playlistSearchUrl.searchParams.set('q', q);
+        playlistSearchUrl.searchParams.set('type', 'playlist');
+        playlistSearchUrl.searchParams.set('maxResults', '5');
+        playlistSearchUrl.searchParams.set('key', YOUTUBE_API_KEY);
+        playlistSearchUrl.searchParams.set('order', 'relevance');
 
-        const searchRes = await fetch(searchUrl.toString());
-        if (!searchRes.ok) throw new Error(`YouTube search failed: ${searchRes.statusText}`);
+        const playlistRes = await fetch(playlistSearchUrl.toString());
+        if (!playlistRes.ok) throw new Error(`Playlist search failed: ${playlistRes.statusText}`);
 
-        const searchData = await searchRes.json();
-        const items = searchData.items || [];
+        const playlistData = await playlistRes.json();
+        const playlists = playlistData.items || [];
 
-        for (const item of items) {
+        for (const playlist of playlists) {
+          const playlistId = playlist.id.playlistId;
+          
           try {
-            const videoId = item.id.videoId;
-            const title = item.snippet.title;
-            const thumbnail = item.snippet.thumbnails?.high?.url;
-            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            // Get videos from this playlist
+            const itemsUrl = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
+            itemsUrl.searchParams.set('part', 'snippet,contentDetails');
+            itemsUrl.searchParams.set('playlistId', playlistId);
+            itemsUrl.searchParams.set('maxResults', '50');
+            itemsUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
-            // Get video details (duration)
-            const detailUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
-            detailUrl.searchParams.set('part', 'contentDetails');
-            detailUrl.searchParams.set('id', videoId);
-            detailUrl.searchParams.set('key', YOUTUBE_API_KEY);
+            const itemsRes = await fetch(itemsUrl.toString());
+            const itemsData = await itemsRes.json();
+            const playlistItems = itemsData.items || [];
 
-            const detailRes = await fetch(detailUrl.toString());
-            const detailData = await detailRes.json();
-            const durationStr = detailData.items?.[0]?.contentDetails?.duration || 'PT0S';
+            for (const item of playlistItems) {
+              try {
+                const videoId = item.contentDetails?.videoId;
+                if (!videoId) continue;
 
-            // Parse ISO 8601 duration
-            const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            const hours = parseInt(match?.[1] || 0);
-            const minutes = parseInt(match?.[2] || 0);
-            const seconds = parseInt(match?.[3] || 0);
-            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                const title = item.snippet.title;
+                const thumbnail = item.snippet.thumbnails?.high?.url;
+                const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-            // Check if already exists
-            const existing = await base44.entities.Music.filter(
-              { audio_url: videoUrl },
-              null,
-              1
-            ).catch(() => []);
+                // Get video details (duration)
+                const detailUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
+                detailUrl.searchParams.set('part', 'contentDetails');
+                detailUrl.searchParams.set('id', videoId);
+                detailUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
-            if (existing.length > 0) continue;
+                const detailRes = await fetch(detailUrl.toString());
+                const detailData = await detailRes.json();
+                const durationStr = detailData.items?.[0]?.contentDetails?.duration || 'PT0S';
 
-            // Create music record
-            await base44.entities.Music.create({
-              creator_id: user.email,
-              title: title.substring(0, 200),
-              artist: 'YouTube',
-              description: `Imported from YouTube - ${title}`,
-              audio_url: videoUrl,
-              cover_url: thumbnail || getThumbnailUrl(videoId),
-              duration_seconds: totalSeconds,
-              genre: genre,
-              is_published: true,
-              is_music_video: true,
-              video_url: videoUrl,
-              play_count: 0,
-              like_count: 0,
-              tags: [genre, 'imported', 'youtube']
-            });
+                // Parse ISO 8601 duration
+                const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                const hours = parseInt(match?.[1] || 0);
+                const minutes = parseInt(match?.[2] || 0);
+                const seconds = parseInt(match?.[3] || 0);
+                const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-            imported++;
+                // Check if already exists
+                const existing = await base44.entities.Music.filter(
+                  { audio_url: videoUrl },
+                  null,
+                  1
+                ).catch(() => []);
+
+                if (existing.length > 0) continue;
+
+                // Create music record
+                await base44.entities.Music.create({
+                  creator_id: user.email,
+                  title: title.substring(0, 200),
+                  artist: 'YouTube',
+                  description: `Imported from YouTube playlist - ${title}`,
+                  audio_url: videoUrl,
+                  cover_url: thumbnail || getThumbnailUrl(videoId),
+                  duration_seconds: totalSeconds,
+                  genre: genre,
+                  is_published: true,
+                  is_music_video: true,
+                  video_url: videoUrl,
+                  play_count: 0,
+                  like_count: 0,
+                  tags: [genre, 'imported', 'youtube', 'playlist']
+                });
+
+                imported++;
+              } catch (err) {
+                errors.push(`Item error: ${err.message}`);
+              }
+
+              // Rate limiting between video imports
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
           } catch (err) {
-            errors.push(`Item error: ${err.message}`);
+            errors.push(`Playlist import failed: ${err.message}`);
           }
+
+          // Rate limiting between playlists
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       } catch (err) {
-        errors.push(`Search "${q}" failed: ${err.message}`);
+        errors.push(`Playlist search "${q}" failed: ${err.message}`);
       }
 
-      // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Rate limiting between searches
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     return Response.json({
