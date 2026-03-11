@@ -1,325 +1,405 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import {
-  Eye, Tv, Flame, Search, Grid3x3, List,
-  ChevronRight, Crown, Play, Clock, ThumbsUp,
-  TrendingUp, Radio, Bookmark, Bell
+  Play, Radio, Eye, MoreVertical, Search, Bell, Cast,
+  Tv, Flame, Music2, Mic2, Shuffle, ChevronRight
 } from 'lucide-react';
 
-const CATEGORIES = ['All', 'Gaming', 'Music', 'Talk Show', 'Fitness', 'Art', 'Comedy', 'Education', 'Outdoor', 'Cooking'];
+// ── Utility ──────────────────────────────────────────────────────────────────
+function formatCount(n) {
+  if (!n) return '0';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
 
-// Large YouTube-style featured card
-function FeaturedStreamCard({ stream }) {
+function fmtDuration(secs) {
+  if (!secs) return '';
+  const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function getYouTubeId(url) {
+  if (!url) return null;
+  const m = url.match(/[?&]v=([^&]+)/);
+  return m ? m[1] : null;
+}
+
+function ytThumb(url) {
+  const id = getYouTubeId(url);
+  return id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : null;
+}
+
+// ── Short card (portrait 9:16) ────────────────────────────────────────────────
+function ShortCard({ item }) {
+  const thumb = item.cover_url || ytThumb(item.video_url);
   return (
-    <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`}>
-      <div className="group relative w-full rounded-2xl overflow-hidden bg-black border border-white/[0.08] hover:border-white/[0.2] transition-all duration-300 active:scale-[0.99] shadow-2xl">
-        <div className="aspect-video relative">
-          {stream.thumbnail_url ? (
-            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-red-950 via-stone-900 to-black flex items-center justify-center">
-              <Tv className="w-16 h-16 text-white/10" />
-            </div>
-          )}
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-          {/* Play button on hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-              <Play className="w-7 h-7 text-white ml-1" />
-            </div>
+    <a href={item.video_url || '#'} target="_blank" rel="noopener noreferrer">
+      <div className="group relative rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/20 transition-all" style={{ aspectRatio: '9/16' }}>
+        {thumb ? (
+          <img src={thumb} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center">
+            <Music2 className="w-8 h-8 text-white/20" />
           </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-          {/* Live badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            LIVE
-          </div>
-
-          {/* Viewer count */}
-          {stream.viewer_count > 0 && (
-            <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-              <Eye className="w-3 h-3" />
-              {stream.viewer_count.toLocaleString()} watching
-            </div>
-          )}
-
-          {/* Bottom info */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h2 className="text-white font-bold text-lg line-clamp-1 mb-1 drop-shadow-lg">{stream.title}</h2>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex-shrink-0 shadow-md" />
-              <span className="text-white/70 text-sm font-medium">{stream.creator_id}</span>
-              {stream.category && (
-                <span className="ml-auto text-white/40 text-xs bg-white/10 px-2 py-0.5 rounded-md">{stream.category}</span>
-              )}
-            </div>
+        {/* Play overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-10 h-10 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center">
+            <Play className="w-4 h-4 text-white ml-0.5" />
           </div>
         </div>
+
+        {/* Bottom info */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+          <p className="text-white text-xs font-semibold line-clamp-2 leading-tight mb-0.5">{item.title}</p>
+          {item.artist && <p className="text-white/50 text-[10px]">{item.artist}</p>}
+        </div>
+
+        {/* Duration */}
+        {item.duration_seconds && (
+          <div className="absolute bottom-2 right-2 bg-black/80 text-white/80 text-[9px] px-1.5 py-0.5 rounded font-medium">
+            {fmtDuration(item.duration_seconds)}
+          </div>
+        )}
+
+        {/* More button */}
+        <button className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <MoreVertical className="w-3.5 h-3.5 text-white/70" />
+        </button>
+      </div>
+    </a>
+  );
+}
+
+// ── Full-width Mix / landscape card ──────────────────────────────────────────
+function MixCard({ item, showNew = false }) {
+  const thumb = item.cover_url || ytThumb(item.video_url) || item.thumbnail_url;
+  const subtitle = [item.artist, item.tags?.slice(0, 3).join(', ')].filter(Boolean).join(' · ');
+
+  return (
+    <a href={item.video_url || '#'} target="_blank" rel="noopener noreferrer" className="block group">
+      <div className="relative w-full rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15] transition-all duration-200 mb-2" style={{ aspectRatio: '16/9' }}>
+        {thumb ? (
+          <img src={thumb} alt={item.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-400" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center">
+            <Music2 className="w-12 h-12 text-white/10" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        {/* Play overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+            <Play className="w-5 h-5 text-white ml-0.5" />
+          </div>
+        </div>
+
+        {/* Mix badge */}
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm text-white/80 text-[10px] px-2 py-0.5 rounded-md font-medium">
+          <Shuffle className="w-2.5 h-2.5" /> Mix
+        </div>
+
+        {/* New badge */}
+        {showNew && (
+          <div className="absolute top-2 left-2 bg-white text-black text-[10px] font-black px-2 py-0.5 rounded-md">New</div>
+        )}
+
+        {/* More */}
+        <button className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full">
+          <MoreVertical className="w-3.5 h-3.5 text-white" />
+        </button>
+      </div>
+
+      {/* Info row */}
+      <div className="flex items-start justify-between gap-2 px-0.5">
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-0.5">{item.title}</p>
+          <p className="text-white/45 text-xs line-clamp-1">{subtitle}</p>
+        </div>
+        <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white transition-colors mt-0.5">
+          <MoreVertical className="w-4 h-4" />
+        </button>
+      </div>
+    </a>
+  );
+}
+
+// ── Live stream card ──────────────────────────────────────────────────────────
+function LiveCard({ stream }) {
+  return (
+    <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`} className="block group">
+      <div className="relative w-full rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15] transition-all mb-2" style={{ aspectRatio: '16/9' }}>
+        {stream.thumbnail_url ? (
+          <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-red-950 to-black flex items-center justify-center">
+            <Tv className="w-10 h-10 text-white/10" />
+          </div>
+        )}
+        <div className="absolute top-2 left-2 flex items-center gap-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+          <span className="w-1 h-1 rounded-full bg-white animate-pulse" />LIVE
+        </div>
+        {stream.viewer_count > 0 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-black/80 text-white/80 text-[9px] px-1.5 py-0.5 rounded-md">
+            <Eye className="w-2.5 h-2.5" />{formatCount(stream.viewer_count)}
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-10 h-10 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center">
+            <Play className="w-4 h-4 text-white ml-0.5" />
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-2.5 px-0.5">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-0.5">{stream.title}</p>
+          <p className="text-white/45 text-xs">{stream.creator_id}</p>
+          {stream.viewer_count > 0 && <p className="text-white/30 text-[11px]">{formatCount(stream.viewer_count)} watching</p>}
+        </div>
+        <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white transition-colors">
+          <MoreVertical className="w-4 h-4" />
+        </button>
       </div>
     </Link>
   );
 }
 
-// Standard YouTube-style grid card
-function StreamGridCard({ stream }) {
+// ── Section header ────────────────────────────────────────────────────────────
+function SectionHeader({ icon: Icon, title, iconColor = 'text-red-500', onSeeAll }) {
   return (
-    <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`}>
-      <div className="group cursor-pointer">
-        {/* Thumbnail */}
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] mb-2.5 group-hover:border-white/[0.15] transition-all duration-200">
-          {stream.thumbnail_url ? (
-            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center">
-              <Tv className="w-8 h-8 text-white/10" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-          {/* Live badge */}
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-lg">
-            <span className="w-1 h-1 rounded-full bg-white animate-pulse" />LIVE
-          </div>
-
-          {/* Viewer count */}
-          {stream.viewer_count > 0 && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-black/80 text-white/80 text-[9px] px-1.5 py-0.5 rounded-md">
-              <Eye className="w-2.5 h-2.5" />{stream.viewer_count.toLocaleString()}
-            </div>
-          )}
-
-          {/* Play hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center">
-              <Play className="w-4 h-4 text-white ml-0.5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Info row */}
-        <div className="flex gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-1">{stream.title}</p>
-            <p className="text-white/50 text-xs">{stream.creator_id}</p>
-            {stream.viewer_count > 0 && (
-              <p className="text-white/35 text-xs">{stream.viewer_count.toLocaleString()} viewers</p>
-            )}
-          </div>
-        </div>
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <Icon className={`w-5 h-5 ${iconColor}`} />
+        <h2 className="text-white font-bold text-base">{title}</h2>
       </div>
-    </Link>
+      {onSeeAll && (
+        <button onClick={onSeeAll} className="flex items-center gap-0.5 text-white/40 hover:text-white text-xs transition-colors">
+          See all <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
-// VOD-style card for non-live content
-function VODCard({ stream }) {
-  return (
-    <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`}>
-      <div className="group cursor-pointer">
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] mb-2.5 group-hover:border-white/[0.15] transition-all duration-200">
-          {stream.thumbnail_url ? (
-            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-violet-900/20 to-black flex items-center justify-center">
-              <Play className="w-8 h-8 text-white/10" />
-            </div>
-          )}
-          <div className="absolute bottom-2 right-2 bg-black/80 text-white/80 text-[9px] px-1.5 py-0.5 rounded-md font-medium">
-            {stream.duration_minutes ? `${stream.duration_minutes}m` : 'VOD'}
-          </div>
-        </div>
-        <div className="flex gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-1">{stream.title}</p>
-            <p className="text-white/50 text-xs">{stream.creator_id}</p>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
+// ── Category tabs config ──────────────────────────────────────────────────────
+const TABS = [
+  { id: 'all',      label: 'All' },
+  { id: 'music',    label: 'Music' },
+  { id: 'podcasts', label: 'Podcasts' },
+  { id: 'mixes',    label: 'Mixes' },
+  { id: 'gaming',   label: 'Gaming' },
+  { id: 'live',     label: 'Live' },
+  { id: 'shorts',   label: 'Shorts' },
+  { id: 'fitness',  label: 'Fitness' },
+  { id: 'comedy',   label: 'Comedy' },
+];
 
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function TheAmphitheatre() {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('live');
+  const [activeTab, setActiveTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
-  const { data: liveStreams = [], isLoading: liveLoading } = useQuery({
+  // Data fetches
+  const { data: liveStreams = [] } = useQuery({
     queryKey: ['amphitheatre-live'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 30),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
 
-  const { data: vodStreams = [], isLoading: vodLoading } = useQuery({
-    queryKey: ['amphitheatre-vod'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'ended' }, '-created_date', 40),
-    staleTime: 5 * 60 * 1000,
+  const { data: musicVideos = [] } = useQuery({
+    queryKey: ['amphitheatre-music'],
+    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-play_count', 50),
+    staleTime: 5 * 60_000,
   });
 
-  const streams = activeTab === 'live' ? liveStreams : vodStreams;
-  const isLoading = activeTab === 'live' ? liveLoading : vodLoading;
-
-  const filtered = streams.filter(s => {
-    const matchCat = activeCategory === 'All' || s.category?.toLowerCase() === activeCategory.toLowerCase();
-    const matchSearch = !searchQuery || s.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchSearch;
+  const { data: podcastEpisodes = [] } = useQuery({
+    queryKey: ['amphitheatre-podcasts'],
+    queryFn: () => base44.entities.PodcastEpisode.filter({ is_published: true }, '-created_date', 20),
+    staleTime: 5 * 60_000,
   });
 
-  const featured = activeTab === 'live' ? filtered[0] : null;
-  const gridItems = activeTab === 'live' ? filtered.slice(1) : filtered;
+  // Derived lists
+  const shorts = useMemo(() => musicVideos.filter(m => m.is_music_video).slice(0, 10), [musicVideos]);
+  const mixes  = useMemo(() => musicVideos.slice(0, 20), [musicVideos]);
+  const musicFiltered = useMemo(() => {
+    if (!search) return musicVideos;
+    return musicVideos.filter(m => m.title?.toLowerCase().includes(search.toLowerCase()) || m.artist?.toLowerCase().includes(search.toLowerCase()));
+  }, [musicVideos, search]);
+
+  const filteredLive = useMemo(() => {
+    const q = search.toLowerCase();
+    return liveStreams.filter(s => !q || s.title?.toLowerCase().includes(q));
+  }, [liveStreams, search]);
+
+  const showAll    = activeTab === 'all';
+  const showMusic  = activeTab === 'music' || showAll;
+  const showPod    = activeTab === 'podcasts' || showAll;
+  const showLive   = activeTab === 'live' || showAll;
+  const showShorts = activeTab === 'shorts' || showAll;
+  const showMixes  = activeTab === 'mixes' || showAll;
 
   return (
-    <div className="min-h-screen text-white pt-14 bg-[#09090b]">
+    <div className="min-h-screen bg-[#0f0f10] text-white pb-24">
 
-      {/* ── Sticky Header — YouTube Premium style ── */}
-      <div className="sticky top-14 z-40 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-screen-xl mx-auto px-4">
-
-          {/* Title + live count */}
-          <div className="flex items-center justify-between pt-3 pb-2">
-            <div className="flex items-center gap-2.5">
-              {activeTab === 'live' ? (
-                <>
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse" />
-                  <h1 className="text-white font-bold text-base">Live Streams</h1>
-                  {liveStreams.length > 0 && (
-                    <span className="text-red-400 text-xs font-semibold bg-red-500/10 px-2 py-0.5 rounded-full">
-                      {liveStreams.length} live
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 text-violet-400" />
-                  <h1 className="text-white font-bold text-base">Videos</h1>
-                </>
-              )}
+      {/* ── Sticky top bar ── */}
+      <div className="sticky top-0 z-40 bg-[#0f0f10]/98 backdrop-blur-xl">
+        {/* Title row */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          {showSearch ? (
+            <div className="flex-1 flex items-center gap-2 bg-white/[0.07] border border-white/[0.1] rounded-full px-3 h-9">
+              <Search className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search music, streams…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
+              />
+              <button onClick={() => { setShowSearch(false); setSearch(''); }} className="text-white/40 hover:text-white text-xs">✕</button>
             </div>
-            <Link to={createPageUrl('GoLive')}>
-              <button className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold text-xs px-3.5 h-8 rounded-xl transition-all shadow-lg shadow-red-500/20">
-                <Radio className="w-3.5 h-3.5" /> Go Live
-              </button>
-            </Link>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-red-600 flex items-center justify-center">
+                  <Tv className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-white font-black text-base tracking-tight">Amphitheatre</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button className="text-white/60 hover:text-white transition-colors"><Cast className="w-5 h-5" /></button>
+                <button className="text-white/60 hover:text-white transition-colors"><Bell className="w-5 h-5" /></button>
+                <button onClick={() => setShowSearch(true)} className="text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
+              </div>
+            </>
+          )}
+        </div>
 
-          {/* Live / VOD tabs */}
-          <div className="flex gap-1 mb-2.5">
-            {[
-              { key: 'live', label: '🔴 Live', count: liveStreams.length },
-              { key: 'vod', label: '🎬 Videos', count: vodStreams.length },
-            ].map(({ key, label, count }) => (
-              <button
-                key={key}
-                onClick={() => { setActiveTab(key); setActiveCategory('All'); }}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === key
-                    ? 'bg-white text-black'
-                    : 'text-white/50 hover:text-white hover:bg-white/[0.07]'
-                }`}
-              >
-                {label}
-                {count > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === key ? 'bg-black/10 text-black' : 'bg-white/10'}`}>{count}</span>}
-              </button>
-            ))}
-          </div>
-
-          {/* Search */}
-          <div className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 h-9 mb-2.5">
-            <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder={activeTab === 'live' ? 'Search live streams…' : 'Search videos…'}
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="bg-transparent text-white text-sm placeholder:text-white/25 outline-none flex-1 min-w-0"
-            />
-          </div>
-
-          {/* Category chips */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeCategory === cat
-                    ? 'bg-white text-black'
-                    : 'bg-white/[0.07] text-white/50 hover:text-white hover:bg-white/[0.12]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+        {/* Category chips */}
+        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-white text-black'
+                  : 'bg-white/[0.1] text-white/80 hover:bg-white/[0.15]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* ── Content ── */}
-      <div className="max-w-screen-xl mx-auto px-4 py-5">
-        {isLoading ? (
-          <div className="space-y-5">
-            <div className="aspect-video w-full rounded-2xl bg-white/[0.04] animate-pulse" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-video rounded-xl bg-white/[0.04] animate-pulse" />
+      <div className="px-4 pt-3 space-y-8">
+
+        {/* SHORTS shelf */}
+        {showShorts && shorts.length > 0 && (
+          <section>
+            <SectionHeader icon={() => <span className="text-red-500 font-black text-lg">▶</span>} title="Shorts" iconColor="text-red-500" />
+            <div className="grid grid-cols-2 gap-2.5">
+              {shorts.slice(0, 6).map((item, i) => (
+                <ShortCard key={item.id || i} item={item} />
               ))}
             </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-24">
-            <Tv className="w-14 h-14 text-white/10 mx-auto mb-4" />
-            <p className="text-white/40 font-medium mb-1">
-              {activeTab === 'live' ? 'No streams live right now' : 'No videos yet'}
-            </p>
-            <p className="text-white/25 text-sm">Check back soon or go live yourself!</p>
-            <Link to={createPageUrl('GoLive')} className="inline-flex items-center gap-2 mt-4 bg-red-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-red-700 transition-all">
-              <Radio className="w-4 h-4" /> Start Streaming
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Hero featured stream */}
-            {featured && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Crown className="w-4 h-4 text-amber-400" />
-                  <span className="text-white/50 text-xs font-bold tracking-widest uppercase">Featured</span>
-                </div>
-                <FeaturedStreamCard stream={featured} />
-              </div>
-            )}
+          </section>
+        )}
 
-            {/* Grid */}
-            {gridItems.length > 0 && (
-              <div>
-                {featured && (
-                  <div className="flex items-center gap-2 mb-4">
-                    <Flame className="w-4 h-4 text-red-400" />
-                    <span className="text-white/50 text-xs font-bold tracking-widest uppercase">
-                      {activeTab === 'live' ? 'All Live Channels' : 'Latest Videos'}
-                    </span>
+        {/* LIVE NOW */}
+        {showLive && filteredLive.length > 0 && (
+          <section>
+            <SectionHeader
+              icon={Radio}
+              title="Live Now"
+              iconColor="text-red-500"
+              onSeeAll={() => setActiveTab('live')}
+            />
+            <div className="space-y-5">
+              {filteredLive.slice(0, activeTab === 'live' ? 20 : 3).map(stream => (
+                <LiveCard key={stream.id} stream={stream} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* MUSIC / MIXES — full width rows like YouTube Premium */}
+        {(showMusic || showMixes) && musicFiltered.length > 0 && (
+          <section>
+            <SectionHeader
+              icon={Music2}
+              title={activeTab === 'mixes' ? 'Mixes' : 'Music Videos'}
+              iconColor="text-purple-400"
+              onSeeAll={activeTab === 'all' ? () => setActiveTab('music') : undefined}
+            />
+            <div className="space-y-6">
+              {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 40 : 8).map((item, i) => (
+                <MixCard key={item.id || i} item={item} showNew={i < 2} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* PODCASTS */}
+        {showPod && podcastEpisodes.length > 0 && (
+          <section>
+            <SectionHeader icon={Mic2} title="Podcasts" iconColor="text-amber-400" />
+            <div className="space-y-5">
+              {podcastEpisodes.slice(0, activeTab === 'podcasts' ? 20 : 3).map((ep, i) => (
+                <div key={ep.id || i} className="flex gap-3">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/[0.05] flex-shrink-0">
+                    {ep.cover_art_url ? (
+                      <img src={ep.cover_art_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-amber-900 to-orange-950 flex items-center justify-center">
+                        <Mic2 className="w-7 h-7 text-white/30" />
+                      </div>
+                    )}
                   </div>
-                )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
-                  {gridItems.map(stream => (
-                    activeTab === 'live'
-                      ? <StreamGridCard key={stream.id} stream={stream} />
-                      : <VODCard key={stream.id} stream={stream} />
-                  ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold line-clamp-2 leading-tight mb-0.5">{ep.title}</p>
+                    <p className="text-white/40 text-xs mb-1">{ep.podcast_id}</p>
+                    {ep.duration_seconds && (
+                      <span className="text-white/30 text-[11px]">{fmtDuration(ep.duration_seconds)}</span>
+                    )}
+                  </div>
+                  <button className="shrink-0 w-7 h-7 flex items-center justify-center text-white/30 hover:text-white">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Empty state */}
+        {!showAll && musicFiltered.length === 0 && filteredLive.length === 0 && podcastEpisodes.length === 0 && (
+          <div className="text-center py-20">
+            <Tv className="w-12 h-12 text-white/10 mx-auto mb-3" />
+            <p className="text-white/40 text-sm">No content found</p>
+            {search && <p className="text-white/25 text-xs mt-1">Try a different search</p>}
           </div>
         )}
+
+        {/* Go Live CTA */}
+        <div className="flex items-center justify-center pt-2">
+          <Link to={createPageUrl('GoLive')} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-red-500/20">
+            <Radio className="w-4 h-4" /> Go Live
+          </Link>
+        </div>
+
       </div>
     </div>
   );
