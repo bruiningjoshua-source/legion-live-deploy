@@ -229,8 +229,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-400 mt-0.5" />
               <div className="text-xs text-amber-300/80">
-                <p className="font-semibold mb-1">Revenue Split: 50% Platform / 50% Creator</p>
-                <p>For every $1.00 of gift value received, you earn $0.50. Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (${(MIN_PAYOUT_DENARII * DENARII_TO_USD * CREATOR_SHARE).toFixed(2)})</p>
+                <p className="font-semibold mb-1">Revenue Split: 40% Platform / 60% Creator</p>
+                <p>For every $1.00 of gift value received, you earn $0.60. Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
               </div>
             </div>
           </div>
