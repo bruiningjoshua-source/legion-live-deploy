@@ -18,6 +18,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import VideoPlayer from '@/components/video/VideoPlayer';
+import YouTubePlayer from '@/components/video/YouTubePlayer';
 import TipButton from '@/components/stream/TipButton';
 import VideoCommentSystem from '@/components/community/VideoCommentSystem';
 import RecommendedVideos from '@/components/video/RecommendedVideos';
