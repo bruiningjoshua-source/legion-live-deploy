@@ -118,6 +118,8 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
+import AffiliateMarketplaceLive from './pages/AffiliateMarketplaceLive';
+import AffiliateMarketplaceExplore from './pages/AffiliateMarketplaceExplore';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +195,8 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
+    "AffiliateMarketplaceLive": AffiliateMarketplaceLive,
+    "AffiliateMarketplaceExplore": AffiliateMarketplaceExplore,
 }
 
 export const pagesConfig = {
