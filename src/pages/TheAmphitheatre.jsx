@@ -384,18 +384,18 @@ export default function TheAmphitheatre() {
           </section>
         )}
 
-        {/* MUSIC / MIXES — full width rows like YouTube Premium */}
+        {/* MUSIC VIDEOS — 2-column grid */}
         {(showMusic || showMixes) && musicFiltered.length > 0 && (
           <section>
             <SectionHeader
               icon={Music2}
-              title={activeTab === 'mixes' ? 'Mixes' : 'Music Videos'}
+              title="Music Videos"
               iconColor="text-purple-400"
               onSeeAll={activeTab === 'all' ? () => setActiveTab('music') : undefined}
             />
-            <div className="space-y-6">
-              {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 200 : 8).map((item, i) => (
-                <MixCard key={item.id || i} item={item} showNew={i < 2} />
+            <div className="grid grid-cols-2 gap-4">
+              {musicFiltered.slice(0, activeTab === 'music' || activeTab === 'mixes' ? 200 : 12).map((item, i) => (
+                <ShortCard key={item.id || i} item={item} />
               ))}
             </div>
           </section>
