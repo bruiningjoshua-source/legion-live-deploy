@@ -188,12 +188,22 @@ Deno.serve(async (req) => {
 
           const creators = await base44.asServiceRole.entities.Creator.filter({ id: metadata.creator_id }, null, 1);
           if (creators[0]) {
-            const creatorEarning = amount * (1 - tipPlatformFee);
-            const earningInDenarii = Math.floor(creatorEarning * 180); // FIX: 180 Denarii/$1, not 100
+            // Platform rate: 260 Denarii per $1 USD sold. Creator earns their share of that.
+            const creatorEarningUsd = amount * (1 - tipPlatformFee);
+            const earningInDenarii = Math.floor(creatorEarningUsd * 260);
             await base44.asServiceRole.entities.Creator.update(metadata.creator_id, {
               total_earnings_denarii: (creators[0].total_earnings_denarii || 0) + earningInDenarii
             });
-            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii @ 180:1 rate (fee:', tipPlatformFee, ')');
+            // Also credit spendable wallet
+            const creatorWallets = await base44.asServiceRole.entities.Wallet.filter(
+              { user_email: creators[0].user_email }, null, 1
+            );
+            if (creatorWallets[0]) {
+              await base44.asServiceRole.entities.Wallet.update(creatorWallets[0].id, {
+                denarii_balance: (creatorWallets[0].denarii_balance || 0) + earningInDenarii
+              });
+            }
+            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii @ 260:1 rate (fee:', tipPlatformFee, ')');
           }
         }
 
