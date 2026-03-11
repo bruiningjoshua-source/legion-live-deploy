@@ -218,7 +218,7 @@ export default function TheAmphitheatre() {
 
   const { data: musicVideos = [] } = useQuery({
     queryKey: ['amphitheatre-music'],
-    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-play_count', 50),
+    queryFn: () => base44.entities.Music.filter({ is_published: true }, '-play_count', 200),
     staleTime: 5 * 60_000,
   });
 
