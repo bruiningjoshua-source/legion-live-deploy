@@ -4,43 +4,24 @@ const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
 
 const POPULAR_PLAYLISTS = [
   // Rock & Metal
-  { q: 'classic rock 1960s 1970s 1980s playlist', genre: 'rock' },
-  { q: 'rock hits 1990s 2000s playlist', genre: 'rock' },
-  { q: 'best rock music 2010s 2020s playlist', genre: 'rock' },
-  { q: 'heavy metal greatest hits playlist', genre: 'rock' },
-  { q: 'metal masterpiece playlist 1980s 1990s', genre: 'rock' },
+  { id: 'PLny3IEbsr-rPmd0goOF5eQ_qJjcP-4wdT', genre: 'rock', name: 'Top 100 Rock Songs Of The 2010s' },
+  { id: 'PLny3IEbsr-rNORq2hCLEe7nDNH9QJ8ROb', genre: 'rock', name: 'Top 30 Metal Songs Of The 2000s' },
   
   // Pop & Synthwave
-  { q: 'pop music 1960s 1970s 1980s hits playlist', genre: 'pop' },
-  { q: 'pop hits 1990s 2000s playlist', genre: 'pop' },
-  { q: 'best pop music 2010s 2020s playlist', genre: 'pop' },
-  { q: 'synthwave retro 80s 90s playlist', genre: 'pop' },
-  { q: 'synthpop greatest hits playlist', genre: 'pop' },
+  { id: 'PLBccjB8tUhRTGSCGQ_SH30apIiJxc04t5', genre: 'pop', name: 'Best Synthwave Music Playlist' },
   
-  // Hip-Hop & Rap
-  { q: 'hip hop rap classics 1990s 2000s playlist', genre: 'hip_hop' },
-  { q: 'hip hop hits 2010s 2020s playlist', genre: 'hip_hop' },
-  { q: 'best rap music of all time playlist', genre: 'hip_hop' },
-  { q: 'trap hip hop 2015 2026 playlist', genre: 'hip_hop' },
+  // Hip-Hop & Rap (using search as fallback for non-playlist videos)
   
   // Disco & Funk
-  { q: 'disco classics 1970s 1980s playlist', genre: 'other' },
-  { q: 'best disco music ever playlist', genre: 'other' },
-  { q: 'funk soul disco hits playlist', genre: 'other' },
+  { id: 'PLqZ3rWFEe-iCpjKstxUAh2D_10WuKRhdQ', genre: 'other', name: 'Old Funk Music 70s 80s' },
+  { id: 'PLHUPapYSc2W21L4XQWQSYpftuDV5Wefis', genre: 'other', name: 'Classic 70s & 80s Funk/Disco/Soul' },
+  { id: 'PLVSmhKCk2xOcQ9sKSYKCOPY5tlOk8jjcP', genre: 'other', name: 'DISCO FUNK 70s & 80s' },
   
   // Electronic & Dance Music
-  { q: 'trance music greatest hits playlist', genre: 'electronic' },
-  { q: 'dance music 1990s 2000s 2010s playlist', genre: 'electronic' },
-  { q: 'house music classics playlist', genre: 'electronic' },
-  { q: 'edm electronic dance music best playlist', genre: 'electronic' },
-  { q: 'electro house minimal techno playlist', genre: 'electronic' },
-  { q: 'edm festival hits 2015 2026 playlist', genre: 'electronic' },
+  { id: 'PLVw4XTfVCYQxopGUNtoLqFTF_xlgUStbd', genre: 'electronic', name: 'Best EDM & House Music Mix' },
   
   // Country
-  { q: 'country music classics 1960s 1970s 1980s playlist', genre: 'other' },
-  { q: 'country hits 1990s 2000s 2010s playlist', genre: 'other' },
-  { q: 'best country music 2020s playlist', genre: 'other' },
-  { q: 'modern country pop playlist', genre: 'other' },
+  { id: 'PL-EmT37PV82NpnVhlFLXpe-nGR3acmeHw', genre: 'other', name: 'Top 100 Classic Country Songs 60s 70s 80s 90s' },
 ];
 
 function extractVideoId(url) {
