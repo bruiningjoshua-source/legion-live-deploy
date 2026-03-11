@@ -3,7 +3,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { message, stream_id, user_email, user_name } = await req.json();
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { message, stream_id, user_name } = await req.json();
+    const user_email = user.email; // Always use server-side auth, never trust client-provided email
 
     // Check if user is banned
     const bans = await base44.asServiceRole.entities.UserBan.filter({

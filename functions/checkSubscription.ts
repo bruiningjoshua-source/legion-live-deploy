@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
 
     // Check if user has creator subscription
     const subscriptions = await base44.asServiceRole.entities.CreatorSubscription.filter({
-      creator_id: user.email,
+      user_email: user.email,
       status: 'active'
     }, null, 1);
 
