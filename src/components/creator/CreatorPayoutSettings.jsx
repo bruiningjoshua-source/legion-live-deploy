@@ -232,7 +232,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
               <Info className="w-4 h-4 text-amber-400 mt-0.5" />
               <div className="text-xs text-amber-300/80">
                 <p className="font-semibold mb-1">Revenue Split: 40% Platform / 60% Creator</p>
-                <p>For every $1.00 of gift value received, you earn $0.60. Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
+                <p>For every 180 Denarii gifted to you, you earn $0.60 USD (60% share). Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
               </div>
             </div>
           </div>
@@ -453,7 +453,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <p className="text-green-300/70 text-sm mb-1">You'll receive</p>
                 <p className="text-3xl font-bold text-green-100">${estimatedPayout.toFixed(2)}</p>
                 <p className="text-green-400/60 text-xs mt-1">
-                  ({cashoutNum.toLocaleString()} Denarii × 60% share ÷ 260)
+                  ({cashoutNum.toLocaleString()} Denarii × 60% share ÷ 180)
                 </p>
               </div>
             )}
