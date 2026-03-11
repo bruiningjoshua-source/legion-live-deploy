@@ -1,183 +1,228 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import {
-  Gamepad2, Trophy, Zap, Sword, ChevronRight,
-  Users, Clock, Star, Flame, Crown, Play, Target
+  Gamepad2, Search, Download, Star, Users, TrendingUp,
+  Play, Zap, Trophy, ChevronRight, Package, Cloud
 } from 'lucide-react';
 
-const TABS = ['Live Tournaments', 'Upcoming', 'Past Results'];
-const GAME_FILTERS = ['All', 'Retro', 'Fighting', 'Shooter', 'Strategy'];
+const GENRE_FILTERS = [
+  { id: 'all', label: 'All Games' },
+  { id: 'action', label: 'Action' },
+  { id: 'puzzle', label: 'Puzzle' },
+  { id: 'strategy', label: 'Strategy' },
+  { id: 'casual', label: 'Casual' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'arcade', label: 'Arcade' },
+];
 
-function TournamentCard({ tournament }) {
-  const statusColors = {
-    live:     { bg: 'bg-red-500/15',    border: 'border-red-500/25',    text: 'text-red-400',    badge: 'bg-red-500' },
-    upcoming: { bg: 'bg-amber-500/10',  border: 'border-amber-500/20',  text: 'text-amber-400',  badge: 'bg-amber-500' },
-    finished: { bg: 'bg-white/[0.03]',  border: 'border-white/[0.07]',  text: 'text-white/40',   badge: 'bg-white/20' },
-  };
-  const s = statusColors[tournament.status] || statusColors.upcoming;
-  const prize = ((tournament.prize_pool_denarii || 0) / 65 * 0.7).toFixed(0);
+const SOURCE_FILTERS = [
+  { id: 'all', label: 'All Sources' },
+  { id: 'google_play', label: 'Google Play' },
+  { id: 'freeware', label: 'Freeware' },
+  { id: 'open_source', label: 'Open Source' },
+];
 
+function formatCount(n) {
+  if (!n) return '0';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
+
+function GameCard({ game }) {
   return (
-    <div className={`relative p-4 rounded-2xl ${s.bg} border ${s.border} hover:border-opacity-60 transition-all duration-200 group active:scale-[0.98]`}>
-      {/* Status badge */}
-      <div className="flex items-center justify-between mb-3">
-        <span className={`inline-flex items-center gap-1 text-[9px] font-bold tracking-widest uppercase ${s.badge} text-white px-2 py-0.5 rounded-lg`}>
-          {tournament.status === 'live' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-          {tournament.status}
-        </span>
-        <span className="text-white/30 text-[10px]">{tournament.game_type}</span>
+    <div className="bigo-card p-3 hover:border-purple-400/50 transition-all group">
+      {/* Game icon */}
+      <div className="relative rounded-lg overflow-hidden mb-3 bg-white/[0.05]" style={{ aspectRatio: '1/1' }}>
+        {game.icon_url && (
+          <img src={game.icon_url} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        {/* Badge */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-1 rounded-md">
+          {game.source === 'google_play' && <Cloud className="w-3 h-3" />}
+          {game.source === 'freeware' && <Package className="w-3 h-3" />}
+          {game.source.replace('_', ' ')}
+        </div>
       </div>
 
-      <p className="text-white font-bold text-sm mb-1 line-clamp-1">{tournament.title}</p>
-
-      {tournament.description && (
-        <p className="text-white/40 text-xs mb-3 line-clamp-2">{tournament.description}</p>
-      )}
-
-      {/* Stats row */}
-      <div className="flex items-center gap-3 text-xs">
-        <div className="flex items-center gap-1 text-amber-400">
-          <Trophy className="w-3.5 h-3.5" />
-          <span className="font-semibold">${prize}</span>
+      {/* Info */}
+      <div className="space-y-2">
+        <div>
+          <h3 className="text-white font-bold text-sm line-clamp-2">{game.title}</h3>
+          {game.developer && (
+            <p className="text-white/40 text-xs mt-0.5">{game.developer}</p>
+          )}
         </div>
-        {tournament.max_participants && (
-          <div className="flex items-center gap-1 text-white/40">
-            <Users className="w-3 h-3" />
-            <span>{tournament.participants?.length || 0}/{tournament.max_participants}</span>
-          </div>
-        )}
-        {tournament.start_time && (
-          <div className="flex items-center gap-1 text-white/40 ml-auto">
-            <Clock className="w-3 h-3" />
-            <span>{new Date(tournament.start_time).toLocaleDateString()}</span>
-          </div>
-        )}
+
+        {/* Rating & installs */}
+        <div className="flex items-center justify-between text-xs">
+          {game.rating && (
+            <div className="flex items-center gap-1 text-yellow-400">
+              <Star className="w-3 h-3 fill-current" />
+              <span className="font-semibold">{game.rating.toFixed(1)}</span>
+            </div>
+          )}
+          {game.install_count && (
+            <span className="text-white/40">{formatCount(game.install_count)}</span>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-3">
+          {game.play_store_url && (
+            <a href={game.play_store_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+              <button className="w-full text-xs font-bold text-white bg-purple-500/20 border border-purple-400/30 hover:bg-purple-500/30 rounded-lg py-2 transition-colors flex items-center justify-center gap-1">
+                <Download className="w-3 h-3" />
+                Get
+              </button>
+            </a>
+          )}
+          <button className="flex-1 text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg hover:shadow-purple-500/20 rounded-lg py-2 transition-all active:scale-95">
+            Stream
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
 export default function GamesExpo() {
-  const [activeTab, setActiveTab] = useState('Live Tournaments');
-  const [gameFilter, setGameFilter] = useState('All');
+  const [genreFilter, setGenreFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
-  const statusMap = {
-    'Live Tournaments': 'live',
-    'Upcoming': 'upcoming',
-    'Past Results': 'finished',
-  };
-
-  const { data: tournaments = [], isLoading } = useQuery({
-    queryKey: ['tournaments', activeTab],
-    queryFn: () => base44.entities.GameTournament.filter(
-      { status: statusMap[activeTab] },
-      '-start_time',
-      30
+  // Game library
+  const { data: games = [] } = useQuery({
+    queryKey: ['game-library-all'],
+    queryFn: () => base44.entities.GameLibrary.filter(
+      { is_active: true },
+      '-rating',
+      500
     ),
-    staleTime: 60 * 1000,
+    staleTime: 10 * 60_000,
   });
 
-  const filtered = gameFilter === 'All'
-    ? tournaments
-    : tournaments.filter(t => t.game_type?.toLowerCase() === gameFilter.toLowerCase());
+  const filteredGames = useMemo(() => {
+    let result = games;
+
+    if (genreFilter !== 'all') {
+      result = result.filter(g => g.genre === genreFilter);
+    }
+
+    if (sourceFilter !== 'all') {
+      result = result.filter(g => g.source === sourceFilter);
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(g =>
+        g.title?.toLowerCase().includes(q) ||
+        g.developer?.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [games, genreFilter, sourceFilter, search]);
 
   return (
-    <div className="min-h-screen text-white pt-16 bg-[#09090b]">
-      {/* Roman cinematic bg */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[#08060d]" />
-        <div className="absolute top-0 left-0 right-0 h-[45vh] bg-gradient-to-b from-[#1a0035]/50 via-[#0d0020]/30 to-transparent" />
-        <div className="absolute top-0 right-0 w-1/2 h-[40vh] bg-gradient-to-bl from-[#2d0080]/25 to-transparent" />
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[400px] h-[250px] rounded-full bg-[#7c3aed15] blur-[80px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#09090b] to-transparent" />
-      </div>
+    <div className="min-h-screen bg-[#0a0a0f] text-white pb-24">
       {/* Header */}
-      <div className="sticky top-14 z-40 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-screen-xl mx-auto px-4 py-3">
-          {/* Title */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4 text-violet-400" />
-              <h1 className="text-white font-bold text-base">Gaming Arena</h1>
+      <div className="sticky top-0 z-40 bigo-overlay border-b border-purple-500/20">
+        <div className="px-4 pt-3 pb-2">
+          {showSearch ? (
+            <div className="flex items-center gap-2 bigo-card px-3 h-10 border-purple-400/30">
+              <Search className="w-4 h-4 text-white/40 flex-shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search games, developers…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
+              />
+              <button onClick={() => { setShowSearch(false); setSearch(''); }} className="text-white/40 hover:text-white text-xs font-bold">✕</button>
             </div>
-            <Link to={createPageUrl('GoLive')}>
-              <button className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-semibold text-xs px-3 h-8 rounded-xl transition-all">
-                <Play className="w-3.5 h-3.5" />
-                Host Tournament
+          ) : (
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Gamepad2 className="w-5 h-5 text-amber-400" />
+                <span className="text-white font-bold text-lg">Games Expo</span>
+              </div>
+              <button onClick={() => setShowSearch(true)} className="text-white/60 hover:text-white transition-colors">
+                <Search className="w-5 h-5" />
               </button>
-            </Link>
-          </div>
+            </div>
+          )}
+        </div>
 
-          {/* Status tabs */}
-          <div className="flex gap-1 mb-3">
-            {TABS.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex-shrink-0 ${
-                  activeTab === tab
-                    ? 'bg-violet-600 text-white'
-                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.06]'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        {/* Genre filters */}
+        <div className="flex gap-2 px-4 pb-2 overflow-x-auto scrollbar-hide items-center">
+          {GENRE_FILTERS.map(genre => (
+            <button
+              key={genre.id}
+              onClick={() => setGenreFilter(genre.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                genreFilter === genre.id
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                  : 'bg-white/[0.08] text-white/70 hover:bg-white/[0.12]'
+              }`}
+            >
+              {genre.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Game filters */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {GAME_FILTERS.map(f => (
-              <button
-                key={f}
-                onClick={() => setGameFilter(f)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  gameFilter === f
-                    ? 'bg-amber-500 text-black'
-                    : 'bg-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.1]'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+        {/* Source filters */}
+        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide items-center">
+          {SOURCE_FILTERS.map(source => (
+            <button
+              key={source.id}
+              onClick={() => setSourceFilter(source.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                sourceFilter === source.id
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
+                  : 'bg-white/[0.08] text-white/70 hover:bg-white/[0.12]'
+              }`}
+            >
+              {source.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero banner */}
+      <div className="px-4 pt-4 pb-6">
+        <div className="relative p-6 rounded-2xl bg-gradient-to-br from-purple-900/40 to-pink-900/20 border border-purple-500/20 overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <h2 className="text-white font-black text-2xl mb-2">Discover & Stream</h2>
+            <p className="text-white/60 text-sm">Browse hundreds of games from Google Play, freeware, and more. Stream directly to your audience.</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 py-5 relative z-10">
-        {/* Prize pool hero */}
-        <div className="relative p-5 rounded-2xl bg-gradient-to-br from-violet-900/30 via-violet-800/10 to-transparent border border-violet-500/20 mb-5 overflow-hidden">
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-violet-500/10 rounded-full blur-2xl" />
-          <div className="relative">
-            <p className="text-violet-400 text-xs font-semibold tracking-widest uppercase mb-1 flex items-center gap-1.5">
-              <Crown className="w-3.5 h-3.5" />
-              Total Prize Pool
-            </p>
-            <p className="text-white font-black text-3xl">$10,000+</p>
-            <p className="text-white/40 text-xs mt-1">Across all active tournaments</p>
-          </div>
-        </div>
-
-        {/* Tournament grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-36 rounded-2xl bg-white/[0.04] animate-pulse" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
+      {/* Games grid */}
+      <div className="px-4 pb-4">
+        {filteredGames.length === 0 ? (
           <div className="text-center py-20">
             <Gamepad2 className="w-12 h-12 text-white/10 mx-auto mb-3" />
-            <p className="text-white/30 text-sm">No tournaments in this category</p>
+            <p className="text-white/40 text-sm">No games found matching your filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {filtered.map(t => <TournamentCard key={t.id} tournament={t} />)}
-          </div>
+          <>
+            <p className="text-white/40 text-xs mb-3">{filteredGames.length} games available</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {filteredGames.map(game => (
+                <GameCard key={game.id} game={game} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

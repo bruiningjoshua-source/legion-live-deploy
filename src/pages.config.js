@@ -53,6 +53,8 @@ import AffiliateDashboard from './pages/AffiliateDashboard';
 import AffiliateGoLive from './pages/AffiliateGoLive';
 import AffiliateHub from './pages/AffiliateHub';
 import AffiliateMarketplace from './pages/AffiliateMarketplace';
+import AffiliateMarketplaceExplore from './pages/AffiliateMarketplaceExplore';
+import AffiliateMarketplaceLive from './pages/AffiliateMarketplaceLive';
 import AmbassadorProgram from './pages/AmbassadorProgram';
 import BrandCampaigns from './pages/BrandCampaigns';
 import BrandDashboard from './pages/BrandDashboard';
@@ -118,8 +120,7 @@ import WatchParties from './pages/WatchParties';
 import WatchPartyRoom from './pages/WatchPartyRoom';
 import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
-import AffiliateMarketplaceLive from './pages/AffiliateMarketplaceLive';
-import AffiliateMarketplaceExplore from './pages/AffiliateMarketplaceExplore';
+import GamingHub from './pages/GamingHub';
 import __Layout from './Layout.jsx';
 
 
@@ -130,6 +131,8 @@ export const PAGES = {
     "AffiliateGoLive": AffiliateGoLive,
     "AffiliateHub": AffiliateHub,
     "AffiliateMarketplace": AffiliateMarketplace,
+    "AffiliateMarketplaceExplore": AffiliateMarketplaceExplore,
+    "AffiliateMarketplaceLive": AffiliateMarketplaceLive,
     "AmbassadorProgram": AmbassadorProgram,
     "BrandCampaigns": BrandCampaigns,
     "BrandDashboard": BrandDashboard,
@@ -195,8 +198,7 @@ export const PAGES = {
     "WatchPartyRoom": WatchPartyRoom,
     "WatchStream": WatchStream,
     "WatchVideo": WatchVideo,
-    "AffiliateMarketplaceLive": AffiliateMarketplaceLive,
-    "AffiliateMarketplaceExplore": AffiliateMarketplaceExplore,
+    "GamingHub": GamingHub,
 }
 
 export const pagesConfig = {
