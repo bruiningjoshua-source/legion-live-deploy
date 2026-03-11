@@ -209,6 +209,31 @@ export default function TheAmphitheatre() {
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
+  const handleAddToWatchLater = (video) => {
+    console.log('Add to Watch Later:', video.title);
+    // TODO: Implement watch later functionality
+  };
+
+  const handleAddToPlaylist = (video) => {
+    console.log('Add to Playlist:', video.title);
+    // TODO: Implement playlist selection modal
+  };
+
+  const handleDownload = (video) => {
+    console.log('Download:', video.title);
+    // TODO: Implement download functionality
+  };
+
+  const handleShare = (video) => {
+    const url = `${window.location.origin}/watch?id=${video.id}`;
+    if (navigator.share) {
+      navigator.share({ title: video.title, url });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard');
+    }
+  };
+
   // Data fetches
   const { data: liveStreams = [] } = useQuery({
     queryKey: ['amphitheatre-live'],
