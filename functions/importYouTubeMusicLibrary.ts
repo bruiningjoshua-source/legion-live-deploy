@@ -3,15 +3,44 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
 
 const POPULAR_PLAYLISTS = [
-  { q: 'top hits 2024 playlist', genre: 'pop' },
-  { q: 'hip hop rap playlist best', genre: 'hip_hop' },
-  { q: 'rock music hits playlist', genre: 'rock' },
-  { q: 'indie pop playlist', genre: 'indie' },
-  { q: 'r&b best songs playlist', genre: 'r_and_b' },
-  { q: 'electronic dance music playlist', genre: 'electronic' },
-  { q: 'jazz standards playlist', genre: 'jazz' },
-  { q: 'classical music playlist', genre: 'classical' },
-  { q: 'ambient chill music playlist', genre: 'ambient' },
+  // Rock & Metal
+  { q: 'classic rock 1960s 1970s 1980s playlist', genre: 'rock' },
+  { q: 'rock hits 1990s 2000s playlist', genre: 'rock' },
+  { q: 'best rock music 2010s 2020s playlist', genre: 'rock' },
+  { q: 'heavy metal greatest hits playlist', genre: 'rock' },
+  { q: 'metal masterpiece playlist 1980s 1990s', genre: 'rock' },
+  
+  // Pop & Synthwave
+  { q: 'pop music 1960s 1970s 1980s hits playlist', genre: 'pop' },
+  { q: 'pop hits 1990s 2000s playlist', genre: 'pop' },
+  { q: 'best pop music 2010s 2020s playlist', genre: 'pop' },
+  { q: 'synthwave retro 80s 90s playlist', genre: 'pop' },
+  { q: 'synthpop greatest hits playlist', genre: 'pop' },
+  
+  // Hip-Hop & Rap
+  { q: 'hip hop rap classics 1990s 2000s playlist', genre: 'hip_hop' },
+  { q: 'hip hop hits 2010s 2020s playlist', genre: 'hip_hop' },
+  { q: 'best rap music of all time playlist', genre: 'hip_hop' },
+  { q: 'trap hip hop 2015 2026 playlist', genre: 'hip_hop' },
+  
+  // Disco & Funk
+  { q: 'disco classics 1970s 1980s playlist', genre: 'other' },
+  { q: 'best disco music ever playlist', genre: 'other' },
+  { q: 'funk soul disco hits playlist', genre: 'other' },
+  
+  // Electronic & Dance Music
+  { q: 'trance music greatest hits playlist', genre: 'electronic' },
+  { q: 'dance music 1990s 2000s 2010s playlist', genre: 'electronic' },
+  { q: 'house music classics playlist', genre: 'electronic' },
+  { q: 'edm electronic dance music best playlist', genre: 'electronic' },
+  { q: 'electro house minimal techno playlist', genre: 'electronic' },
+  { q: 'edm festival hits 2015 2026 playlist', genre: 'electronic' },
+  
+  // Country
+  { q: 'country music classics 1960s 1970s 1980s playlist', genre: 'other' },
+  { q: 'country hits 1990s 2000s 2010s playlist', genre: 'other' },
+  { q: 'best country music 2020s playlist', genre: 'other' },
+  { q: 'modern country pop playlist', genre: 'other' },
 ];
 
 function extractVideoId(url) {
