@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createSignedRequest } from '@/components/security/RequestSigner';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,29 +28,33 @@ export default function WithdrawalForm({ creator, earnings, payoutMethods }) {
   );
 
   const amountNum = parseInt(amount) || 0;
-  const usdValue = (amountNum * DENARII_TO_USD * CREATOR_SHARE).toFixed(2);
+  // DENARII_TO_USD already incorporates CREATOR_SHARE — do NOT multiply again
+  const usdValue = (amountNum * DENARII_TO_USD).toFixed(2);
 
   const withdrawMutation = useMutation({
     mutationFn: async () => {
-      const selectedMethod = (payoutMethods || []).find(m => m.id === method);
-      if (!selectedMethod) throw new Error('Select a payout method');
-
-      return base44.entities.CreatorPayout.create({
-        creator_id: creator.id,
-        user_email: creator.user_email,
-        amount_denarii: amountNum,
-        payout_usd: parseFloat(usdValue),
-        payout_method: selectedMethod.method_type,
-        payout_identifier: selectedMethod.identifier || selectedMethod.stripe_account_id || '',
-        status: 'pending'
-      });
+      if (!amountNum || amountNum < MIN_WITHDRAWAL_DENARII) throw new Error('Amount too low');
+      // Route through the secure KYC-gated endpoint — never write CreatorPayout directly
+      const signedPayload = createSignedRequest(
+        { amount_usd: parseFloat(usdValue) },
+        creator.user_email
+      );
+      const response = await base44.functions.invoke('processPayoutWithKyc', signedPayload);
+      if (response.data?.error) throw new Error(response.data.error);
+      return response.data;
     },
-    onSuccess: () => {
-      toast.success(`Withdrawal of $${usdValue} submitted!`);
+    onSuccess: (data) => {
+      toast.success(data?.message || `Withdrawal of $${usdValue} submitted!`);
       setAmount('');
       setMethod('');
       queryClient.invalidateQueries(['creator-payouts']);
       queryClient.invalidateQueries(['broadcaster-earnings']);
+    },
+    onError: (error) => {
+      const msg = error.message || 'Withdrawal failed';
+      if (msg.includes('Rate limited')) toast.error('1 payout per 24 hours — try again later');
+      else if (msg.includes('KYC')) toast.error('Complete KYC verification to withdraw');
+      else toast.error(msg);
     }
   });
 
