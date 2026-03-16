@@ -559,10 +559,32 @@ export default function WatchStream() {
 
           <ModerationPanel
             isOpen={showModerationPanel} onClose={() => setShowModerationPanel(false)}
-            streamId={streamId} viewers={[]} moderators={[]} kickedUsers={[]}
+            streamId={streamId} 
+            viewers={ChatService.getRecentChatters(chatMessages).map(c => ({ email: c.sender_email, name: c.sender_name }))} 
+            moderators={[]} 
+            kickedUsers={[]}
             chatMuted={false} onToggleChatMute={() => {}}
-            onAppointModerator={() => {}} onRemoveModerator={() => {}}
-            onKickViewer={() => {}} onResetKicks={() => {}}
+            onAppointModerator={async (email) => {
+              await base44.entities.StreamModerator.create({
+                stream_id: streamId,
+                moderator_email: email,
+                appointed_by: user.email,
+                appointed_date: new Date().toISOString()
+              });
+              toast.success(`${email} appointed as moderator`);
+            }}
+            onRemoveModerator={() => {}}
+            onKickViewer={async (email) => {
+              await base44.entities.ModerationAction.create({
+                stream_id: streamId,
+                moderator_email: user.email,
+                target_user_email: email,
+                action_type: 'kick',
+                reason: 'Kicked by host'
+              });
+              toast.success(`${email} kicked from stream`);
+            }}
+            onResetKicks={() => {}}
             onMuteViewerAudio={() => {}} onEndViewerCamera={() => {}} isHost={true}
           />
         </>
