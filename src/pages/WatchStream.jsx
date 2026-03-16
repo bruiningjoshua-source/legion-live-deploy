@@ -310,7 +310,7 @@ export default function WatchStream() {
             autoPlay playsInline muted
             poster={stream.thumbnail_url}
             controls={false}
-            style={isBroadcaster ? { transform: 'scaleX(-1)' } : undefined}
+            style={isHost ? { transform: 'scaleX(-1)' } : undefined}
             onDoubleClick={handleDoubleTap}
           />
 
