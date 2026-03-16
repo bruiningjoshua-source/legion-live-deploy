@@ -154,11 +154,11 @@ export default function EarningsDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-100 mb-2 flex items-center gap-3">
+          <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 flex items-center gap-3">
             <DollarSign className="w-8 h-8 text-amber-400" />
             Earnings Dashboard
           </h1>
-          <p className="text-amber-400/70">Manage payouts, track revenue, and plan your finances</p>
+          <p className="text-white/50">Manage payouts, track revenue, and plan your finances</p>
         </div>
 
         {/* Quick Stats */}
