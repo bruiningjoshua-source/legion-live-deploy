@@ -307,36 +307,8 @@ export default function EarningsDashboard() {
                     </div>
                   </div>
 
-                  {/* Recent Withdrawal History */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-3">Recent Withdrawals</h3>
-                    <div className="space-y-2">
-                      {[
-                        { amount: 100, status: 'completed', date: '2026-03-10', method: 'Bank Account' },
-                        { amount: 50, status: 'pending', date: '2026-03-08', method: 'Bank Account' },
-                        { amount: 75, status: 'processing', date: '2026-03-05', method: 'PayPal' }
-                      ].map((withdrawal, i) => (
-                        <Card key={i} className="bg-white/5 border-white/10 p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {withdrawal.status === 'completed' && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                            {withdrawal.status === 'processing' && <Clock className="w-5 h-5 text-amber-400 animate-spin" />}
-                            {withdrawal.status === 'pending' && <Clock className="w-5 h-5 text-blue-400" />}
-                            <div>
-                              <p className="font-semibold text-white">${withdrawal.amount.toFixed(2)}</p>
-                              <p className="text-xs text-white/50">{withdrawal.method} • {withdrawal.date}</p>
-                            </div>
-                          </div>
-                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
-                            withdrawal.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
-                            withdrawal.status === 'processing' ? 'bg-amber-500/20 text-amber-300' :
-                            'bg-blue-500/20 text-blue-300'
-                          }`}>
-                            {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
-                          </span>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Real Withdrawal History */}
+                  <WithdrawalHistorySection />
 
                   {/* Setup Help */}
                   <Card className="bg-blue-500/10 border-blue-500/30 p-4 mt-6">
