@@ -38,9 +38,9 @@ Deno.serve(async (req) => {
     // Calculate summaries
     const stats = withdrawals.reduce(
       (acc, w) => ({
-        total: acc.total + withdrawals.length,
-        pending_total: acc.pending_total + (w.status === 'pending' ? w.amount_usd : 0),
-        completed_total: acc.completed_total + (w.status === 'completed' ? w.amount_usd : 0),
+        total: acc.total + 1,
+        pending_total: acc.pending_total + (w.status === 'pending' ? (w.amount_usd || 0) : 0),
+        completed_total: acc.completed_total + (w.status === 'completed' ? (w.amount_usd || 0) : 0),
         processing_count: acc.processing_count + (w.status === 'processing' ? 1 : 0)
       }),
       { total: 0, pending_total: 0, completed_total: 0, processing_count: 0 }
