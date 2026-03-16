@@ -12,6 +12,7 @@ import {
   CheckCircle, Clock, AlertCircle, Loader2
 } from 'lucide-react';
 import PayoutForecast from '@/components/earnings/PayoutForecast';
+import WithdrawalHistorySection from '@/components/earnings/WithdrawalHistorySection';
 
 /**
  * Unified Earnings Dashboard Hub
