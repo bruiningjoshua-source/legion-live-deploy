@@ -151,36 +151,14 @@ export default function WatchStream() {
     if (zegoInitAttempted.current) return;
     zegoInitAttempted.current = true;
     const init = async () => {
-      const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
-      const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
-      if (!mounted) return;
-      const { appId, token, serverUrl } = res.data || {};
-      if (!appId || !token) { setLiveStream(true); return; }
-      await ZegoService.initialize(appId, serverUrl);
-      if (!mounted) return;
-      await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
-      if (!mounted) return;
-      ZegoService.onRoomEvent((event) => {
-        if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
-          queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
-        }
-        if (event.type === 'streamUpdate' && event.updateType === 'DELETE') {
-          queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
-          ZegoService.leave().catch(() => {});
-        }
-      });
-      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 1500);
-      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 4000);
-      if (mounted) setLiveStream(true);
-    };
-    init().catch(err => { console.error('[WatchStream] Join failed:', err); if (mounted) setLiveStream(true); });
+...
     return () => {
       mounted = false;
       zegoInitAttempted.current = false;
       ZegoService.leave().catch(() => {});
       document.body.classList.remove('fullscreen-lock');
     };
-  }, [stream?.status, streamId, isBroadcaster]);
+  }, [stream?.status, streamId, isHost]);
 
   // Host camera
   useEffect(() => {
