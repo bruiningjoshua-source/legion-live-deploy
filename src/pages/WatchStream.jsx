@@ -112,7 +112,7 @@ export default function WatchStream() {
         streamIdRef.current = null;
       }
     };
-  }, [stream?.id, isBroadcaster, user?.email, stream?.status]);
+  }, [stream?.id, isHost, user?.email, stream?.status]);
 
   // Chat seed from initial fetch
   const chatSeeded = useRef(false);
