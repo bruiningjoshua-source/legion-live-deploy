@@ -279,34 +279,7 @@ export default function EarningsDashboard() {
                   </div>
 
                   {/* Withdrawal Methods Setup */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-white mb-3">Connected Withdrawal Methods</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {[
-                        { icon: '🏦', name: 'Bank Account', status: 'connected', connected: true },
-                        { icon: '💳', name: 'PayPal', status: 'not_connected', connected: false },
-                        { icon: '₿', name: 'Cryptocurrency', status: 'not_connected', connected: false }
-                      ].map((method) => (
-                        <Card key={method.name} className={`p-4 border ${method.connected ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/5'}`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">{method.icon}</span>
-                              <div>
-                                <p className="font-semibold text-white">{method.name}</p>
-                                <p className={`text-xs ${method.connected ? 'text-emerald-300' : 'text-white/50'}`}>
-                                  {method.connected ? '✓ Connected' : 'Not connected'}
-                                </p>
-                              </div>
-                            </div>
-                            {method.connected && <CheckCircle className="w-4 h-4 text-emerald-400" />}
-                          </div>
-                          <Button className="w-full text-xs mt-2" variant={method.connected ? 'outline' : 'default'}>
-                            {method.connected ? 'Manage' : 'Connect'}
-                          </Button>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+                  <PayoutMethodsPreview userEmail={user?.email} onManage={() => setActiveTab('methods')} />
 
                   {/* Real Withdrawal History */}
                   <WithdrawalHistorySection />
