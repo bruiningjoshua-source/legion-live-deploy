@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   TrendingUp, Wallet, CreditCard, Gift, BarChart3, 
   Users, Download, Settings, ArrowRight, DollarSign, SendHorizontal,
-  CheckCircle, Clock, AlertCircle
+  CheckCircle, Clock, AlertCircle, Loader2
 } from 'lucide-react';
 import PayoutForecast from '@/components/earnings/PayoutForecast';
 
