@@ -150,12 +150,15 @@ export default function EarningsDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-24 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Earnings Dashboard</h1>
-          <p className="text-gray-400">Manage payouts, track revenue, and plan your finances</p>
+          <h1 className="text-3xl font-bold text-amber-100 mb-2 flex items-center gap-3">
+            <DollarSign className="w-8 h-8 text-amber-400" />
+            Earnings Dashboard
+          </h1>
+          <p className="text-amber-400/70">Manage payouts, track revenue, and plan your finances</p>
         </div>
 
         {/* Quick Stats */}
