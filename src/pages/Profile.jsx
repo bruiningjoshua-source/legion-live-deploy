@@ -283,7 +283,7 @@ export default function Profile() {
                 { val: formatCount(creator?.pk_wins), label: 'PK Wins' },
                 { val: formatCount(totalEarnings), label: '🪙 Earned' },
               ].map(stat => (
-                <div key={stat.label} className="bg-stone-800/50 rounded-xl p-2.5 sm:p-4 text-center">
+                <div key={stat.label} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 sm:p-4 text-center">
                   <p className="text-lg sm:text-2xl font-bold text-amber-100">{stat.val}</p>
                   <p className="text-amber-400/60 text-[10px] sm:text-sm">{stat.label}</p>
                 </div>
@@ -295,25 +295,25 @@ export default function Profile() {
         {/* Tabs */}
         <Tabs defaultValue="videos" className="space-y-4">
           <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-            <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl inline-flex min-w-max">
-              <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+            <TabsList className="bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl inline-flex min-w-max">
+              <TabsTrigger value="videos" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 <Video className="w-3.5 h-3.5 mr-1" />
                 Videos
               </TabsTrigger>
-              <TabsTrigger value="info" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+              <TabsTrigger value="info" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 Info
               </TabsTrigger>
-              <TabsTrigger value="streams" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+              <TabsTrigger value="streams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 Streams
               </TabsTrigger>
-              <TabsTrigger value="stats" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+              <TabsTrigger value="stats" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 Stats
               </TabsTrigger>
-              <TabsTrigger value="earnings" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+              <TabsTrigger value="earnings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 <DollarSign className="w-3.5 h-3.5 mr-1" />
                 Earn
               </TabsTrigger>
-              <TabsTrigger value="affiliate" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg text-xs sm:text-sm px-3">
+              <TabsTrigger value="affiliate" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
                 Affiliate
               </TabsTrigger>
             </TabsList>
@@ -342,11 +342,11 @@ export default function Profile() {
                 ))}
               </div>
             ) : (
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="py-12 text-center">
-                  <BarChart3 className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                  <h3 className="text-amber-100 font-semibold mb-2">No Streams Yet</h3>
-                  <p className="text-amber-400/60 mb-4">Start streaming to build your legacy!</p>
+                  <BarChart3 className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">No Streams Yet</h3>
+                  <p className="text-white/50 mb-4">Start streaming to build your legacy!</p>
                   <Link to={createPageUrl('GoLive')}>
                     <Button className="bg-red-600 hover:bg-red-700">
                       Go Live Now
@@ -359,9 +359,9 @@ export default function Profile() {
 
           <TabsContent value="stats" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardHeader>
-                  <CardTitle className="text-amber-100 flex items-center gap-2">
+                  <CardTitle className="text-white flex items-center gap-2">
                     <Swords className="w-5 h-5 text-orange-400" />
                     PK Battle Stats
                   </CardTitle>
@@ -369,24 +369,24 @@ export default function Profile() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-amber-400/70">Wins</span>
+                      <span className="text-white/50">Wins</span>
                       <span className="text-green-400 font-bold">{creator?.pk_wins || 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-amber-400/70">Losses</span>
+                      <span className="text-white/50">Losses</span>
                       <span className="text-red-400 font-bold">{creator?.pk_losses || 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-amber-400/70">Win Rate</span>
-                      <span className="text-amber-100 font-bold">{pkWinRate}%</span>
+                      <span className="text-white/50">Win Rate</span>
+                      <span className="text-white font-bold">{pkWinRate}%</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardHeader>
-                  <CardTitle className="text-amber-100 flex items-center gap-2">
+                  <CardTitle className="text-white flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-amber-400" />
                     Achievements
                   </CardTitle>
@@ -395,12 +395,12 @@ export default function Profile() {
                   <div className="flex flex-wrap gap-2">
                     {(creator?.badges || []).length > 0 ? (
                       creator.badges.map((badge, i) => (
-                        <Badge key={i} className="bg-amber-600/20 text-amber-300 border-amber-500/30">
+                        <Badge key={i} className="bg-amber-500/15 text-amber-300 border-amber-500/30">
                           {badge}
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-amber-400/60 text-sm">No badges earned yet</p>
+                      <p className="text-white/40 text-sm">No badges earned yet</p>
                     )}
                   </div>
                 </CardContent>
@@ -436,16 +436,16 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="affiliate" className="mt-0">
-            <Card className="bg-stone-800/30 border-amber-600/20">
+            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
               <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <Share2 className="w-5 h-5 text-green-400" />
                   Affiliate Program
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <p className="text-amber-400/70 mb-4">
+                  <p className="text-white/50 mb-4">
                     Share your unique link and earn 10% of any purchases made by users you refer!
                   </p>
                   
@@ -453,22 +453,22 @@ export default function Profile() {
                     <Input
                       value={`${window.location.origin}?ref=${creator?.affiliate_code || 'legion'}`}
                       readOnly
-                      className="bg-stone-900 border-amber-600/20 text-amber-100"
+                      className="bg-white/5 border-white/10 text-white"
                     />
-                    <Button onClick={copyAffiliateLink} className="bg-amber-600 hover:bg-amber-700">
+                    <Button onClick={copyAffiliateLink} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-stone-800/50 rounded-xl p-4">
+                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
                     <p className="text-2xl font-bold text-green-400">{formatCount(creator?.affiliate_earnings)}</p>
-                    <p className="text-amber-400/60 text-sm">🪙 Earned</p>
+                    <p className="text-white/50 text-sm">🪙 Earned</p>
                   </div>
-                  <div className="bg-stone-800/50 rounded-xl p-4">
-                    <p className="text-2xl font-bold text-amber-100">0</p>
-                    <p className="text-amber-400/60 text-sm">Referrals</p>
+                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-white/50 text-sm">Referrals</p>
                   </div>
                 </div>
               </CardContent>
@@ -478,28 +478,28 @@ export default function Profile() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
-          <DialogContent className="bg-stone-900 border-amber-600/30 max-w-lg">
+          <DialogContent className="bg-[#131316]/98 backdrop-blur-2xl border-white/[0.1] max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-amber-100">Edit Profile</DialogTitle>
+              <DialogTitle className="text-white">Edit Profile</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
               <div>
-                <Label className="text-amber-200">Display Name</Label>
+                <Label className="text-white/70">Display Name</Label>
                 <Input
                   value={editData.display_name || ''}
                   onChange={(e) => setEditData({ ...editData, display_name: e.target.value })}
-                  className="bg-stone-800 border-amber-600/20 text-amber-100"
+                  className="bg-white/5 border-white/10 text-white"
                 />
               </div>
               <div>
-                <Label className="text-amber-200">Category</Label>
+                <Label className="text-white/70">Category</Label>
                 <Select value={editData.category} onValueChange={(v) => setEditData({ ...editData, category: v })}>
-                  <SelectTrigger className="bg-stone-800 border-amber-600/20 text-amber-100">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-stone-900 border-amber-600/30">
+                  <SelectContent className="bg-[#131316]/98 backdrop-blur-2xl border-white/[0.1]">
                     {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
+                      <SelectItem key={cat.value} value={cat.value} className="text-white">
                         {cat.label}
                       </SelectItem>
                     ))}
@@ -507,18 +507,18 @@ export default function Profile() {
                 </Select>
               </div>
               <div>
-                <Label className="text-amber-200">Bio</Label>
+                <Label className="text-white/70">Bio</Label>
                 <Textarea
                   value={editData.bio || ''}
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                  className="bg-stone-800 border-amber-600/20 text-amber-100"
+                  className="bg-white/5 border-white/10 text-white"
                   maxLength={200}
                 />
               </div>
               
               {/* Social Links */}
               <div className="space-y-3">
-                <Label className="text-amber-200">Social Links</Label>
+                <Label className="text-white/70">Social Links</Label>
                 {[
                   { key: 'youtube', label: 'YouTube', placeholder: 'youtube.com/c/yourchannel' },
                   { key: 'tiktok', label: 'TikTok', placeholder: '@username' },
@@ -526,7 +526,7 @@ export default function Profile() {
                   { key: 'twitter', label: 'X / Twitter', placeholder: '@username' },
                 ].map(link => (
                   <div key={link.key}>
-                    <span className="text-amber-400/60 text-xs">{link.label}</span>
+                    <span className="text-white/40 text-xs">{link.label}</span>
                     <Input
                       value={editData.social_links?.[link.key] || ''}
                       onChange={(e) => setEditData({ 
@@ -534,13 +534,13 @@ export default function Profile() {
                         social_links: { ...editData.social_links, [link.key]: e.target.value } 
                       })}
                       placeholder={link.placeholder}
-                      className="bg-stone-800 border-amber-600/20 text-amber-100 mt-1"
+                      className="bg-white/5 border-white/10 text-white mt-1"
                     />
                   </div>
                 ))}
               </div>
               
-              <Button onClick={handleSave} disabled={updateMutation.isPending} className="w-full bg-amber-600 hover:bg-amber-700">
+              <Button onClick={handleSave} disabled={updateMutation.isPending} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
                 {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
