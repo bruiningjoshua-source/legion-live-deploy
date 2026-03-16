@@ -581,7 +581,7 @@ export default function WatchStream() {
       {/* Co-stream panel */}
       <AnimatePresence>
         {showCoStreamPanel && (
-          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isBroadcaster} onClose={() => setShowCoStreamPanel(false)} />
+          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isHost} onClose={() => setShowCoStreamPanel(false)} />
         )}
       </AnimatePresence>
 
