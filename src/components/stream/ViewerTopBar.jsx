@@ -2,14 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Crown, Plus, Check, X, ChevronDown, Share2, Flag, UserPlus, MoreHorizontal } from 'lucide-react';
+import { Crown, Plus, Check, X, Share2, Flag, UserPlus, MoreHorizontal } from 'lucide-react';
 import VIPBadge from '@/components/stream/VIPBadge';
-
-// ── BigO Live-style Viewer Top Bar ────────────────────────────────────────
-// Left: [X close] [Avatar + name + follow] [LIVE dot]
-// Right: [Viewer count] [⋯ more menu]
-// Dropdown menu: Share, Report, View Profile
-// ─────────────────────────────────────────────────────────────────────────
 
 export default function ViewerTopBar({
   creator,
@@ -34,15 +28,17 @@ export default function ViewerTopBar({
 
   return (
     <div className={`absolute top-0 left-0 right-0 z-30 ${className}`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+
+      {/* Row 1: Close + creator + follow | viewer count + menu */}
       <div className="flex items-center justify-between px-3 pt-3 pb-1.5">
 
-        {/* LEFT: Close + creator pill */}
+        {/* LEFT */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={onClose}
             className="w-9 h-9 bg-black/50 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform shrink-0"
           >
-            <X className="w-4.5 h-4.5" />
+            <X className="w-4 h-4" />
           </button>
 
           <Link to={createPageUrl(`CreatorProfile?id=${creator.id}`)}>
@@ -57,7 +53,6 @@ export default function ViewerTopBar({
                     </div>
                   )}
                 </div>
-                {/* LIVE pulse dot */}
                 <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black animate-pulse" />
               </div>
               <div className="flex flex-col">
@@ -70,7 +65,6 @@ export default function ViewerTopBar({
             </div>
           </Link>
 
-          {/* Follow button — BigO style */}
           <motion.button
             onClick={onFollowClick}
             className={`h-7 px-3 rounded-full flex items-center gap-1 text-[11px] font-bold transition-all ${
@@ -94,7 +88,7 @@ export default function ViewerTopBar({
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             <span className="text-white font-bold text-xs tabular-nums">{viewerCount.toLocaleString()}</span>
           </div>
-          {/* ⋯ More menu */}
+
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -117,7 +111,7 @@ export default function ViewerTopBar({
                     {[
                       { icon: Share2, label: 'Share Stream', action: handleShare },
                       { icon: UserPlus, label: 'View Profile', action: () => { setShowMenu(false); window.location.href = createPageUrl(`CreatorProfile?id=${creator.id}`); } },
-                      { icon: Flag, label: 'Report', action: () => { setShowMenu(false); }, danger: true  },
+                      { icon: Flag, label: 'Report', action: () => setShowMenu(false), danger: true },
                     ].map((item, i) => (
                       <button
                         key={i}
@@ -137,10 +131,9 @@ export default function ViewerTopBar({
           </div>
         </div>
       </div>
+
+      {/* Row 2: Room Rank chip + stream title + avatar stack */}
       <div className="flex items-center justify-between px-3 mt-1 pb-1">
-        {/* BIGO second row: Room Rank · Today's Task · Avatar stack */}
-      <div className="flex items-center justify-between px-3 mt-1 pb-1">
-        {/* Left chips */}
         <div className="flex items-center gap-1.5">
           <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/[0.08]">
             <span className="text-[10px]">🏠</span>
@@ -154,14 +147,10 @@ export default function ViewerTopBar({
           </div>
         </div>
 
-        {/* Right: recent viewer avatars + count */}
         <div className="flex items-center">
           <div className="flex -space-x-2 mr-2">
-            {[0,1,2].map(i => (
-              <div
-                key={i}
-                className="w-6 h-6 rounded-full border-[1.5px] border-black bg-gradient-to-br from-slate-500 to-slate-700 overflow-hidden"
-              >
+            {[0, 1, 2].map(i => (
+              <div key={i} className="w-6 h-6 rounded-full border-[1.5px] border-black bg-gradient-to-br from-slate-500 to-slate-700 overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-amber-400/60 to-pink-500/60" />
               </div>
             ))}
@@ -169,6 +158,7 @@ export default function ViewerTopBar({
           <span className="text-white/60 text-[11px] font-semibold">{viewerCount.toLocaleString()}</span>
         </div>
       </div>
+
     </div>
   );
 }
