@@ -156,7 +156,6 @@ export default function ViewerTopBar({
 
         {/* Right: recent viewer avatars + count */}
         <div className="flex items-center">
-          {/* Stacked avatar placeholders */}
           <div className="flex -space-x-2 mr-2">
             {[0,1,2].map(i => (
               <div
