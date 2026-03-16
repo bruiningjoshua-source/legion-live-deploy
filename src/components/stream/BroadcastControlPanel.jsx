@@ -145,7 +145,7 @@ export default function BroadcastControlPanel({
     <motion.div
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2"
+      className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2"
     >
       {/* Mic Toggle */}
       <motion.button

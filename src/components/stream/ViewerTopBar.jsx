@@ -88,8 +88,12 @@ export default function ViewerTopBar({
           </motion.button>
         </div>
 
-        {/* RIGHT: more menu */}
+        {/* RIGHT: viewer count pill + more menu */}
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-white font-bold text-xs tabular-nums">{viewerCount.toLocaleString()}</span>
+          </div>
           {/* ⋯ More menu */}
           <div className="relative">
             <button
@@ -113,7 +117,7 @@ export default function ViewerTopBar({
                     {[
                       { icon: Share2, label: 'Share Stream', action: handleShare },
                       { icon: UserPlus, label: 'View Profile', action: () => { setShowMenu(false); } },
-                      { icon: Flag, label: 'Report', action: () => { setShowMenu(false); }, danger: true },
+                      { icon: Flag, label: 'Report', action: () => { setShowMenu(false); }, danger: true  },
                     ].map((item, i) => (
                       <button
                         key={i}
@@ -132,6 +136,7 @@ export default function ViewerTopBar({
             </AnimatePresence>
           </div>
         </div>
+      </div>
       </div>
 
       {/* ── BIGO second row: Room Rank · Today's Task · Avatar stack ── */}
