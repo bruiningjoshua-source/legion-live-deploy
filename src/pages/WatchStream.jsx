@@ -190,7 +190,7 @@ export default function WatchStream() {
       }, 500);
       return () => clearInterval(retryTimer);
     }
-  }, [stream?.status, isBroadcaster]);
+  }, [stream?.status, isHost]);
 
   // Mutations
   const sendMessageMutation = useMutation({
