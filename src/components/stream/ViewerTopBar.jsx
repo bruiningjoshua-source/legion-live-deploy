@@ -137,8 +137,8 @@ export default function ViewerTopBar({
           </div>
         </div>
       </div>
-
-      {/* ── BIGO second row: Room Rank · Today's Task · Avatar stack ── */}
+      <div className="flex items-center justify-between px-3 mt-1 pb-1">
+        {/* BIGO second row: Room Rank · Today's Task · Avatar stack */}
       <div className="flex items-center justify-between px-3 mt-1 pb-1">
         {/* Left chips */}
         <div className="flex items-center gap-1.5">
