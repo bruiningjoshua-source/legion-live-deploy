@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import PayoutForecast from '@/components/earnings/PayoutForecast';
 import WithdrawalHistorySection from '@/components/earnings/WithdrawalHistorySection';
+import PayoutMethodsPreview from '@/components/earnings/PayoutMethodsPreview';
 
 /**
  * Unified Earnings Dashboard Hub
