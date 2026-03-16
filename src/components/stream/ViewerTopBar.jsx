@@ -116,7 +116,7 @@ export default function ViewerTopBar({
                   >
                     {[
                       { icon: Share2, label: 'Share Stream', action: handleShare },
-                      { icon: UserPlus, label: 'View Profile', action: () => { setShowMenu(false); } },
+                      { icon: UserPlus, label: 'View Profile', action: () => { setShowMenu(false); window.location.href = createPageUrl(`CreatorProfile?id=${creator.id}`); } },
                       { icon: Flag, label: 'Report', action: () => { setShowMenu(false); }, danger: true  },
                     ].map((item, i) => (
                       <button
@@ -136,7 +136,6 @@ export default function ViewerTopBar({
             </AnimatePresence>
           </div>
         </div>
-      </div>
       </div>
 
       {/* ── BIGO second row: Room Rank · Today's Task · Avatar stack ── */}
