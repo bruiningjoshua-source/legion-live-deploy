@@ -196,7 +196,7 @@ export default function CreatorProfile() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-12">
+    <div className="min-h-screen pt-16 pb-24">
       {/* Hero Section */}
       <div className="relative">
         <div className="h-48 md:h-64 bg-gradient-to-r from-amber-900 via-stone-800 to-amber-900">
@@ -204,7 +204,7 @@ export default function CreatorProfile() {
         </div>
 
         <div className="max-w-4xl mx-auto px-4 -mt-20 relative">
-          <Card className="bg-stone-900/95 border-amber-600/30 backdrop-blur overflow-hidden">
+          <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] overflow-hidden">
             <CardContent className="p-6 md:p-8">
               <div className="flex flex-col md:flex-row md:items-end gap-6">
                 {/* Avatar */}
@@ -314,25 +314,25 @@ export default function CreatorProfile() {
 
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div className="bg-stone-800/50 rounded-xl p-4 text-center">
+                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
                   <Users className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.follower_count)}</p>
-                  <p className="text-amber-400/60 text-xs">Followers</p>
+                  <p className="text-2xl font-bold text-white">{formatCount(creator.follower_count)}</p>
+                  <p className="text-white/50 text-xs">Followers</p>
                 </div>
-                <div className="bg-stone-800/50 rounded-xl p-4 text-center">
+                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
                   <Trophy className="w-5 h-5 text-amber-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.total_earnings_denarii)}</p>
-                  <p className="text-amber-400/60 text-xs">🪙 Earned</p>
+                  <p className="text-2xl font-bold text-white">{formatCount(creator.total_earnings_denarii)}</p>
+                  <p className="text-white/50 text-xs">🪙 Earned</p>
                 </div>
-                <div className="bg-stone-800/50 rounded-xl p-4 text-center">
+                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
                   <Swords className="w-5 h-5 text-orange-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{formatCount(creator.pk_wins)}</p>
-                  <p className="text-amber-400/60 text-xs">PK Wins</p>
+                  <p className="text-2xl font-bold text-white">{formatCount(creator.pk_wins)}</p>
+                  <p className="text-white/50 text-xs">PK Wins</p>
                 </div>
-                <div className="bg-stone-800/50 rounded-xl p-4 text-center">
+                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
                   <Star className="w-5 h-5 text-green-400 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-amber-100">{pkWinRate}%</p>
-                  <p className="text-amber-400/60 text-xs">Win Rate</p>
+                  <p className="text-2xl font-bold text-white">{pkWinRate}%</p>
+                  <p className="text-white/50 text-xs">Win Rate</p>
                 </div>
               </div>
             </CardContent>
@@ -370,16 +370,16 @@ export default function CreatorProfile() {
         )}
 
         <Tabs defaultValue="videos" className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1 rounded-xl">
-            <TabsTrigger value="videos" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+          <TabsList className="bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl">
+            <TabsTrigger value="videos" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60">
               <Video className="w-4 h-4 mr-2" />
               Videos ({videos.length})
             </TabsTrigger>
-            <TabsTrigger value="live" className="data-[state=active]:bg-red-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+            <TabsTrigger value="live" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white rounded-xl text-white/60">
               <Radio className="w-4 h-4 mr-2" />
               Live ({liveStreams.length})
             </TabsTrigger>
-            <TabsTrigger value="past" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-amber-300 rounded-lg">
+            <TabsTrigger value="past" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60">
               Past Streams
             </TabsTrigger>
           </TabsList>
@@ -415,11 +415,11 @@ export default function CreatorProfile() {
                 )}
               </div>
             ) : (
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="py-12 text-center">
-                  <Video className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                  <h3 className="text-amber-100 font-semibold mb-2">No Videos Yet</h3>
-                  <p className="text-amber-400/60">This creator hasn't uploaded any videos.</p>
+                  <Video className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">No Videos Yet</h3>
+                  <p className="text-white/50">This creator hasn't uploaded any videos.</p>
                 </CardContent>
               </Card>
             )}
@@ -440,11 +440,11 @@ export default function CreatorProfile() {
                 ))}
               </div>
             ) : (
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="py-12 text-center">
-                  <Radio className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                  <h3 className="text-amber-100 font-semibold mb-2">Not Live Right Now</h3>
-                  <p className="text-amber-400/60">Check back later or follow for notifications!</p>
+                  <Radio className="w-12 h-12 text-red-400/30 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">Not Live Right Now</h3>
+                  <p className="text-white/50">Check back later or follow for notifications!</p>
                 </CardContent>
               </Card>
             )}
@@ -465,11 +465,11 @@ export default function CreatorProfile() {
                 ))}
               </div>
             ) : (
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="py-12 text-center">
-                  <Star className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-                  <h3 className="text-amber-100 font-semibold mb-2">No Past Streams</h3>
-                  <p className="text-amber-400/60">This creator hasn't streamed yet.</p>
+                  <Star className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">No Past Streams</h3>
+                  <p className="text-white/50">This creator hasn't streamed yet.</p>
                 </CardContent>
               </Card>
             )}
@@ -495,7 +495,7 @@ function VideoCard({ video, creator, index }) {
       transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.25 }}
     >
       <Link to={createPageUrl(`WatchVideo?id=${video.id}`)}>
-        <div className="bg-stone-800/30 rounded-xl overflow-hidden border border-amber-600/20 hover:border-amber-500/50 transition-all cursor-pointer group">
+        <div className="bg-white/[0.03] backdrop-blur-sm rounded-xl overflow-hidden border border-white/[0.08] hover:border-amber-500/40 transition-all cursor-pointer group">
           <div className={`relative bg-stone-950 ${
             video.video_type === 'short' ? 'aspect-[9/16]' : 'aspect-video'
           }`}>
