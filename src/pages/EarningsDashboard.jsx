@@ -161,11 +161,11 @@ export default function EarningsDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/30 p-5">
               <p className="text-xs text-green-300/70 mb-1">Total Earned</p>
-              <p className="text-2xl font-bold text-green-400">${(creatorData?.total_earnings_denarii || 0 / 65).toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-400">${((creatorData?.total_earnings_denarii || 0) / 65).toFixed(2)}</p>
             </Card>
             <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 p-5">
               <p className="text-xs text-blue-300/70 mb-1">Available Balance</p>
-              <p className="text-2xl font-bold text-blue-400">${(walletData?.denarii_balance || 0 / 65).toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-400">${((walletData?.denarii_balance || 0) / 65).toFixed(2)}</p>
             </Card>
             <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30 p-5">
               <p className="text-xs text-amber-300/70 mb-1">VIP Points</p>
