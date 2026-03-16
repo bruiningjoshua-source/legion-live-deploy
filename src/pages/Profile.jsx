@@ -216,12 +216,12 @@ export default function Profile() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-24">
+    <div className="min-h-screen pt-16 pb-24">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* Profile Header */}
-        <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30 overflow-hidden mb-6">
+        <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] overflow-hidden mb-6">
           {/* Cover */}
-          <div className="h-28 sm:h-32 bg-gradient-to-r from-amber-800 via-stone-800 to-amber-800 relative">
+          <div className="h-28 sm:h-32 bg-gradient-to-r from-amber-900/60 via-stone-800/40 to-amber-900/60 relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800')] bg-cover bg-center opacity-30" />
           </div>
 
