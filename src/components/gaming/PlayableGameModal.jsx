@@ -149,12 +149,12 @@ export default function PlayableGameModal({ game, onClose }) {
                 <Link to={createPageUrl('GoLive') + `?gameTitle=${encodeURIComponent(game.title)}`} className="w-full max-w-xs">
                   <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-sm px-6 py-3 rounded-xl transition-colors">
                     <Radio className="w-4 h-4" />
-                    Stream via Screen Share
+                    Go Live with This Game
                   </button>
                 </Link>
 
                 <p className="text-white/30 text-xs mt-2">
-                  Use screen share to broadcast mobile gameplay to your audience
+                  Once live, use the screen share button to broadcast your gameplay
                 </p>
               </div>
             </div>

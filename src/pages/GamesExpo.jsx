@@ -198,8 +198,8 @@ export default function GamesExpo() {
             <div className="flex items-center gap-2">
               <Link to={createPageUrl('GoLive')}>
                 <button className="flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 font-semibold text-[10px] px-2.5 py-1.5 rounded-lg">
-                  <ScreenShare className="w-3 h-3" />
-                  Screen Share
+                  <Radio className="w-3 h-3" />
+                  Go Live
                 </button>
               </Link>
             </div>
