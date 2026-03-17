@@ -75,7 +75,7 @@ export default function WatchStream() {
   const { data: isFollowing } = useFollowStatus(user?.email, creator?.id);
   const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
 
-  const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || creatorSubscription?.admin_activated || creator?.user_email === user?.email && user?.role === 'admin';
+  const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || creatorSubscription?.admin_activated || (creator?.user_email === user?.email && user?.role === 'admin');
   const isHost = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
