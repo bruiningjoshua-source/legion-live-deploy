@@ -108,7 +108,7 @@ export default function AffiliateLiveSection() {
         <p className="text-white/40 text-sm mb-6 max-w-xs mx-auto">
           Be the first to go live and showcase products to your audience
         </p>
-        <Link to={createPageUrl('AffiliateGoLive')}>
+        <Link to={createPageUrl('GoLive') + '?platform=affiliate'}>
           <button className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm px-6 h-10 rounded-xl transition-all active:scale-95 shadow-lg shadow-emerald-500/30 mx-auto">
             <Radio className="w-4 h-4" />
             Go Live Shopping
@@ -129,7 +129,7 @@ export default function AffiliateLiveSection() {
             {allLive.length} LIVE
           </span>
         </div>
-        <Link to={createPageUrl('AffiliateGoLive')}>
+        <Link to={createPageUrl('GoLive') + '?platform=affiliate'}>
           <button className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-3 h-8 rounded-xl transition-all active:scale-95">
             <Radio className="w-3.5 h-3.5" />
             Go Live
