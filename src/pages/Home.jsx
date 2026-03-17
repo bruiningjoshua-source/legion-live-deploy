@@ -78,12 +78,12 @@ function HubIcon({ hub }) {
       >
         {/* Icon bubble — black with crimson icon */}
         <div
-          className="w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105 bg-black border border-red-600/30"
+          className="w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105 bg-black border border-amber-600/30"
           style={{
-            boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(220,38,38,0.2)`,
+            boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(217,119,6,0.2)`,
           }}
         >
-          <Icon className="w-7 h-7 text-red-500 relative z-10 drop-shadow-sm" />
+          <Icon className="w-7 h-7 text-amber-500 relative z-10 drop-shadow-sm" />
         </div>
         {/* Label */}
         <div className="text-center">
