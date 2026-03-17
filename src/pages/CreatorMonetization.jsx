@@ -139,17 +139,18 @@ export default function CreatorMonetization() {
   });
 
   const totalTipRevenue = tips.reduce((sum, tip) => sum + (tip.amount_usd || 0), 0);
-  const isMonetizationActive = subscription && new Date(subscription.expiry_date) > new Date();
+  const isAdmin = user?.role === 'admin';
+  const isMonetizationActive = isAdmin || (subscription?.status === 'active');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen pt-20 pb-24">
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-100 mb-2 flex items-center gap-2">
+          <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 flex items-center gap-2">
             <Crown className="w-8 h-8 text-amber-400" />
             Creator Monetization
           </h1>
-          <p className="text-amber-400/70">Unlock revenue streams and grow your empire</p>
+          <p className="text-white/50">Unlock revenue streams and grow your empire</p>
         </div>
 
         {/* Subscription Status */}
@@ -240,16 +241,17 @@ export default function CreatorMonetization() {
         ) : (
           <>
             {/* Active Subscription Banner */}
-            <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30 mb-8">
+            <Card className="bg-white/[0.03] backdrop-blur-xl border-green-500/30 mb-8">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Unlock className="w-8 h-8 text-green-400" />
                     <div>
-                      <h3 className="text-amber-100 font-bold text-lg">Monetization Active</h3>
-                      <p className="text-amber-400/60 text-sm">
-                        {subscription.plan_type === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'} • 
-                        Expires {new Date(subscription.expiry_date).toLocaleDateString()}
+                      <h3 className="text-white font-bold text-lg">Monetization Active</h3>
+                      <p className="text-white/50 text-sm">
+                        {isAdmin && !subscription ? 'Admin — Lifetime Access' : 
+                         subscription?.admin_activated ? `Granted by admin${subscription?.granted_by ? ` (${subscription.granted_by})` : ''}` :
+                         `${subscription?.plan_type === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'} • Expires ${subscription?.expiry_date ? new Date(subscription.expiry_date).toLocaleDateString() : 'N/A'}`}
                       </p>
                     </div>
                   </div>
@@ -260,7 +262,7 @@ export default function CreatorMonetization() {
 
             {/* Stats */}
             <div className="grid md:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
