@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X } from 'lucide-react';
+import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X, ScreenShare } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -270,6 +270,14 @@ export default function GoLive() {
               <FlipHorizontal className="w-5 h-5 text-white" />
             </div>
             <span className="text-white/50 text-[10px]">Flip</span>
+          </button>
+          <button className="flex flex-col items-center gap-0.5" onClick={() => {
+            toast.info('Screen sharing will activate once you go live. Use it to share your gameplay or screen!');
+          }}>
+            <div className="w-11 h-11 rounded-full bg-green-500/20 backdrop-blur-xl border border-green-400/30 flex items-center justify-center">
+              <ScreenShare className="w-5 h-5 text-green-400" />
+            </div>
+            <span className="text-white/50 text-[10px]">Screen</span>
           </button>
 
         </div>
