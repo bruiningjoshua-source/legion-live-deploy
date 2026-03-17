@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Sparkles, Users } from 'lucide-react';
+import { Radio, X, Shield, Sparkles, Users, ScreenShare } from 'lucide-react';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -508,6 +508,32 @@ export default function WatchStream() {
               vipPoints={userVipPoints}
               onDeductDenarii={handleLottoDeduct}
             />
+
+            {/* Screen Share */}
+            <button onClick={async () => {
+              const isSharing = ZegoService.isScreenSharing;
+              if (isSharing) {
+                await ZegoService.stopScreenShare().catch(() => {});
+                const localStream = ZegoService.getLocalStream();
+                if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
+                toast.success('Screen share stopped');
+              } else {
+                try {
+                  const screenStream = await ZegoService.startScreenShare(stream.id);
+                  if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
+                  toast.success('Screen sharing started!');
+                } catch (e) {
+                  toast.error('Screen share failed');
+                }
+              }
+            }}
+              className={`w-9 h-9 backdrop-blur-md border rounded-full flex items-center justify-center transition-colors ${
+                ZegoService.isScreenSharing
+                  ? 'bg-green-500/30 border-green-400/40 text-green-400'
+                  : 'bg-black/60 border-white/15 text-white/70 hover:text-white'
+              }`}>
+              <ScreenShare className="w-4 h-4" />
+            </button>
 
             {/* Co-stream */}
             <button onClick={() => setShowCoStreamPanel(true)}
