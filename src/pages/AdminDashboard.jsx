@@ -92,7 +92,7 @@ export default function AdminDashboard() {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen pt-20 pb-24 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-red-500/30 max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400/50 mx-auto mb-4" />

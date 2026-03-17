@@ -157,7 +157,7 @@ export default function Wallet() {
   }
 
   return (
-    <div className="min-h-screen pt-16 pb-24">
+    <div className="min-h-screen pt-20 pb-24">
       <TermsOfServiceGate
         isOpen={showTosGate && !tosAccepted}
         onAccept={() => {
