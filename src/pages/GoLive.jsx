@@ -12,10 +12,17 @@ import ZegoService from '@/components/stream/ZegoService';
 import GoLiveTopBar from '@/components/stream/GoLiveTopBar';
 import GoLiveStreamTypeBar from '@/components/stream/GoLiveStreamTypeBar';
 
+// Detect if coming from affiliate marketplace
+const getInitialPlatformType = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('platform') === 'affiliate' ? 'affiliate_marketplace' : 'legion_live';
+};
+
 export default function GoLive() {
   const [streamType, setStreamType] = useState('solo');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
+  const [platformType] = useState(getInitialPlatformType);
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [showBeauty, setShowBeauty] = useState(false);
@@ -136,7 +143,7 @@ export default function GoLive() {
          title: trimmedTitle.substring(0, 100),
          category,
          stream_type: streamType,
-         platform_type: 'legion_live',
+         platform_type: platformType,
          status: 'live',
          viewer_count: 0,
          peak_viewers: 0,
