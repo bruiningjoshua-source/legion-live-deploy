@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -19,22 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Upload,
-  Video,
-  Image,
-  X,
-  Plus,
-  Globe,
-  Lock,
-  EyeOff,
-  Clock,
-  Calendar,
-  Sparkles,
-  AlertCircle,
-  CheckCircle
+  Upload, Video, X, Plus, Globe, Lock, EyeOff,
+  AlertCircle, CheckCircle, Music, ArrowLeft
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import MediaDropZone from '@/components/upload/MediaDropZone';
+import UploadProgressBar from '@/components/upload/UploadProgressBar';
+import ThumbnailGenerator from '@/components/upload/ThumbnailGenerator';
 
 const CATEGORIES = [
   { value: 'gaming', label: 'Gaming', icon: '🎮' },
@@ -69,10 +60,6 @@ const INTERESTS = [
 
 export default function VideoUpload() {
   const navigate = useNavigate();
-  const videoInputRef = useRef(null);
-  const thumbnailInputRef = useRef(null);
-
-  // Check URL params for preset video type
   const urlParams = new URLSearchParams(window.location.search);
   const presetType = urlParams.get('type');
 
@@ -80,25 +67,22 @@ export default function VideoUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  const [videoFile, setVideoFile] = useState(null);
+  const [mediaFile, setMediaFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [autoThumbnailDataUrl, setAutoThumbnailDataUrl] = useState(null);
   
   const [videoData, setVideoData] = useState({
     title: '',
     description: '',
     video_type: presetType === 'short' ? 'short' : 'long_form',
     category: '',
-    subcategory: '',
     tags: [],
     interests: [],
     visibility: 'public',
     comments_enabled: true,
     age_restricted: false,
     made_for_kids: false,
-    scheduled_publish_date: null,
-    premiere_enabled: false,
-    language: 'en'
   });
   
   const [newTag, setNewTag] = useState('');
@@ -117,57 +101,109 @@ export default function VideoUpload() {
     enabled: !!user?.email
   });
 
+  const isAudio = mediaFile?.type?.startsWith('audio/');
+  const isVideo = mediaFile?.type?.startsWith('video/');
+
+  const handleFileSelect = (file) => {
+    setMediaFile(file);
+    // Auto-fill title from filename
+    if (!videoData.title) {
+      const name = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      setVideoData(prev => ({ ...prev, title: name }));
+    }
+    // Auto-set category to music for audio
+    if (file.type.startsWith('audio/') && !videoData.category) {
+      setVideoData(prev => ({ ...prev, category: 'music' }));
+    }
+  };
+
+  const handleThumbnailFileSelect = (file) => {
+    if (!file) {
+      setThumbnailFile(null);
+      setThumbnailPreview(null);
+      return;
+    }
+    setThumbnailFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setThumbnailPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  // Convert data URL to File for upload
+  const dataUrlToFile = async (dataUrl, filename) => {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!videoFile) throw new Error('Please select a video file');
-      if (!videoData.title) throw new Error('Please enter a title');
+      if (!mediaFile) throw new Error('Please select a file');
+      if (!videoData.title.trim()) throw new Error('Please enter a title');
       if (!videoData.category) throw new Error('Please select a category');
 
       setIsUploading(true);
       setUploadProgress(10);
 
-      // Upload video
-      const videoResult = await base44.integrations.Core.UploadFile({ file: videoFile });
+      // Upload media file
+      const mediaResult = await base44.integrations.Core.UploadFile({ file: mediaFile });
       setUploadProgress(50);
 
-      // Upload thumbnail if provided
+      // Upload thumbnail
       let thumbnailUrl = null;
       if (thumbnailFile) {
         const thumbResult = await base44.integrations.Core.UploadFile({ file: thumbnailFile });
         thumbnailUrl = thumbResult.file_url;
+      } else if (autoThumbnailDataUrl) {
+        const thumbFile = await dataUrlToFile(autoThumbnailDataUrl, 'thumbnail.jpg');
+        const thumbResult = await base44.integrations.Core.UploadFile({ file: thumbFile });
+        thumbnailUrl = thumbResult.file_url;
       }
-      setUploadProgress(70);
+      setUploadProgress(75);
 
-      // Create video record
-      const video = await base44.entities.VlogVideo.create({
-        creator_id: creator.id,
-        title: videoData.title,
-        description: videoData.description,
-        video_url: videoResult.file_url,
-        thumbnail_url: thumbnailUrl,
-        video_type: videoData.video_type,
-        category: videoData.category,
-        subcategory: videoData.subcategory,
-        tags: videoData.tags,
-        interests: videoData.interests,
-        visibility: videoData.visibility,
-        comments_enabled: videoData.comments_enabled,
-        age_restricted: videoData.age_restricted,
-        made_for_kids: videoData.made_for_kids,
-        language: videoData.language,
-        scheduled_publish_date: videoData.scheduled_publish_date,
-        premiere_enabled: videoData.premiere_enabled,
-        is_published: videoData.visibility !== 'private',
-        review_status: 'pending',
-        view_count: 0,
-        like_count: 0
-      });
-      
-      setUploadProgress(100);
-      return video;
+      // Create entity record based on media type
+      if (isAudio) {
+        const music = await base44.entities.Music.create({
+          creator_id: user.email,
+          title: videoData.title.trim(),
+          artist: user.full_name || 'Unknown',
+          description: videoData.description,
+          audio_url: mediaResult.file_url,
+          cover_url: thumbnailUrl,
+          genre: videoData.category === 'music' ? 'other' : 'other',
+          tags: videoData.tags,
+          is_published: videoData.visibility !== 'private',
+        });
+        setUploadProgress(100);
+        return { type: 'music', record: music };
+      } else {
+        const video = await base44.entities.VlogVideo.create({
+          creator_id: creator?.id || user.email,
+          title: videoData.title.trim(),
+          description: videoData.description,
+          video_url: mediaResult.file_url,
+          thumbnail_url: thumbnailUrl,
+          video_type: videoData.video_type,
+          category: videoData.category,
+          tags: videoData.tags,
+          interests: videoData.interests,
+          visibility: videoData.visibility,
+          comments_enabled: videoData.comments_enabled,
+          age_restricted: videoData.age_restricted,
+          made_for_kids: videoData.made_for_kids,
+          language: 'en',
+          is_published: videoData.visibility !== 'private',
+          review_status: 'pending',
+          view_count: 0,
+          like_count: 0,
+        });
+        setUploadProgress(100);
+        return { type: 'video', record: video };
+      }
     },
-    onSuccess: (video) => {
-      toast.success('Video uploaded successfully! It will be reviewed shortly.');
+    onSuccess: (result) => {
+      const msg = result.type === 'music' ? 'Audio uploaded successfully!' : 'Video uploaded! It will be reviewed shortly.';
+      toast.success(msg);
       navigate(createPageUrl('CreatorStudio'));
     },
     onError: (error) => {
@@ -177,58 +213,25 @@ export default function VideoUpload() {
     }
   });
 
-  const handleVideoSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB limit
-        toast.error('Video must be under 2GB');
-        return;
-      }
-      setVideoFile(file);
-      // Auto-fill title from filename
-      if (!videoData.title) {
-        const name = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-        setVideoData({ ...videoData, title: name });
-      }
-    }
-  };
-
-  const handleThumbnailSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setThumbnailFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setThumbnailPreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
   const addTag = () => {
-    if (newTag && !videoData.tags.includes(newTag) && videoData.tags.length < 15) {
-      setVideoData({ ...videoData, tags: [...videoData.tags, newTag] });
+    const tag = newTag.trim();
+    if (tag && !videoData.tags.includes(tag) && videoData.tags.length < 15) {
+      setVideoData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
       setNewTag('');
     }
   };
 
-  const removeTag = (tag) => {
-    setVideoData({ ...videoData, tags: videoData.tags.filter(t => t !== tag) });
-  };
-
-  const toggleInterest = (interest) => {
-    if (videoData.interests.includes(interest)) {
-      setVideoData({ ...videoData, interests: videoData.interests.filter(i => i !== interest) });
-    } else if (videoData.interests.length < 10) {
-      setVideoData({ ...videoData, interests: [...videoData.interests, interest] });
-    }
+  const updateField = (field, value) => {
+    setVideoData(prev => ({ ...prev, [field]: value }));
   };
 
   if (!user || !creator) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
-        <Card className="bg-stone-800/50 border-amber-600/20 p-8 text-center">
+      <div className="min-h-screen pt-20 pb-12 flex items-center justify-center px-4">
+        <Card className="bg-white/[0.03] border-white/[0.08] p-8 text-center max-w-sm">
           <Video className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
-          <h2 className="text-xl text-amber-100 mb-2">Create a Channel First</h2>
-          <p className="text-amber-400/60 mb-4">Set up your creator profile to upload videos</p>
+          <h2 className="text-xl text-white mb-2 font-bold">Create a Channel First</h2>
+          <p className="text-white/40 text-sm mb-4">Set up your creator profile to upload</p>
           <Button onClick={() => navigate(createPageUrl('Profile'))} className="bg-amber-600 hover:bg-amber-700">
             Go to Profile
           </Button>
@@ -238,366 +241,290 @@ export default function VideoUpload() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen pt-20 pb-24 px-4">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-amber-100 flex items-center gap-3">
-            <Upload className="w-8 h-8 text-red-500" />
-            Upload Video
+        <div className="mb-6">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-white/40 text-xs mb-3 hover:text-white transition-colors">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </button>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+            <Upload className="w-6 h-6 text-amber-400" />
+            Upload Media
           </h1>
-          <p className="text-amber-400/70">Share your content with the Legion community</p>
+          <p className="text-white/40 text-sm mt-1">Upload video or audio to share with the Legion community</p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
-          {[1, 2, 3].map((s) => (
+        {/* Step indicator */}
+        <div className="flex items-center gap-2 mb-6">
+          {[1, 2, 3].map(s => (
             <React.Fragment key={s}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                step >= s ? 'bg-red-600 text-white' : 'bg-stone-700 text-amber-400/50'
-              }`}>
-                {s}
-              </div>
-              {s < 3 && (
-                <div className={`w-20 h-1 mx-2 rounded ${step > s ? 'bg-red-600' : 'bg-stone-700'}`} />
-              )}
+              <button
+                onClick={() => { if (s < step) setStep(s); }}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  step >= s
+                    ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20'
+                    : 'bg-white/[0.06] text-white/30'
+                }`}
+              >
+                {step > s ? '✓' : s}
+              </button>
+              {s < 3 && <div className={`flex-1 h-0.5 rounded ${step > s ? 'bg-amber-500' : 'bg-white/[0.06]'}`} />}
             </React.Fragment>
           ))}
         </div>
 
-        {/* Step 1: Upload */}
+        {/* Step 1: File Selection */}
         {step === 1 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100">Select Video</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Video Type */}
-                <div className="flex gap-4">
-                  <Button
-                    variant={videoData.video_type === 'short' ? 'default' : 'outline'}
-                    onClick={() => setVideoData({ ...videoData, video_type: 'short' })}
-                    className={videoData.video_type === 'short' ? 'bg-pink-600' : 'border-amber-600/30 text-amber-300'}
-                  >
-                    📱 Short (Under 60s)
-                  </Button>
-                  <Button
-                    variant={videoData.video_type === 'long_form' ? 'default' : 'outline'}
-                    onClick={() => setVideoData({ ...videoData, video_type: 'long_form' })}
-                    className={videoData.video_type === 'long_form' ? 'bg-blue-600' : 'border-amber-600/30 text-amber-300'}
-                  >
-                    🎬 Long Form
-                  </Button>
-                </div>
-
-                {/* Upload Zone */}
-                <div
-                  onClick={() => videoInputRef.current?.click()}
-                  className="border-2 border-dashed border-amber-600/30 rounded-2xl p-12 text-center cursor-pointer hover:border-amber-500/50 transition-colors"
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+            {/* Type selector (video only) */}
+            {(!mediaFile || isVideo) && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateField('video_type', 'short')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    videoData.video_type === 'short'
+                      ? 'bg-pink-500/20 border border-pink-500/40 text-pink-300'
+                      : 'bg-white/[0.03] border border-white/[0.06] text-white/40'
+                  }`}
                 >
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoSelect}
-                    className="hidden"
-                  />
-                  {videoFile ? (
-                    <div className="flex flex-col items-center gap-4">
-                      <CheckCircle className="w-16 h-16 text-green-400" />
-                      <p className="text-green-400 font-semibold">{videoFile.name}</p>
-                      <p className="text-amber-400/60 text-sm">
-                        {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
-                      </p>
-                      <Button variant="outline" className="border-amber-600/30 text-amber-300">
-                        Change Video
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
-                      <p className="text-amber-100 text-lg font-semibold mb-2">
-                        Drag and drop or click to upload
-                      </p>
-                      <p className="text-amber-400/60 text-sm">
-                        MP4, MOV, AVI • Max 2GB • {videoData.video_type === 'short' ? 'Under 60 seconds' : 'Any length'}
-                      </p>
-                    </>
-                  )}
-                </div>
+                  📱 Short
+                </button>
+                <button
+                  onClick={() => updateField('video_type', 'long_form')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    videoData.video_type === 'long_form'
+                      ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300'
+                      : 'bg-white/[0.03] border border-white/[0.06] text-white/40'
+                  }`}
+                >
+                  🎬 Long Form
+                </button>
+              </div>
+            )}
 
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => setStep(2)}
-                    disabled={!videoFile}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Drop zone */}
+            <MediaDropZone
+              file={mediaFile}
+              onFileSelect={handleFileSelect}
+              onClear={() => { setMediaFile(null); setAutoThumbnailDataUrl(null); }}
+            />
+
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setStep(2)}
+                disabled={!mediaFile}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-6"
+              >
+                Continue
+              </Button>
+            </div>
           </motion.div>
         )}
 
         {/* Step 2: Details */}
         {step === 2 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100">Video Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Thumbnail */}
-                <div>
-                  <Label className="text-amber-200">Thumbnail</Label>
-                  <div className="mt-2 flex gap-4">
-                    <div
-                      onClick={() => thumbnailInputRef.current?.click()}
-                      className="w-48 aspect-video bg-stone-900 rounded-lg border-2 border-dashed border-amber-600/30 flex items-center justify-center cursor-pointer hover:border-amber-500/50 transition-colors overflow-hidden"
-                    >
-                      <input
-                        ref={thumbnailInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleThumbnailSelect}
-                        className="hidden"
-                      />
-                      {thumbnailPreview ? (
-                        <img src={thumbnailPreview} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="text-center">
-                          <Image className="w-8 h-8 text-amber-400/50 mx-auto mb-2" />
-                          <p className="text-amber-400/60 text-xs">Upload</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-amber-400/70 text-sm">
-                        A good thumbnail stands out and grabs attention. Use 1280x720 (16:9) for best results.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+            {/* Thumbnail */}
+            <ThumbnailGenerator
+              videoFile={mediaFile}
+              thumbnailFile={thumbnailFile}
+              thumbnailPreview={thumbnailPreview}
+              onThumbnailSelect={setAutoThumbnailDataUrl}
+              onThumbnailFileSelect={handleThumbnailFileSelect}
+            />
 
-                {/* Title */}
-                <div>
-                  <Label className="text-amber-200">Title *</Label>
-                  <Input
-                    value={videoData.title}
-                    onChange={(e) => setVideoData({ ...videoData, title: e.target.value })}
-                    placeholder="Add a title that describes your video"
-                    className="mt-2 bg-stone-900 border-amber-600/20 text-amber-100"
-                    maxLength={100}
-                  />
-                  <p className="text-amber-400/50 text-xs text-right mt-1">{videoData.title.length}/100</p>
-                </div>
+            {/* Title */}
+            <div>
+              <Label className="text-amber-200 text-sm">Title *</Label>
+              <Input
+                value={videoData.title}
+                onChange={(e) => updateField('title', e.target.value)}
+                placeholder="Add a title…"
+                className="mt-1.5 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
+                maxLength={100}
+              />
+              <p className="text-white/20 text-[10px] text-right mt-1">{videoData.title.length}/100</p>
+            </div>
 
-                {/* Description */}
-                <div>
-                  <Label className="text-amber-200">Description</Label>
-                  <Textarea
-                    value={videoData.description}
-                    onChange={(e) => setVideoData({ ...videoData, description: e.target.value })}
-                    placeholder="Tell viewers about your video (hashtags, links, etc.)"
-                    className="mt-2 bg-stone-900 border-amber-600/20 text-amber-100 min-h-[120px]"
-                    maxLength={5000}
-                  />
-                </div>
+            {/* Description */}
+            <div>
+              <Label className="text-amber-200 text-sm">Description</Label>
+              <Textarea
+                value={videoData.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                placeholder="Tell viewers about your content…"
+                className="mt-1.5 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 min-h-[100px]"
+                maxLength={5000}
+              />
+            </div>
 
-                {/* Category */}
-                <div>
-                  <Label className="text-amber-200">Category *</Label>
-                  <Select value={videoData.category} onValueChange={(v) => setVideoData({ ...videoData, category: v })}>
-                    <SelectTrigger className="mt-2 bg-stone-900 border-amber-600/20 text-amber-100">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-stone-900 border-amber-600/30 max-h-60">
-                      {CATEGORIES.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value} className="text-amber-100">
-                          {cat.icon} {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Category */}
+            <div>
+              <Label className="text-amber-200 text-sm">Category *</Label>
+              <Select value={videoData.category} onValueChange={(v) => updateField('category', v)}>
+                <SelectTrigger className="mt-1.5 bg-white/[0.04] border-white/[0.08] text-white">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1f] border-white/[0.1] max-h-60">
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value} className="text-white">
+                      {cat.icon} {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Tags */}
-                <div>
-                  <Label className="text-amber-200">Tags (up to 15)</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add a tag..."
-                      className="bg-stone-900 border-amber-600/20 text-amber-100"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    />
-                    <Button onClick={addTag} className="bg-amber-600 hover:bg-amber-700">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {videoData.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {videoData.tags.map(tag => (
-                        <Badge key={tag} className="bg-amber-600/20 text-amber-200">
-                          {tag}
-                          <button onClick={() => removeTag(tag)} className="ml-1">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Interests for Discovery */}
-                <div>
-                  <Label className="text-amber-200">Interests (for discovery - up to 10)</Label>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {INTERESTS.map(interest => (
-                      <button
-                        key={interest}
-                        onClick={() => toggleInterest(interest)}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                          videoData.interests.includes(interest)
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-stone-800/50 text-amber-300 hover:bg-amber-800/30'
-                        }`}
-                      >
-                        {interest}
+            {/* Tags */}
+            <div>
+              <Label className="text-amber-200 text-sm">Tags (up to 15)</Label>
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add tag…"
+                  className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25"
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                />
+                <Button onClick={addTag} size="icon" className="bg-amber-600 hover:bg-amber-700 flex-shrink-0">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {videoData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {videoData.tags.map(tag => (
+                    <Badge key={tag} className="bg-amber-500/15 text-amber-300 border-amber-500/20 text-[11px]">
+                      {tag}
+                      <button onClick={() => updateField('tags', videoData.tags.filter(t => t !== tag))} className="ml-1">
+                        <X className="w-2.5 h-2.5" />
                       </button>
-                    ))}
-                  </div>
+                    </Badge>
+                  ))}
                 </div>
+              )}
+            </div>
 
-                <div className="flex justify-between">
-                  <Button onClick={() => setStep(1)} variant="outline" className="border-amber-600/30 text-amber-300">
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => setStep(3)}
-                    disabled={!videoData.title || !videoData.category}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Continue
-                  </Button>
+            {/* Interests */}
+            {isVideo && (
+              <div>
+                <Label className="text-amber-200 text-sm">Discovery interests (up to 10)</Label>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {INTERESTS.map(interest => (
+                    <button
+                      key={interest}
+                      onClick={() => {
+                        if (videoData.interests.includes(interest)) {
+                          updateField('interests', videoData.interests.filter(i => i !== interest));
+                        } else if (videoData.interests.length < 10) {
+                          updateField('interests', [...videoData.interests, interest]);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                        videoData.interests.includes(interest)
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          : 'bg-white/[0.03] text-white/30 hover:text-white/60 border border-transparent'
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              <Button onClick={() => setStep(1)} variant="outline" className="border-white/[0.1] text-white/60">
+                Back
+              </Button>
+              <Button
+                onClick={() => setStep(3)}
+                disabled={!videoData.title.trim() || !videoData.category}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-6"
+              >
+                Continue
+              </Button>
+            </div>
           </motion.div>
         )}
 
-        {/* Step 3: Visibility & Settings */}
+        {/* Step 3: Visibility & Publish */}
         {step === 3 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100">Visibility & Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Visibility */}
-                <div>
-                  <Label className="text-amber-200">Visibility</Label>
-                  <div className="grid grid-cols-3 gap-4 mt-3">
-                    {[
-                      { value: 'public', label: 'Public', icon: Globe, desc: 'Everyone can watch' },
-                      { value: 'unlisted', label: 'Unlisted', icon: EyeOff, desc: 'Only people with link' },
-                      { value: 'private', label: 'Private', icon: Lock, desc: 'Only you can watch' }
-                    ].map(opt => {
-                      const Icon = opt.icon;
-                      return (
-                        <button
-                          key={opt.value}
-                          onClick={() => setVideoData({ ...videoData, visibility: opt.value })}
-                          className={`p-4 rounded-xl border text-left transition-all ${
-                            videoData.visibility === opt.value
-                              ? 'bg-amber-600/20 border-amber-500'
-                              : 'bg-stone-900/50 border-amber-600/20 hover:border-amber-500/50'
-                          }`}
-                        >
-                          <Icon className={`w-6 h-6 mb-2 ${videoData.visibility === opt.value ? 'text-amber-400' : 'text-amber-400/50'}`} />
-                          <p className="text-amber-100 font-semibold">{opt.label}</p>
-                          <p className="text-amber-400/60 text-xs">{opt.desc}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+            {/* Visibility */}
+            <div>
+              <Label className="text-amber-200 text-sm">Visibility</Label>
+              <div className="grid grid-cols-3 gap-3 mt-2">
+                {[
+                  { value: 'public', label: 'Public', icon: Globe, desc: 'Everyone' },
+                  { value: 'unlisted', label: 'Unlisted', icon: EyeOff, desc: 'Link only' },
+                  { value: 'private', label: 'Private', icon: Lock, desc: 'Only you' }
+                ].map(opt => {
+                  const Icon = opt.icon;
+                  const active = videoData.visibility === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => updateField('visibility', opt.value)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        active
+                          ? 'bg-amber-500/10 border-amber-500/40'
+                          : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 mb-1.5 ${active ? 'text-amber-400' : 'text-white/20'}`} />
+                      <p className={`font-semibold text-xs ${active ? 'text-white' : 'text-white/50'}`}>{opt.label}</p>
+                      <p className="text-white/20 text-[10px]">{opt.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                {/* Settings */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-stone-900/50 rounded-xl">
-                    <div>
-                      <p className="text-amber-100 font-semibold">Allow Comments</p>
-                      <p className="text-amber-400/60 text-sm">Let viewers comment on your video</p>
-                    </div>
-                    <Switch
-                      checked={videoData.comments_enabled}
-                      onCheckedChange={(v) => setVideoData({ ...videoData, comments_enabled: v })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-stone-900/50 rounded-xl">
-                    <div>
-                      <p className="text-amber-100 font-semibold">Age Restricted (18+)</p>
-                      <p className="text-amber-400/60 text-sm">Contains mature content</p>
-                    </div>
-                    <Switch
-                      checked={videoData.age_restricted}
-                      onCheckedChange={(v) => setVideoData({ ...videoData, age_restricted: v })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-stone-900/50 rounded-xl">
-                    <div>
-                      <p className="text-amber-100 font-semibold">Made for Kids</p>
-                      <p className="text-amber-400/60 text-sm">Content is designed for children</p>
-                    </div>
-                    <Switch
-                      checked={videoData.made_for_kids}
-                      onCheckedChange={(v) => setVideoData({ ...videoData, made_for_kids: v })}
-                    />
-                  </div>
-                </div>
-
-                {/* Review Notice */}
-                <div className="p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-xl flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+            {/* Settings */}
+            <div className="space-y-3">
+              {[
+                { field: 'comments_enabled', label: 'Allow Comments', desc: 'Let viewers comment' },
+                { field: 'age_restricted', label: 'Age Restricted (18+)', desc: 'Mature content' },
+                { field: 'made_for_kids', label: 'Made for Kids', desc: 'Child-friendly content' },
+              ].map(opt => (
+                <div key={opt.field} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
                   <div>
-                    <p className="text-yellow-200 font-semibold">Platform Review</p>
-                    <p className="text-yellow-400/70 text-sm">
-                      Your video will be reviewed before appearing publicly. This usually takes less than 24 hours.
-                    </p>
+                    <p className="text-white text-sm font-medium">{opt.label}</p>
+                    <p className="text-white/30 text-[11px]">{opt.desc}</p>
                   </div>
+                  <Switch
+                    checked={videoData[opt.field]}
+                    onCheckedChange={(v) => updateField(opt.field, v)}
+                  />
                 </div>
+              ))}
+            </div>
 
-                {/* Upload Progress */}
-                {isUploading && (
-                  <div className="p-4 bg-stone-900/50 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-amber-100 font-semibold">Uploading...</span>
-                      <span className="text-amber-400">{uploadProgress}%</span>
-                    </div>
-                    <Progress value={uploadProgress} className="h-2" />
-                  </div>
-                )}
+            {/* Review notice */}
+            <div className="p-3 bg-amber-500/[0.06] border border-amber-500/15 rounded-xl flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-300 font-semibold text-xs">Platform Review</p>
+                <p className="text-white/30 text-[11px]">Your upload will be reviewed before appearing publicly. Usually under 24 hours.</p>
+              </div>
+            </div>
 
-                <div className="flex justify-between">
-                  <Button onClick={() => setStep(2)} variant="outline" className="border-amber-600/30 text-amber-300">
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => uploadMutation.mutate()}
-                    disabled={isUploading}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isUploading ? 'Uploading...' : 'Publish Video'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Upload progress */}
+            <UploadProgressBar progress={uploadProgress} isUploading={isUploading} />
+
+            <div className="flex justify-between">
+              <Button onClick={() => setStep(2)} variant="outline" className="border-white/[0.1] text-white/60">
+                Back
+              </Button>
+              <Button
+                onClick={() => uploadMutation.mutate()}
+                disabled={isUploading}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-8"
+              >
+                {isUploading ? 'Publishing…' : isAudio ? 'Publish Audio' : 'Publish Video'}
+              </Button>
+            </div>
           </motion.div>
         )}
       </div>
