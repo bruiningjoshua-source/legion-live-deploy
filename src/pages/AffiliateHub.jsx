@@ -9,6 +9,7 @@ import {
   Star, DollarSign, Zap, Award, Package, Tv, Eye,
   Radio, Play, Users, Flame, Crown, Grid3x3
 } from 'lucide-react';
+import AffiliateLiveSection from '@/components/affiliate/AffiliateLiveStream';
 
 const TABS = ['Discover', 'Live Shopping', 'Marketplace', 'My Dashboard'];
 const PRODUCT_CATS = ['All', 'Gaming', 'Fitness', 'Tech', 'Fashion', 'Beauty', 'Food'];
@@ -287,12 +288,7 @@ export default function AffiliateHub() {
 
       <div className="max-w-screen-xl mx-auto px-4 py-5">
         {activeTab === 'Discover' && <DiscoverTab />}
-        {activeTab === 'Live Shopping' && (
-          <div className="text-center py-20">
-            <Tv className="w-12 h-12 text-white/10 mx-auto mb-3" />
-            <p className="text-white/40 text-sm">No live shopping streams right now</p>
-          </div>
-        )}
+        {activeTab === 'Live Shopping' && <AffiliateLiveSection />}
         {activeTab === 'Marketplace' && <MarketplaceTab />}
         {activeTab === 'My Dashboard' && (
           <div className="text-center py-12">
