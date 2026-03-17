@@ -171,8 +171,8 @@ export default function CreatorMonetization() {
               <div className="flex items-start gap-4">
                 <Lock className="w-12 h-12 text-amber-400 flex-shrink-0" />
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-amber-100 mb-2">Unlock Your Earning Potential</h2>
-                  <p className="text-amber-300/70 mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">Unlock Your Earning Potential</h2>
+                  <p className="text-white/50 mb-6">
                     Join thousands of creators earning $1k-$10k+/month. Subscribe now to activate all revenue streams.
                   </p>
 
@@ -181,12 +181,12 @@ export default function CreatorMonetization() {
                     <div className="bg-stone-800/50 rounded-xl p-6 border border-amber-600/20">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-amber-100 font-bold text-xl">Monthly</h3>
-                          <p className="text-amber-400/60 text-sm">Billed monthly</p>
+                          <h3 className="text-white font-bold text-xl">Monthly</h3>
+                          <p className="text-white/40 text-sm">Billed monthly</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-amber-100">$5</p>
-                          <p className="text-amber-400/60 text-xs">per month</p>
+                          <p className="text-3xl font-bold text-white">$5</p>
+                          <p className="text-white/40 text-xs">per month</p>
                         </div>
                       </div>
                       <Button 
@@ -205,12 +205,12 @@ export default function CreatorMonetization() {
                       </Badge>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-amber-100 font-bold text-xl">Yearly</h3>
-                          <p className="text-amber-400/60 text-sm">One-time payment</p>
+                          <h3 className="text-white font-bold text-xl">Yearly</h3>
+                          <p className="text-white/40 text-sm">One-time payment</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-amber-100">$12</p>
-                          <p className="text-amber-400/60 text-xs">for 365 days</p>
+                          <p className="text-3xl font-bold text-white">$12</p>
+                          <p className="text-white/40 text-xs">for 365 days</p>
                         </div>
                       </div>
                       <Button 
@@ -266,31 +266,31 @@ export default function CreatorMonetization() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-amber-400/70 text-sm">Subscribers</p>
-                      <p className="text-3xl font-bold text-amber-100">{formatCount(subscribers.length)}</p>
+                      <p className="text-white/50 text-sm">Subscribers</p>
+                      <p className="text-3xl font-bold text-white">{formatCount(subscribers.length)}</p>
                     </div>
                     <Users className="w-12 h-12 text-blue-500" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-amber-400/70 text-sm">Tips Received</p>
-                      <p className="text-3xl font-bold text-amber-100">{formatCount(tips.length)}</p>
+                      <p className="text-white/50 text-sm">Tips Received</p>
+                      <p className="text-3xl font-bold text-white">{formatCount(tips.length)}</p>
                     </div>
                     <DollarSign className="w-12 h-12 text-green-500" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-amber-400/70 text-sm">Tip Revenue</p>
+                      <p className="text-white/50 text-sm">Tip Revenue</p>
                       <p className="text-3xl font-bold text-green-400">${totalTipRevenue.toFixed(2)}</p>
                     </div>
                     <TrendingUp className="w-12 h-12 text-green-500" />
@@ -298,12 +298,12 @@ export default function CreatorMonetization() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-stone-800/30 border-amber-600/20">
+              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-amber-400/70 text-sm">Total Earnings</p>
-                      <p className="text-3xl font-bold text-amber-100">
+                      <p className="text-white/50 text-sm">Total Earnings</p>
+                      <p className="text-3xl font-bold text-white">
                         {((creator?.total_earnings_denarii || 0) / 100).toFixed(0)} 🪙
                       </p>
                     </div>
@@ -319,13 +319,13 @@ export default function CreatorMonetization() {
             </div>
 
             {/* Creator Payout Optimizer */}
-            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] mb-8">
               <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-amber-400" />
                   Your Payout Tier
                 </CardTitle>
-                <p className="text-amber-400/70 text-sm mt-2">Earn more as you grow — higher tiers unlock better revenue share</p>
+                <p className="text-white/50 text-sm mt-2">Earn more as you grow — higher tiers unlock better revenue share</p>
               </CardHeader>
               <CardContent>
                 <CreatorPayoutOptimizer creatorEarningsUsd={creator?.total_earnings_denarii || 0} />
@@ -333,13 +333,13 @@ export default function CreatorMonetization() {
             </Card>
 
             {/* Viewer Incentives Section */}
-            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] mb-8">
               <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <Users className="w-5 h-5 text-amber-400" />
                   Viewer Spending Incentives
                 </CardTitle>
-                <p className="text-amber-400/70 text-sm mt-2">Drive viewership growth with attractive rewards program</p>
+                <p className="text-white/50 text-sm mt-2">Drive viewership growth with attractive rewards program</p>
               </CardHeader>
               <CardContent>
                 <ViewerSpendingIncentives userSpending={totalTipRevenue} />
@@ -347,9 +347,9 @@ export default function CreatorMonetization() {
             </Card>
 
             {/* Referral Section */}
-            <Card className="bg-stone-800/30 border-amber-600/20 mb-8">
+            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] mb-8">
               <CardHeader>
-                <CardTitle className="text-amber-100">Referral Program</CardTitle>
+                <CardTitle className="text-white">Referral Program</CardTitle>
               </CardHeader>
               <CardContent>
                 <ReferralDashboard creatorId={creator?.id} />
@@ -358,7 +358,7 @@ export default function CreatorMonetization() {
 
             {/* Tabs */}
             <Tabs defaultValue="tiers" className="space-y-6">
-              <TabsList className="bg-stone-800/50 border border-amber-600/20 flex-wrap h-auto p-1">
+              <TabsList className="bg-white/5 backdrop-blur-xl border border-white/10 flex-wrap h-auto p-1">
                 <TabsTrigger value="tiers" className="gap-1">
                   <Crown className="w-4 h-4" /> Tiers
                 </TabsTrigger>
@@ -377,13 +377,13 @@ export default function CreatorMonetization() {
               </TabsList>
 
               <TabsContent value="tiers">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                    <CardTitle className="text-white flex items-center gap-2">
                       <Crown className="w-5 h-5 text-amber-400" />
                       Custom Subscription Tiers
                     </CardTitle>
-                    <p className="text-amber-400/70 text-sm mt-2">
+                    <p className="text-white/50 text-sm mt-2">
                       Create unique tiers with custom names, pricing, and perks
                     </p>
                   </CardHeader>
@@ -398,13 +398,13 @@ export default function CreatorMonetization() {
               </TabsContent>
 
               <TabsContent value="offers">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                    <CardTitle className="text-white flex items-center gap-2">
                       <Zap className="w-5 h-5 text-yellow-400" />
                       Limited Time Offers
                     </CardTitle>
-                    <p className="text-amber-400/70 text-sm mt-2">
+                    <p className="text-white/50 text-sm mt-2">
                       Create flash sales, discounts, and special promotions
                     </p>
                   </CardHeader>
@@ -415,13 +415,13 @@ export default function CreatorMonetization() {
               </TabsContent>
 
               <TabsContent value="tips">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                    <CardTitle className="text-white flex items-center gap-2">
                       <Heart className="w-5 h-5 text-pink-400" />
                       Tip Reward Messages
                     </CardTitle>
-                    <p className="text-amber-400/70 text-sm mt-2">
+                    <p className="text-white/50 text-sm mt-2">
                       Set up custom thank-you messages and rewards for different tip amounts
                     </p>
                   </CardHeader>
@@ -432,13 +432,13 @@ export default function CreatorMonetization() {
               </TabsContent>
 
               <TabsContent value="milestones">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100 flex items-center gap-2">
+                    <CardTitle className="text-white flex items-center gap-2">
                       <Trophy className="w-5 h-5 text-yellow-400" />
                       Milestone Alerts
                     </CardTitle>
-                    <p className="text-amber-400/70 text-sm mt-2">
+                    <p className="text-white/50 text-sm mt-2">
                       Automated celebrations when you hit follower, subscriber, or earning goals
                     </p>
                   </CardHeader>
@@ -449,49 +449,49 @@ export default function CreatorMonetization() {
               </TabsContent>
 
               <TabsContent value="subscribers">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100">Your Subscribers</CardTitle>
+                    <CardTitle className="text-white">Your Subscribers</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {subscribers.length > 0 ? (
                       <div className="space-y-3">
                         {subscribers.map(sub => (
-                          <div key={sub.id} className="flex items-center justify-between p-4 bg-stone-900/50 rounded-xl">
+                          <div key={sub.id} className="flex items-center justify-between p-4 bg-white/[0.04] border border-white/[0.06] rounded-xl">
                             <div>
-                              <p className="text-amber-100 font-medium">{sub.viewer_email}</p>
-                              <p className="text-amber-400/60 text-sm capitalize">{sub.tier} Tier</p>
+                              <p className="text-white font-medium">{sub.viewer_email}</p>
+                              <p className="text-white/40 text-sm capitalize">{sub.tier} Tier</p>
                             </div>
                             <Badge className="bg-green-600/20 text-green-300">${sub.monthly_price}/mo</Badge>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center text-amber-400/60 py-12">No subscribers yet</p>
+                      <p className="text-center text-white/40 py-12">No subscribers yet</p>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="recent-tips">
-                <Card className="bg-stone-800/30 border-amber-600/20">
+                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
                   <CardHeader>
-                    <CardTitle className="text-amber-100">Recent Tips</CardTitle>
+                    <CardTitle className="text-white">Recent Tips</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {tips.length > 0 ? (
                       <div className="space-y-3">
                         {tips.map(tip => (
-                          <div key={tip.id} className="flex items-center justify-between p-4 bg-stone-900/50 rounded-xl">
+                          <div key={tip.id} className="flex items-center justify-between p-4 bg-white/[0.04] border border-white/[0.06] rounded-xl">
                             <div>
-                              <p className="text-amber-100 font-medium">
+                              <p className="text-white font-medium">
                                 {tip.is_anonymous ? '🕶️ Anonymous' : tip.sender_email}
                               </p>
-                              {tip.message && <p className="text-amber-400/70 text-sm">"{tip.message}"</p>}
+                              {tip.message && <p className="text-white/50 text-sm">"{tip.message}"</p>}
                             </div>
                             <div className="text-right">
                               <p className="text-green-400 font-bold text-lg">${(tip.amount_usd || 0).toFixed(2)}</p>
-                              <p className="text-amber-400/60 text-xs">
+                              <p className="text-white/40 text-xs">
                                 {new Date(tip.created_date).toLocaleDateString()}
                               </p>
                             </div>
@@ -499,7 +499,7 @@ export default function CreatorMonetization() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center text-amber-400/60 py-12">No tips received yet</p>
+                      <p className="text-center text-white/40 py-12">No tips received yet</p>
                     )}
                   </CardContent>
                 </Card>

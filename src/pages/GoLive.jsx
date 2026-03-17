@@ -206,7 +206,7 @@ export default function GoLive() {
 
   const isFormValid = title.trim() && category;
   const isAdmin = user?.role === 'admin';
-  const canMonetize = isAdmin || hostSubscription?.status === 'active';
+  const canMonetize = isAdmin || hostSubscription?.status === 'active' || hostSubscription?.admin_activated;
 
   // ── Camera preview UI ──
   if (hasPermissions) {
