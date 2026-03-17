@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Smile, MoreHorizontal, Gift, Swords, ShoppingBag, Heart, Share2, Flag } from 'lucide-react';
+import { MessageCircle, Smile, Gift, ShoppingBag, Share2 } from 'lucide-react';
 
 // TikTok/BIGO Live-style bottom action bar
 // Layout: [Chat input] [emoji] [share] [more]  ...  [shop] [PK] [gift]
