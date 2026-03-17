@@ -379,11 +379,9 @@ export default function WatchStream() {
         )}
       </div>
 
-      {/* ── GRADIENT OVERLAYS ─────────────────────────────────────────── */}
-      {/* Top gradient — for top bar readability */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-10 pointer-events-none" />
-      {/* Bottom gradient — for chat + action bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
+      {/* ── GRADIENT OVERLAYS — TikTok-style subtle fades ───────────── */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pointer-events-none" />
 
       {/* Floating reactions */}
       <FloatingHearts reactions={floatingReactions} />
