@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
 import FraudMonitoringDashboard from '@/components/admin/FraudMonitoringDashboard';
+import GrantMonetization from '@/components/admin/GrantMonetization';
 
 // Authorized admin emails - update these as needed
 // Authorized admin emails - add your admin emails here
@@ -313,7 +314,9 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Users */}
-          <TabsContent value="users">
+          <TabsContent value="users" className="space-y-4">
+            <GrantMonetization adminEmail={user?.email} />
+
             <Card className="bg-white/5 backdrop-blur-sm border-white/10">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-base flex items-center gap-2">
