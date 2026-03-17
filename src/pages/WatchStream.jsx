@@ -430,7 +430,7 @@ export default function WatchStream() {
             <GiftLeaderboard streamId={streamId} compact />
           </div>
 
-          {/* BIGO-style bottom action bar */}
+          {/* TikTok/BIGO-style bottom action bar */}
           <BigoBottomBar
             onChatToggle={() => setShowChat(!showChat)}
             onEmojiClick={(em) => sendMessageMutation.mutate({ message: em, message_type: 'text' })}
@@ -442,6 +442,14 @@ export default function WatchStream() {
             onPKClick={() => toast.info('PK Battle — challenge a creator!')}
             onShopClick={() => navigate(createPageUrl('AffiliateHub'))}
             onInboxClick={() => setShowExpandedLeaderboard(true)}
+            onShareClick={() => {
+              const url = window.location.href;
+              if (navigator.share) {
+                navigator.share({ title: stream.title, url }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {});
+              }
+            }}
             showChat={showChat}
             giftDisabled={!creatorCanReceiveGifts}
             hasPK={stream.stream_type === 'pk_battle'}
