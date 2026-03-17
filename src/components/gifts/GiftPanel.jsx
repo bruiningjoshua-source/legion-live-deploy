@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Plus, Minus, Send, Coins, Zap, Crown, Flame, Heart, Star, Diamond, TrendingUp, Gift } from 'lucide-react';
+import { Sparkles, X, Plus, Minus, Send, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 // TikTok/BIGO-style gift tier config
