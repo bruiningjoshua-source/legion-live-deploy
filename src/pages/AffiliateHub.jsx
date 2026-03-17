@@ -250,7 +250,7 @@ export default function AffiliateHub() {
   const [activeTab, setActiveTab] = useState('Discover');
 
   return (
-    <div className="min-h-screen text-white pt-14 bg-[#09090b]">
+    <div className="min-h-screen text-white pt-14 pb-24">
 
       {/* Header */}
       <div className="sticky top-14 z-40 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.06]">
