@@ -4,12 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Gamepad2, Search, Download, Star, Radio,
-  Play, Trophy, ChevronRight, Cloud, Package,
-  ScreenShare, Smartphone, Monitor, Zap
+  Gamepad2, Search, Star, Radio,
+  Play, ChevronRight,
+  ScreenShare, Smartphone, Monitor, Globe
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PlayableGameModal, { PLAYABLE_GAMES } from '@/components/gaming/PlayableGameModal';
+import ScreenShareSetupModal from '@/components/gaming/ScreenShareSetupModal';
+import GooglePlaySearch, { GOOGLE_PLAY_CATALOG } from '@/components/gaming/GooglePlaySearch';
 
 const GENRE_FILTERS = [
   { id: 'all', label: 'All' },
@@ -52,6 +54,10 @@ function GameCard({ game, onPlay, onStream }) {
       <div className="relative aspect-square bg-gradient-to-br from-stone-900 to-stone-800 overflow-hidden">
         {game.icon_url ? (
           <img src={game.icon_url} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : game._emoji ? (
+          <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-stone-900 to-stone-800">
+            {game._emoji}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Gamepad2 className="w-10 h-10 text-white/10" />
@@ -67,7 +73,7 @@ function GameCard({ game, onPlay, onStream }) {
           )}
           {game.source === 'google_play' && (
             <span className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md">
-              <Cloud className="w-2.5 h-2.5" /> Play Store
+              <Globe className="w-2.5 h-2.5" /> Play Store
             </span>
           )}
         </div>
@@ -125,6 +131,9 @@ export default function GamesExpo() {
   const [tabFilter, setTabFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState(null);
+  const [showScreenShare, setShowScreenShare] = useState(false);
+  const [screenShareGame, setScreenShareGame] = useState(null);
+  const [showGoogleSearch, setShowGoogleSearch] = useState(false);
 
   const { data: games = [] } = useQuery({
     queryKey: ['game-library-all'],
@@ -132,9 +141,11 @@ export default function GamesExpo() {
     staleTime: 10 * 60_000,
   });
 
-  // Merge DB games with built-in playable games that aren't in DB
+  // Merge DB games with built-in playable games and Google Play catalog
   const allGames = useMemo(() => {
     const dbTitles = new Set(games.map(g => g.title?.toLowerCase()));
+
+    // Built-in HTML5 playable games not in DB
     const builtInGames = PLAYABLE_GAMES
       .filter(pg => !dbTitles.has(pg.title.toLowerCase()))
       .map(pg => ({
@@ -147,7 +158,27 @@ export default function GamesExpo() {
         is_active: true,
         _isPlayable: true,
       }));
-    return [...games, ...builtInGames];
+
+    // Google Play catalog games not already in DB
+    const allTitles = new Set([...dbTitles, ...builtInGames.map(g => g.title.toLowerCase())]);
+    const googleGames = GOOGLE_PLAY_CATALOG
+      .filter(pg => !allTitles.has(pg.title.toLowerCase()))
+      .map(pg => ({
+        id: `gplay_${pg.playStoreId}`,
+        title: pg.title,
+        developer: pg.developer,
+        genre: pg.genre,
+        rating: pg.rating,
+        source: 'google_play',
+        source_id: pg.playStoreId,
+        play_store_url: `https://play.google.com/store/apps/details?id=${pg.playStoreId}`,
+        is_streamable: true,
+        requires_screen_share: true,
+        is_active: true,
+        _emoji: pg.icon,
+      }));
+
+    return [...games, ...builtInGames, ...googleGames];
   }, [games]);
 
   const filteredGames = useMemo(() => {
@@ -182,7 +213,14 @@ export default function GamesExpo() {
   }, [allGames, genreFilter, tabFilter, search]);
 
   const handleStream = (game) => {
-    window.location.href = createPageUrl('GoLive') + `?gameTitle=${encodeURIComponent(game.title)}`;
+    setScreenShareGame(game.title);
+    setShowScreenShare(true);
+  };
+
+  const handleGooglePlaySelect = (game) => {
+    setShowGoogleSearch(false);
+    setScreenShareGame(game.title);
+    setShowScreenShare(true);
   };
 
   return (
@@ -196,6 +234,14 @@ export default function GamesExpo() {
               <span className="text-white font-bold text-lg">Games Hub</span>
             </div>
             <div className="flex items-center gap-2">
+              {/* Screen Share — standalone setup */}
+              <button
+                onClick={() => { setScreenShareGame(null); setShowScreenShare(true); }}
+                className="flex items-center gap-1 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold text-[10px] px-2.5 py-1.5 rounded-lg"
+              >
+                <ScreenShare className="w-3 h-3" />
+                Screen Share
+              </button>
               <Link to={createPageUrl('GoLive')}>
                 <button className="flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 font-semibold text-[10px] px-2.5 py-1.5 rounded-lg">
                   <Radio className="w-3 h-3" />
@@ -206,15 +252,24 @@ export default function GamesExpo() {
           </div>
 
           {/* Search */}
-          <div className="flex items-center gap-2 bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 h-9 mb-3">
-            <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search games…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent text-white text-sm placeholder:text-white/30 outline-none flex-1 min-w-0"
-            />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 h-9 flex-1">
+              <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search games…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="bg-transparent text-white text-sm placeholder:text-white/30 outline-none flex-1 min-w-0"
+              />
+            </div>
+            <button
+              onClick={() => setShowGoogleSearch(true)}
+              className="flex items-center gap-1 bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 h-9 text-white/50 hover:text-white text-xs font-medium whitespace-nowrap"
+            >
+              <Globe className="w-3.5 h-3.5 text-green-400" />
+              Play Store
+            </button>
           </div>
 
           {/* Tab filters */}
@@ -257,21 +312,28 @@ export default function GamesExpo() {
         </div>
       </div>
 
-      {/* Hero — How to stream mobile games */}
+      {/* Hero — How to stream games */}
       <div className="px-4 pt-4 pb-5">
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-red-900/40 via-amber-900/20 to-purple-900/30 border border-white/[0.08] p-5">
           <div className="absolute -top-8 -right-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl" />
           <div className="relative z-10">
             <h2 className="text-white font-black text-xl mb-2 flex items-center gap-2">
-              <ScreenShare className="w-5 h-5 text-red-400" />
+              <ScreenShare className="w-5 h-5 text-green-400" />
               Stream Any Game
             </h2>
             <p className="text-white/50 text-sm mb-4">
               Use screen share to broadcast mobile or desktop gameplay directly to your live stream.
             </p>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => { setScreenShareGame(null); setShowScreenShare(true); }}
+                className="flex items-center gap-1.5 bg-green-500/15 border border-green-500/25 rounded-lg px-3 py-1.5 text-xs text-green-400 font-semibold hover:bg-green-500/25 transition-colors"
+              >
+                <ScreenShare className="w-3.5 h-3.5" />
+                Start Screen Share
+              </button>
               <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white/60">
-                <Smartphone className="w-3.5 h-3.5 text-green-400" />
+                <Smartphone className="w-3.5 h-3.5 text-amber-400" />
                 Mobile Games
               </div>
               <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white/60">
@@ -279,7 +341,7 @@ export default function GamesExpo() {
                 PC Games
               </div>
               <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white/60">
-                <Play className="w-3.5 h-3.5 text-amber-400" />
+                <Play className="w-3.5 h-3.5 text-purple-400" />
                 HTML5 Games
               </div>
             </div>
@@ -318,6 +380,26 @@ export default function GamesExpo() {
           onClose={() => setSelectedGame(null)}
         />
       )}
+
+      {/* Screen Share Setup Modal */}
+      <AnimatePresence>
+        {showScreenShare && (
+          <ScreenShareSetupModal
+            gameTitle={screenShareGame}
+            onClose={() => { setShowScreenShare(false); setScreenShareGame(null); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Google Play Search Modal */}
+      <AnimatePresence>
+        {showGoogleSearch && (
+          <GooglePlaySearch
+            onSelectGame={handleGooglePlaySelect}
+            onClose={() => setShowGoogleSearch(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
