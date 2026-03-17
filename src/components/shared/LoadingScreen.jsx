@@ -287,10 +287,10 @@ export default function LoadingScreen({ onComplete }) {
                                 className="flex flex-col items-center"
                               >
                                 <div 
-                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                  className="w-14 h-14 rounded-2xl bg-black border border-red-600/30 flex items-center justify-center"
                                   style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
                                 >
-                                  <Icon className="w-7 h-7 text-white" />
+                                  <Icon className="w-7 h-7 text-red-500" />
                                 </div>
                                 <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
                               </motion.div>
@@ -318,10 +318,10 @@ export default function LoadingScreen({ onComplete }) {
                                 className="flex flex-col items-center"
                               >
                                 <div 
-                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}
+                                  className="w-14 h-14 rounded-2xl bg-black border border-red-600/30 flex items-center justify-center"
                                   style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
                                 >
-                                  <Icon className="w-7 h-7 text-white" />
+                                  <Icon className="w-7 h-7 text-red-500" />
                                 </div>
                                 <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
                               </motion.div>

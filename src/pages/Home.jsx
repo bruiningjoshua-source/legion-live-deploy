@@ -76,17 +76,14 @@ function HubIcon({ hub }) {
         whileTap={{ scale: 0.92 }}
         className="flex flex-col items-center gap-2 group"
       >
-        {/* Icon bubble */}
+        {/* Icon bubble — black with crimson icon */}
         <div
-          className="w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105"
+          className="w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105 bg-black border border-red-600/30"
           style={{
-            background: `linear-gradient(145deg, ${hub.color}dd, ${hub.color}88)`,
-            boxShadow: `0 8px 24px ${hub.glow}, 0 0 0 1px ${hub.color}40`,
+            boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(220,38,38,0.2)`,
           }}
         >
-          {/* Shine overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-[22px]" />
-          <Icon className="w-7 h-7 text-white relative z-10 drop-shadow-sm" />
+          <Icon className="w-7 h-7 text-red-500 relative z-10 drop-shadow-sm" />
         </div>
         {/* Label */}
         <div className="text-center">
