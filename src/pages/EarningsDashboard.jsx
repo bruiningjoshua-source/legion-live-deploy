@@ -68,7 +68,8 @@ export default function EarningsDashboard() {
 
   const freeTierEarningsUsd = (recentTips?.reduce((sum, t) => sum + ((t.total_as_value || 0) / 65), 0) || 0);
   const freeTierMonthlyLimit = 86; // ~$20/week
-  const hasMonetization = !!creatorSubs; // True if has active creator monetization sub
+  const isAdmin = user?.role === 'admin';
+  const hasMonetization = isAdmin || !!creatorSubs; // Admins always have access
   const exceedsFreeLimit = !hasMonetization && freeTierEarningsUsd > freeTierMonthlyLimit;
 
   const walletData = wallet?.[0];
