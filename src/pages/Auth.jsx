@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase/supabaseCore';
 
-export default function Auth() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -13,7 +13,6 @@ export default function Auth() {
     setLoading(true);
     setError('');
     setMessage('');
-
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
@@ -39,7 +38,6 @@ export default function Auth() {
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
           </p>
         </div>
-
         <div className="space-y-4">
           <input
             type="email"
@@ -55,14 +53,8 @@ export default function Auth() {
             onChange={e => setPassword(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-amber-500"
           />
-
-          {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
-          )}
-          {message && (
-            <p className="text-green-400 text-sm text-center">{message}</p>
-          )}
-
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          {message && <p className="text-green-400 text-sm text-center">{message}</p>}
           <button
             onClick={handleSubmit}
             disabled={loading}
@@ -70,7 +62,6 @@ export default function Auth() {
           >
             {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
-
           <button
             onClick={() => setIsSignUp(!isSignUp)}
             className="w-full text-white/40 text-sm text-center"
