@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabaseCore';
 
 export default function Login() {
@@ -8,29 +7,36 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
-    setMessage('');
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage('Account created successfully. You are now signed in.');
-        navigate('/');
+        if (data.session) {
+          window.location.href = '/';
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate('/');
+        if (data.session) {
+          window.location.href = '/';
+        }
       }
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) setError(error.message);
   };
 
   return (
@@ -58,13 +64,18 @@ export default function Login() {
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-amber-500"
           />
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-          {message && <p className="text-green-400 text-sm text-center">{message}</p>}
           <button
             onClick={handleSubmit}
             disabled={loading}
             className="w-full py-3 rounded-xl bg-amber-500 text-black font-bold text-sm hover:bg-amber-400 transition-colors disabled:opacity-50"
           >
             {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+          </button>
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-100 transition-colors"
+          >
+            Continue with Google
           </button>
           <button
             onClick={() => setIsSignUp(!isSignUp)}
