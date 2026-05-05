@@ -73,9 +73,9 @@ export default function Login() {
           </button>
           <button
             onClick={handleGoogleSignIn}
-            className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-100 transition-colors"
+            className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
           >
-            Continue with Google
+            <span>G</span> Continue with Google
           </button>
           <button
             onClick={() => setIsSignUp(!isSignUp)}
