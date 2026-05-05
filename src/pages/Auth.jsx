@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabaseCore';
 
 export default function Login() {
@@ -8,6 +9,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -18,9 +20,11 @@ export default function Login() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         setMessage('Account created successfully. You are now signed in.');
+        navigate('/');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        navigate('/');
       }
     } catch (err) {
       setError(err.message);
