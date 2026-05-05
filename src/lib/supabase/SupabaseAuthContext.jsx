@@ -9,7 +9,12 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoadingAuth(false);
+    }, 5000);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
       if (session?.user) {
         loadUser(session.user);
       } else {
@@ -29,7 +34,10 @@ export const AuthProvider = ({ children }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadUser = async (authUser) => {
