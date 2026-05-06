@@ -74,6 +74,8 @@ export default function WatchStream() {
   const { data: initialMessages } = useChatMessages(streamId);
   const { data: isFollowing } = useFollowStatus(user?.email, creator?.id);
   const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
+  const toggleFollowMutation = useToggleFollow(user?.email, creator?.id);
+  const endStreamMutation = useEndStream(streamId, creator?.id, navigate);
 
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || creatorSubscription?.admin_activated || (creator?.user_email === user?.email && user?.role === 'admin');
   const isHost = user?.email === creator?.user_email;
