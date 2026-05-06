@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RemixStudio from '@/components/music/RemixStudio';
+import StudioAudioEditor from '@/components/podcast/StudioAudioEditor';
+import { Globe } from 'lucide-react';
 
 const genres = [
   { value: 'electronic', label: 'Electronic' },
@@ -168,7 +170,7 @@ export default function MusicStudio() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-3">
+          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-4">
             <TabsTrigger value="upload" className="data-[state=active]:bg-amber-600">
               <Upload className="w-4 h-4 mr-2" />
               Upload
@@ -180,6 +182,14 @@ export default function MusicStudio() {
             <TabsTrigger value="remix" className="data-[state=active]:bg-amber-600">
               <Zap className="w-4 h-4 mr-2" />
               Remix Studio
+            </TabsTrigger>
+            <TabsTrigger value="daw" className="data-[state=active]:bg-amber-600">
+              <Music className="w-4 h-4 mr-2" />
+              DAW Editor
+            </TabsTrigger>
+            <TabsTrigger value="distribute" className="data-[state=active]:bg-amber-600">
+              <Globe className="w-4 h-4 mr-2" />
+              Distribute
             </TabsTrigger>
           </TabsList>
 
@@ -449,6 +459,68 @@ export default function MusicStudio() {
             <RemixStudio onRecordingComplete={(recording) => {
               console.log('Recording complete:', recording);
             }} />
+          </TabsContent>
+
+          <TabsContent value="daw" className="mt-6">
+            {myMusic.length > 0 ? (
+              <div className="space-y-4">
+                <p className="text-amber-200/60 text-sm">Select a track from your library to edit in the DAW</p>
+                {myMusic.map(track => (
+                  <div key={track.id} className="bg-stone-800/30 border border-amber-600/20 rounded-xl p-4">
+                    <p className="text-amber-100 font-semibold mb-3">{track.title}</p>
+                    {track.audio_url && <StudioAudioEditor audioUrl={track.audio_url} onExport={(url) => {
+                      publishMutation.mutate(track.id);
+                    }} />}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-stone-800/30 rounded-lg border border-amber-600/20">
+                <Music className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
+                <h3 className="text-amber-100 font-semibold text-lg mb-2">No tracks to edit</h3>
+                <p className="text-amber-400/60">Upload a track first to open it in the DAW editor</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="distribute" className="mt-6">
+            <div className="space-y-4">
+              <div className="bg-stone-800/30 border border-amber-600/20 rounded-xl p-6">
+                <h3 className="text-amber-100 font-bold text-lg mb-2">Distribute Your Music</h3>
+                <p className="text-amber-400/60 text-sm mb-6">Push your published tracks to major streaming platforms</p>
+                <div className="space-y-3">
+                  {[
+                    { name: 'Spotify', color: '#1db954', desc: 'World\'s largest streaming platform', emoji: '🟢' },
+                    { name: 'Apple Music', color: '#fc3c44', desc: 'Reach 1 billion Apple users', emoji: '🍎' },
+                    { name: 'YouTube Music', color: '#ff0000', desc: 'Largest music video platform', emoji: '▶️' },
+                    { name: 'Amazon Music', color: '#00a8e1', desc: 'Alexa and Prime integration', emoji: '📦' },
+                    { name: 'Tidal', color: '#00ffff', desc: 'Hi-fi lossless streaming', emoji: '🌊' },
+                    { name: 'Deezer', color: '#a238ff', desc: '16 million tracks worldwide', emoji: '🎵' },
+                    { name: 'SoundCloud', color: '#ff5500', desc: 'Independent artist platform', emoji: '☁️' },
+                    { name: 'TikTok Music', color: '#010101', desc: 'Viral music discovery', emoji: '🎶' },
+                  ].map(platform => (
+                    <div key={platform.name} className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02]">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{platform.emoji}</span>
+                        <div>
+                          <p className="text-white font-medium text-sm">{platform.name}</p>
+                          <p className="text-white/30 text-xs">{platform.desc}</p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-1.5 rounded-full text-xs font-bold border transition-all"
+                        style={{ borderColor: platform.color + '60', color: platform.color, backgroundColor: platform.color + '15' }}
+                        onClick={() => alert(`Distribution to ${platform.name} requires a DistroKid or TuneCore account. Connect your account in Settings to enable automatic distribution.`)}>
+                        Connect
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                  <p className="text-amber-200 text-xs font-semibold mb-1">💡 How distribution works</p>
+                  <p className="text-amber-200/60 text-xs">Connect your DistroKid or TuneCore account in Settings. Once connected, published tracks automatically distribute to all selected platforms within 24-48 hours. You keep 100% of your royalties.</p>
+                </div>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
