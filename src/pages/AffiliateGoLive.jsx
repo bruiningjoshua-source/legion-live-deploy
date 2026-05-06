@@ -107,6 +107,7 @@ export default function AffiliateGoLive() {
         partner_id: partner.id,
         campaign_id: selectedCampaignId,
         title: streamTitle,
+        platform_type: 'affiliate_marketplace',
         status: 'live',
         started_at: new Date().toISOString()
       });
