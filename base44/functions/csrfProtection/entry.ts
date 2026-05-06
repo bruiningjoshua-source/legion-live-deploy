@@ -1,10 +1,14 @@
 /**
  * CSRF PROTECTION
- * Token generation and validation
+ * Token generation and validation — DB-persisted via wallet_audit_logs
  */
 
-const sessionTokens = new Map(); // sessionId -> { token, email, expiresAt }
-const TOKEN_EXPIRY = 3600000; // 1 hour
+import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL'),
+  Deno.env.get('SUPABASE_SERVICE_KEY')
+);
 
 function generateSecureToken(length = 32) {
   const array = new Uint8Array(length);
@@ -12,41 +16,43 @@ function generateSecureToken(length = 32) {
   return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function generateCSRFToken(sessionId, email) {
-  const token = generateSecureToken(32);
-  const expiresAt = Date.now() + TOKEN_EXPIRY;
-
-  sessionTokens.set(sessionId, {
-    token,
-    email,
-    expiresAt
+async function storeCSRFToken(token, userEmail) {
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  await supabaseAdmin.from('wallet_audit_logs').insert({
+    user_email: userEmail,
+    action: 'rate_limit_check',
+    amount_denarii: 0,
+    new_balance: 0,
+    reason: `csrf_token:${token}`,
+    timestamp_utc: new Date().toISOString(),
   });
+}
 
+async function validateCSRFToken(token, userEmail) {
+  const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const { data } = await supabaseAdmin
+    .from('wallet_audit_logs')
+    .select('id')
+    .eq('user_email', userEmail)
+    .eq('action', 'rate_limit_check')
+    .like('reason', `csrf_token:${token}`)
+    .gte('timestamp_utc', cutoff)
+    .limit(1);
+  return (data?.length || 0) > 0;
+}
+
+export async function generateCSRFToken(sessionId, email) {
+  const token = generateSecureToken(32);
+  await storeCSRFToken(token, email);
   return token;
 }
 
-export function validateCSRFToken(sessionId, token, email) {
-  const stored = sessionTokens.get(sessionId);
+export async function validateCSRFTokenForSession(sessionId, token, email) {
+  const isValid = await validateCSRFToken(token, email);
 
-  if (!stored) {
-    return { valid: false, reason: 'No CSRF token found for session' };
+  if (!isValid) {
+    return { valid: false, reason: 'CSRF token invalid or expired' };
   }
-
-  if (Date.now() > stored.expiresAt) {
-    sessionTokens.delete(sessionId);
-    return { valid: false, reason: 'CSRF token expired' };
-  }
-
-  if (stored.email !== email) {
-    return { valid: false, reason: 'CSRF token email mismatch' };
-  }
-
-  if (stored.token !== token) {
-    return { valid: false, reason: 'CSRF token invalid' };
-  }
-
-  // Invalidate token after use
-  sessionTokens.delete(sessionId);
 
   return { valid: true };
 }
@@ -60,13 +66,3 @@ export function getCookie(cookieHeader, name) {
   }
   return null;
 }
-
-// Cleanup expired tokens every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [sessionId, data] of sessionTokens) {
-    if (now > data.expiresAt) {
-      sessionTokens.delete(sessionId);
-    }
-  }
-}, 600000);
