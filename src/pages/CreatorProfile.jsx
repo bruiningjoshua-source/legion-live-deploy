@@ -32,6 +32,7 @@ import TipButton from '@/components/stream/TipButton';
 import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
 import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
 import DirectMessaging from '@/components/community/DirectMessaging';
+import CreatorStorefront from '@/components/affiliate/CreatorStorefront';
 
 export default function CreatorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -475,6 +476,16 @@ export default function CreatorProfile() {
             )}
           </TabsContent>
         </Tabs>
+
+        {creator && (
+          <div className="mt-6">
+            <CreatorStorefront
+              creatorId={creator.id}
+              creatorEmail={creator.user_email}
+              displayName={creator.display_name || 'Creator'}
+            />
+          </div>
+        )}
 
         {/* Direct Messaging Modal */}
         <DirectMessaging 
