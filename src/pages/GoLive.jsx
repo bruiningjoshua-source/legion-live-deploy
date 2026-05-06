@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X, ScreenShare } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
+import LegionAREngine from '@/components/stream/LegionAREngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
@@ -371,6 +372,11 @@ export default function GoLive() {
         <AnimatePresence>
           {showBeauty && <BeautyFilter videoRef={videoRef} />}
         </AnimatePresence>
+
+        <LegionAREngine
+          videoRef={videoRef}
+          isLive={!!goLiveMutation.data}
+        />
       </div>
     );
   }
