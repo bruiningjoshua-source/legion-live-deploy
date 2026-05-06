@@ -535,6 +535,24 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
+      {stream?.stream_type === 'pk_battle' && pkBattle && (
+        <PKBattleOverlay
+          streamId={streamId}
+          hostCreator={creator}
+          opponentCreator={opponentCreator}
+          initialBattle={pkBattle}
+          isBroadcaster={isHost}
+        />
+      )}
+
+      {stream?.stream_type === 'multi_panel' && (
+        <BigoMultiPanel
+          streamId={streamId}
+          isHost={isHost}
+          hostCreator={creator}
+        />
+      )}
+
       {giftAnimation && <GiftAnimation gift={giftAnimation} />}
 
       {showEndDialog && (
