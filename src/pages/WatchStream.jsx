@@ -38,6 +38,7 @@ import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
 import ViewerLotto from '@/components/stream/ViewerLotto';
+import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -551,6 +552,10 @@ export default function WatchStream() {
           isHost={isHost}
           hostCreator={creator}
         />
+      )}
+
+      {stream?.platform_type === 'affiliate_marketplace' && !isHost && (
+        <ViewerAuctionWidget streamId={streamId} user={user} />
       )}
 
       {giftAnimation && <GiftAnimation gift={giftAnimation} />}
