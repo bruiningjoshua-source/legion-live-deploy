@@ -22,9 +22,11 @@ import {
   X,
   Eye,
   Trash2,
-  Film
+  Film,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import RemixStudio from '@/components/music/RemixStudio';
 
 const genres = [
   { value: 'electronic', label: 'Electronic' },
@@ -166,7 +168,7 @@ export default function MusicStudio() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-2">
+          <TabsList className="bg-stone-800/50 border border-amber-600/20 w-full grid grid-cols-3">
             <TabsTrigger value="upload" className="data-[state=active]:bg-amber-600">
               <Upload className="w-4 h-4 mr-2" />
               Upload
@@ -174,6 +176,10 @@ export default function MusicStudio() {
             <TabsTrigger value="library" className="data-[state=active]:bg-amber-600">
               <Music className="w-4 h-4 mr-2" />
               My Library
+            </TabsTrigger>
+            <TabsTrigger value="remix" className="data-[state=active]:bg-amber-600">
+              <Zap className="w-4 h-4 mr-2" />
+              Remix Studio
             </TabsTrigger>
           </TabsList>
 
@@ -437,6 +443,12 @@ export default function MusicStudio() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="remix" className="mt-6">
+            <RemixStudio onRecordingComplete={(recording) => {
+              console.log('Recording complete:', recording);
+            }} />
           </TabsContent>
         </Tabs>
       </div>
