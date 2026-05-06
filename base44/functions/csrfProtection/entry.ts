@@ -6,17 +6,14 @@
 const sessionTokens = new Map(); // sessionId -> { token, email, expiresAt }
 const TOKEN_EXPIRY = 3600000; // 1 hour
 
-function generateRandomString(length = 32) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+function generateSecureToken(length = 32) {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function generateCSRFToken(sessionId, email) {
-  const token = generateRandomString(32);
+  const token = generateSecureToken(32);
   const expiresAt = Date.now() + TOKEN_EXPIRY;
 
   sessionTokens.set(sessionId, {

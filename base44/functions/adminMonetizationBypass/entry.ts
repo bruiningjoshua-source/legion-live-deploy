@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-const ADMIN_EMAILS = ['admin@legionlive.io', 'support@legionlive.io', 'inthestixproductions@gmail.com', 'muggabuckerpro@gmail.com', 'rankincadence@gmail.com'];
+const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || '').split(',').map(e => e.trim()).filter(Boolean);
 
 Deno.serve(async (req) => {
   try {

@@ -1,11 +1,47 @@
 /**
  * FRAUD DETECTION SYSTEM
  * Detect velocity abuse, chargeback patterns, suspicious behavior
+ * Uses database persistence via WalletAuditLog so state survives cold starts
  */
 
-const userActivity = new Map(); // email -> { gifts: [], tips: [], chargebacks: [] }
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-export async function detectFraud(email, activityType, amount, externalData = {}) {
+// In-memory cache (warm layer); DB is the source of truth on cold start
+const userActivity = new Map();
+let cacheWarmed = false;
+
+async function warmCache(base44) {
+  if (cacheWarmed) return;
+  try {
+    const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
+    const logs = await base44.asServiceRole.entities.WalletAuditLog.filter(
+      { action: 'fraud_flag' },
+      '-timestamp_utc',
+      200
+    );
+    for (const log of logs) {
+      if (!log.user_email) continue;
+      try {
+        const data = JSON.parse(log.related_entity_id || '{}');
+        if (!userActivity.has(log.user_email)) {
+          userActivity.set(log.user_email, { gifts: [], tips: [], chargebacks: [] });
+        }
+        const activity = userActivity.get(log.user_email);
+        const ts = new Date(log.timestamp_utc || log.created_date).getTime();
+        if (data.type === 'gift') activity.gifts.push({ amount: data.amount || 0, timestamp: ts });
+        if (data.type === 'tip') activity.tips.push({ amount: data.amount || 0, timestamp: ts });
+        if (data.type === 'chargeback') activity.chargebacks.push({ timestamp: ts });
+      } catch (e) { /* skip malformed entries */ }
+    }
+    cacheWarmed = true;
+  } catch (e) {
+    console.warn('[fraudDetection] Cache warm failed:', e.message);
+  }
+}
+
+export async function detectFraud(email, activityType, amount, externalData = {}, base44 = null) {
+  if (base44) await warmCache(base44);
+
   if (!userActivity.has(email)) {
     userActivity.set(email, { gifts: [], tips: [], chargebacks: [] });
   }
@@ -22,22 +58,19 @@ export async function detectFraud(email, activityType, amount, externalData = {}
   if (activityType === 'gift') {
     const recentGifts = activity.gifts.filter(t => t.timestamp > oneHourAgo);
 
-    // Flag: 10+ gifts in 1 hour
     if (recentGifts.length >= 10) {
       riskScore += 30;
       flags.push('excessive_gift_velocity_1h');
     }
 
-    // Flag: 50+ gifts in 24 hours
     const last24Gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo);
     if (last24Gifts.length >= 50) {
       riskScore += 20;
       flags.push('excessive_gift_velocity_24h');
     }
 
-    // Log gift
     activity.gifts.push({ amount, timestamp: now });
-    activity.gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo); // Keep 24h
+    activity.gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo);
   }
 
   // ── TIP VELOCITY CHECK ──
@@ -45,13 +78,11 @@ export async function detectFraud(email, activityType, amount, externalData = {}
     const recentTips = activity.tips.filter(t => t.timestamp > oneHourAgo);
     const totalRecentTips = recentTips.reduce((sum, t) => sum + t.amount, 0);
 
-    // Flag: $500+ tips in 1 hour
     if (totalRecentTips >= 500) {
       riskScore += 35;
       flags.push('high_tip_velocity_1h');
     }
 
-    // Flag: $1000+ tips in 24 hours
     const last24Tips = activity.tips.filter(t => t.timestamp > oneDayAgo);
     const total24Tips = last24Tips.reduce((sum, t) => sum + t.amount, 0);
     if (total24Tips >= 1000) {
@@ -59,7 +90,6 @@ export async function detectFraud(email, activityType, amount, externalData = {}
       flags.push('high_tip_velocity_24h');
     }
 
-    // Flag: Single tip > $5000
     if (amount > 5000) {
       riskScore += 15;
       flags.push('high_single_tip_amount');
@@ -73,7 +103,6 @@ export async function detectFraud(email, activityType, amount, externalData = {}
   if (activityType === 'chargeback') {
     activity.chargebacks.push({ timestamp: now });
 
-    // Flag: 2+ chargebacks in 30 days
     const last30Days = activity.chargebacks.filter(t => t.timestamp > now - 2592000000).length;
     if (last30Days >= 2) {
       riskScore += 50;
@@ -95,6 +124,19 @@ export async function detectFraud(email, activityType, amount, externalData = {}
     flags.push('new_account_high_spending');
   }
 
+  // Persist to DB so state survives cold starts
+  if (base44 && (riskScore > 0 || flags.length > 0)) {
+    base44.asServiceRole.entities.WalletAuditLog.create({
+      user_email: email,
+      action: 'fraud_flag',
+      amount_denarii: Math.floor(amount * 180),
+      new_balance: 0,
+      related_entity_id: JSON.stringify({ type: activityType, amount, riskScore }),
+      reason: `Fraud check: score ${riskScore} | ${flags.join(', ') || 'clean'}`,
+      timestamp_utc: new Date().toISOString()
+    }).catch(e => console.warn('[fraudDetection] Audit write failed:', e.message));
+  }
+
   return {
     isSuspicious: riskScore >= 50,
     riskScore: Math.min(100, riskScore),
@@ -109,7 +151,7 @@ setInterval(() => {
   for (const [email, activity] of userActivity) {
     activity.gifts = activity.gifts.filter(t => t.timestamp > oneDayAgo);
     activity.tips = activity.tips.filter(t => t.timestamp > oneDayAgo);
-    activity.chargebacks = activity.chargebacks.filter(t => t.timestamp > oneDayAgo - 1728000000); // 20 days for chargebacks
+    activity.chargebacks = activity.chargebacks.filter(t => t.timestamp > oneDayAgo - 1728000000);
     
     if (activity.gifts.length === 0 && activity.tips.length === 0 && activity.chargebacks.length === 0) {
       userActivity.delete(email);

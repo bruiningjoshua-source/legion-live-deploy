@@ -4,22 +4,18 @@
  * Ensures request integrity by signing with timestamp + payload
  */
 
-export function generateRequestSignature(payload, email, timestamp) {
-  // Simple hash-based signature (frontend only — backend validation is more robust)
-  // In production, you'd use HMAC with a shared secret
+export async function generateRequestSignature(payload, email, timestamp) {
   const message = `${email}:${timestamp}:${JSON.stringify(payload)}`;
-  let hash = 0;
-  for (let i = 0; i < message.length; i++) {
-    const char = message.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 32bit integer
-  }
-  return Math.abs(hash).toString(16).padStart(16, '0');
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function createSignedRequest(payload, email) {
+export async function createSignedRequest(payload, email) {
   const timestamp = Date.now();
-  const signature = generateRequestSignature(payload, email, timestamp);
+  const signature = await generateRequestSignature(payload, email, timestamp);
   
   return {
     ...payload,

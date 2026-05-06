@@ -3,29 +3,41 @@
  * Verify request origin and integrity
  */
 
-export function generateRequestSignature(payload, email, timestamp, secret) {
+async function signRequest(payload, secret) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const messageData = encoder.encode(payload);
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', key, messageData);
+  const hashArray = Array.from(new Uint8Array(signature));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyRequest(payload, signature, secret) {
+  const expected = await signRequest(payload, secret);
+  if (expected.length !== signature.length) return false;
+  let result = 0;
+  for (let i = 0; i < expected.length; i++) {
+    result |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+export async function generateRequestSignature(payload, email, timestamp, secret) {
   const appId = Deno.env.get('BASE44_APP_ID') || 'legion';
   const message = `${appId}:${email}:${timestamp}:${JSON.stringify(payload)}:${secret}`;
-  
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  
-  // Use Deno's Crypto API synchronously via hash
-  return hashSync(message);
+  return await signRequest(message, secret);
 }
 
-// Simple hash function (not cryptographically secure, use for verification only)
-function hashSync(message) {
-  let hash = 0;
-  for (let i = 0; i < message.length; i++) {
-    const char = message.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(16);
-}
-
-export function validateRequestSignature(payload, email, timestamp, providedSignature, secret) {
+export async function validateRequestSignature(payload, email, timestamp, providedSignature, secret) {
   // Verify timestamp is recent (within 5 minutes)
   const requestTime = parseInt(timestamp);
   const now = Date.now();
@@ -38,10 +50,12 @@ export function validateRequestSignature(payload, email, timestamp, providedSign
     };
   }
 
-  // Verify signature
-  const expectedSignature = generateRequestSignature(payload, email, timestamp, secret);
+  // Verify signature using constant-time comparison
+  const appId = Deno.env.get('BASE44_APP_ID') || 'legion';
+  const message = `${appId}:${email}:${timestamp}:${JSON.stringify(payload)}:${secret}`;
+  const isValid = await verifyRequest(message, providedSignature, secret);
   
-  if (expectedSignature !== providedSignature) {
+  if (!isValid) {
     return {
       valid: false,
       reason: 'Request signature verification failed'

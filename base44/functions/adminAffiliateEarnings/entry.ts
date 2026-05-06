@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-const CEO_AFFILIATES = ['rankincadence@gmail.com'];
+const CEO_AFFILIATES = (Deno.env.get('CEO_AFFILIATE_EMAILS') || '').split(',').map(e => e.trim()).filter(Boolean);
 const PLATFORM_CUT = 0.10; // 10% to platform
 const CEO_CUT = 0.90; // 90% to CEO admin
 
