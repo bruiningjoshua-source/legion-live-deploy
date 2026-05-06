@@ -28,6 +28,10 @@ const AuthenticatedApp = () => {
     );
   }
 
+  if (!isAuthenticated) {
+    return <Auth />;
+  }
+
   return (
     <Routes>
       <Route path="/" element={
