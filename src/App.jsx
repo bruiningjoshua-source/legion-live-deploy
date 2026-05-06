@@ -28,7 +28,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && window.location.pathname === '/login') {
     return <Auth />;
   }
 
