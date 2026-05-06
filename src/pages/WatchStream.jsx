@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Sparkles, Users, ScreenShare } from 'lucide-react';
+import { Radio, X, Shield, Sparkles, Users, ScreenShare, Gift } from 'lucide-react';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -311,371 +311,251 @@ export default function WatchStream() {
 
   // ── MAIN RENDER ────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden" style={{ width: '100vw', height: '100vh' }}>
+    <div className="fixed inset-0 bg-black z-40 overflow-hidden">
+      {/* FULL SCREEN VIDEO */}
+      <video
+        ref={videoRef}
+        autoPlay playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      />
 
-      {/* Gift Animation */}
-      <AnimatePresence>
-        {giftAnimation && (
-          <GiftAnimation
-            gift={giftAnimation.gift} sender={giftAnimation.sender}
-            quantity={giftAnimation.quantity} onComplete={() => setGiftAnimation(null)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Top gradient */}
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
 
-      {/* ── VIDEO LAYER ───────────────────────────────────────────────── */}
-      <div className="absolute inset-0 bg-black">
-        <div className="relative w-full h-full">
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            autoPlay playsInline muted
-            poster={stream.thumbnail_url}
-            controls={false}
-            style={isHost ? { transform: 'scaleX(-1)' } : undefined}
-            onDoubleClick={handleDoubleTap}
-          />
+      {/* Bottom gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10 pointer-events-none" />
 
-          {stream.stream_type === 'multi_panel' && (
-            <div className="absolute inset-0 z-10 flex flex-col">
-              {/* BIGO-style top ~55% panel grid */}
-              <div style={{ height: '55%' }}>
-                <BigoMultiPanel
-                  hostStream={stream}
-                  hostCreator={creator}
-                  currentUser={user}
-                  panelParticipants={stream.panel_creators || []}
-                  onInviteToPanel={() => setShowCoStreamPanel(true)}
-                    onLeaveCall={() => navigate(createPageUrl('Explore'))}
-                    isHost={isHost}
-                  layout="grid"
-                  maxParticipants={4}
-                />
+      {/* ── TOP BAR ── */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3"
+        style={{ paddingTop: 'max(14px, env(safe-area-inset-top))' }}>
+
+        {/* Left: back + creator info */}
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(createPageUrl('Home'))}
+            className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center shrink-0">
+            <X className="w-4 h-4 text-white" />
+          </button>
+          {creator && (
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur border border-white/10 rounded-full pl-1 pr-3 py-1">
+              <img
+                src={creator.avatar_url || '/default-avatar.png'}
+                className="w-7 h-7 rounded-full object-cover border border-white/20"
+                onError={e => e.target.src = '/default-avatar.png'}
+              />
+              <div>
+                <p className="text-white text-xs font-bold leading-none">{creator.display_name || 'Creator'}</p>
+                <p className="text-white/40 text-[9px] leading-none mt-0.5">{creator.follower_count || 0} followers</p>
               </div>
-              {/* Bottom ~45% is transparent for chat + action bar */}
-              <div className="flex-1 pointer-events-none" />
-            </div>
-          )}
-
-          {stream.stream_type === 'pk_battle' && (
-            <div className="absolute inset-0 z-10" style={{ pointerEvents: 'none' }}>
-              <ErrorBoundary label="pk-overlay" inline>
-                <PKBattleOverlay
-                  streamId={streamId} hostCreator={creator} opponentCreator={opponentCreator}
-                  initialBattle={pkBattle} isHost={isHost}
-                />
-              </ErrorBoundary>
+              {!isHost && (
+                <button onClick={() => followMutation?.mutate()}
+                  className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-bold border transition-all ${
+                    isFollowing
+                      ? 'bg-transparent border-white/20 text-white/50'
+                      : 'bg-amber-500 border-amber-500 text-black'
+                  }`}>
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
             </div>
           )}
         </div>
 
-        {!liveStream && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-5">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-white/50 text-sm">Connecting to stream...</p>
-            </div>
+        {/* Right: viewer count + live badge */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full px-2.5 py-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-white text-xs font-bold">LIVE</span>
+            <span className="text-white/50 text-xs">·</span>
+            <Users className="w-3 h-3 text-white/60" />
+            <span className="text-white/80 text-xs">{stream?.viewer_count || 0}</span>
+          </div>
+          {isHost && (
+            <button onClick={() => setShowEndDialog(true)}
+              className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+              <X className="w-4 h-4 text-red-400" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── GIFT LEADERBOARD (top right below top bar) ── */}
+      <div className="absolute z-20 right-3"
+        style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 52px)' }}>
+        <GiftLeaderboard streamId={streamId} onExpand={() => setShowExpandedLeaderboard(true)} />
+      </div>
+
+      {/* ── STREAM TITLE (left side, below creator bar) ── */}
+      <div className="absolute z-20 left-3"
+        style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 52px)' }}>
+        {stream?.title && (
+          <div className="max-w-[180px]">
+            <p className="text-white text-xs font-semibold leading-tight line-clamp-2 drop-shadow">{stream.title}</p>
+            {stream.category && (
+              <span className="text-amber-400 text-[9px] font-medium uppercase tracking-wider">{stream.category}</span>
+            )}
           </div>
         )}
       </div>
 
-      {/* ── GRADIENT OVERLAYS — TikTok-style subtle fades ───────────── */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pointer-events-none" />
-
-      {/* Floating reactions */}
-      <FloatingHearts reactions={floatingReactions} />
-
-      {/* ── VIEWER UI ─────────────────────────────────────────────────── */}
-      {!isHost && (
-        <>
-          {/* Top bar */}
-          <ViewerTopBar
-            creator={creator} stream={stream}
-            isFollowing={isFollowing}
-            onFollowClick={() => followMutation.mutate()}
-            onClose={() => navigate(createPageUrl('Home'))}
-            viewerCount={stream.viewer_count || 0}
-            userVipPoints={userVipPoints}
-          />
-
-          {/* Wallet — top right */}
-          {wallet && (
-            <div className="absolute top-3 right-14 z-30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-              <ViewerWallet denariiBalance={wallet.denarii_balance || 0} userEmail={user?.email} />
+      {/* ── TIP GOAL BAR ── */}
+      {stream?.tip_goal_amount > 0 && (
+        <div className="absolute z-20 left-3 right-3"
+          style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 110px)' }}>
+          <div className="bg-black/40 backdrop-blur border border-white/10 rounded-xl px-3 py-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-white/60 text-[10px]">{stream.tip_goal_label || 'Tip Goal'}</span>
+              <span className="text-amber-400 text-[10px] font-bold">
+                ${(stream.tip_goal_current || 0).toFixed(0)} / ${stream.tip_goal_amount}
+              </span>
             </div>
-          )}
-
-          {/* Lotto widget — below top bar, left aligned */}
-          <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 90px)', left: '12px' }}>
-            <ViewerLotto
-              streamId={streamId}
-              hostCreatorId={creator?.id}
-              currentUser={user}
-              walletBalance={walletBalance}
-              isHost={false}
-              vipPoints={userVipPoints}
-              onDeductDenarii={handleLottoDeduct}
-            />
-          </div>
-
-          {/* Gift leaderboard — top right below wallet */}
-          <div
-            className="absolute z-20 w-44"
-            style={{ top: 'calc(env(safe-area-inset-top) + 56px)', right: '12px' }}
-            onClick={() => setShowExpandedLeaderboard(true)}
-          >
-            <GiftLeaderboard streamId={streamId} compact />
-          </div>
-
-          {/* TikTok/BIGO-style bottom action bar */}
-          <BigoBottomBar
-            onChatToggle={() => setShowChat(!showChat)}
-            onEmojiClick={(em) => sendMessageMutation.mutate({ message: em, message_type: 'text' })}
-            onMenuClick={() => setShowExpandedLeaderboard(true)}
-            onGiftClick={() => {
-              if (!creatorCanReceiveGifts) { toast.error('Creator has not enabled monetization.'); return; }
-              setShowGiftPanel(true);
-            }}
-            onPKClick={() => toast.info('PK Battle — challenge a creator!')}
-            onShopClick={() => navigate(createPageUrl('AffiliateHub'))}
-            onInboxClick={() => setShowExpandedLeaderboard(true)}
-            onShareClick={() => {
-              const url = window.location.href;
-              if (navigator.share) {
-                navigator.share({ title: stream.title, url }).catch(() => {});
-              } else {
-                navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {});
-              }
-            }}
-            showChat={showChat}
-            giftDisabled={!creatorCanReceiveGifts}
-            hasPK={stream.stream_type === 'pk_battle'}
-          />
-
-          {/* Chat */}
-          {showChat && (
-            <ErrorBoundary label="viewer-chat" inline>
-              <BulletChat
-                messages={chatMessages}
-                onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-                currentUser={user}
-                isAuthenticated={!!user}
-                disabled={sendMessageMutation.isPending}
-                isHost={false}
-                recentChatters={ChatService.getRecentChatters(chatMessages)}
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, ((stream.tip_goal_current || 0) / stream.tip_goal_amount) * 100)}%` }}
               />
-            </ErrorBoundary>
-          )}
-        </>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* ── BROADCASTER UI ────────────────────────────────────────────── */}
-      {isHost && (
-        <>
-          {/* End stream button — top left */}
-          <button
-            onClick={() => setShowEndDialog(true)}
-            className="absolute top-3 left-3 z-30 w-10 h-10 bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
-            style={{ marginTop: 'env(safe-area-inset-top)' }}
-          >
-            <X className="w-5 h-5 text-red-400" />
+      {/* ── AI LIVE SUMMARY ── */}
+      {stream?.ai_summary && !isHost && (
+        <div className="absolute z-20 left-3 right-14"
+          style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 200px)' }}>
+          <div className="bg-black/40 backdrop-blur border border-white/10 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white/40 text-[9px] uppercase tracking-wider">Live Summary</span>
+            </div>
+            <p className="text-white/70 text-[11px] leading-snug">{stream.ai_summary}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── BULLET CHAT ── */}
+      <div className="absolute z-20 left-3 right-16"
+        style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 80px)' }}>
+        <BulletChat messages={chatMessages} maxMessages={8} />
+      </div>
+
+      {/* ── RIGHT SIDE ACTION BUTTONS ── */}
+      <div className="absolute right-3 z-20 flex flex-col items-center gap-3"
+        style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 80px)' }}>
+
+        {/* Gift button */}
+        {!isHost && (
+          <button onClick={() => setShowGiftPanel(true)}
+            className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center">
+              <Gift className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[9px]">Gift</span>
           </button>
-
-          {/* Top bar (title + thumbnail) */}
-          <div className="absolute z-30" style={{ top: 'calc(env(safe-area-inset-top) + 12px)', left: '60px' }}>
-            <BroadcasterTopBar
-              stream={stream} viewerCount={stream.viewer_count || 0}
-              onUpdateStream={async (updates) => {
-                await base44.entities.Stream.update(stream.id, updates);
-                queryClient.invalidateQueries(['stream', streamId]);
-              }}
-            />
-          </div>
-
-          {/* Broadcaster tool buttons — below top */}
-          <div
-            className="absolute z-30 flex flex-col gap-2"
-            style={{ top: 'calc(env(safe-area-inset-top) + 70px)', left: '12px' }}
-          >
-            {/* Lotto launcher */}
-            <ViewerLotto
-              streamId={streamId}
-              hostCreatorId={creator?.id}
-              currentUser={user}
-              walletBalance={walletBalance}
-              isHost={true}
-              vipPoints={userVipPoints}
-              onDeductDenarii={handleLottoDeduct}
-            />
-
-            {/* Screen Share */}
-            <button onClick={async () => {
-              const isSharing = ZegoService.isScreenSharing;
-              if (isSharing) {
-                await ZegoService.stopScreenShare().catch(() => {});
-                const localStream = ZegoService.getLocalStream();
-                if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
-                toast.success('Screen share stopped');
-              } else {
-                try {
-                  const screenStream = await ZegoService.startScreenShare(stream.id);
-                  if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
-                  toast.success('Screen sharing started!');
-                } catch (e) {
-                  toast.error('Screen share failed');
-                }
-              }
-            }}
-              className={`w-9 h-9 backdrop-blur-md border rounded-full flex items-center justify-center transition-colors ${
-                ZegoService.isScreenSharing
-                  ? 'bg-green-500/30 border-green-400/40 text-green-400'
-                  : 'bg-black/60 border-white/15 text-white/70 hover:text-white'
-              }`}>
-              <ScreenShare className="w-4 h-4" />
-            </button>
-
-            {/* Co-stream */}
-            <button onClick={() => setShowCoStreamPanel(true)}
-              className="w-9 h-9 bg-black/60 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
-              <Users className="w-4 h-4" />
-            </button>
-
-            {/* Moderation */}
-            <button onClick={() => setShowModerationPanel(true)}
-              className="w-9 h-9 bg-black/60 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white/70 hover:text-white">
-              <Shield className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Host wallet — top right */}
-          <div
-            className="absolute z-30"
-            style={{ top: 'calc(env(safe-area-inset-top) + 70px)', right: '12px' }}
-          >
-            <BroadcasterWallet
-              totalEarnings={creator?.total_earnings_denarii || 0}
-              sessionEarnings={stream?.total_denarii_earned || 0}
-              giftsReceived={stream?.total_gifts_received || 0}
-              creatorId={creator?.id}
-            />
-          </div>
-
-          {/* Live control panel */}
-          <BroadcastControlPanel
-            stream={stream}
-            streamStats={{
-              viewers: stream?.viewer_count || 0,
-              duration: stream?.created_date
-                ? `${Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000)}:${String(Math.floor(((Date.now() - new Date(stream.created_date).getTime()) % 60000) / 1000)).padStart(2, '0')}`
-                : '0:00',
-              bitrate: 0
-            }}
-            onToggleMic={(on) => ZegoService.toggleMic(on)}
-            onToggleCamera={(on) => ZegoService.toggleCamera(on)}
-            onToggleScreenShare={async (on) => {
-              if (on) {
-                try {
-                  const screenStream = await ZegoService.startScreenShare(streamId);
-                  if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
-                } catch (e) {
-                  toast.error('Screen share failed. Please try again.');
-                  console.warn('[ScreenShare] Failed:', e);
-                }
-              } else {
-                await ZegoService.stopScreenShare().catch(() => {});
-                const localStream = ZegoService.getLocalStream();
-                if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
-              }
-            }}
-            onFlipCamera={() => {
-              if (videoRef.current) {
-                const current = videoRef.current.style.transform;
-                videoRef.current.style.transform = current === 'scaleX(-1)' ? 'scaleX(1)' : 'scaleX(-1)';
-              }
-            }}
-            onEndStream={() => setShowEndDialog(true)}
-            onUpdateSettings={() => {}}
-          />
-
-          {/* Chat */}
-          <ErrorBoundary label="broadcaster-chat" inline>
-            <BulletChat
-              messages={chatMessages}
-              onSendMessage={(msg) => sendMessageMutation.mutate(msg)}
-              currentUser={user} isAuthenticated={!!user}
-              disabled={sendMessageMutation.isPending} isHost={true}
-              recentChatters={ChatService.getRecentChatters(chatMessages)}
-            />
-          </ErrorBoundary>
-
-          <EndStreamDialog isOpen={showEndDialog} onConfirm={endStream} onCancel={() => setShowEndDialog(false)} isPending={_endStream.isPending} />
-
-          <ModerationPanel
-            isOpen={showModerationPanel} onClose={() => setShowModerationPanel(false)}
-            streamId={streamId} 
-            viewers={ChatService.getRecentChatters(chatMessages).map(c => ({ email: c.sender_email, name: c.sender_name }))} 
-            moderators={[]} 
-            kickedUsers={[]}
-            chatMuted={false} onToggleChatMute={() => {}}
-            onAppointModerator={async (email) => {
-              await base44.entities.StreamModerator.create({
-                stream_id: streamId,
-                moderator_email: email,
-                appointed_by: user.email,
-                appointed_date: new Date().toISOString()
-              });
-              toast.success(`${email} appointed as moderator`);
-            }}
-            onRemoveModerator={() => {}}
-            onKickViewer={async (email) => {
-              await base44.entities.ModerationAction.create({
-                stream_id: streamId,
-                moderator_email: user.email,
-                target_user_email: email,
-                action_type: 'kick',
-                reason: 'Kicked by host'
-              });
-              toast.success(`${email} kicked from stream`);
-            }}
-            onResetKicks={() => {}}
-            onMuteViewerAudio={() => {}} onEndViewerCamera={() => {}} isHost={true}
-          />
-        </>
-      )}
-
-      {/* Alerts */}
-      <AlertNotifications streamId={streamId} isAdmin={user?.role === 'admin'} />
-
-      {/* Expanded leaderboard */}
-      <AnimatePresence>
-        {showExpandedLeaderboard && (
-          <ExpandedGiftLeaderboard streamId={streamId} onClose={() => setShowExpandedLeaderboard(false)} />
         )}
-      </AnimatePresence>
 
-      {/* Co-stream panel */}
-      <AnimatePresence>
-        {showCoStreamPanel && (
-          <CoStreamPanel streamId={streamId} hostCreator={creator} currentUser={user} isHost={isHost} onClose={() => setShowCoStreamPanel(false)} />
+        {/* Share button */}
+        <button onClick={() => {
+          navigator.share?.({ title: stream?.title, url: window.location.href })
+            .catch(() => navigator.clipboard?.writeText(window.location.href));
+          toast.success('Link copied!');
+        }}
+          className="flex flex-col items-center gap-1">
+          <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
+            <Radio className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white/60 text-[9px]">Share</span>
+        </button>
+
+        {/* Moderator tools for host */}
+        {isHost && (
+          <button onClick={() => setShowModerationPanel(!showModerationPanel)}
+            className="flex flex-col items-center gap-1">
+            <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-white/70" />
+            </div>
+            <span className="text-white/60 text-[9px]">Mod</span>
+          </button>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* Gift Panel — BigO style bottom sheet */}
+      {/* ── BOTTOM BAR ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-3 flex items-center gap-2"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+
+        {/* Wallet balance */}
+        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full px-3 py-2">
+          <span className="text-amber-400 text-xs font-bold">◆</span>
+          <span className="text-white text-xs font-semibold">{walletBalance.toLocaleString()}</span>
+        </div>
+
+        {/* Chat input */}
+        <button
+          onClick={() => {
+            const msg = prompt('Say something...');
+            if (msg?.trim()) {
+              base44.entities.ChatMessage.create({
+                stream_id: streamId,
+                sender_email: user?.email,
+                sender_name: user?.full_name || 'Viewer',
+                message: msg.trim(),
+                message_type: 'text'
+              }).catch(() => {});
+            }
+          }}
+          className="flex-1 bg-black/40 backdrop-blur border border-white/10 rounded-full px-4 py-2 text-white/40 text-xs text-left"
+        >
+          Say something...
+        </button>
+
+        {/* Gift shortcut */}
+        {!isHost && (
+          <button onClick={() => setShowGiftPanel(true)}
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shrink-0">
+            <span className="text-lg">🎁</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── OVERLAYS ── */}
       <AnimatePresence>
         {showGiftPanel && (
-          <>
-            <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowGiftPanel(false)} />
-            <div className="fixed bottom-0 left-0 right-0 z-50">
-              <GiftPanel
-                gifts={gifts} walletBalance={walletBalance}
-                onSendGift={(gift, qty) => sendGift({ gift, quantity: qty })}
-                onClose={() => setShowGiftPanel(false)}
-              />
-            </div>
-          </>
+          <GiftPanel
+            gifts={gifts}
+            walletBalance={walletBalance}
+            streamId={streamId}
+            creatorId={creator?.id}
+            onClose={() => setShowGiftPanel(false)}
+            onGiftSent={(gift) => {
+              setGiftAnimation(gift);
+              setTimeout(() => setGiftAnimation(null), 3000);
+            }}
+          />
         )}
       </AnimatePresence>
+
+      {giftAnimation && <GiftAnimation gift={giftAnimation} />}
+
+      {showEndDialog && (
+        <EndStreamDialog
+          onConfirm={() => endStream()}
+          onCancel={() => setShowEndDialog(false)}
+        />
+      )}
+
+      {showExpandedLeaderboard && (
+        <ExpandedGiftLeaderboard
+          streamId={streamId}
+          onClose={() => setShowExpandedLeaderboard(false)}
+        />
+      )}
+
+      {showModerationPanel && (
+        <ModerationPanel
+          streamId={streamId}
+          creatorEmail={creator?.user_email}
+          onClose={() => setShowModerationPanel(false)}
+        />
+      )}
     </div>
   );
 }
