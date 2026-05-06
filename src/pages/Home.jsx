@@ -105,7 +105,7 @@ export default function Home() {
 
   const { data: liveStreams = [] } = useQuery({
     queryKey: ['home-live-streams'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 8),
+    queryFn: () => base44.entities.Stream.filter({ status: 'live', platform_type: 'legion_live' }, '-viewer_count', 8),
     staleTime: 60 * 1000,
   });
 
