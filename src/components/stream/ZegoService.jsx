@@ -302,7 +302,11 @@ class ZegoStreamingService {
 
   async _playRemoteStream(streamId, userInfo) {
     try {
-      const remoteStream = await this.engine.startPlayingStream(streamId);
+      const playOption = {
+        resourceMode: 2,
+        adaptiveSwitch: true,
+      };
+      const remoteStream = await this.engine.startPlayingStream(streamId, playOption);
       this.remoteStreams.set(streamId, remoteStream);
       if (userInfo) {
         this.remoteUserMap.set(streamId, {
