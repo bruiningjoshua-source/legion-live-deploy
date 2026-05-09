@@ -1,13 +1,14 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { randomBytes, createCipheriv } from "node:crypto";
 import { Buffer } from "node:buffer";
 
 // ─── Production ZegoCloud Token Generator (Token04 / AES-256-GCM) ───
 
 function makeNonce() {
-  const min = -Math.pow(2, 31);
-  const max = Math.pow(2, 31) - 1;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  // Map to signed 32-bit range [-2^31, 2^31 - 1]
+  return (buf[0] | 0);
 }
 
 function aesGcmEncrypt(plainText, key) {
