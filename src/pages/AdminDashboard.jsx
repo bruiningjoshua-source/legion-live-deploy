@@ -32,20 +32,8 @@ import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
 import FraudMonitoringDashboard from '@/components/admin/FraudMonitoringDashboard';
 import GrantMonetization from '@/components/admin/GrantMonetization';
 
-// Authorized admin emails - update these as needed
-// Authorized admin emails - add your admin emails here
-const AUTHORIZED_ADMINS = [
-  'admin@legionlive.io', 
-  'support@legionlive.io', 
-  'inthestixproductions@gmail.com', 
-  'muggabuckerpro@gmail.com', 
-  'rankincadence@gmail.com', 
-  'invictaoperations@gmail.com', 
-  'bruiningjoshua@gmail.com'
-];
-
-// CEO-level affiliates who get special earnings structure
-const CEO_AFFILIATES = ['rankincadence@gmail.com'];
+// Admin authorization is enforced by user.role === 'admin' (managed server-side).
+// No hardcoded email lists — admin roles are assigned in the platform.
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
@@ -59,13 +47,13 @@ export default function AdminDashboard() {
   const { data: streams = [] } = useQuery({
     queryKey: ['admin-streams'],
     queryFn: () => base44.entities.Stream.list('-created_date', 100),
-    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
+    enabled: user?.role === 'admin'
   });
 
   const { data: creators = [] } = useQuery({
     queryKey: ['admin-creators'],
     queryFn: () => base44.entities.Creator.list('-follower_count', 100),
-    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
+    enabled: user?.role === 'admin'
   });
 
   const { data: users = [] } = useQuery({
@@ -75,7 +63,7 @@ export default function AdminDashboard() {
       const response = await base44.functions.invoke('adminListUsers');
       return response.data?.users || [];
     },
-    enabled: user && AUTHORIZED_ADMINS.includes(user.email)
+    enabled: user?.role === 'admin'
   });
 
   const clearLiveStreamsMutation = useMutation({
@@ -87,8 +75,7 @@ export default function AdminDashboard() {
     onError: () => toast.error('Failed to clear streams')
   });
 
-  // Check both admin role AND authorized email
-  const isAuthorized = user?.role === 'admin' && AUTHORIZED_ADMINS.includes(user?.email);
+  const isAuthorized = user?.role === 'admin';
 
   if (!isAuthorized) {
     return (

@@ -21,14 +21,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-const AUTHORIZED_ADMINS = [
-  'admin@legionlive.io',
-  'inthestixproductions@gmail.com',
-  'muggabuckerpro@gmail.com',
-  'rankincadence@gmail.com',
-  'invictaoperations@gmail.com',
-  'bruiningjoshua@gmail.com'
-];
+// Admin authorization is enforced by user.role === 'admin' (managed server-side).
 
 const SEVERITY_CONFIG = {
   low: { color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: AlertCircle },
@@ -56,7 +49,7 @@ export default function ContentModerationAdmin() {
     queryFn: () => base44.auth.me()
   });
 
-  const isAuthorized = user?.role === 'admin' && AUTHORIZED_ADMINS.includes(user?.email);
+  const isAuthorized = user?.role === 'admin';
 
   const { data: violations = [] } = useQuery({
     queryKey: ['all-violations'],

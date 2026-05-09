@@ -23,14 +23,7 @@ import { motion } from 'framer-motion';
 import { format, subDays } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
-const AUTHORIZED_ADMINS = [
-  'admin@legionlive.io',
-  'inthestixproductions@gmail.com',
-  'muggabuckerpro@gmail.com',
-  'rankincadence@gmail.com',
-  'invictaoperations@gmail.com',
-  'bruiningjoshua@gmail.com'
-];
+// Admin authorization is enforced by user.role === 'admin' (managed server-side).
 
 const PLATFORM_COLORS = {
   streaming: '#ef4444',
@@ -51,7 +44,7 @@ export default function PlatformAdminAnalytics() {
     queryFn: () => base44.auth.me()
   });
 
-  const isAuthorized = user?.role === 'admin' && AUTHORIZED_ADMINS.includes(user?.email);
+  const isAuthorized = user?.role === 'admin';
 
   // Fetch all data for analytics
   const { data: currencyPurchases = [] } = useQuery({
