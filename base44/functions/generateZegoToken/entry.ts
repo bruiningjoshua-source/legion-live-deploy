@@ -5,10 +5,11 @@ import { Buffer } from "node:buffer";
 // ─── Production ZegoCloud Token Generator (Token04 / AES-256-GCM) ───
 
 function makeNonce() {
+  // Use CSPRNG — Math.random() is not cryptographically secure.
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
-  // Map to signed 32-bit range [-2^31, 2^31 - 1]
-  return (buf[0] | 0);
+  // Convert unsigned 32-bit to signed 32-bit integer range.
+  return buf[0] > 2147483647 ? buf[0] - 4294967296 : buf[0];
 }
 
 function aesGcmEncrypt(plainText, key) {
