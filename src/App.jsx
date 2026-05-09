@@ -42,7 +42,7 @@ const AuthenticatedApp = () => {
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
-          path={`/${path}`}
+          path={`/${path.replace(/([A-Z])/g, (m, l, i) => (i ? '-' : '') + l.toLowerCase())}`}
           element={
             <LayoutWrapper currentPageName={path}>
               <Page />
