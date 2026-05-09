@@ -9,12 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsLoadingAuth(false);
-    }, 5000);
+    let mounted = true;
 
+    // Check for existing session on mount.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(timeout);
+      if (!mounted) return;
       if (session?.user) {
         loadUser(session.user);
       } else {
@@ -22,20 +21,20 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          await loadUser(session.user);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-          setIsLoadingAuth(false);
-        }
+    // Listen for auth state changes — fires on sign in, sign out, token refresh.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (session?.user) {
+        loadUser(session.user);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
       }
-    );
+    });
 
     return () => {
-      clearTimeout(timeout);
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
