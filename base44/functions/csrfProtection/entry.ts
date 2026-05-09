@@ -3,57 +3,48 @@
  * Token generation and validation — DB-persisted via wallet_audit_logs
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const supabaseAdmin = createClient(
-  Deno.env.get('SUPABASE_URL'),
-  Deno.env.get('SUPABASE_SERVICE_KEY')
+const adminClient = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_KEY') ?? ''
 );
 
-function generateSecureToken(length = 32) {
-  const array = new Uint8Array(length);
-  crypto.getRandomValues(array);
-  return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function storeCSRFToken(token, userEmail) {
-  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-  await supabaseAdmin.from('wallet_audit_logs').insert({
-    user_email: userEmail,
-    action: 'rate_limit_check',
-    amount_denarii: 0,
-    new_balance: 0,
-    reason: `csrf_token:${token}`,
-    timestamp_utc: new Date().toISOString(),
-  });
-}
-
-async function validateCSRFToken(token, userEmail) {
-  const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-  const { data } = await supabaseAdmin
-    .from('wallet_audit_logs')
-    .select('id')
-    .eq('user_email', userEmail)
-    .eq('action', 'rate_limit_check')
-    .like('reason', `csrf_token:${token}`)
-    .gte('timestamp_utc', cutoff)
-    .limit(1);
-  return (data?.length || 0) > 0;
+function secureToken(bytes = 32) {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function generateCSRFToken(sessionId, email) {
-  const token = generateSecureToken(32);
-  await storeCSRFToken(token, email);
+  const token = secureToken(32);
+  await adminClient.from('wallet_audit_logs').insert({
+    user_email:   email,
+    action:       'rate_limit_check',
+    amount_denarii: 0,
+    new_balance:  0,
+    reason:       `csrf::${sessionId}::${token}`,
+    timestamp_utc: new Date().toISOString(),
+  });
   return token;
 }
 
-export async function validateCSRFTokenForSession(sessionId, token, email) {
-  const isValid = await validateCSRFToken(token, email);
-
-  if (!isValid) {
-    return { valid: false, reason: 'CSRF token invalid or expired' };
-  }
-
+export async function validateCSRFToken(sessionId, token, email) {
+  if (!sessionId || !token || !email) return { valid: false, reason: 'Missing fields' };
+  const cutoff = new Date(Date.now() - 3_600_000).toISOString();
+  const { data, error } = await adminClient
+    .from('wallet_audit_logs')
+    .select('id')
+    .eq('user_email', email)
+    .eq('action', 'rate_limit_check')
+    .eq('reason', `csrf::${sessionId}::${token}`)
+    .gte('timestamp_utc', cutoff)
+    .limit(1);
+  if (error || !data?.length) return { valid: false, reason: 'Token not found or expired' };
+  // Invalidate: delete the used token.
+  await adminClient.from('wallet_audit_logs')
+    .delete()
+    .eq('reason', `csrf::${sessionId}::${token}`);
   return { valid: true };
 }
 
