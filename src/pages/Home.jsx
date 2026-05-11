@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import {
   Tv, Gamepad2, Users, ShoppingBag, Radio,
   Flame, ChevronRight, Eye, Star, Film, Mic,
-  TrendingUp, Sword
+  TrendingUp, Sword, Globe
 } from 'lucide-react';
 
 // Platform hub definitions
@@ -65,6 +65,15 @@ const hubs = [
     color: '#ec4899',
     glow: 'rgba(236,72,153,0.35)',
     badge: 'POD',
+  },
+  {
+    name: 'Spaces',
+    sub: 'Audio Rooms',
+    path: 'LegionSpaces',
+    icon: Globe,
+    color: '#06b6d4',
+    glow: 'rgba(6,182,212,0.35)',
+    badge: 'LIVE',
   },
 ];
 
@@ -199,14 +208,14 @@ export default function Home() {
         {/* ── Platform Hub Grid (the redesigned menu) ── */}
         <section className="px-6 pb-8">
           <div className="max-w-sm mx-auto">
-            {/* Top row: 3 icons */}
+            {/* Top row: 4 icons */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="grid grid-cols-3 gap-5 justify-items-center mb-5"
+              className="grid grid-cols-4 gap-4 justify-items-center mb-5"
             >
-              {hubs.slice(0, 3).map(hub => (
+              {hubs.slice(0, 4).map(hub => (
                 <HubIcon key={hub.name} hub={hub} />
               ))}
             </motion.div>
@@ -217,7 +226,7 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.18 }}
               className="grid grid-cols-3 gap-5 justify-items-center"
             >
-              {hubs.slice(3, 6).map(hub => (
+              {hubs.slice(4, 7).map(hub => (
                 <HubIcon key={hub.name} hub={hub} />
               ))}
             </motion.div>

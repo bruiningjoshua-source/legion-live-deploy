@@ -344,12 +344,21 @@ export default function GiftAnimation({ gift, sender, quantity = 1, onComplete }
       });
     }
 
+    if (gift?.cost_denarii >= 500 && gift?.sender_name && 'speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(`${gift.sender_name} sent a ${gift.name}!`);
+      u.rate = 0.95; u.pitch = 1.10; u.volume = 0.80;
+      window.speechSynthesis.speak(u);
+    }
+
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(onComplete, 500);
     }, duration);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.speechSynthesis.cancel();
+    };
   }, [gift, onComplete]);
 
   // Mega/Divine - Ultimate fullscreen takeover

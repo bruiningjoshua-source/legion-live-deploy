@@ -8,6 +8,7 @@ import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X, ScreenShare } fro
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
 import Soundboard from '@/components/stream/Soundboard';
+import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
@@ -40,6 +41,7 @@ export default function GoLive() {
   const [hasPermissions, setHasPermissions] = useState(false);
   const [showBeauty, setShowBeauty] = useState(false);
   const [showSoundboard, setShowSoundboard] = useState(false);
+  const [mocapMode, setMocapMode] = useState(false);
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -323,6 +325,14 @@ export default function GoLive() {
             </div>
             <span className="text-white/60 text-[9px]">Sound</span>
           </button>
+
+          <button onClick={() => setMocapMode(v=>!v)} className="flex flex-col items-center gap-1">
+            <div className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
+              style={{ background:mocapMode?"rgba(139,92,246,0.30)":"rgba(0,0,0,0.4)", borderColor:mocapMode?"rgba(139,92,246,0.60)":"rgba(255,255,255,0.1)", boxShadow:mocapMode?"0 0 12px rgba(139,92,246,0.4)":"none" }}>
+              <span className="text-lg">🎭</span>
+            </div>
+            <span className="text-white/60 text-[9px]">MoCap</span>
+          </button>
         </div>
 
         {/* BOTTOM SECTION */}
@@ -395,7 +405,30 @@ export default function GoLive() {
         <LegionAREngine
           videoRef={videoRef}
           isLive={!!goLiveMutation.data}
+          onProcessedStream={(stream) => {
+            if (!stream) return;
+            const track = stream.getVideoTracks()[0];
+            if (track && typeof ZegoService.replaceTrack === "function") {
+              ZegoService.replaceTrack(track).catch(err =>
+                console.warn('[LegionAR] replaceTrack:', err.message)
+              );
+            }
+          }}
         />
+
+        {mocapMode && (
+          <LegionMoCap
+            videoRef={videoRef}
+            onProcessedStream={(stream) => {
+              if (!stream) return;
+              const track = stream.getVideoTracks()[0];
+              if (track && typeof ZegoService.replaceTrack === "function") {
+                ZegoService.replaceTrack(track).catch(console.warn);
+              }
+            }}
+            onClose={() => setMocapMode(false)}
+          />
+        )}
       </div>
     );
   }
