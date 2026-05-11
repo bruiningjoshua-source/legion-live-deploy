@@ -6,17 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { 
   BarChart3, 
   HelpCircle,
-  Plus, 
-  X,
   Check,
   Send,
-  Users,
   ChevronUp,
-  ChevronDown,
-  Target,
-  MessageSquare
+  Target
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 // Live Poll Widget

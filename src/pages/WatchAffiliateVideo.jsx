@@ -20,7 +20,6 @@ import {
   User,
   ArrowLeft
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import MarketplaceGiftPanel from '@/components/affiliate/MarketplaceGiftPanel';
 import AffiliateVideoInfoSection from '@/components/affiliate/AffiliateVideoInfoSection';

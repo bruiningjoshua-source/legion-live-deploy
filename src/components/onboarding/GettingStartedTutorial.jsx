@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
-  X, 
   ChevronRight, 
   ChevronLeft,
   Radio,
   Wallet,
-  Users,
   Gift,
-  Gamepad2,
   Heart,
   Check,
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PremiumButton from '@/components/shared/PremiumButton';
 
 const TUTORIAL_STEPS = [
   {

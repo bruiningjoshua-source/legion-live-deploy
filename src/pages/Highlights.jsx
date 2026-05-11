@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
@@ -9,7 +8,6 @@ import {
   Play, 
   Share2,
   Eye,
-  Clock,
   Gift,
   Users,
   MessageSquare,
@@ -19,10 +17,8 @@ import {
   X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import GlassCard from '@/components/shared/GlassCard';
-import PremiumButton from '@/components/shared/PremiumButton';
 
 const HIGHLIGHT_TYPES = {
   gift_surge: { icon: Gift, color: 'amber', label: 'Gift Surge' },

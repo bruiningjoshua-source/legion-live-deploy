@@ -2,9 +2,8 @@
  * StreamingSettings - Video quality, AR complexity, and adaptive streaming controls
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -26,10 +25,8 @@ import {
 import {
   Settings,
   Wifi,
-  WifiOff,
   Battery,
   BatteryLow,
-  Cpu,
   Gauge,
   Video,
   Sparkles,
@@ -38,8 +35,7 @@ import {
   SignalLow,
   SignalMedium,
   SignalHigh,
-  AlertTriangle,
-  Check
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 

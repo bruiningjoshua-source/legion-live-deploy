@@ -17,8 +17,7 @@ import {
   Search, 
   Radio, 
   Users, 
-  Swords,
-  Sparkles
+  Swords
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';

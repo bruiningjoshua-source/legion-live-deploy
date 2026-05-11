@@ -2,24 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Send, 
-  Gift, 
-  Crown, 
-  Star, 
   Reply, 
   Smile, 
   AtSign,
   Pin,
-  MoreHorizontal,
   X,
-  Heart,
-  ThumbsUp,
-  Laugh,
-  Flame,
-  Sparkles,
   Shield
 } from 'lucide-react';
 import {

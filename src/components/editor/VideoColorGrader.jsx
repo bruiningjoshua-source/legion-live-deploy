@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, Copy, Download } from 'lucide-react';
+import { RefreshCw, Copy } from 'lucide-react';
 
 const LUTS = [
   { id: 'none',       name: 'None',         preview: '#1a1a1a' },

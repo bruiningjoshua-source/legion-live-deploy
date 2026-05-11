@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Gamepad2, Flame, Trophy, Zap } from 'lucide-react';
 

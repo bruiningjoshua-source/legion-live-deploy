@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Trophy, Clock, ArrowRight, Coins } from 'lucide-react';
+import { Calendar, Users, Clock, ArrowRight, Coins } from 'lucide-react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 import { motion } from 'framer-motion';
 

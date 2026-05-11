@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Download, Cloud, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { Download, Cloud, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function GameLibraryBrowser({ onImportComplete }) {
   const [importing, setImporting] = useState(false);

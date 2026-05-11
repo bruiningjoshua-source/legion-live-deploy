@@ -18,8 +18,6 @@ import {
   Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 export default function FriendsList({ user }) {
   const queryClient = useQueryClient();

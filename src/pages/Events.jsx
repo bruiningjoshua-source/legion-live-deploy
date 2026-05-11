@@ -1,16 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Trophy, Calendar, Sparkles, Star, Clock, 
-  Coins, Zap, Users, ArrowRight, ChevronRight 
+  Trophy, Calendar, Sparkles, Clock, 
+  Coins, Zap, Users 
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { isAfter, isBefore, parseISO, formatDistanceToNow, format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { isAfter, isBefore, parseISO } from 'date-fns';
 import EventCard from '@/components/events/EventCard';
 
 // ── Denarii incentive tiers: displayed on the page as a driver for engagement ──

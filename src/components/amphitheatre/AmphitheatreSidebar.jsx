@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { History, BookmarkIcon, ListVideo, Clock, TrendingUp, Home, Compass } from 'lucide-react';
+import { History, ListVideo, Clock, TrendingUp, Home, Compass } from 'lucide-react';
 
 export default function AmphitheatreSidebar() {
   const { data: user } = useQuery({

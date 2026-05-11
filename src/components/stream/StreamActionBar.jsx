@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift, Heart, Share2, MessageCircle, ShoppingBag, Ticket, Users, TrendingUp, ChevronUp } from 'lucide-react';
+import { Gift, Heart, Share2, MessageCircle, Ticket, TrendingUp, ChevronUp } from 'lucide-react';
 
 // ── BigO Live-style Right-side Action Bar ────────────────────────────────
 // Vertical stack of action buttons on right side of stream

@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
   Gamepad2, Search, Flame, Trophy, Users, Eye, Play,
-  Zap, ChevronRight, Radio, Share2, TrendingUp
+  Zap, ChevronRight, Radio, TrendingUp
 } from 'lucide-react';
 import GamingStreamCard from '@/components/gaming/GamingStreamCard';
 

@@ -3,7 +3,6 @@
  * Draws accessories that track facial landmarks
  */
 
-import React, { useRef, useEffect, useState } from 'react';
 
 // SVG-based accessories for crisp rendering at any scale
 const ACCESSORY_SVGS = {

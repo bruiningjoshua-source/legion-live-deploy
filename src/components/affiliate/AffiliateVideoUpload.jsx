@@ -26,7 +26,6 @@ import {
   X,
   Plus,
   ShoppingBag,
-  Tag,
   FileText,
   Loader2
 } from 'lucide-react';

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Users, Swords, Star, Radio } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import formatCount from '@/components/shared/FormatCount';
 

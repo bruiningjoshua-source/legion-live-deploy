@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
 import { Eye, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 

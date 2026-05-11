@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PARTICLE_EFFECTS } from './PremiumARProcessor';
 
 // Effect asset mappings (emoji-based for simplicity)

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowLeft, Headphones, Clock, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, ArrowLeft, Headphones, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import EpisodeCard from './EpisodeCard';

@@ -16,11 +16,9 @@ import {
 } from "@/components/ui/select";
 import { 
   Wallet, 
-  DollarSign, 
   Check,
   Plus,
   Trash2,
-  ExternalLink,
   Shield,
   Zap,
   Lock

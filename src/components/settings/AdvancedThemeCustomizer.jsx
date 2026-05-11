@@ -21,8 +21,7 @@ import {
   Image as ImageIcon,
   X,
   Save,
-  RotateCcw,
-  Paintbrush
+  RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 

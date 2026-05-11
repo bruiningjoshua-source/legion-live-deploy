@@ -7,16 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Heart, 
-  Star, 
   Crown, 
   Users,
   Search,
   CheckCircle,
   MessageSquare,
-  Gift,
   Sparkles,
-  Lock,
-  Unlock,
   BadgeCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';

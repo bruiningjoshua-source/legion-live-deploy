@@ -6,7 +6,6 @@ import { Crown, Users, Radio } from 'lucide-react';
 import AvatarWithStatus from '@/components/shared/AvatarWithStatus';
 import GlassCard from '@/components/shared/GlassCard';
 import formatCount from '@/components/shared/FormatCount';
-import { cn } from "@/lib/utils";
 
 const PremiumCreatorCard = memo(function PremiumCreatorCard({ creator, index = 0 }) {
   const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);

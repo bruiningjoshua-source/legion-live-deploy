@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
   Gamepad2, Search, Star, Radio,
-  Play, ChevronRight,
+  Play,
   ScreenShare, Smartphone, Monitor, Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Scissors, Plus, Trash2, Lock, Eye, EyeOff, Volume2, VolumeX, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, Volume2, VolumeX } from 'lucide-react';
 
 const TRACK_H = 48;
 const RULER_H = 28;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Video, VideoOff, Plus, X, Crown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, Video, Plus, X, Crown } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function MultiPanelView({ 
   panelCreators = [], 

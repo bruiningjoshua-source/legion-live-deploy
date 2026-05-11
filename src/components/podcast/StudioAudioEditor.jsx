@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Scissors, SkipBack, SkipForward, Play, Pause, Volume2,
   ZoomIn, ZoomOut, Trash2, Copy, AlignLeft, Wand2,
-  Music, Mic2, ChevronDown, RotateCcw, Download
+  Music, RotateCcw, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

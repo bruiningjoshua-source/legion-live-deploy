@@ -2,8 +2,7 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Trash2 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { Loader2 } from 'lucide-react';
 import VideoFeedCard from '@/components/amphitheatre/VideoFeedCard';
 import AmphitheatreSidebar from '@/components/amphitheatre/AmphitheatreSidebar';
 

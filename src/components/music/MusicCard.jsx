@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Music } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function MusicCard({ track, onPlay, isNowPlaying }) {

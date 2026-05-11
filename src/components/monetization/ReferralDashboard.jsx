@@ -13,8 +13,7 @@ import {
   TrendingUp,
   CheckCircle,
   Clock,
-  Zap,
-  Mail
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';

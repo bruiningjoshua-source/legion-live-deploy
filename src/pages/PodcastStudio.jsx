@@ -3,16 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, Radio, Headphones, BarChart3, Plus, Settings, Trash2,
-  Upload, Play, Users, TrendingUp, ChevronRight, ChevronLeft,
-  Rss, Star, Eye, Clock, Loader2, Layers, Edit3, Globe, Lock,
-  Music2, Wand2, BookOpen, Download
+  Mic, Headphones, BarChart3, Plus, Trash2,
+  Upload, Play, Users, TrendingUp, ChevronRight,
+  Rss, Star, Eye, Clock, Loader2, Layers, Edit3, Globe, Wand2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import StudioRecorder from '@/components/podcast/StudioRecorder';
 import StudioAudioEditor from '@/components/podcast/StudioAudioEditor';
 import StudioPublisher from '@/components/podcast/StudioPublisher';
-import PodcastDetailPanel from '@/components/podcast/PodcastDetailPanel';
 import PodcastAudioPlayer from '@/components/podcast/PodcastAudioPlayer';
 
 const NAV_ITEMS = [

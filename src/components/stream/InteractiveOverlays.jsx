@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, 
   ExternalLink, 
-  Heart, 
-  X, 
-  Gift,
+  X,
   Sparkles,
   Zap,
   Star,
   ChevronRight
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 // Clickable Product Overlay
 export function ProductOverlay({ product, position = 'bottom-right', onClose }) {

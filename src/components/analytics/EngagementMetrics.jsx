@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, Clock, Users, Zap, TrendingUp, Activity } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { MessageSquare, Clock, Users, Zap, Activity } from 'lucide-react';
+import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 
 export default function EngagementMetrics({ 

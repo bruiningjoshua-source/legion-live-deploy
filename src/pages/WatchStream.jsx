@@ -4,8 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Sparkles, Users, ScreenShare, Gift } from 'lucide-react';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { Radio, X, Shield, Users, Gift } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -14,26 +13,15 @@ import {
   useStreamPKBattle, useSendGift, useToggleFollow, useEndStream,
 } from '@/components/hooks/useStreamData';
 import ChatService from '@/components/services/ChatService';
-import { getVipTier } from '@/components/wallet/CurrencyPackages';
 
 import BulletChat from '@/components/stream/BulletChat';
-import FloatingHearts from '@/components/stream/FloatingHearts';
-import ViewerTopBar from '@/components/stream/ViewerTopBar';
-import StreamActionBar from '@/components/stream/StreamActionBar';
 import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
 import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
 import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
-import AlertNotifications from '@/components/moderation/AlertNotifications';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
-import DiscordStylePanel from '@/components/stream/DiscordStylePanel';
 import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
-import BigoBottomBar from '@/components/stream/BigoBottomBar';
 import ZegoService from '@/components/stream/ZegoService';
-import BroadcasterWallet from '@/components/stream/BroadcasterWallet';
-import ViewerWallet from '@/components/stream/ViewerWallet';
-import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
-import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
 import RaidButton from '@/components/stream/RaidButton';
@@ -41,8 +29,6 @@ import ChannelPointsPanel from '@/components/stream/ChannelPointsPanel';
 import ClipButton from '@/components/stream/ClipButton';
 import EntranceEffect from '@/components/stream/EntranceEffect';
 import HostLiveControls from '@/components/stream/HostLiveControls';
-import CoStreamPanel from '@/components/stream/CoStreamPanel';
-import ViewerLotto from '@/components/stream/ViewerLotto';
 import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';
 
 export default function WatchStream() {

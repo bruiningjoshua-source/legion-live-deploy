@@ -5,18 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+
+
 import {
   User,
   Camera,
@@ -28,22 +19,11 @@ import {
   Sparkles,
   Gift,
   Crown,
-  Target,
-  Info,
-  Upload,
-  Link as LinkIcon,
-  Instagram,
-  Youtube,
-  Twitter,
-  HelpCircle,
-  Rocket,
-  Star,
-  Zap
+  Rocket
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
-import OnboardingTooltip from '@/components/onboarding/OnboardingTooltip';
 import ProfileSetupStep from '@/components/onboarding/ProfileSetupStep';
 import MonetizationSetupStep from '@/components/onboarding/MonetizationSetupStep';
 import ModerationGuideStep from '@/components/onboarding/ModerationGuideStep';

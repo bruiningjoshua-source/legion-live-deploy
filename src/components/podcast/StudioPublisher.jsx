@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Lock, Calendar, Rss, Share2, Tag, Users, ChevronDown, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { Globe, Lock, Calendar, Tag, Users, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 

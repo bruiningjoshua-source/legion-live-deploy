@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X, Lightbulb } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { HelpCircle, Lightbulb } from 'lucide-react';
 import {
   Popover,
   PopoverContent,

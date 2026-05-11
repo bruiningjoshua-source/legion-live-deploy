@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, ThumbsUp, Clock, Music, CheckCircle } from 'lucide-react';
+import { Play, Eye, ThumbsUp, Music, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 

@@ -8,12 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Trophy, 
   Flame, 
-  Star, 
   Gift,
   Clock,
-  MessageCircle,
-  Zap,
-  Award
+  MessageCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';

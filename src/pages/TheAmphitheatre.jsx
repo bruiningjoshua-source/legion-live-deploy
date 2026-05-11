@@ -5,10 +5,8 @@ import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import {
   Play, Radio, Eye, MoreVertical, Search, Bell, Cast,
-  Tv, Flame, Music2, Mic2, Shuffle, ChevronRight
+  Tv, Music2, Mic2
 } from 'lucide-react';
-import VideoContextMenu from '@/components/amphitheatre/VideoContextMenu';
-import AmphitheatreVideoCard from '@/components/amphitheatre/AmphitheatreVideoCard';
 
 function formatCount(n) {
   if (!n) return '0';

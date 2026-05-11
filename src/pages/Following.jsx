@@ -6,7 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Radio, Users } from 'lucide-react';
+import { Heart, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 import PremiumCreatorCard from '@/components/creator/PremiumCreatorCard';

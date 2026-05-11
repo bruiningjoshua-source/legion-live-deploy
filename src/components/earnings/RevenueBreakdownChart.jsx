@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { BarChart3 } from 'lucide-react';
-import { format, subDays, parseISO, startOfDay } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 
 const COLORS = ['#f59e0b', '#10b981', '#6366f1', '#ef4444', '#ec4899'];
 

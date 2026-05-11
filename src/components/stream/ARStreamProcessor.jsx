@@ -3,11 +3,11 @@
  * Combines face tracking, filters, accessories, and background replacement
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { FaceMesh } from '@mediapipe/face_mesh';
 import { SelfieSegmentation } from '@mediapipe/selfie_segmentation';
 import { Camera } from '@mediapipe/camera_utils';
-import { FILTER_PRESETS, BACKGROUNDS } from './ARFilterEngine';
+import { FILTER_PRESETS } from './ARFilterEngine';
 import { AccessoryRenderer } from './filters/AccessoryRenderer';
 import { BackgroundProcessor } from './filters/BackgroundProcessor';
 

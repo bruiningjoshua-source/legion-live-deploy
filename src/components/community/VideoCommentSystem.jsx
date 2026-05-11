@@ -11,7 +11,6 @@ import {
   ThumbsDown,
   Reply,
   MoreHorizontal,
-  Flag,
   Trash2,
   ChevronDown,
   ChevronUp,

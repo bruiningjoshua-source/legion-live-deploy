@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, X, Gift, Share2, KeyRound, Trophy, Clock, Users, Coins, ChevronDown } from 'lucide-react';
+import { Ticket, X, Gift, Share2, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { getVipTier } from '@/components/wallet/CurrencyPackages';
 

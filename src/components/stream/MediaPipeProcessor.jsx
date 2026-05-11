@@ -3,7 +3,7 @@
  * Uses MediaPipe for real-time face tracking and background replacement
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 // MediaPipe CDN URLs
 const FACE_MESH_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh';

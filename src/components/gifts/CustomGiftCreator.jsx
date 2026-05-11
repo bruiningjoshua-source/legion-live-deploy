@@ -7,7 +7,6 @@ import {
   Gift, 
   Plus, 
   Upload,
-  Coins,
   Sparkles,
   Trash2,
   Edit,

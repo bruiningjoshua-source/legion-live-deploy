@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Crown, 
-  Medal, 
-  TrendingUp, 
   ChevronDown,
   ChevronUp,
-  Clock,
   Gift,
-  Sparkles,
   X
 } from 'lucide-react';
 

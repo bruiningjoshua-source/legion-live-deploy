@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Sword, Users, TrendingUp, Shield, Plus } from 'lucide-react';
+import { Sword, Plus } from 'lucide-react';
 
 export default function ForumSidebar({ categories = [], stats = {} }) {
   return (

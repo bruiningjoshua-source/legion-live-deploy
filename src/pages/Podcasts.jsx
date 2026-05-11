@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Headphones, Search, TrendingUp, Clock, Star, Loader2 } from 'lucide-react';
+import { Headphones, Search, TrendingUp, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import PodcastCard from '@/components/podcast/PodcastCard';
 import PodcastDetailPanel from '@/components/podcast/PodcastDetailPanel';

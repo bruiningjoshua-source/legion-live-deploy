@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { 
   Mic, 
   MicOff, 
@@ -11,17 +10,13 @@ import {
   UserPlus,
   Crown,
   X,
-  Users,
   MoreVertical,
   PhoneOff,
-  Settings,
   Headphones,
   Monitor,
   MessageSquare,
   Hand,
-  Volume2,
   VolumeX,
-  Maximize2,
   Grid3X3,
   LayoutGrid,
   Pin

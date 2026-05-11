@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Target, 
   Gift, 
-  Clock, 
   CheckCircle, 
   Star,
   Flame,
@@ -14,7 +13,6 @@ import {
   Coins,
   Sparkles,
   Calendar,
-  Zap,
   Eye,
   Heart,
   MessageSquare,

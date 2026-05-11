@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, RotateCcw, Volume2, Music, Zap, Radio } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Play, Square, RotateCcw, Volume2, Music, Zap } from 'lucide-react';
 
 // ── SEEDED LOOP PACK LIBRARY ──────────────────────────────────────────────
 const LOOP_PACKS = [

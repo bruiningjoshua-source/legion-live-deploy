@@ -15,11 +15,9 @@ import {
   Video, 
   Sword,
   Award,
-  Check,
-  X
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 

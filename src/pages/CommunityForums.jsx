@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Plus, Flame, Clock, TrendingUp, ArrowBigUp, Sword } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ForumPostCard from '@/components/forum/ForumPostCard';
 import ForumSidebar from '@/components/forum/ForumSidebar';

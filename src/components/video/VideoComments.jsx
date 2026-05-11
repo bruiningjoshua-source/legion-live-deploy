@@ -8,7 +8,6 @@ import {
   ThumbsDown, 
   MessageSquare, 
   Heart,
-  MoreVertical,
   Send,
   ChevronDown,
   ChevronUp

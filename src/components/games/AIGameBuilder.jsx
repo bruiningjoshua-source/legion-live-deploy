@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Play, Loader2, ChevronRight, Sparkles, Code2, RefreshCw } from 'lucide-react';
+import { Wand2, Loader2, ChevronRight, Sparkles, Code2, RefreshCw } from 'lucide-react';
 
 const EXAMPLE_PROMPTS = [
   'A space shooter where you dodge asteroids and shoot aliens',

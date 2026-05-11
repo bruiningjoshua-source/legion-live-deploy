@@ -4,14 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Radio, Search, X, ChevronDown, Shield, LogOut,
-  User, Settings, Film, Wallet, Menu, Bell, Sword, Tv,
-  Gamepad2, Users, ShoppingBag, Home, Mic, HelpCircle, TrendingUp
+  Radio, Search, X, Shield, LogOut,
+  User, Settings, Film, Wallet, Menu, Sword, Tv,
+  Gamepad2, Users, ShoppingBag, Home, HelpCircle, TrendingUp
 } from 'lucide-react';
 import NotificationBell from '@/components/social/NotificationBell';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
 const platformLinks = [

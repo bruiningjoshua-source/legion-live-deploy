@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -8,8 +8,7 @@ import { toast } from 'sonner';
 import {
   Settings as SettingsIcon, Bell, Shield, User, LogOut,
   AlertTriangle, Palette, Sparkles, Zap, Monitor, Trash2,
-  Image, ChevronRight, Check, Sun, Moon, Layers, Eye,
-  Sliders, RefreshCw, HelpCircle, FileText, Lock
+  Image, ChevronRight, Check, Layers, Eye, RefreshCw, HelpCircle, Lock
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
