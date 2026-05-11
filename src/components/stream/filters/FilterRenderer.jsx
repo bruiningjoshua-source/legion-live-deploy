@@ -3,7 +3,6 @@
  * Handles all visual filter effects with GPU acceleration
  */
 
-import React, { useRef, useEffect, useCallback } from 'react';
 
 class FilterRendererCore {
   constructor() {

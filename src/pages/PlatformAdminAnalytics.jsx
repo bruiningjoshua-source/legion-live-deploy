@@ -10,18 +10,14 @@ import {
   Users, 
   Video,
   Radio,
-  Podcast,
-  ShoppingBag,
   Briefcase,
-  Lock,
-  Swords,
   BarChart3,
   Activity,
   Wallet
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, subDays } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { format } from 'date-fns';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // Admin authorization is enforced by user.role === 'admin' (managed server-side).
 

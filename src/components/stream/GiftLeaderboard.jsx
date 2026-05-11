@@ -2,7 +2,7 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Crown, Medal, Sparkles, TrendingUp } from 'lucide-react';
+import { Crown, TrendingUp } from 'lucide-react';
 
 const RANK_STYLES = {
   1: { bg: 'from-amber-400 via-yellow-400 to-amber-500', icon: '👑', glow: 'shadow-amber-400/40' },

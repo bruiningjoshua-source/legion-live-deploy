@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Clock, Play, Shuffle, ListVideo } from 'lucide-react';
+import { Play, Shuffle, ListVideo } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function RecommendedVideos({ 

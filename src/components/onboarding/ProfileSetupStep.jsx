@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -12,13 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  User,
   Camera,
   Upload,
   Instagram,
   Youtube,
-  Twitter,
-  Link as LinkIcon
+  Twitter
 } from 'lucide-react';
 import OnboardingTooltip, { OnboardingBanner } from './OnboardingTooltip';
 import { toast } from 'sonner';

@@ -7,8 +7,6 @@
  * - Particle systems & animated effects
  */
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // ============================================
 // COLOR GRADING FILTERS (Instagram/TikTok Quality)

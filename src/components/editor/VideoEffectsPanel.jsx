@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Sun, Contrast, Palette, Sliders, Zap, Filter, Type, Music, ChevronDown, Search } from 'lucide-react';
+import { Sparkles, Sliders, Zap, Filter, Type, Music } from 'lucide-react';
 
 const FILTERS = [
   { id: 'none', label: 'None', preview: '#333' },

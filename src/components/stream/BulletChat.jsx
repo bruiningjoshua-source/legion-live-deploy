@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
-import { Send, AtSign, Reply, X, Pin, Gift } from 'lucide-react';
-import { toast } from 'sonner';
+import { Send, AtSign, Reply, X } from 'lucide-react';
 import FanBadge from '@/components/stream/FanBadge';
 
 const VIP_CONFIG = {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,11 +9,7 @@ import {
   Crown,
   DollarSign,
   Target,
-  Sparkles,
-  Check,
-  Plus,
-  Star,
-  Zap
+  Plus
 } from 'lucide-react';
 import OnboardingTooltip, { OnboardingBanner } from './OnboardingTooltip';
 

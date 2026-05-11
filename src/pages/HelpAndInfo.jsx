@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Shield, FileText, Mail, MessageSquare,
   ChevronDown, ChevronRight, Info, Lock, Scale, Heart,
-  Zap, Gift, Radio, Wallet, Users, AlertTriangle, Sword,
-  Globe, Star, Code2, Building2, Phone, ExternalLink
+  Zap, Gift, Radio, Wallet, Users, AlertTriangle, Sword, Star, Code2, Building2
 } from 'lucide-react';
 
 const FAQ_ITEMS = [

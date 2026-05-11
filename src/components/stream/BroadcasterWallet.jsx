@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Gift, ChevronUp, ChevronDown, Coins } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function BroadcasterWallet({ totalEarnings = 0, sessionEarnings = 0, giftsReceived = 0, creatorId }) {

@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -30,9 +29,7 @@ import {
   Crown,
   Star,
   Eye,
-  MousePointerClick,
   ShoppingCart,
-  Calendar,
   Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';

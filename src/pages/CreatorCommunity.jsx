@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
@@ -12,14 +12,12 @@ import {
   Lock,
   Users,
   Settings,
-  Plus,
   Image,
   Smile,
   ArrowLeft,
   BadgeCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';

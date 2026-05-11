@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Save, Play, Pause, SkipBack, SkipForward,
-  Volume2, Scissors, ZoomIn, ZoomOut, Plus, Undo2, Redo2,
-  Upload, Globe, Lock, EyeOff, Tag, Layers, Crop, Type,
-  Settings, BarChart3, Sparkles, Download, Share2, Loader2,
-  ChevronRight, X, Maximize2, Minimize2, RefreshCw, Clock
+  ArrowLeft, Save, Play, Pause, SkipBack, SkipForward, Scissors, ZoomIn, ZoomOut, Plus, Undo2, Redo2,
+  Upload, Globe, Lock, EyeOff, Tag, Layers, Crop,
+  Settings, Sparkles, Download, Share2, Loader2, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoTimeline from '@/components/editor/VideoTimeline';

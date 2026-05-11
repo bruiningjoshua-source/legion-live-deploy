@@ -8,15 +8,14 @@
  * where the bid counter updates for every viewer in real time.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Gavel, Clock, TrendingUp, DollarSign, Users,
-  ChevronUp, Zap, Trophy, AlertCircle, CheckCircle,
-  Package, ArrowUp, Star, Flame
+  Gavel, Clock, Zap, Trophy, CheckCircle,
+  Package, ArrowUp
 } from 'lucide-react';
 
 function formatTime(ms) {

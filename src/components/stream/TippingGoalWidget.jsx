@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { 
   Target, 
-  Plus, 
-  Coins,
+  Plus,
   Trophy,
-  Sparkles,
   X,
   CheckCircle
 } from 'lucide-react';

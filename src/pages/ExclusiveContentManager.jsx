@@ -15,9 +15,7 @@ import {
   Plus,
   DollarSign,
   Eye,
-  Upload,
   Trash2,
-  Edit,
   Crown
 } from 'lucide-react';
 import { motion } from 'framer-motion';

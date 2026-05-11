@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -13,13 +13,7 @@ import {
   VideoOff,
   Crown,
   Search,
-  Send,
-  Users,
-  PhoneOff,
-  Settings,
-  MoreVertical,
-  Volume2,
-  VolumeX
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 

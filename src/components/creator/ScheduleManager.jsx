@@ -8,9 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Calendar, Clock, Plus, Trash2, Edit2, Bell, Users, Repeat } from 'lucide-react';
+import { Calendar, Clock, Plus, Trash2, Edit2, Bell, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = [

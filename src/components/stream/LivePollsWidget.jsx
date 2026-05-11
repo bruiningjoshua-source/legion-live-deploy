@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { 
   BarChart3, 
   Plus, 
   X,
-  Check,
-  Clock,
   Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Crown, Star, Shield, Gift, TrendingUp, Lock, Loader2, Zap, Coins, Trophy, Flame, Check } from 'lucide-react';
+import { Sparkles, Crown, Star, Shield, Lock, Loader2, Zap, Coins, Check } from 'lucide-react';
 import GlassCard from '@/components/shared/GlassCard';
 
 // ── Pricing Philosophy ──────────────────────────────────────────────────────

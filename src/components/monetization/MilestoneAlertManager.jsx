@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { 
   Target, Trophy, Users, DollarSign, Eye, Gift,
-  Plus, Trash2, Edit2, Save, Zap, PartyPopper, Bell
+  Plus, Trash2, Edit2, Zap, PartyPopper
 } from 'lucide-react';
 import { toast } from 'sonner';
 

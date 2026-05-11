@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
-  Radio, Film, Gamepad2, ShoppingBag, Play, Users, Trophy, 
-  Sparkles, TrendingUp, Crown, Zap
+  Radio, Film, Gamepad2, ShoppingBag, Play, Users, 
+  Sparkles
 } from 'lucide-react';
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';

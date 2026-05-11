@@ -13,15 +13,11 @@ import {
   Gift,
   Users,
   Crown,
-  Star,
-  Sparkles,
   Plus,
   Edit2,
-  Trash2,
   Target,
   TrendingUp,
   Lock,
-  Unlock,
   Check
 } from 'lucide-react';
 import { toast } from 'sonner';

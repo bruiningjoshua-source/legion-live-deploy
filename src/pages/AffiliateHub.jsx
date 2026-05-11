@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  ShoppingBag, TrendingUp, Search, ChevronRight,
-  Star, DollarSign, Zap, Award, Package, Tv, Eye,
-  Radio, Play, Users, Flame, Crown, Grid3x3,
-  Tag, Percent, ArrowRight, Store, BarChart3,
-  Heart, Share2, Clock, CheckCircle, Sparkles
+  ShoppingBag, TrendingUp, Search, ChevronRight, DollarSign, Package, Tv, Eye,
+  Radio, Crown,
+  Tag, Percent, ArrowRight, Store,
+  Heart, Sparkles
 } from 'lucide-react';
 
 const PRODUCT_CATS = [

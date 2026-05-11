@@ -3,14 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowLeft, MessageSquare, ArrowBigUp, ArrowBigDown, Eye, Pin, Lock,
-  MoreHorizontal, Trash2, Send, Reply, Share2, Bookmark, Image, Link2
+  ArrowLeft, MessageSquare, ArrowBigUp, ArrowBigDown, Eye, Pin, Lock, Trash2, Send, Reply, Share2, Link2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
 
 export default function ForumPost() {
   const urlParams = new URLSearchParams(window.location.search);

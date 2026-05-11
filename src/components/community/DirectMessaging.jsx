@@ -9,19 +9,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   MessageSquare,
   Send,
   Search,
-  X,
   Check,
   CheckCheck,
   ArrowLeft
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function DirectMessaging({ isOpen, onClose, initialRecipient = null }) {

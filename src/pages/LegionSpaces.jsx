@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
-import { Users, Eye, MessageCircle, Gift, ArrowLeft, Maximize2, Camera } from 'lucide-react';
+import { Users, Eye, MessageCircle, ArrowLeft, Maximize2, Camera } from 'lucide-react';
 
 const MODES = { SOCIAL: '3d', AR: 'ar', VR: 'vr' };
 const AVATAR_PALETTE = ['#f5a623','#e63946','#8b5cf6','#10b981','#3b82f6','#ec4899'];

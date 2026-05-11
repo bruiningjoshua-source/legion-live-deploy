@@ -3,9 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Bell } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import StreamScheduleCard from '@/components/stream/StreamScheduleCard';
-import { format, isToday, isTomorrow, isThisWeek, addDays } from 'date-fns';
+import { isToday, isTomorrow, isThisWeek } from 'date-fns';
 import { motion } from 'framer-motion';
 
 export default function UpcomingStreamsPage() {

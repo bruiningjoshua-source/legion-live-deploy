@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Heart, Shield, AlertTriangle, Ban, MessageCircle, 
-  Video, Gift, Users, Flag, Scale, CheckCircle, XCircle 
+  Video, Users, Flag, Scale, CheckCircle, XCircle 
 } from 'lucide-react';
 
 export default function CommunityGuidelines() {

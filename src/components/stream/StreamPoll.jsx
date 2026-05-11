@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, CheckCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function StreamPoll({ poll, onVote, hasVoted, userVote }) {
   const [selectedOption, setSelectedOption] = useState(null);

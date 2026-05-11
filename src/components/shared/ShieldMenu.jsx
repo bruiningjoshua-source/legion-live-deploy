@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Home, Tv, Gamepad2, Users, ShoppingBag, Radio,
-  Film, BarChart2, Trophy, Star, Mic, Music, Video,
-  Wallet, Settings, Shield, Gift, Zap, Calendar,
-  ChevronRight, ChevronDown, BookOpen, Heart, Bell
+  Film, BarChart2, Trophy, Mic, Music, Video,
+  Wallet, Settings, Zap, Calendar, Heart
 } from 'lucide-react';
 
 const sections = [

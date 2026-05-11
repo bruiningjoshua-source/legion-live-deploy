@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Download, Star, ExternalLink, Radio } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, X, Star, ExternalLink, Radio } from 'lucide-react';
 
 // Large curated list of popular Google Play games users can browse/search
 const GOOGLE_PLAY_CATALOG = [

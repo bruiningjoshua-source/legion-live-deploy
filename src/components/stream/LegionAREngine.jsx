@@ -13,7 +13,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Zap, Eye, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { createWebGLPipeline } from './shaders/FilterShaders';
 
 // ── FILTER DEFINITIONS ──────────────────────────────────────────────────

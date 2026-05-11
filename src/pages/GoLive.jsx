@@ -10,11 +10,9 @@ import LegionAREngine from '@/components/stream/LegionAREngine';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
-import GoLiveTopBar from '@/components/stream/GoLiveTopBar';
-import GoLiveStreamTypeBar from '@/components/stream/GoLiveStreamTypeBar';
 
 // Detect if coming from affiliate marketplace or gaming hub
 const getInitialPlatformType = () => {

@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts';
-import { TrendingUp, Users, DollarSign, Coins, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { TrendingUp, Users, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 // ── Constants (keep in sync with CreatorPayoutSettings) ──
 const CREATOR_SHARE   = 0.50;   // Platform: 50% / Creator: 50%

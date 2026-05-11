@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Layers, 
   Plus, 
-  X, 
-  Move,
+  X,
   Type,
   Image,
   ShoppingBag,
@@ -15,7 +14,6 @@ import {
   EyeOff,
   Trash2,
   Settings,
-  GripVertical,
   ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';

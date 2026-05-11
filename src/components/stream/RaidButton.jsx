@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Input } from "@/components/ui/input";
 import { 
-  Zap, 
-  Users,
+  Zap,
   Search,
   ArrowRight,
   Radio,

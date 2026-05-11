@@ -6,11 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Clock, Percent, Gift, Zap, Plus, Trash2, 
-  Calendar, Users, Tag, Sparkles, AlertTriangle
+  Clock, Gift, Zap, Plus, Trash2, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays, differenceInHours } from 'date-fns';

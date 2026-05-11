@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 
 export default function YouTubePlayer({ url, poster, onEnded, className = '' }) {
   const iframeRef = useRef(null);

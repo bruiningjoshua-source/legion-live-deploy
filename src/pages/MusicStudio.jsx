@@ -17,15 +17,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Upload, 
-  Music, 
-  Play,
+  Music,
   X,
-  Eye,
   Trash2,
   Film,
   Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import RemixStudio from '@/components/music/RemixStudio';
 import StudioAudioEditor from '@/components/podcast/StudioAudioEditor';
 import { Globe } from 'lucide-react';

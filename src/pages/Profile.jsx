@@ -20,17 +20,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { 
-  User, 
   Edit, 
   Camera, 
   Crown, 
   Trophy, 
-  Swords, 
-  Users, 
-  Heart,
+  Swords,
   Link as LinkIcon,
   Copy,
   Check,
@@ -40,7 +36,6 @@ import {
   Video
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import StreamCard from '@/components/stream/StreamCard';

@@ -9,8 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   ShoppingBag, 
-  TrendingUp, 
-  Users,
+  TrendingUp,
   Radio,
   Grid,
   List,
@@ -20,11 +19,8 @@ import {
   Eye,
   CheckCircle,
   Sparkles,
-  Gift,
-  DollarSign,
   Target,
-  BarChart3,
-  Heart
+  BarChart3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/shared/GlassCard';

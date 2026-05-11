@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { Play, Eye, Search, Bell, Cast, ShoppingBag, MoreVertical, Flame } from 'lucide-react';
+import { Play, Eye, Search, Bell, Cast, ShoppingBag, MoreVertical } from 'lucide-react';
 
 function formatCount(n) {
   if (!n) return '0';

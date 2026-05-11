@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowDownRight, 
   History,
-  Crown,
   Gift,
   CreditCard,
   Coins,

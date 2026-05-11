@@ -3,7 +3,7 @@
  * Equivalent to a dedicated streaming microservice.
  */
 import { base44 } from '@/api/base44Client';
-import { STREAM, ERROR, FEES } from './constants';
+import { STREAM } from './constants';
 
 class StreamService {
   /** Create a new stream record */

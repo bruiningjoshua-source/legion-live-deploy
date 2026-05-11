@@ -9,20 +9,11 @@ import {
   Ticket, 
   Calendar, 
   Clock, 
-  Play, 
-  Star,
-  Users,
-  DollarSign,
-  Sparkles,
-  CheckCircle,
-  Lock,
-  Film,
-  Mic,
-  Trophy,
-  Gamepad2
+  Play,
+  CheckCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, formatDistanceToNow, isPast, isFuture } from 'date-fns';
+import { format, formatDistanceToNow, isFuture } from 'date-fns';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import GlassCard from '@/components/shared/GlassCard';

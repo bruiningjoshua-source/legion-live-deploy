@@ -10,7 +10,6 @@
  * - Animated overlays and effects
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { FaceMesh } from '@mediapipe/face_mesh';
 import { SelfieSegmentation } from '@mediapipe/selfie_segmentation';
 import { Camera } from '@mediapipe/camera_utils';

@@ -16,13 +16,11 @@ import {
   TrendingUp,
   Eye,
   Zap,
-  Trash2,
   Power,
   Shield,
   BarChart3,
   Briefcase,
   Bot,
-  CreditCard,
   Gift
 } from 'lucide-react';
 import { motion } from 'framer-motion';

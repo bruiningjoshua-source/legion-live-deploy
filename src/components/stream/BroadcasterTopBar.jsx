@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Edit2, Eye, Check, Camera, Image, X, Loader2, Radio } from 'lucide-react';
+import { Edit2, Eye, Check, Camera, Image, X, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 

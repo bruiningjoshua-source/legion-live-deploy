@@ -3,7 +3,6 @@
  * Uses MediaPipe Selfie Segmentation for person/background separation
  */
 
-import React from 'react';
 
 class BackgroundProcessorCore {
   constructor() {

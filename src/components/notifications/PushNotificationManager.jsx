@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Check } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PushNotificationManager({ user }) {

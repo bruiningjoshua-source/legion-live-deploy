@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
@@ -25,19 +25,15 @@ import {
 import { 
   Wallet, 
   Plus, 
-  Trash2, 
-  Check, 
-  AlertCircle,
+  Trash2,
   DollarSign,
-  ArrowRight,
   Loader2,
   Info,
   ShieldCheck
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import StripeConnectKYC from './StripeConnectKYC';
-import CancelSubscriptionModal from '@/components/monetization/CancelSubscriptionModal';
 
 const PAYOUT_METHODS = [
   { id: 'stripe_connect', name: 'Bank Account (Stripe)', icon: '🏦', placeholder: 'Connect your bank', recommended: true },

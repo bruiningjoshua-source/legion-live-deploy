@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { X, Maximize, Minimize, Radio, Download, ExternalLink, Star, Gamepad2 } from 'lucide-react';
+import { X, Maximize, Minimize, Radio, Download, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Curated HTML5 games that can be embedded and played in-browser

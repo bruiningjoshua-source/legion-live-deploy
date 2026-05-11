@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, Square, Pause, Play, Trash2, Volume2, VolumeX,
-  Settings2, Activity, Sliders, Headphones, Radio,
+  Mic, Square, Pause, Play, Trash2, Activity, Sliders,
   AlertCircle, CheckCircle, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';

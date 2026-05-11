@@ -3,11 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  ShoppingBag, Package, DollarSign, ExternalLink,
-  Play, Eye, Radio, Percent, Star, ArrowRight,
-  Clock, Gavel, TrendingUp, Tag
+  ShoppingBag, Package, Radio, Percent, ArrowRight, Gavel
 } from 'lucide-react';
 
 function ProductCard({ product, compact = false }) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +8,7 @@ import {
   Crown, 
   Check, 
   Star, 
-  Zap, 
   DollarSign,
-  Radio,
   Gift,
   TrendingUp,
   Loader2

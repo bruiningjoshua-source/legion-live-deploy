@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
-import VideoFeedCard from '@/components/amphitheatre/VideoFeedCard';
 import AmphitheatreSidebar from '@/components/amphitheatre/AmphitheatreSidebar';
 
 export default function WatchLater() {

@@ -19,9 +19,7 @@ import {
   Video,
   Upload,
   BarChart3,
-  Settings,
   Search,
-  Plus,
   Eye,
   ThumbsUp,
   MessageSquare,
@@ -37,7 +35,6 @@ import {
   XCircle,
   TrendingUp,
   Users,
-  DollarSign,
   Play,
   Filter
 } from 'lucide-react';

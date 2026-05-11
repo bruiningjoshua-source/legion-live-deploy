@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Radio, Monitor, Smartphone, Maximize2, Settings, AlertCircle } from 'lucide-react';
+import { Radio, Monitor, Smartphone, AlertCircle } from 'lucide-react';
 
 export default function MobileScreenShareManager({ user, onStreamReady }) {
   const [isSharing, setIsSharing] = useState(false);

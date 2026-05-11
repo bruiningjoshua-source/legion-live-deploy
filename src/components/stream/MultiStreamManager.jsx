@@ -9,10 +9,6 @@ import {
   Twitch, 
   X,
   Plus,
-  Check,
-  AlertCircle,
-  Link as LinkIcon,
-  Settings,
   Play,
   Pause,
   RefreshCw

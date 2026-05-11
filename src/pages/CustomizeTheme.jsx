@@ -22,7 +22,6 @@ import {
   Save, 
   RotateCcw,
   Sparkles,
-  Image as ImageIcon,
   Type,
   Layout,
   Eye

@@ -3,7 +3,7 @@
  * Equivalent to a dedicated chat/messaging microservice.
  */
 import { base44 } from '@/api/base44Client';
-import { STREAM, ERROR } from './constants';
+import { STREAM } from './constants';
 import RateLimitService from './RateLimitService';
 
 class ChatService {

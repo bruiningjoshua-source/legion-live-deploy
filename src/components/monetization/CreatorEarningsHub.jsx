@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, TrendingUp, DollarSign, Lock } from 'lucide-react';
+import { TrendingUp, DollarSign, Lock } from 'lucide-react';
 
 const DENARII_PER_USD = 180;
 const CREATOR_SHARE = 0.60;

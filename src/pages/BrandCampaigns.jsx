@@ -7,10 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Briefcase, CheckCircle, XCircle, Clock, DollarSign,
-  Eye, MousePointerClick, TrendingUp, Store, Tag,
-  Plus, BarChart3, Zap, ArrowRight, Package, Users,
-  Star, Shield, Globe, Percent, ChevronRight,
-  Radio, Target, Award, Sparkles
+  Eye, MousePointerClick, Store,
+  Plus, BarChart3, Users, Percent,
+  Radio, Target, Award
 } from 'lucide-react';
 
 const BRAND_CATEGORIES = [

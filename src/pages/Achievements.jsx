@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trophy, Star, Lock, Eye, Users, Video, Zap, Sparkles, Medal, Award, Target } from 'lucide-react';
+import { Trophy, Star, Lock, Eye, Users, Video, Sparkles, Award, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import GlassCard from '@/components/shared/GlassCard';
