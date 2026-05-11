@@ -24,7 +24,6 @@ import { Toaster } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
@@ -57,24 +56,17 @@ export default function Layout({ children, currentPageName }) {
     OfflineService.init();
   }, []);
 
+  // Layout is only rendered when user is authenticated (App.jsx gates this).
+  // Skip redundant base44.auth.isAuthenticated() — trust the parent auth context.
+  const isAuthenticated = true;
+
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const authenticated = await base44.auth.isAuthenticated();
-        setIsAuthenticated(authenticated);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setIsAuthenticated(false);
-      }
-      
-      // Always show loading screen on fresh app load; suppress on navigations within session
-      const sessionKey = window.__legionSessionStarted;
-      if (!sessionKey) {
-        window.__legionSessionStarted = true;
-        setShowLoadingScreen(true);
-      }
-    };
-    checkAuth();
+    // Show loading screen on fresh app load; suppress on navigations within session
+    const sessionKey = window.__legionSessionStarted;
+    if (!sessionKey) {
+      window.__legionSessionStarted = true;
+      setShowLoadingScreen(true);
+    }
   }, []);
 
   const { data: user, refetch: refetchUser } = useQuery({

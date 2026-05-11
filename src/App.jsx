@@ -52,8 +52,13 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (!isAuthenticated && window.location.pathname === '/login') {
-    return <Auth />;
+  // Unauthenticated: show login page regardless of path
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="*" element={<Auth />} />
+      </Routes>
+    );
   }
 
   return (
