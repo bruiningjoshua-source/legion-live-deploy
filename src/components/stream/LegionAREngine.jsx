@@ -14,6 +14,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Zap, Eye, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { createWebGLPipeline } from './shaders/FilterShaders';
 
 // ── FILTER DEFINITIONS ──────────────────────────────────────────────────
 const FILTERS = [
@@ -311,6 +312,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   const [fps, setFps] = useState(0);
 
   const canvasRef = useRef(null);
+  const glPipelineRef = useRef(null);
   const outputCanvasRef = useRef(null);
   const animFrameRef = useRef(null);
   const particlesRef = useRef([]);
@@ -384,38 +386,44 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       return;
     }
 
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const W = canvas.width = video.videoWidth || 720;
+    const W = canvas.width  = video.videoWidth  || 720;
     const H = canvas.height = video.videoHeight || 1280;
 
-    // Draw background if replacing
-    if (activeBg.id !== 'none' && !activeBg.id.startsWith('blur')) {
-      drawBackground(ctx, canvas, activeBg);
-    }
-
-    // Draw video frame (mirrored for selfie)
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, -W, 0, W, H);
-    ctx.restore();
-
-    // Apply blur to background (CSS approximation)
-    if (activeBg.id.startsWith('blur')) {
-      const blurAmount = activeBg.id === 'blur_strong' ? '8px' : '4px';
-      canvas.style.filter = `blur(${blurAmount})`;
-      // Re-draw center (face area) sharp
-      ctx.save();
-      canvas.style.filter = '';
-      ctx.restore();
+    // Try GPU-accelerated WebGL pipeline first
+    if (!glPipelineRef.current) glPipelineRef.current = createWebGLPipeline(canvas);
+    
+    if (glPipelineRef.current && activeFilter.id !== 'none') {
+      glPipelineRef.current.render(video, activeFilter.id, W, H);
     } else {
-      canvas.style.filter = '';
+      // Fallback to CPU canvas
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      // Draw background if replacing
+      if (activeBg.id !== 'none' && !activeBg.id.startsWith('blur')) {
+        drawBackground(ctx, canvas, activeBg);
+      }
+
+      // Draw video frame (mirrored for selfie)
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -W, 0, W, H);
+      ctx.restore();
+
+      canvas.style.filter = activeFilter.css || '';
+
+      // Apply color grade filter
+      applyFilterToCanvas(activeFilter, ctx, canvas);
     }
 
-    // Apply color grade filter
-    applyFilterToCanvas(activeFilter, ctx, canvas);
+    // Send processed stream to Zego
+    if (!canvas._streamCaptured && onProcessedStream) {
+      try { const s = canvas.captureStream(30); onProcessedStream(s); canvas._streamCaptured = true; }
+      catch(e){ console.warn('[LegionAR] captureStream:', e.message); }
+    }
 
-    // Draw particles
+    // Draw particles (need 2d context for particles overlay)
     if (activeOverlay.id !== 'none' && activeOverlay.type === 'particle') {
+      const particleCtx = canvas.getContext('2d', { willReadFrequently: true });
       // Spawn new particles
       if (Math.random() < 0.3) {
         particlesRef.current.push(new Particle(W, H, activeOverlay.id));
@@ -426,7 +434,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       particlesRef.current = particlesRef.current.filter(p => p.life > 0);
       particlesRef.current.forEach(p => {
         p.update();
-        p.draw(ctx);
+        p.draw(particleCtx);
       });
     }
 
@@ -454,6 +462,9 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
+      glPipelineRef.current?.destroy();
+      glPipelineRef.current = null;
+      if (canvasRef.current) canvasRef.current._streamCaptured = false;
     };
   }, [processFrame, activeFilter, activeOverlay, activeBg]);
 
