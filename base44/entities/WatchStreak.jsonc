@@ -1,0 +1,63 @@
+{
+  "name": "WatchStreak",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "current_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "longest_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "last_watch_date": {
+      "type": "string",
+      "description": "ISO date string YYYY-MM-DD"
+    },
+    "total_days_watched": {
+      "type": "number",
+      "default": 0
+    },
+    "streak_reward_claimed_at": {
+      "type": "string"
+    },
+    "milestone_3_claimed": {
+      "type": "boolean",
+      "default": false
+    },
+    "milestone_7_claimed": {
+      "type": "boolean",
+      "default": false
+    },
+    "milestone_14_claimed": {
+      "type": "boolean",
+      "default": false
+    },
+    "milestone_30_claimed": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "user_email": "{{user.email}}"
+    },
+    "read": {
+      "user_email": "{{user.email}}"
+    },
+    "update": {
+      "user_email": "{{user.email}}"
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

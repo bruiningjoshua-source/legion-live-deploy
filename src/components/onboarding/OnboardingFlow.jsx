@@ -28,9 +28,19 @@ export default function OnboardingFlow({ user, onComplete }) {
   const completeMutation = useMutation({
     mutationFn: async () => {
       await base44.auth.updateMe({ interests: selected }).catch(()=>{});
-      const wallets = await base44.entities.Wallet.filter({ user_email:user.email }, null, 1);
-      if (wallets[0]) await base44.entities.Wallet.update(wallets[0].id, { denarii_balance:(wallets[0].denarii_balance||0)+50 });
-      localStorage.setItem('ll_onboarded','true');
+      // Try to add bonus to existing wallet; if none exists yet, create one
+      try {
+        const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
+        if (wallets[0]) {
+          await base44.entities.Wallet.update(wallets[0].id, { denarii_balance: (wallets[0].denarii_balance || 0) + 50 });
+        } else {
+          await base44.entities.Wallet.create({ user_email: user.email, denarii_balance: 550 });
+        }
+      } catch (e) {
+        console.warn('[Onboarding] Wallet bonus failed:', e.message);
+        // Non-critical — don't block onboarding completion
+      }
+      localStorage.setItem('ll_onboarded', 'true');
     },
     onSuccess: () => { queryClient.invalidateQueries(['wallet']); onComplete?.(); },
     onError:   () => toast.error('Setup failed. Please try again.'),
