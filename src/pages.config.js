@@ -123,6 +123,7 @@ import WatchStream from './pages/WatchStream';
 import WatchVideo from './pages/WatchVideo';
 import CreatorPayoutForecast from './pages/CreatorPayoutForecast';
 import EarningsDashboard from './pages/EarningsDashboard';
+import LegionSpaces from './pages/LegionSpaces';
 import __Layout from './Layout.jsx';
 
 
@@ -203,6 +204,7 @@ export const PAGES = {
     "WatchVideo": WatchVideo,
     "CreatorPayoutForecast": CreatorPayoutForecast,
     "EarningsDashboard": EarningsDashboard,
+    "LegionSpaces": LegionSpaces,
 }
 
 export const pagesConfig = {

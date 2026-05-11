@@ -68,12 +68,12 @@ const hubs = [
   },
   {
     name: 'Spaces',
-    sub: 'Audio Rooms',
+    sub: '3D Social World',
     path: 'LegionSpaces',
     icon: Globe,
-    color: '#06b6d4',
-    glow: 'rgba(6,182,212,0.35)',
-    badge: 'LIVE',
+    color: '#8b5cf6',
+    glow: 'rgba(139,92,246,0.35)',
+    badge: '3D',
   },
 ];
 
