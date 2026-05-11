@@ -9,6 +9,7 @@ import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
+import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
@@ -421,12 +422,14 @@ export default function GoLive() {
             videoRef={videoRef}
             onProcessedStream={(stream) => {
               if (!stream) return;
+              // Start mic lip-sync from camera stream audio
+              if (cameraStream) startMicLipSync(cameraStream);
               const track = stream.getVideoTracks()[0];
               if (track && typeof ZegoService.replaceTrack === "function") {
                 ZegoService.replaceTrack(track).catch(console.warn);
               }
             }}
-            onClose={() => setMocapMode(false)}
+            onClose={() => { setMocapMode(false); stopMicLipSync(); }}
           />
         )}
       </div>

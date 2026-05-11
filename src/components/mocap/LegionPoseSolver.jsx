@@ -52,8 +52,35 @@ function angleBetween(a,b) {
   return Math.acos(Math.max(-1,Math.min(1,dot(norm(a),norm(b)))));
 }
 
+// ── Post-solve smoothing layer (applied after raw solve, before bone application) ──
+// Provides jitter reduction and dropped-frame compensation.
+let _prevFace = null;
+let _prevPose = null;
+let _lastFaceTime = 0;
+let _lastPoseTime = 0;
+const POSE_SMOOTH = 0.15;      // per-channel smoothing for pose rig
+const FACE_SMOOTH = 0.15;      // per-channel smoothing for face rig
+const DROP_THRESHOLD_MS = 150;  // if gap > this, hold previous values
+
+function smoothRig(prev, next, factor, now, lastTime) {
+  if (!next) return prev; // dropped frame → hold
+  if (!prev) return next; // first frame
+  if (now - lastTime > DROP_THRESHOLD_MS) return prev; // gap too large → hold to prevent snap
+  const out = {};
+  for (const k of Object.keys(next)) {
+    const p = prev[k]; const n = next[k];
+    if (typeof n === 'number' && typeof p === 'number') {
+      out[k] = p + (n - p) * factor;
+    } else {
+      out[k] = n;
+    }
+  }
+  return out;
+}
+
 export function solveFace(faceLM) {
-  if (!faceLM||faceLM.length<468) return null;
+  if (!faceLM||faceLM.length<468) return _prevFace; // hold on missing data
+  const now = Date.now();
   const nose=faceLM[1], chin=faceLM[152], lEar=faceLM[234], rEar=faceLM[454];
   const upV=sub(nose,chin), rightV=sub(rEar,lEar);
   const pitch = Math.atan2(upV.z??0, len({x:upV.x,y:upV.y,z:0})) * -2.5;
@@ -64,11 +91,16 @@ export function solveFace(faceLM) {
   const blinkL=Math.max(0,Math.min(1,1.0-lEyeV/lEyeH*6));
   const blinkR=Math.max(0,Math.min(1,1.0-rEyeV/rEyeH*6));
   const mouthOpen=Math.max(0,Math.min(1,len(sub(faceLM[13],faceLM[14]))/(len(sub(faceLM[61],faceLM[291]))+0.001)*2));
-  return { pitch:clampA(pitch), yaw:clampA(yaw), roll:clampA(roll), blinkL, blinkR, mouthOpen };
+  const raw = { pitch:clampA(pitch), yaw:clampA(yaw), roll:clampA(roll), blinkL, blinkR, mouthOpen };
+  const smoothed = smoothRig(_prevFace, raw, FACE_SMOOTH, now, _lastFaceTime);
+  _prevFace = smoothed;
+  _lastFaceTime = now;
+  return smoothed;
 }
 
 export function solvePose(poseLM) {
-  if (!poseLM||poseLM.length<33) return null;
+  if (!poseLM||poseLM.length<33) return _prevPose; // hold on missing data
+  const now = Date.now();
   const lSh=poseLM[11],rSh=poseLM[12],lEl=poseLM[13],rEl=poseLM[14];
   const lWr=poseLM[15],rWr=poseLM[16],lHip=poseLM[23],rHip=poseLM[24];
   const shAxis=sub(rSh,lSh);
@@ -83,7 +115,11 @@ export function solvePose(poseLM) {
   const shMid =v3((lSh.x+rSh.x)/2,(lSh.y+rSh.y)/2,(lSh.z+rSh.z)/2);
   const spineV=norm(sub(shMid,hipMid));
   const spinePitch=Math.atan2(spineV.z??0,spineV.y)*0.5;
-  return { spineRoll:clampA(spineRoll*0.3), spinePitch:clampA(spinePitch), lUpperArmZ:clampA(lUArmZ), rUpperArmZ:clampA(rUArmZ), lForeArmBend:clampA(lFArmB), rForeArmBend:clampA(rFArmB) };
+  const raw = { spineRoll:clampA(spineRoll*0.3), spinePitch:clampA(spinePitch), lUpperArmZ:clampA(lUArmZ), rUpperArmZ:clampA(rUArmZ), lForeArmBend:clampA(lFArmB), rForeArmBend:clampA(rFArmB) };
+  const smoothed = smoothRig(_prevPose, raw, POSE_SMOOTH, now, _lastPoseTime);
+  _prevPose = smoothed;
+  _lastPoseTime = now;
+  return smoothed;
 }
 
 export function solveHand(handLM) {
