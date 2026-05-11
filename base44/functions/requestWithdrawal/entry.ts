@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
  * Request a withdrawal from creator earnings
@@ -83,15 +83,15 @@ Deno.serve(async (req) => {
 
     // Deduct from wallet (preserve denarii precision)
     const denariiToDeduct = amount * 65;
-    await base44.entities.Wallet.update(wallet.id, {
+    await base44.asServiceRole.entities.Wallet.update(wallet.id, {
       denarii_balance: Math.max(0, (wallet.denarii_balance || 0) - denariiToDeduct)
     }).catch(err => {
       console.error('[requestWithdrawal] Wallet deduction failed:', err);
       throw err;
     });
 
-    // Log to audit
-    const auditLog = await base44.entities.WalletAuditLog?.create({
+    // Log to audit (requires service role — WalletAuditLog has admin-only create RLS)
+    const auditLog = await base44.asServiceRole.entities.WalletAuditLog.create({
       user_email: user.email,
       wallet_id: wallet.id,
       action: 'withdrawal_request',

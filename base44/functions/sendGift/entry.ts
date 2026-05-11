@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const GIFT_CREATOR_SHARE_BASE = 0.60;
 const MAX_GIFT_QUANTITY = 100;

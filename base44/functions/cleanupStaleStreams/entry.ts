@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Production cleanup: ends stale streams, resets orphaned creators, expires old bans
 // Runs every 30 minutes via scheduled automation

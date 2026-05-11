@@ -659,6 +659,36 @@ class ZegoStreamingService {
 
   getRoomId() { return this.roomId; }
   getUserId() { return this.userId; }
+
+  // ─── TRACK REPLACEMENT (AR/MoCap pipeline) ─────────────────────
+
+  async replaceTrack(newVideoTrack) {
+    if (!this.engine || !this.localStream || !this.isPublishing) {
+      console.warn('[Zego] replaceTrack: not publishing, skipping');
+      return false;
+    }
+    try {
+      // Get existing video track from localStream
+      const oldTracks = this.localStream.getVideoTracks();
+      // Remove old video track and add new one
+      oldTracks.forEach(t => {
+        this.localStream.removeTrack(t);
+        t.stop();
+      });
+      this.localStream.addTrack(newVideoTrack);
+
+      // Re-publish with updated stream
+      const sid = this.publishStreamId || this.roomId || '';
+      this.engine.stopPublishingStream(sid);
+      await this.engine.startPublishingStream(sid, this.localStream);
+
+      console.log('[Zego] Track replaced successfully');
+      return true;
+    } catch (e) {
+      console.error('[Zego] replaceTrack error:', e.message);
+      return false;
+    }
+  }
 }
 
 export default new ZegoStreamingService();
