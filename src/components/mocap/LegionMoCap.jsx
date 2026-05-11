@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, RotateCcw, User } from 'lucide-react';
 import { createFilterBank, smoothLandmarks, solveFace, solvePose } from './LegionPoseSolver';
-import { buildAvatarFromLAF, applyPoseToAvatar } from './LegionAvatarRenderer';
+import { buildAvatarFromLAF, applyPoseToAvatar, applyBlendShapes } from './LegionAvatarRenderer';
 
 const PRESETS = [
   { id:'warrior',   name:'Warrior',     skinColor:'#e8b89a', hairColor:'#3d2506', bodyColor:'#1a2742', eyeColor:'#1a5276' },
@@ -68,10 +68,7 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
     const faceRig = solveFace(faceLM);
     const poseRig = solvePose(poseLM);
     applyPoseToAvatar(avatar.bones, faceRig, poseRig);
-    if (faceRig && avatar.blendShapes) {
-      avatar.blendShapes.lEye.scale.y = Math.max(0.05, 1.0-faceRig.blinkL);
-      avatar.blendShapes.rEye.scale.y = Math.max(0.05, 1.0-faceRig.blinkR);
-    }
+    applyBlendShapes(avatar.blendShapes, faceRig);
     if (rendererRef.current && sceneRef.current && cameraRef.current) rendererRef.current.render(sceneRef.current, cameraRef.current);
     const canvas = canvasRef.current;
     if (canvas && !streamSentRef.current && onProcessedStream) {

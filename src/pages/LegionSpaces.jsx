@@ -17,6 +17,7 @@ function LegionRoom({ spaceUsers, currentUser, mode }) {
   const cameraRef   = useRef(null);
   const animRef     = useRef(null);
   const avatarMeshes = useRef({});
+  const resizeRef   = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -27,16 +28,21 @@ function LegionRoom({ spaceUsers, currentUser, mode }) {
       const THREE = await import("three");
       if (destroyed) return;
 
-      // Renderer
+      // Renderer — tone-mapped for HDR-like feel
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setSize(canvas.offsetWidth || 360, canvas.offsetHeight || 500);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
       rendererRef.current = renderer;
 
-      // Scene
+      // Scene with atmospheric fog
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#0c0c14');
+      scene.background = new THREE.Color('#080812');
+      scene.fog = new THREE.FogExp2('#080812', 0.035);
       sceneRef.current = scene;
 
       // Camera: isometric for Social 3D, first-person for VR/AR
@@ -52,86 +58,151 @@ function LegionRoom({ spaceUsers, currentUser, mode }) {
       }
       cameraRef.current = camera;
 
-      // Lighting
-      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-      const sun = new THREE.DirectionalLight(0xf5a623, 1.2);
-      sun.position.set(5, 10, 5); sun.castShadow = true;
+      // Lighting — three-point cinematic setup
+      const ambient = new THREE.AmbientLight(0x1a1a2e, 0.6);
+      scene.add(ambient);
+
+      // Key light (warm gold, soft shadows)
+      const sun = new THREE.DirectionalLight(0xf5a623, 1.4);
+      sun.position.set(5, 10, 5);
+      sun.castShadow = true;
+      sun.shadow.mapSize.width = 1024;
+      sun.shadow.mapSize.height = 1024;
+      sun.shadow.camera.near = 0.5;
+      sun.shadow.camera.far = 30;
+      sun.shadow.camera.left = -12;
+      sun.shadow.camera.right = 12;
+      sun.shadow.camera.top = 12;
+      sun.shadow.camera.bottom = -12;
+      sun.shadow.bias = -0.001;
+      sun.shadow.radius = 3;
       scene.add(sun);
-      const fill = new THREE.PointLight(0x8b5cf6, 0.8, 25);
+
+      // Fill light (cool purple, orbiting)
+      const fill = new THREE.PointLight(0x8b5cf6, 0.7, 25);
       fill.position.set(-5, 3, -5);
       scene.add(fill);
 
-      // Floor
+      // Rim/back light for depth separation
+      const rim = new THREE.DirectionalLight(0x3b82f6, 0.5);
+      rim.position.set(-3, 6, -8);
+      scene.add(rim);
+
+      // Hemisphere light for natural ambient
+      const hemi = new THREE.HemisphereLight(0x1a1a3e, 0x0a0a14, 0.4);
+      scene.add(hemi);
+
+      // Floor — reflective standard material
       const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(18, 18),
-        new THREE.MeshLambertMaterial({ color: '#1a1a2e' })
+        new THREE.MeshStandardMaterial({ color: '#12121e', roughness: 0.8, metalness: 0.15 })
       );
       floor.rotation.x = -Math.PI / 2;
       floor.receiveShadow = true;
       scene.add(floor);
-      scene.add(new THREE.GridHelper(18, 18, 0x2a2a3d, 0x1e1e30));
 
-      // Room walls (back-face rendered box)
+      // Subtle grid
+      const grid = new THREE.GridHelper(18, 24, 0x1e1e35, 0x14142a);
+      grid.material.opacity = 0.4;
+      grid.material.transparent = true;
+      scene.add(grid);
+
+      // Room walls — standard material for light interaction
       const room = new THREE.Mesh(
         new THREE.BoxGeometry(18, 9, 18),
-        new THREE.MeshLambertMaterial({ color: '#16213e', side: 1 })
+        new THREE.MeshStandardMaterial({ color: '#10102a', roughness: 0.9, metalness: 0.0, side: 1 })
       );
       room.position.y = 4.5;
       scene.add(room);
 
-      // Stage for streaming creator
+      // Stage — emissive gold platform
       const stage = new THREE.Mesh(
         new THREE.BoxGeometry(4.5, 0.18, 3.5),
-        new THREE.MeshLambertMaterial({ color: '#f5a623', emissive: '#b87b1a', emissiveIntensity: 0.35 })
+        new THREE.MeshStandardMaterial({
+          color: '#f5a623', roughness: 0.35, metalness: 0.3,
+          emissive: '#b87b1a', emissiveIntensity: 0.4,
+        })
       );
       stage.position.set(0, 0.09, -5.5);
+      stage.castShadow = true;
+      stage.receiveShadow = true;
       scene.add(stage);
+
+      // Stage spotlight (volumetric feel)
+      const stageSpot = new THREE.SpotLight(0xf5a623, 1.5, 12, Math.PI / 6, 0.5, 1.5);
+      stageSpot.position.set(0, 8, -5);
+      stageSpot.target.position.set(0, 0, -5.5);
+      scene.add(stageSpot);
+      scene.add(stageSpot.target);
 
       // Legion LIVE branding on back wall
       const brandPanel = new THREE.Mesh(
         new THREE.PlaneGeometry(5, 1.4),
-        new THREE.MeshLambertMaterial({ color: '#f5a623', emissive: '#f5a623', emissiveIntensity: 0.5 })
+        new THREE.MeshStandardMaterial({
+          color: '#f5a623', roughness: 0.2, metalness: 0.5,
+          emissive: '#f5a623', emissiveIntensity: 0.6,
+        })
       );
       brandPanel.position.set(0, 6, -8.9);
       scene.add(brandPanel);
 
-      // Ambient glow orbs on ceiling
+      // Ambient glow orbs on ceiling (with visible spheres)
       const orbColors = [0xf5a623, 0x8b5cf6, 0xe63946];
+      const orbs = [];
       orbColors.forEach((color, i) => {
-        const orb = new THREE.PointLight(color, 0.6, 15);
+        const orb = new THREE.PointLight(color, 0.5, 15);
         orb.position.set((i - 1) * 5, 7.5, -3);
         scene.add(orb);
+        // Visible emissive sphere
+        const orbSphere = new THREE.Mesh(
+          new THREE.SphereGeometry(0.15, 12, 12),
+          new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1.5, roughness: 0.1, metalness: 0.0 })
+        );
+        orbSphere.position.copy(orb.position);
+        scene.add(orbSphere);
+        orbs.push({ light: orb, mesh: orbSphere });
       });
 
-      // Seating: three rows of benches
-      const benchMat = new THREE.MeshLambertMaterial({ color: '#1d1d2e' });
+      // Seating: three rows of benches (PBR materials)
+      const benchMat = new THREE.MeshStandardMaterial({ color: '#1d1d2e', roughness: 0.7, metalness: 0.1 });
       for (let row = 0; row < 3; row++) {
         for (let col = -2; col <= 2; col++) {
           const bench = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.35, 0.5), benchMat);
           bench.position.set(col * 1.4, 0.175, row * 1.6 + 1.2);
           bench.castShadow = true;
+          bench.receiveShadow = true;
           scene.add(bench);
         }
       }
 
-      // Helper to build a simple avatar blob for a user
+      // Helper to build a stylized avatar for a user (PBR + idle-ready)
       const buildAvatarMesh = (color) => {
         const group = new THREE.Group();
-        const mat = new THREE.MeshLambertMaterial({ color });
+        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.1 });
         // Body
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.55, 10), mat);
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.55, 12), mat);
         body.position.set(0, 0.275, 0);
+        body.castShadow = true;
         group.add(body);
         // Head
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), mat);
+        const headGeo = new THREE.SphereGeometry(0.2, 14, 14);
+        headGeo.scale(1, 1.05, 1);
+        const head = new THREE.Mesh(headGeo, mat);
         head.position.set(0, 0.82, 0);
+        head.castShadow = true;
         group.add(head);
+        group.userData.head = head;
         // Eyes
-        const eyeMat = new THREE.MeshLambertMaterial({ color: '#ffffff' });
+        const eyeMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 });
+        const pupilMat = new THREE.MeshStandardMaterial({ color: '#1a1a2e', roughness: 0.2 });
         [-0.075, 0.075].forEach(x => {
-          const eye = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
-          eye.position.set(x, 0.86, 0.18);
-          group.add(eye);
+          const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), eyeMat);
+          sclera.position.set(x, 0.86, 0.17);
+          group.add(sclera);
+          const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), pupilMat);
+          pupil.position.set(x, 0.86, 0.20);
+          group.add(pupil);
+          group.userData[x < 0 ? 'lEye' : 'rEye'] = sclera;
         });
         return group;
       };
@@ -155,27 +226,76 @@ function LegionRoom({ spaceUsers, currentUser, mode }) {
       };
       placeAvatars();
 
-      // Animate
+      // Animate — smooth idle with breathing, blinking, head sway
       let t = 0;
+      let lastBlinkTime = 0;
+      const blinkInterval = 3500;
+      const blinkDuration = 120;
+
       const animate = () => {
         if (destroyed) return;
         animRef.current = requestAnimationFrame(animate);
         t += 0.008;
-        // Gentle avatar idle bob
+        const now = performance.now();
+
+        // Avatar idle animations
         Object.values(avatarMeshes.current).forEach((m, i) => {
-          m.position.y = Math.sin(t + i * 1.2) * 0.03;
-          m.rotation.y = Math.sin(t * 0.3 + i) * 0.08;
+          const phase = i * 1.2;
+          // Breathing bob
+          m.position.y = Math.sin(t * 1.4 + phase) * 0.015;
+          // Subtle body sway
+          m.rotation.y = Math.sin(t * 0.3 + phase) * 0.06;
+          // Head micro-movement
+          const head = m.userData?.head;
+          if (head) {
+            head.rotation.x = Math.sin(t * 0.7 + phase) * 0.03;
+            head.rotation.y = Math.sin(t * 0.5 + phase * 0.7) * 0.04;
+            // Auto-blink
+            const blinking = (now - lastBlinkTime) < blinkDuration;
+            const eyeScale = blinking ? 0.1 : 1.0;
+            const lEye = m.userData?.lEye;
+            const rEye = m.userData?.rEye;
+            if (lEye) lEye.scale.y += (eyeScale - lEye.scale.y) * 0.4;
+            if (rEye) rEye.scale.y += (eyeScale - rEye.scale.y) * 0.4;
+          }
         });
+
+        // Trigger blink periodically
+        if (now - lastBlinkTime > blinkInterval + Math.random() * 2000) {
+          lastBlinkTime = now;
+        }
+
         // Orbit fill light slowly
         fill.position.x = Math.sin(t * 0.4) * 7;
         fill.position.z = Math.cos(t * 0.4) * 7;
+
+        // Gentle orb pulse
+        orbs.forEach((o, i) => {
+          const pulse = 0.4 + Math.sin(t * 1.5 + i * 2.1) * 0.15;
+          o.light.intensity = pulse;
+          o.mesh.scale.setScalar(0.9 + Math.sin(t * 1.2 + i * 1.7) * 0.15);
+        });
+
         renderer.render(scene, camera);
       };
+      // Resize handler — store ref for cleanup
+      const handleResize = () => {
+        if (destroyed || !canvas) return;
+        const w = canvas.offsetWidth || 360;
+        const h = canvas.offsetHeight || 500;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      };
+      resizeRef.current = handleResize;
+      window.addEventListener('resize', handleResize);
+
       animate();
     })();
 
     return () => {
       destroyed = true;
+      if (resizeRef.current) window.removeEventListener('resize', resizeRef.current);
       cancelAnimationFrame(animRef.current);
       rendererRef.current?.dispose();
     };

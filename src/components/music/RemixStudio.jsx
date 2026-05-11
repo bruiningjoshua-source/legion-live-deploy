@@ -273,44 +273,137 @@ export default function RemixStudio({ onRecordingComplete }) {
   const audioCtxRef = useRef(null);
 
   const getAudioContext = () => {
-    if (!audioCtxRef.current) {
+    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(() => {});
     }
     return audioCtxRef.current;
   };
 
+  // Cleanup audio context on unmount
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(specFrameRef.current);
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, []);
+
+  // Spectrum analyzer for visual feedback
+  const analyserRef = useRef(null);
+  const [spectrumData, setSpectrumData] = useState(new Array(16).fill(0));
+  const specFrameRef = useRef(null);
+
+  const getAnalyser = useCallback(() => {
+    if (analyserRef.current) return analyserRef.current;
+    const ctx = getAudioContext();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 64;
+    analyser.smoothingTimeConstant = 0.7;
+    analyser.connect(ctx.destination);
+    analyserRef.current = analyser;
+    return analyser;
+  }, []);
+
+  // Spectrum animation loop
+  useEffect(() => {
+    const updateSpectrum = () => {
+      specFrameRef.current = requestAnimationFrame(updateSpectrum);
+      if (!analyserRef.current) return;
+      const data = new Uint8Array(analyserRef.current.frequencyBinCount);
+      analyserRef.current.getByteFrequencyData(data);
+      const bars = [];
+      const step = Math.floor(data.length / 16);
+      for (let i = 0; i < 16; i++) {
+        bars.push(data[i * step] / 255);
+      }
+      setSpectrumData(bars);
+    };
+    updateSpectrum();
+    return () => cancelAnimationFrame(specFrameRef.current);
+  }, []);
+
   const playTone = useCallback((pad) => {
     try {
       const ctx = getAudioContext();
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      const filterNode = ctx.createBiquadFilter();
+      const analyser = getAnalyser();
+      const now = ctx.currentTime;
 
-      oscillator.connect(filterNode);
-      filterNode.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      // Different sounds per type
+      // Richer synthesis per type
       const typeConfig = {
-        drums: { type: 'sawtooth', freq: 80, duration: 0.1, filter: 200 },
-        bass: { type: 'sine', freq: 120, duration: 0.3, filter: 800 },
-        melody: { type: 'sine', freq: 440, duration: 0.4, filter: 2000 },
-        fx: { type: 'square', freq: 200, duration: 0.2, filter: 1500 },
+        drums: {
+          osc: [
+            { type: 'sine', freq: 150, detune: 0, gain: 0.5 },
+            { type: 'sawtooth', freq: 80, detune: -5, gain: 0.3 },
+          ],
+          duration: 0.12, filter: 300, filterQ: 4, envelope: 'percussive',
+        },
+        bass: {
+          osc: [
+            { type: 'sine', freq: 60, detune: 0, gain: 0.55 },
+            { type: 'triangle', freq: 120, detune: 3, gain: 0.15 },
+          ],
+          duration: 0.35, filter: 600, filterQ: 2, envelope: 'pluck',
+        },
+        melody: {
+          osc: [
+            { type: 'sine', freq: 440, detune: 0, gain: 0.3 },
+            { type: 'triangle', freq: 441, detune: 7, gain: 0.2 },
+          ],
+          duration: 0.5, filter: 3000, filterQ: 1, envelope: 'sustain',
+        },
+        fx: {
+          osc: [
+            { type: 'square', freq: 200, detune: 0, gain: 0.2 },
+            { type: 'sawtooth', freq: 403, detune: 15, gain: 0.15 },
+          ],
+          duration: 0.25, filter: 2000, filterQ: 6, envelope: 'percussive',
+        },
       };
 
       const config = typeConfig[pad.type] || typeConfig.melody;
-      oscillator.type = config.type;
-      oscillator.frequency.setValueAtTime(config.freq, ctx.currentTime);
-      filterNode.frequency.setValueAtTime(config.filter, ctx.currentTime);
-      gainNode.gain.setValueAtTime((volume / 100) * 0.3, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + config.duration);
+      const masterGain = ctx.createGain();
+      const filterNode = ctx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(config.filter, now);
+      filterNode.Q.setValueAtTime(config.filterQ, now);
+      filterNode.connect(masterGain);
+      masterGain.connect(analyser);
 
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + config.duration);
+      const vol = (volume / 100) * 0.35;
+      if (config.envelope === 'percussive') {
+        masterGain.gain.setValueAtTime(vol, now);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+      } else if (config.envelope === 'pluck') {
+        masterGain.gain.setValueAtTime(vol, now);
+        masterGain.gain.setTargetAtTime(vol * 0.3, now + 0.05, 0.08);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+      } else {
+        masterGain.gain.setValueAtTime(0.001, now);
+        masterGain.gain.linearRampToValueAtTime(vol, now + 0.02);
+        masterGain.gain.setTargetAtTime(vol * 0.6, now + 0.1, 0.15);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+      }
+
+      config.osc.forEach(o => {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = o.type;
+        osc.frequency.setValueAtTime(o.freq, now);
+        osc.detune.setValueAtTime(o.detune, now);
+        oscGain.gain.setValueAtTime(o.gain, now);
+        osc.connect(oscGain);
+        oscGain.connect(filterNode);
+        osc.start(now);
+        osc.stop(now + config.duration + 0.05);
+      });
     } catch (e) {
       console.warn('Audio playback error:', e);
     }
-  }, [volume]);
+  }, [volume, getAnalyser]);
 
   const handlePadPress = (pad) => {
     playTone(pad);
@@ -450,6 +543,21 @@ export default function RemixStudio({ onRecordingComplete }) {
           <p className="text-white/30 text-xs text-center py-2">Instrument packs coming soon — upload your own samples above</p>
         </div>
       )}
+
+      {/* SPECTRUM VISUALIZER */}
+      <div className="px-3 pt-2 flex items-end gap-[2px] h-8 overflow-hidden">
+        {spectrumData.map((v, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-t-sm transition-all duration-75"
+            style={{
+              height: `${Math.max(2, v * 100)}%`,
+              backgroundColor: selectedPack.color + (v > 0.5 ? 'cc' : '55'),
+              opacity: 0.3 + v * 0.7,
+            }}
+          />
+        ))}
+      </div>
 
       {/* PAD GRID */}
       <div className="p-3">
