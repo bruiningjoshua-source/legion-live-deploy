@@ -96,7 +96,7 @@ export function useContentEnforcement() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['violations']);
+      queryClient.invalidateQueries({ queryKey: ['violations'] });
       toast.success('Report submitted for review');
     }
   });
@@ -109,7 +109,7 @@ export function useContentEnforcement() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['violations']);
+      queryClient.invalidateQueries({ queryKey: ['violations'] });
     }
   });
 
@@ -121,7 +121,7 @@ export function useContentEnforcement() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['violations']);
+      queryClient.invalidateQueries({ queryKey: ['violations'] });
     }
   });
 

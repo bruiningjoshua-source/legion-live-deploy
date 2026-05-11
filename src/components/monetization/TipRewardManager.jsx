@@ -63,7 +63,7 @@ export default function TipRewardManager({ creatorId }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.TipRewardMessage.create({ ...data, creator_id: creatorId }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['tip-rewards', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['tip-rewards', creatorId] });
       setShowCreate(false);
       resetForm();
       toast.success('Tip reward created!');
@@ -74,7 +74,7 @@ export default function TipRewardManager({ creatorId }) {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TipRewardMessage.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['tip-rewards', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['tip-rewards', creatorId] });
       setEditingId(null);
       toast.success('Reward updated!');
     },
@@ -83,7 +83,7 @@ export default function TipRewardManager({ creatorId }) {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.TipRewardMessage.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['tip-rewards', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['tip-rewards', creatorId] });
       toast.success('Reward deleted');
     },
   });

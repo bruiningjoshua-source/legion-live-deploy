@@ -41,7 +41,7 @@ export default function AgeVerificationGate({ user, onVerified }) {
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['current-user']);
+      queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast.success('Age verified successfully!');
       onVerified?.();
     },

@@ -48,7 +48,7 @@ export default function LimitedTimeOfferManager({ creatorId }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.LimitedTimeOffer.create({ ...data, creator_id: creatorId }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['limited-offers', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['limited-offers', creatorId] });
       setShowCreate(false);
       setNewOffer({
         title: '',
@@ -72,14 +72,14 @@ export default function LimitedTimeOfferManager({ creatorId }) {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LimitedTimeOffer.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['limited-offers', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['limited-offers', creatorId] });
       toast.success('Offer deleted');
     },
   });
 
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LimitedTimeOffer.update(id, { is_active }),
-    onSuccess: () => queryClient.invalidateQueries(['limited-offers', creatorId]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['limited-offers', creatorId] }),
   });
 
   const activeOffers = offers.filter(o => o.is_active && new Date(o.end_date) > new Date());

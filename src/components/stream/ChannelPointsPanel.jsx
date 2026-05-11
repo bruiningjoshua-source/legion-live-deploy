@@ -62,7 +62,7 @@ export default function ChannelPointsPanel({ creatorId, user, streamId }) {
       return reward;
     },
     onSuccess: (reward) => {
-      queryClient.invalidateQueries(['channel-points']);
+      queryClient.invalidateQueries({ queryKey: ['channel-points'] });
       toast.success(`Redeemed "${reward.title}"!`);
       setSelectedReward(null);
       setRedeemInput('');

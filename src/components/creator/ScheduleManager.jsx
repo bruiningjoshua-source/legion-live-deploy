@@ -65,7 +65,7 @@ export default function ScheduleManager({ creatorId }) {
       return schedule;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['scheduled-streams']);
+      queryClient.invalidateQueries({ queryKey: ['scheduled-streams'] });
       toast.success('Stream scheduled!');
       resetForm();
     }
@@ -74,7 +74,7 @@ export default function ScheduleManager({ creatorId }) {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['scheduled-streams']);
+      queryClient.invalidateQueries({ queryKey: ['scheduled-streams'] });
       toast.success('Schedule updated!');
       resetForm();
     }
@@ -83,7 +83,7 @@ export default function ScheduleManager({ creatorId }) {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['scheduled-streams']);
+      queryClient.invalidateQueries({ queryKey: ['scheduled-streams'] });
       toast.success('Schedule deleted');
     }
   });

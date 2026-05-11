@@ -63,8 +63,8 @@ export default function AwardButton({ postId, replyId, receiverEmail, user }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['user-wallet']);
-      queryClient.invalidateQueries(['post-awards']);
+      queryClient.invalidateQueries({ queryKey: ['user-wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['post-awards'] });
       toast.success('Award given!');
       setOpen(false);
       setSelectedAward(null);

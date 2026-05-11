@@ -39,7 +39,7 @@ export default function WatchLater() {
   const removeMutation = useMutation({
     mutationFn: (id) => base44.entities.WatchLater.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['watch-later']);
+      queryClient.invalidateQueries({ queryKey: ['watch-later'] });
       toast.success('Removed from Watch Later');
     }
   });

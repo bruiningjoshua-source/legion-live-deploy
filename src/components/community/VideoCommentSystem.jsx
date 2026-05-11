@@ -79,7 +79,7 @@ export default function VideoCommentSystem({ videoId, creatorId }) {
   const addCommentMutation = useMutation({
     mutationFn: (data) => base44.entities.VideoComment.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments', videoId]);
+      queryClient.invalidateQueries({ queryKey: ['video-comments', videoId] });
       setNewComment('');
       setReplyingTo(null);
       setReplyContent('');
@@ -114,15 +114,15 @@ export default function VideoCommentSystem({ videoId, creatorId }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments', videoId]);
-      queryClient.invalidateQueries(['comment-likes']);
+      queryClient.invalidateQueries({ queryKey: ['video-comments', videoId] });
+      queryClient.invalidateQueries({ queryKey: ['comment-likes'] });
     }
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => base44.entities.VideoComment.delete(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments', videoId]);
+      queryClient.invalidateQueries({ queryKey: ['video-comments', videoId] });
       toast.success('Comment deleted');
     }
   });

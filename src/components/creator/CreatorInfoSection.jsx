@@ -44,8 +44,8 @@ export default function CreatorInfoSection({ creator, isOwnProfile }) {
   const saveMutation = useMutation({
     mutationFn: () => base44.entities.Creator.update(creator.id, infoData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-creator']);
-      queryClient.invalidateQueries(['creator']);
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
+      queryClient.invalidateQueries({ queryKey: ['creator'] });
       setIsEditing(false);
       toast.success('Info section updated!');
     }

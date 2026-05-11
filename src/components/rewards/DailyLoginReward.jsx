@@ -61,8 +61,8 @@ export default function DailyLoginReward({ user, onClose }) {
       return { newStreak, reward };
     },
     onSuccess: ({ newStreak, reward }) => {
-      queryClient.invalidateQueries(['watch-streak']);
-      queryClient.invalidateQueries(['wallet']);
+      queryClient.invalidateQueries({ queryKey: ['watch-streak'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
       setClaimed(true);
       toast.success(`Day ${newStreak} reward: +${reward.denarii} Denarii!`);
     },

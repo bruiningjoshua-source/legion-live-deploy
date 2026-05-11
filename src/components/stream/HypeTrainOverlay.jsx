@@ -37,7 +37,7 @@ export default function HypeTrainOverlay({ streamId, creatorId }) {
     
     const unsubscribe = base44.entities.Hype.subscribe((event) => {
       if (event.data?.stream_id === streamId) {
-        queryClient.invalidateQueries(['hype-train', streamId]);
+        queryClient.invalidateQueries({ queryKey: ['hype-train', streamId] });
       }
     });
     

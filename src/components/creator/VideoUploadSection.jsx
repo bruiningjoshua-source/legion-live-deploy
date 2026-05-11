@@ -108,7 +108,7 @@ export default function VideoUploadSection({ creator, videos = [] }) {
       return video;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-videos']);
+      queryClient.invalidateQueries({ queryKey: ['creator-videos'] });
       setShowUpload(false);
       setVideoData({ title: '', description: '', video_type: 'long_form', category: '', tags: [] });
       setVideoFile(null);
@@ -127,7 +127,7 @@ export default function VideoUploadSection({ creator, videos = [] }) {
   const deleteMutation = useMutation({
     mutationFn: (videoId) => base44.entities.VlogVideo.delete(videoId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-videos']);
+      queryClient.invalidateQueries({ queryKey: ['creator-videos'] });
       toast.success('Video deleted');
     }
   });

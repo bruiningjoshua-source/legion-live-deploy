@@ -92,7 +92,7 @@ export function ViewerAuctionWidget({ streamId, user }) {
       return bidAmount;
     },
     onSuccess: (amount) => {
-      queryClient.invalidateQueries(['live-auction', streamId]);
+      queryClient.invalidateQueries({ queryKey: ['live-auction', streamId] });
       setJustBid(true);
       setCustomBid('');
       setShowCustom(false);
@@ -314,7 +314,7 @@ export function HostAuctionPanel({ streamId, creatorEmail, onAuctionStart }) {
       return auction;
     },
     onSuccess: (auction) => {
-      queryClient.invalidateQueries(['live-auction', streamId]);
+      queryClient.invalidateQueries({ queryKey: ['live-auction', streamId] });
       setShowCreate(false);
       setForm({ title: '', description: '', startingPrice: '', durationMinutes: 5, thumbnailUrl: '' });
       onAuctionStart?.(auction);
@@ -329,7 +329,7 @@ export function HostAuctionPanel({ streamId, creatorEmail, onAuctionStart }) {
       await base44.entities.PPVEvent.update(activeAuction.id, { status: 'ended' });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['live-auction', streamId]);
+      queryClient.invalidateQueries({ queryKey: ['live-auction', streamId] });
       toast.success('Auction ended!');
     },
   });

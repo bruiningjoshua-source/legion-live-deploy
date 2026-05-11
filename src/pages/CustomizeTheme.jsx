@@ -102,7 +102,7 @@ export default function CustomizeTheme() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['user-theme']);
+      queryClient.invalidateQueries({ queryKey: ['user-theme'] });
       toast.success('Theme saved!');
     }
   });

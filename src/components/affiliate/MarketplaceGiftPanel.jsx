@@ -127,7 +127,7 @@ export default function MarketplaceGiftPanel({
       return { gift: selectedGift, quantity };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['user-wallet']);
+      queryClient.invalidateQueries({ queryKey: ['user-wallet'] });
       toast.success(`Sent ${data.quantity}x ${data.gift.icon} ${data.gift.name}!`);
       onGiftSent?.(data);
       setSelectedGift(null);

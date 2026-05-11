@@ -105,8 +105,8 @@ export default function CreatorMonetizationPanel({ creator, user }) {
       return monet;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-monetization', creator?.id]);
-      queryClient.invalidateQueries(['subscription-tiers', creator?.id]);
+      queryClient.invalidateQueries({ queryKey: ['creator-monetization', creator?.id] });
+      queryClient.invalidateQueries({ queryKey: ['subscription-tiers', creator?.id] });
       toast.success('Monetization enabled!');
     }
   });
@@ -114,7 +114,7 @@ export default function CreatorMonetizationPanel({ creator, user }) {
   const updateTierMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.SubscriptionTier.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscription-tiers', creator?.id]);
+      queryClient.invalidateQueries({ queryKey: ['subscription-tiers', creator?.id] });
       setEditingTier(null);
       toast.success('Tier updated');
     }
@@ -124,7 +124,7 @@ export default function CreatorMonetizationPanel({ creator, user }) {
     mutationFn: ({ setting, value }) => 
       base44.entities.CreatorMonetization.update(monetization.id, { [setting]: value }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-monetization', creator?.id]);
+      queryClient.invalidateQueries({ queryKey: ['creator-monetization', creator?.id] });
     }
   });
 
@@ -132,7 +132,7 @@ export default function CreatorMonetizationPanel({ creator, user }) {
     mutationFn: (goal) => 
       base44.entities.CreatorMonetization.update(monetization.id, { gift_goal: goal }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-monetization', creator?.id]);
+      queryClient.invalidateQueries({ queryKey: ['creator-monetization', creator?.id] });
       toast.success('Gift goal set!');
     }
   });

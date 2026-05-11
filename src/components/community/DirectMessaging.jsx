@@ -119,13 +119,13 @@ export default function DirectMessaging({ isOpen, onClose, initialRecipient = nu
     if (lastMarkedConvo.current === key) return;
     lastMarkedConvo.current = key;
     Promise.all(unread.map(m => base44.entities.DirectMessage.update(m.id, { is_read: true })))
-      .then(() => queryClient.invalidateQueries(['direct-messages']));
+      .then(() => queryClient.invalidateQueries({ queryKey: ['direct-messages'] }));
   }, [selectedConversation, messages, user?.email]);
 
   const sendMessageMutation = useMutation({
     mutationFn: (data) => base44.entities.DirectMessage.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['direct-messages']);
+      queryClient.invalidateQueries({ queryKey: ['direct-messages'] });
       setNewMessage('');
     }
   });

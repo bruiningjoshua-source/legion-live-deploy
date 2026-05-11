@@ -196,8 +196,8 @@ export default function PlaylistView() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['playlist-tracks', playlistId]);
-      queryClient.invalidateQueries(['playlist', playlistId]);
+      queryClient.invalidateQueries({ queryKey: ['playlist-tracks', playlistId] });
+      queryClient.invalidateQueries({ queryKey: ['playlist', playlistId] });
       toast.success('Track added!');
     }
   });
@@ -212,8 +212,8 @@ export default function PlaylistView() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['playlist-tracks', playlistId]);
-      queryClient.invalidateQueries(['playlist', playlistId]);
+      queryClient.invalidateQueries({ queryKey: ['playlist-tracks', playlistId] });
+      queryClient.invalidateQueries({ queryKey: ['playlist', playlistId] });
       toast.success('Track removed');
     }
   });

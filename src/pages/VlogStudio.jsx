@@ -56,7 +56,7 @@ export default function VlogStudio() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-vlogs']);
+      queryClient.invalidateQueries({ queryKey: ['my-vlogs'] });
       toast.success('Vlog uploaded successfully!');
       setUploadData({ title: '', description: '', category: 'daily_life', tags: [] });
     }

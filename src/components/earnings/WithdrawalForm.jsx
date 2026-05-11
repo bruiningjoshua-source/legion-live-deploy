@@ -47,8 +47,8 @@ export default function WithdrawalForm({ creator, earnings, payoutMethods }) {
       toast.success(data?.message || `Withdrawal of $${usdValue} submitted!`);
       setAmount('');
       setMethod('');
-      queryClient.invalidateQueries(['creator-payouts']);
-      queryClient.invalidateQueries(['broadcaster-earnings']);
+      queryClient.invalidateQueries({ queryKey: ['creator-payouts'] });
+      queryClient.invalidateQueries({ queryKey: ['broadcaster-earnings'] });
     },
     onError: (error) => {
       const msg = error.message || 'Withdrawal failed';

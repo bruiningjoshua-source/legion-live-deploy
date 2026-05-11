@@ -79,7 +79,7 @@ export default function CustomTierEditor({ creatorId, existingTiers = [], onSave
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['custom-tiers', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['custom-tiers', creatorId] });
       toast.success('Subscription tiers saved!');
       onSave?.();
     },

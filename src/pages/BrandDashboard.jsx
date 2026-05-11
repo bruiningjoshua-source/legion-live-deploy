@@ -73,13 +73,13 @@ export default function BrandDashboard() {
 
   const createBrandMutation = useMutation({
     mutationFn: (data) => base44.entities.BrandPartner.create(data),
-    onSuccess: () => queryClient.invalidateQueries(['brand-partner'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['brand-partner'] })
   });
 
   const bookCreatorMutation = useMutation({
     mutationFn: (campaignData) => base44.entities.BrandCampaign.create(campaignData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['brand-campaigns']);
+      queryClient.invalidateQueries({ queryKey: ['brand-campaigns'] });
       setShowBookingDialog(false);
       setSelectedCreator(null);
     }

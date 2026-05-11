@@ -24,7 +24,7 @@ export default function HostLiveControls({ stream, streamId, viewerCount = 0, on
   const updateMutation = useMutation({
     mutationFn: updates => base44.entities.Stream.update(streamId, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries(['stream', streamId]);
+      queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
       toast.success('Stream updated');
       setEditTitle(false);
     },

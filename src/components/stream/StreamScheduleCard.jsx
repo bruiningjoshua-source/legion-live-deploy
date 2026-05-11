@@ -50,8 +50,8 @@ export default function StreamScheduleCard({ schedule, creator, user }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['stream-reminder']);
-      queryClient.invalidateQueries(['scheduled-streams']);
+      queryClient.invalidateQueries({ queryKey: ['stream-reminder'] });
+      queryClient.invalidateQueries({ queryKey: ['scheduled-streams'] });
       toast.success(hasReminder ? 'Reminder removed' : 'Reminder set!');
     }
   });

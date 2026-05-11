@@ -66,7 +66,7 @@ export default function AffiliateDashboard() {
       creator_id: creator.id
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['affiliate-products']);
+      queryClient.invalidateQueries({ queryKey: ['affiliate-products'] });
       setShowAddProduct(false);
       setFormData({
         product_name: '',

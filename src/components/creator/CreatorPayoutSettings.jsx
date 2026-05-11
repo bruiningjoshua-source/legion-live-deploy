@@ -127,7 +127,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payout-methods']);
+      queryClient.invalidateQueries({ queryKey: ['payout-methods'] });
       setShowAddMethod(false);
       setNewMethod({ type: '', identifier: '', displayName: '' });
       toast.success('Payout method added');
@@ -137,7 +137,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
   const deleteMethodMutation = useMutation({
     mutationFn: (methodId) => base44.entities.CreatorPayoutMethod.delete(methodId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['payout-methods']);
+      queryClient.invalidateQueries({ queryKey: ['payout-methods'] });
       toast.success('Payout method removed');
     }
   });
@@ -163,8 +163,8 @@ export default function CreatorPayoutSettings({ creator, user }) {
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['payout-history']);
-      queryClient.invalidateQueries(['my-creator']);
+      queryClient.invalidateQueries({ queryKey: ['payout-history'] });
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
       setShowCashout(false);
       setCashoutAmount('');
       toast.success(data?.message || 'Payout request submitted!');

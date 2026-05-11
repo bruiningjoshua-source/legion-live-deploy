@@ -42,7 +42,7 @@ export default function OnboardingFlow({ user, onComplete }) {
       }
       localStorage.setItem('ll_onboarded', 'true');
     },
-    onSuccess: () => { queryClient.invalidateQueries(['wallet']); onComplete?.(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['wallet'] }); onComplete?.(); },
     onError:   () => toast.error('Setup failed. Please try again.'),
   });
 

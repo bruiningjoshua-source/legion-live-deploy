@@ -41,8 +41,8 @@ export default function FreeTierWalletTip({ creator, isOwnProfile }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-creator']);
-      queryClient.invalidateQueries(['creator']);
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
+      queryClient.invalidateQueries({ queryKey: ['creator'] });
       setIsEditing(false);
       toast.success('Tip wallet saved!');
     }

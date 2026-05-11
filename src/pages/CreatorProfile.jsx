@@ -134,8 +134,8 @@ export default function CreatorProfile() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['follow-status']);
-      queryClient.invalidateQueries(['creator', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['follow-status'] });
+      queryClient.invalidateQueries({ queryKey: ['creator', creatorId] });
     }
   });
 

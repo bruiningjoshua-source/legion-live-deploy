@@ -108,7 +108,7 @@ export default function AffiliateVideoUpload({ isOpen, onClose, partnerId, onSuc
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['affiliate-videos']);
+      queryClient.invalidateQueries({ queryKey: ['affiliate-videos'] });
       toast.success('Video uploaded successfully!');
       onSuccess?.();
       onClose();

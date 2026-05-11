@@ -45,7 +45,7 @@ export default function Playlists() {
       is_public: false
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['playlists']);
+      queryClient.invalidateQueries({ queryKey: ['playlists'] });
       setNewPlaylistName('');
       setShowCreate(false);
       toast.success('Playlist created');

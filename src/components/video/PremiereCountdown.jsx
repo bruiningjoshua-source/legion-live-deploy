@@ -85,8 +85,8 @@ export default function PremiereCountdown({ premiereId, user, onStart }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['premiere-reminder']);
-      queryClient.invalidateQueries(['premiere']);
+      queryClient.invalidateQueries({ queryKey: ['premiere-reminder'] });
+      queryClient.invalidateQueries({ queryKey: ['premiere'] });
       toast.success(hasReminder ? 'Reminder removed' : 'Reminder set!');
     }
   });

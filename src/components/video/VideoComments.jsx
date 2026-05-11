@@ -57,7 +57,7 @@ export default function VideoComments({ videoId, creatorId }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments']);
+      queryClient.invalidateQueries({ queryKey: ['video-comments'] });
       setNewComment('');
       toast.success('Comment added!');
     }
@@ -81,7 +81,7 @@ export default function VideoComments({ videoId, creatorId }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments']);
+      queryClient.invalidateQueries({ queryKey: ['video-comments'] });
       setReplyingTo(null);
       setReplyText('');
       toast.success('Reply added!');
@@ -121,8 +121,8 @@ export default function VideoComments({ videoId, creatorId }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['video-comments']);
-      queryClient.invalidateQueries(['user-comment-likes']);
+      queryClient.invalidateQueries({ queryKey: ['video-comments'] });
+      queryClient.invalidateQueries({ queryKey: ['user-comment-likes'] });
     }
   });
 
@@ -133,7 +133,7 @@ export default function VideoComments({ videoId, creatorId }) {
         is_hearted: !comment.is_hearted
       });
     },
-    onSuccess: () => queryClient.invalidateQueries(['video-comments'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['video-comments'] })
   });
 
   const getUserLikeState = (commentId) => {

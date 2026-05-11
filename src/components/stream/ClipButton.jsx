@@ -34,7 +34,7 @@ export default function ClipButton({ streamId, creatorId, user, videoUrl }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['clips']);
+      queryClient.invalidateQueries({ queryKey: ['clips'] });
       toast.success('Clip created!');
       setOpen(false);
       setTitle('');
