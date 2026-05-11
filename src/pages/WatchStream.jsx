@@ -36,6 +36,11 @@ import BroadcasterTopBar from '@/components/stream/BroadcasterTopBar';
 import BroadcastControlPanel from '@/components/stream/BroadcastControlPanel';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
+import RaidButton from '@/components/stream/RaidButton';
+import ChannelPointsPanel from '@/components/stream/ChannelPointsPanel';
+import ClipButton from '@/components/stream/ClipButton';
+import EntranceEffect from '@/components/stream/EntranceEffect';
+import HostLiveControls from '@/components/stream/HostLiveControls';
 import CoStreamPanel from '@/components/stream/CoStreamPanel';
 import ViewerLotto from '@/components/stream/ViewerLotto';
 import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';
@@ -56,6 +61,11 @@ export default function WatchStream() {
   const [chatMessages, setChatMessages] = useState([]);
   const [showModerationPanel, setShowModerationPanel] = useState(false);
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
+  const [showChannelPoints, setShowChannelPoints] = useState(false);
+  const [quality, setQuality] = useState('auto');
+  const [showQuality, setShowQuality] = useState(false);
+  const [entranceViewer, setEntranceViewer] = useState(null);
+  const [showHostControls, setShowHostControls] = useState(false);
 
   const videoRef = useRef(null);
   const liveStreamRef = useRef(null);
@@ -131,6 +141,13 @@ export default function WatchStream() {
     if (!streamId) return;
     return ChatService.subscribe(streamId, (msg) => {
       setChatMessages(prev => ChatService.addToBuffer(prev, msg));
+      if (msg.message_type === 'system' && (msg.total_gifted_to_creator || 0) >= 100) {
+        setEntranceViewer({
+          name:         msg.sender_name,
+          avatar_url:   msg.avatar_url,
+          total_gifted: msg.total_gifted_to_creator || 0,
+        });
+      }
     });
   }, [streamId]);
 
@@ -322,6 +339,13 @@ export default function WatchStream() {
         className="absolute inset-0 w-full h-full object-cover"
       />
 
+      {entranceViewer && (
+        <EntranceEffect
+          viewer={entranceViewer}
+          onDone={() => setEntranceViewer(null)}
+        />
+      )}
+
       {/* Top gradient */}
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
 
@@ -456,6 +480,23 @@ export default function WatchStream() {
           </button>
         )}
 
+        {/* Channel Points button */}
+        <button
+          onClick={() => setShowChannelPoints(v => !v)}
+          className="flex flex-col items-center gap-1"
+        >
+          <div
+            className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
+            style={{
+              background: showChannelPoints ? 'rgba(245,166,35,0.2)' : 'rgba(0,0,0,0.4)',
+              borderColor: showChannelPoints ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.1)',
+            }}
+          >
+            <span className="text-lg">⭐</span>
+          </div>
+          <span className="text-white/60 text-[9px]">Points</span>
+        </button>
+
         {/* Share button */}
         <button onClick={() => {
           navigator.share?.({ title: stream?.title, url: window.location.href })
@@ -469,6 +510,57 @@ export default function WatchStream() {
           <span className="text-white/60 text-[9px]">Share</span>
         </button>
 
+        {/* Clip button for viewers */}
+        {!isHost && stream?.status === "live" && (
+          <ClipButton
+            streamId={streamId}
+            creatorId={creator?.id}
+            user={user}
+            videoUrl={null}
+          />
+        )}
+
+        {/* Quality selector for viewers */}
+        {!isHost && (
+          <div className="relative">
+            <button onClick={() => setShowQuality(v => !v)} className="flex flex-col items-center gap-1">
+              <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
+                <span className="text-white font-bold" style={{ fontSize: "10px", fontFamily: "DM Mono, monospace" }}>
+                  {quality === "auto" ? "HD" : quality}
+                </span>
+              </div>
+              <span className="text-white/60 text-[9px]">Quality</span>
+            </button>
+            {showQuality && (
+              <div
+                className="absolute bottom-12 right-0 rounded-xl overflow-hidden border border-white/10 z-50 w-28"
+                style={{ background: "rgba(10,10,20,0.95)", backdropFilter: "blur(20px)" }}
+              >
+                {["auto", "1080p", "720p", "480p", "360p"].map(q => (
+                  <button
+                    key={q}
+                    onClick={() => {
+                      setQuality(q);
+                      setShowQuality(false);
+                      if (typeof ZegoService.setPlaybackQuality === "function") {
+                        ZegoService.setPlaybackQuality(q);
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 text-sm text-left transition-colors flex items-center justify-between"
+                    style={{
+                      color: quality === q ? '#f5a623' : 'rgba(255,255,255,0.7)',
+                      background: quality === q ? 'rgba(245,166,35,0.1)' : 'transparent',
+                    }}
+                  >
+                    {q === "auto" ? "Auto (HD)" : q}
+                    {quality === q && <span style={{ color: '#f5a623', fontSize: '12px' }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Moderator tools for host */}
         {isHost && (
           <button onClick={() => setShowModerationPanel(!showModerationPanel)}
@@ -477,6 +569,31 @@ export default function WatchStream() {
               <Shield className="w-4 h-4 text-white/70" />
             </div>
             <span className="text-white/60 text-[9px]">Mod</span>
+          </button>
+        )}
+
+        {/* Raid button for host */}
+        {isHost && stream?.status === 'live' && (
+          <RaidButton
+            streamId={streamId}
+            creatorId={creator?.id}
+            viewerCount={stream?.viewer_count || 0}
+          />
+        )}
+
+        {/* Host live controls */}
+        {isHost && (
+          <button onClick={() => setShowHostControls(v => !v)} className="flex flex-col items-center gap-1">
+            <div
+              className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
+              style={{
+                background:  showHostControls ? 'rgba(245,166,35,0.20)' : 'rgba(0,0,0,0.4)',
+                borderColor: showHostControls ? 'rgba(245,166,35,0.50)' : 'rgba(255,255,255,0.10)',
+              }}
+            >
+              <span className="text-lg">⚙️</span>
+            </div>
+            <span className="text-white/60 text-[9px]">Controls</span>
           </button>
         )}
       </div>
@@ -579,6 +696,24 @@ export default function WatchStream() {
           streamId={streamId}
           creatorEmail={creator?.user_email}
           onClose={() => setShowModerationPanel(false)}
+        />
+      )}
+
+      {showChannelPoints && (
+        <ChannelPointsPanel
+          creatorId={creator?.id}
+          user={user}
+          streamId={streamId}
+          onClose={() => setShowChannelPoints(false)}
+        />
+      )}
+
+      {showHostControls && isHost && (
+        <HostLiveControls
+          stream={stream}
+          streamId={streamId}
+          viewerCount={stream?.viewer_count || 0}
+          onClose={() => setShowHostControls(false)}
         />
       )}
     </div>

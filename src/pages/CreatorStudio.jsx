@@ -45,6 +45,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
+import ScheduleManager from '@/components/creator/ScheduleManager';
 
 const REVIEW_STATUS_CONFIG = {
   pending: { icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/20', label: 'Under Review' },
@@ -234,6 +235,11 @@ export default function CreatorStudio() {
             <TabsTrigger value="comments" className="data-[state=active]:bg-amber-600">
               <MessageSquare className="w-4 h-4 mr-2" />
               Comments
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="data-[state=active]:bg-amber-600">
+              <span className="flex items-center gap-1.5">
+                📅 Schedule
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -465,6 +471,10 @@ export default function CreatorStudio() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="schedule" className="space-y-6">
+            <ScheduleManager creator={creator} user={user} />
           </TabsContent>
         </Tabs>
       </div>

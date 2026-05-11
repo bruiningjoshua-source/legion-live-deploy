@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X, ScreenShare } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
+import Soundboard from '@/components/stream/Soundboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
@@ -38,6 +39,7 @@ export default function GoLive() {
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [showBeauty, setShowBeauty] = useState(false);
+  const [showSoundboard, setShowSoundboard] = useState(false);
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -308,6 +310,19 @@ export default function GoLive() {
             </div>
             <span className="text-white/60 text-[9px]">Screen</span>
           </button>
+
+          <button onClick={() => setShowSoundboard(v => !v)} className="flex flex-col items-center gap-1">
+            <div
+              className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
+              style={{
+                background: showSoundboard ? 'rgba(245,166,35,0.25)' : 'rgba(0,0,0,0.4)',
+                borderColor: showSoundboard ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.1)',
+              }}
+            >
+              <span className="text-lg">🎵</span>
+            </div>
+            <span className="text-white/60 text-[9px]">Sound</span>
+          </button>
         </div>
 
         {/* BOTTOM SECTION */}
@@ -371,6 +386,10 @@ export default function GoLive() {
         {/* Beauty overlay */}
         <AnimatePresence>
           {showBeauty && <BeautyFilter videoRef={videoRef} />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showSoundboard && <Soundboard onClose={() => setShowSoundboard(false)} />}
         </AnimatePresence>
 
         <LegionAREngine

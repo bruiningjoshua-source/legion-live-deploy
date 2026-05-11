@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from "@/components/ui/input";
 import { Send, AtSign, Reply, X, Pin, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import FanBadge from '@/components/stream/FanBadge';
 
 const VIP_CONFIG = {
   0: { color: 'text-white/80', nameBg: '', badge: null },
@@ -68,6 +69,7 @@ function BulletMessage({ message, index }) {
     >
       <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-black/25 backdrop-blur-[6px] max-w-[85%]">
         {vip.badge && <span className="text-xs shrink-0">{vip.badge}</span>}
+        <FanBadge totalDenarii={message.total_gifted_to_creator || 0} size="xs" />
         <span className={`text-xs font-semibold ${vip.color} shrink-0`}>
           {message.sender_name}
         </span>
