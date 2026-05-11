@@ -64,7 +64,7 @@ export default function MilestoneAlertManager({ creatorId }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.MilestoneAlert.create({ ...data, creator_id: creatorId }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['milestones', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['milestones', creatorId] });
       setShowCreate(false);
       resetForm();
       toast.success('Milestone alert created!');
@@ -75,7 +75,7 @@ export default function MilestoneAlertManager({ creatorId }) {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.MilestoneAlert.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['milestones', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['milestones', creatorId] });
       setEditingId(null);
       toast.success('Milestone updated!');
     },
@@ -84,7 +84,7 @@ export default function MilestoneAlertManager({ creatorId }) {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.MilestoneAlert.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['milestones', creatorId]);
+      queryClient.invalidateQueries({ queryKey: ['milestones', creatorId] });
       toast.success('Milestone deleted');
     },
   });

@@ -71,7 +71,7 @@ export default function ContentModerationAdmin() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['all-violations']);
+      queryClient.invalidateQueries({ queryKey: ['all-violations'] });
       setSelectedViolation(null);
       setReviewNotes('');
       toast.success('Violation updated');

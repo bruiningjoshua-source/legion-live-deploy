@@ -98,7 +98,7 @@ export default function AmbassadorProgram() {
       ambassador_cut_percent: 90
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-ambassador']);
+      queryClient.invalidateQueries({ queryKey: ['my-ambassador'] });
       toast.success('Application submitted! Awaiting approval.');
     }
   });
@@ -110,7 +110,7 @@ export default function AmbassadorProgram() {
       created_by_admin: user.email
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['ambassador-campaigns', 'all-campaigns']);
+      queryClient.invalidateQueries({ queryKey: ['ambassador-campaigns', 'all-campaigns'] });
       setShowCampaignForm(false);
       toast.success('Campaign created!');
     }
@@ -119,7 +119,7 @@ export default function AmbassadorProgram() {
   const approveAmbassadorMutation = useMutation({
     mutationFn: (id) => base44.entities.BrandAmbassador.update(id, { status: 'approved' }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['all-ambassadors']);
+      queryClient.invalidateQueries({ queryKey: ['all-ambassadors'] });
       toast.success('Ambassador approved!');
     }
   });

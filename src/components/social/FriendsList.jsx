@@ -80,7 +80,7 @@ export default function FriendsList({ user }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendships']);
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
       toast.success('Friend request sent!');
       setSearchQuery('');
     }
@@ -95,7 +95,7 @@ export default function FriendsList({ user }) {
       }
     },
     onSuccess: (_, { accept }) => {
-      queryClient.invalidateQueries(['friendships']);
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
       toast.success(accept ? 'Friend request accepted!' : 'Friend request declined');
     }
   });
@@ -103,7 +103,7 @@ export default function FriendsList({ user }) {
   const removeFriendMutation = useMutation({
     mutationFn: (friendshipId) => base44.entities.Friendship.delete(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['friendships']);
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
       toast.success('Friend removed');
     }
   });

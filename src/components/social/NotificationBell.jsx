@@ -41,7 +41,7 @@ export default function NotificationBell({ user }) {
     
     const unsubscribe = base44.entities.Notification.subscribe((event) => {
       if (event.data?.user_email === user.email) {
-        queryClient.invalidateQueries(['notifications']);
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
       }
     });
     
@@ -55,7 +55,7 @@ export default function NotificationBell({ user }) {
       await base44.entities.Notification.update(notificationId, { is_read: true });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
@@ -67,7 +67,7 @@ export default function NotificationBell({ user }) {
       ));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 

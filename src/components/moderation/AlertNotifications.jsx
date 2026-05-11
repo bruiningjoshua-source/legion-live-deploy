@@ -35,7 +35,7 @@ export default function AlertNotifications({ streamId, isAdmin }) {
       reviewed_at: new Date().toISOString()
     });
     handleDismiss(alert.id);
-    queryClient.invalidateQueries(['moderation-alerts']);
+    queryClient.invalidateQueries({ queryKey: ['moderation-alerts'] });
   };
 
   const handleDismissAlert = async (alert) => {
@@ -45,7 +45,7 @@ export default function AlertNotifications({ streamId, isAdmin }) {
       reviewed_at: new Date().toISOString()
     });
     handleDismiss(alert.id);
-    queryClient.invalidateQueries(['moderation-alerts']);
+    queryClient.invalidateQueries({ queryKey: ['moderation-alerts'] });
   };
 
   if (!isAdmin || pendingAlerts.length === 0) return null;

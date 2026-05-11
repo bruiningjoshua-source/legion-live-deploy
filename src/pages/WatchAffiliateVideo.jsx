@@ -83,7 +83,7 @@ export default function WatchAffiliateVideo() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['affiliate-video', videoId]);
+      queryClient.invalidateQueries({ queryKey: ['affiliate-video', videoId] });
       toast.success('Liked!');
     }
   });
@@ -328,7 +328,7 @@ export default function WatchAffiliateVideo() {
         onClose={() => setShowGiftPanel(false)}
         partnerId={video?.partner_id}
         videoId={video?.id}
-        onGiftSent={() => queryClient.invalidateQueries(['affiliate-video', videoId])}
+        onGiftSent={() => queryClient.invalidateQueries({ queryKey: ['affiliate-video', videoId] })}
       />
     </div>
   );

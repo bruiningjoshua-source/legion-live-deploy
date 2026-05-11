@@ -88,7 +88,7 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['active-prediction']);
+      queryClient.invalidateQueries({ queryKey: ['active-prediction'] });
       setShowCreate(false);
       setNewPrediction({ title: '', options: ['', ''], duration: 120 });
       toast.success('Prediction started!');
@@ -128,9 +128,9 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['active-prediction']);
-      queryClient.invalidateQueries(['channel-points']);
-      queryClient.invalidateQueries(['user-bet']);
+      queryClient.invalidateQueries({ queryKey: ['active-prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['channel-points'] });
+      queryClient.invalidateQueries({ queryKey: ['user-bet'] });
       setSelectedOption(null);
       toast.success('Bet placed!');
     },
@@ -189,7 +189,7 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['active-prediction']);
+      queryClient.invalidateQueries({ queryKey: ['active-prediction'] });
       toast.success('Prediction resolved!');
     }
   });

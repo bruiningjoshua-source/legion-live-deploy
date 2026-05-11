@@ -98,7 +98,7 @@ export default function VideoEditor() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.VlogVideo.update(videoId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['edit-video', videoId]);
+      queryClient.invalidateQueries({ queryKey: ['edit-video', videoId] });
       toast.success('Saved!');
     }
   });

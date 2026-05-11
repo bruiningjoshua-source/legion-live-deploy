@@ -86,9 +86,9 @@ export default function GamificationPanel({ user }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['daily-reward']);
-      queryClient.invalidateQueries(['user-engagement']);
-      queryClient.invalidateQueries(['user-wallet']);
+      queryClient.invalidateQueries({ queryKey: ['daily-reward'] });
+      queryClient.invalidateQueries({ queryKey: ['user-engagement'] });
+      queryClient.invalidateQueries({ queryKey: ['user-wallet'] });
       toast.success(`Claimed ${dailyReward.reward_denarii} Denarii! 🪙`);
     }
   });

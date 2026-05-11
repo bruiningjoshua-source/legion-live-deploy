@@ -331,7 +331,7 @@ export default function BrandCampaigns() {
       return base44.entities.BrandCampaign.update(campaignId, { status });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['creator-campaigns']);
+      queryClient.invalidateQueries({ queryKey: ['creator-campaigns'] });
     }
   });
 

@@ -65,7 +65,7 @@ export default function ExclusiveContentManager() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-exclusive-content']);
+      queryClient.invalidateQueries({ queryKey: ['my-exclusive-content'] });
       setShowUploadForm(false);
       setFormData({
         title: '',
@@ -82,7 +82,7 @@ export default function ExclusiveContentManager() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ExclusiveContent.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-exclusive-content']);
+      queryClient.invalidateQueries({ queryKey: ['my-exclusive-content'] });
       toast.success('Content deleted');
     }
   });

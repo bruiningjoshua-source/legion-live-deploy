@@ -151,7 +151,7 @@ export default function Profile() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-creator']);
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
       setIsEditing(false);
       toast.success('Profile updated');
     }
@@ -424,7 +424,7 @@ export default function Profile() {
                   user={user} 
                   creator={creator} 
                   subscription={hostSubscription}
-                  onSubscribed={() => queryClient.invalidateQueries(['host-subscription'])}
+                  onSubscribed={() => queryClient.invalidateQueries({ queryKey: ['host-subscription'] })}
                 />
               )}
             </div>

@@ -101,7 +101,7 @@ export default function CreatorMonetization() {
           admin_activated: true
         });
 
-        queryClient.invalidateQueries(['creator-subscription']);
+        queryClient.invalidateQueries({ queryKey: ['creator-subscription'] });
         return;
       }
 
@@ -385,7 +385,7 @@ export default function CreatorMonetization() {
                     <CustomTierEditor 
                       creatorId={user?.email} 
                       existingTiers={customTiers}
-                      onSave={() => queryClient.invalidateQueries(['custom-tiers'])}
+                      onSave={() => queryClient.invalidateQueries({ queryKey: ['custom-tiers'] })}
                     />
                   </CardContent>
                 </Card>

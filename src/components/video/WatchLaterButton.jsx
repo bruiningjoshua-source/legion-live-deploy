@@ -34,7 +34,7 @@ export default function WatchLaterButton({ videoId, videoType = 'vlog', user, si
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['watch-later']);
+      queryClient.invalidateQueries({ queryKey: ['watch-later'] });
       toast.success(isInWatchLater ? 'Removed from Watch Later' : 'Added to Watch Later');
     }
   });

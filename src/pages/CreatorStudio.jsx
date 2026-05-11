@@ -92,7 +92,7 @@ export default function CreatorStudio() {
   const deleteMutation = useMutation({
     mutationFn: (videoId) => base44.entities.VlogVideo.delete(videoId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['studio-videos']);
+      queryClient.invalidateQueries({ queryKey: ['studio-videos'] });
       toast.success('Video deleted');
     }
   });
@@ -100,7 +100,7 @@ export default function CreatorStudio() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VlogVideo.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['studio-videos']);
+      queryClient.invalidateQueries({ queryKey: ['studio-videos'] });
       toast.success('Video updated');
     }
   });

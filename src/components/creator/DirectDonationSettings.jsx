@@ -59,7 +59,7 @@ export default function DirectDonationSettings({ creator, subscription }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payout-methods']);
+      queryClient.invalidateQueries({ queryKey: ['payout-methods'] });
       setNewMethod({ type: '', identifier: '' });
       toast.success('Payout method added - viewers can now tip you directly!');
     },
@@ -69,7 +69,7 @@ export default function DirectDonationSettings({ creator, subscription }) {
   const deleteMethodMutation = useMutation({
     mutationFn: (methodId) => base44.entities.CreatorPayoutMethod.delete(methodId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['payout-methods']);
+      queryClient.invalidateQueries({ queryKey: ['payout-methods'] });
       toast.success('Payout method removed');
     }
   });
@@ -81,7 +81,7 @@ export default function DirectDonationSettings({ creator, subscription }) {
     },
     onSuccess: (enabled) => {
       setEnableDirectTips(enabled);
-      queryClient.invalidateQueries(['my-creator']);
+      queryClient.invalidateQueries({ queryKey: ['my-creator'] });
       toast.success(enabled ? 'Direct tips enabled!' : 'Direct tips disabled');
     }
   });

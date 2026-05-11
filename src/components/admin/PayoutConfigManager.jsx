@@ -70,7 +70,7 @@ export default function PayoutConfigManager() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payout-config']);
+      queryClient.invalidateQueries({ queryKey: ['payout-config'] });
       setHasChanges(false);
       toast.success('Payout configuration saved!');
     },

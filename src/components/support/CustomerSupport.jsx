@@ -100,7 +100,7 @@ export default function CustomerSupport({ user }) {
       toast.success('Support ticket created! We\'ll respond within 24 hours.');
       setNewTicket({ category: '', subject: '', description: '', attachments: [] });
       setActiveTab('tickets');
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
     },
     onError: (error) => {
       toast.error('Failed to create ticket: ' + error.message);
@@ -130,7 +130,7 @@ export default function CustomerSupport({ user }) {
     onSuccess: () => {
       toast.success('Reply sent!');
       setReplyText('');
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
     }
   });
 
