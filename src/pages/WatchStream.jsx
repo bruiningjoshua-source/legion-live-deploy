@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield, Users, Gift } from 'lucide-react';
+import { Radio, X, Shield } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -30,6 +30,11 @@ import ClipButton from '@/components/stream/ClipButton';
 import EntranceEffect from '@/components/stream/EntranceEffect';
 import HostLiveControls from '@/components/stream/HostLiveControls';
 import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';
+import BigoStreamTopBar from '@/components/stream/BigoStreamTopBar';
+import BigoStreamBottomBar from '@/components/stream/BigoStreamBottomBar';
+import RoomToolsSheet from '@/components/stream/RoomToolsSheet';
+import HostProfileSheet from '@/components/stream/HostProfileSheet';
+import WishlistSheet from '@/components/stream/WishlistSheet';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -52,6 +57,9 @@ export default function WatchStream() {
   const [showQuality, setShowQuality] = useState(false);
   const [entranceViewer, setEntranceViewer] = useState(null);
   const [showHostControls, setShowHostControls] = useState(false);
+  const [showRoomTools, setShowRoomTools] = useState(false);
+  const [showHostProfile, setShowHostProfile] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
 
   const videoRef = useRef(null);
   const liveStreamRef = useRef(null);
@@ -333,87 +341,50 @@ export default function WatchStream() {
       )}
 
       {/* Top gradient */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
 
       {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10 pointer-events-none" />
 
-      {/* ── TOP BAR ── */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3"
-        style={{ paddingTop: 'max(14px, env(safe-area-inset-top))' }}>
+      {/* ── BIGO TOP BAR ── */}
+      <BigoStreamTopBar
+        creator={creator}
+        stream={stream}
+        user={user}
+        isHost={isHost}
+        isFollowing={isFollowing}
+        onFollowClick={() => followMutation?.mutate()}
+        onClose={() => isHost ? setShowEndDialog(true) : navigate(createPageUrl('Home'))}
+        viewerCount={stream?.viewer_count || 0}
+        onAvatarClick={() => setShowHostProfile(true)}
+      />
 
-        {/* Left: back + creator info */}
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(createPageUrl('Home'))}
-            className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center shrink-0">
-            <X className="w-4 h-4 text-white" />
-          </button>
-          {creator && (
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur border border-white/10 rounded-full pl-1 pr-3 py-1">
-              <img
-                src={creator.avatar_url || '/default-avatar.png'}
-                className="w-7 h-7 rounded-full object-cover border border-white/20"
-                onError={e => e.target.src = '/default-avatar.png'}
-              />
-              <div>
-                <p className="text-white text-xs font-bold leading-none">{creator.display_name || 'Creator'}</p>
-                <p className="text-white/40 text-[9px] leading-none mt-0.5">{creator.follower_count || 0} followers</p>
+      {/* ── GIFT LEADERBOARD (below top bar, left side) ── */}
+      <div className="absolute z-20 left-3 flex items-center gap-2"
+        style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 72px)' }}>
+        {/* Wishlist supporters - small avatars */}
+        <button onClick={() => setShowWishlist(true)} className="flex items-center">
+          <div className="flex -space-x-1">
+            {[0,1].map(i => (
+              <div key={i} className="w-6 h-6 rounded-full border border-black bg-white/10 flex items-center justify-center overflow-hidden">
+                <span className="text-[9px] opacity-40">?</span>
               </div>
-              {!isHost && (
-                <button onClick={() => followMutation?.mutate()}
-                  className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-bold border transition-all ${
-                    isFollowing
-                      ? 'bg-transparent border-white/20 text-white/50'
-                      : 'bg-amber-500 border-amber-500 text-black'
-                  }`}>
-                  {isFollowing ? 'Following' : 'Follow'}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right: viewer count + live badge */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full px-2.5 py-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-white text-xs font-bold">LIVE</span>
-            <span className="text-white/50 text-xs">·</span>
-            <Users className="w-3 h-3 text-white/60" />
-            <span className="text-white/80 text-xs">{stream?.viewer_count || 0}</span>
+            ))}
           </div>
-          {isHost && (
-            <button onClick={() => setShowEndDialog(true)}
-              className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
-              <X className="w-4 h-4 text-red-400" />
-            </button>
-          )}
-        </div>
+          <span className="text-white/30 text-[9px] ml-1">0/10</span>
+        </button>
       </div>
 
-      {/* ── GIFT LEADERBOARD (top right below top bar) ── */}
+      {/* ── GIFT LEADERBOARD (top right below row 2) ── */}
       <div className="absolute z-20 right-3"
-        style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 52px)' }}>
+        style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 72px)' }}>
         <GiftLeaderboard streamId={streamId} onExpand={() => setShowExpandedLeaderboard(true)} />
-      </div>
-
-      {/* ── STREAM TITLE (left side, below creator bar) ── */}
-      <div className="absolute z-20 left-3"
-        style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 52px)' }}>
-        {stream?.title && (
-          <div className="max-w-[180px]">
-            <p className="text-white text-xs font-semibold leading-tight line-clamp-2 drop-shadow">{stream.title}</p>
-            {stream.category && (
-              <span className="text-amber-400 text-[9px] font-medium uppercase tracking-wider">{stream.category}</span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── TIP GOAL BAR ── */}
       {stream?.tip_goal_amount > 0 && (
         <div className="absolute z-20 left-3 right-3"
-          style={{ top: 'calc(max(14px, env(safe-area-inset-top)) + 110px)' }}>
+          style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 110px)' }}>
           <div className="bg-black/40 backdrop-blur border border-white/10 rounded-xl px-3 py-2">
             <div className="flex items-center justify-between mb-1">
               <span className="text-white/60 text-[10px]">{stream.tip_goal_label || 'Tip Goal'}</span>
@@ -431,211 +402,52 @@ export default function WatchStream() {
         </div>
       )}
 
-      {/* ── AI LIVE SUMMARY ── */}
-      {stream?.ai_summary && !isHost && (
-        <div className="absolute z-20 left-3 right-14"
-          style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 200px)' }}>
-          <div className="bg-black/40 backdrop-blur border border-white/10 rounded-xl px-3 py-2">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-white/40 text-[9px] uppercase tracking-wider">Live Summary</span>
-            </div>
-            <p className="text-white/70 text-[11px] leading-snug">{stream.ai_summary}</p>
-          </div>
-        </div>
-      )}
-
       {/* ── BULLET CHAT ── */}
-      <div className="absolute z-20 left-3 right-16"
-        style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 80px)' }}>
-        <BulletChat messages={chatMessages} maxMessages={8} />
+      <div className="absolute z-20 left-0 right-16"
+        style={{ bottom: 'calc(max(8px, env(safe-area-inset-bottom)) + 56px)' }}>
+        <BulletChat messages={chatMessages} maxMessages={10} />
       </div>
 
-      {/* ── RIGHT SIDE ACTION BUTTONS ── */}
-      <div className="absolute right-3 z-20 flex flex-col items-center gap-3"
-        style={{ bottom: 'calc(max(20px, env(safe-area-inset-bottom)) + 80px)' }}>
-
-        {/* Gift button */}
-        {!isHost && (
-          <button onClick={() => setShowGiftPanel(true)}
-            className="flex flex-col items-center gap-1">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center">
-              <Gift className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[9px]">Gift</span>
-          </button>
-        )}
-
-        {/* Channel Points button */}
-        <button
-          onClick={() => setShowChannelPoints(v => !v)}
-          className="flex flex-col items-center gap-1"
-        >
-          <div
-            className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
-            style={{
-              background: showChannelPoints ? 'rgba(245,166,35,0.2)' : 'rgba(0,0,0,0.4)',
-              borderColor: showChannelPoints ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.1)',
-            }}
-          >
-            <span className="text-lg">⭐</span>
-          </div>
-          <span className="text-white/60 text-[9px]">Points</span>
-        </button>
-
-        {/* Share button */}
-        <button onClick={() => {
-          navigator.share?.({ title: stream?.title, url: window.location.href })
-            .catch(() => navigator.clipboard?.writeText(window.location.href));
-          toast.success('Link copied!');
+      {/* ── BIGO BOTTOM BAR ── */}
+      <BigoStreamBottomBar
+        isHost={isHost}
+        onSendMessage={() => {
+          const msg = prompt('Say something...');
+          if (msg?.trim()) {
+            base44.entities.ChatMessage.create({
+              stream_id: streamId,
+              sender_email: user?.email,
+              sender_name: user?.full_name || 'Viewer',
+              message: msg.trim(),
+              message_type: 'text'
+            }).catch(() => {});
+          }
         }}
-          className="flex flex-col items-center gap-1">
-          <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-            <Radio className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-white/60 text-[9px]">Share</span>
-        </button>
-
-        {/* Clip button for viewers */}
-        {!isHost && stream?.status === "live" && (
-          <ClipButton
-            streamId={streamId}
-            creatorId={creator?.id}
-            user={user}
-            videoUrl={null}
-          />
-        )}
-
-        {/* Quality selector for viewers */}
-        {!isHost && (
-          <div className="relative">
-            <button onClick={() => setShowQuality(v => !v)} className="flex flex-col items-center gap-1">
-              <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-                <span className="text-white font-bold" style={{ fontSize: "10px", fontFamily: "DM Mono, monospace" }}>
-                  {quality === "auto" ? "HD" : quality}
-                </span>
-              </div>
-              <span className="text-white/60 text-[9px]">Quality</span>
-            </button>
-            {showQuality && (
-              <div
-                className="absolute bottom-12 right-0 rounded-xl overflow-hidden border border-white/10 z-50 w-28"
-                style={{ background: "rgba(10,10,20,0.95)", backdropFilter: "blur(20px)" }}
-              >
-                {["auto", "1080p", "720p", "480p", "360p"].map(q => (
-                  <button
-                    key={q}
-                    onClick={() => {
-                      setQuality(q);
-                      setShowQuality(false);
-                      if (typeof ZegoService.setPlaybackQuality === "function") {
-                        ZegoService.setPlaybackQuality(q);
-                      }
-                    }}
-                    className="w-full px-4 py-2.5 text-sm text-left transition-colors flex items-center justify-between"
-                    style={{
-                      color: quality === q ? '#f5a623' : 'rgba(255,255,255,0.7)',
-                      background: quality === q ? 'rgba(245,166,35,0.1)' : 'transparent',
-                    }}
-                  >
-                    {q === "auto" ? "Auto (HD)" : q}
-                    {quality === q && <span style={{ color: '#f5a623', fontSize: '12px' }}>✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Moderator tools for host */}
-        {isHost && (
-          <button onClick={() => setShowModerationPanel(!showModerationPanel)}
-            className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white/70" />
-            </div>
-            <span className="text-white/60 text-[9px]">Mod</span>
-          </button>
-        )}
-
-        {/* Raid button for host */}
-        {isHost && stream?.status === 'live' && (
-          <RaidButton
-            streamId={streamId}
-            creatorId={creator?.id}
-            viewerCount={stream?.viewer_count || 0}
-          />
-        )}
-
-        {/* Host live controls */}
-        {isHost && (
-          <button onClick={() => setShowHostControls(v => !v)} className="flex flex-col items-center gap-1">
-            <div
-              className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
-              style={{
-                background:  showHostControls ? 'rgba(245,166,35,0.20)' : 'rgba(0,0,0,0.4)',
-                borderColor: showHostControls ? 'rgba(245,166,35,0.50)' : 'rgba(255,255,255,0.10)',
-              }}
-            >
-              <span className="text-lg">⚙️</span>
-            </div>
-            <span className="text-white/60 text-[9px]">Controls</span>
-          </button>
-        )}
-      </div>
-
-      {/* ── BOTTOM BAR ── */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 px-3 flex items-center gap-2"
-        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-
-        {/* Wallet balance */}
-        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full px-3 py-2">
-          <span className="text-amber-400 text-xs font-bold">◆</span>
-          <span className="text-white text-xs font-semibold">{walletBalance.toLocaleString()}</span>
-        </div>
-
-        {/* Chat input */}
-        <button
-          onClick={() => {
-            const msg = prompt('Say something...');
-            if (msg?.trim()) {
-              base44.entities.ChatMessage.create({
-                stream_id: streamId,
-                sender_email: user?.email,
-                sender_name: user?.full_name || 'Viewer',
-                message: msg.trim(),
-                message_type: 'text'
-              }).catch(() => {});
-            }
-          }}
-          className="flex-1 bg-black/40 backdrop-blur border border-white/10 rounded-full px-4 py-2 text-white/40 text-xs text-left"
-        >
-          Say something...
-        </button>
-
-        {/* Gift shortcut */}
-        {!isHost && (
-          <button onClick={() => setShowGiftPanel(true)}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shrink-0">
-            <span className="text-lg">🎁</span>
-          </button>
-        )}
-      </div>
+        onEmojiClick={(emoji) => {
+          setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji }]);
+        }}
+        onMenuClick={() => setShowRoomTools(true)}
+        onGiftClick={() => setShowGiftPanel(true)}
+        onLottoClick={() => setShowChannelPoints(v => !v)}
+      />
 
       {/* ── OVERLAYS ── */}
       <AnimatePresence>
         {showGiftPanel && (
-          <GiftPanel
-            gifts={gifts}
-            walletBalance={walletBalance}
-            streamId={streamId}
-            creatorId={creator?.id}
-            onClose={() => setShowGiftPanel(false)}
-            onGiftSent={(gift) => {
-              setGiftAnimation(gift);
-              setTimeout(() => setGiftAnimation(null), 3000);
-            }}
-          />
+          <div className="fixed bottom-0 left-0 right-0 z-[90]">
+            <GiftPanel
+              gifts={gifts}
+              walletBalance={walletBalance}
+              streamId={streamId}
+              creatorId={creator?.id}
+              onClose={() => setShowGiftPanel(false)}
+              onSendGift={(gift, qty) => {
+                setShowGiftPanel(false);
+                setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity: qty });
+                _sendGift.mutate({ gift, quantity: qty });
+              }}
+            />
+          </div>
         )}
       </AnimatePresence>
 
@@ -702,6 +514,43 @@ export default function WatchStream() {
           onClose={() => setShowHostControls(false)}
         />
       )}
+
+      {/* ── BIGO PANELS ── */}
+      <AnimatePresence>
+        {showRoomTools && (
+          <RoomToolsSheet
+            onClose={() => setShowRoomTools(false)}
+            onAction={(action) => {
+              if (action === 'quality') setShowQuality(v => !v);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showHostProfile && (
+          <HostProfileSheet
+            creator={creator}
+            isFollowing={isFollowing}
+            onFollowClick={() => followMutation?.mutate()}
+            onClose={() => setShowHostProfile(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showWishlist && (
+          <WishlistSheet
+            creator={creator}
+            gifts={gifts}
+            onClose={() => setShowWishlist(false)}
+            onSendGift={(gift) => {
+              setShowWishlist(false);
+              setShowGiftPanel(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
