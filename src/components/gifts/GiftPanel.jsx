@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 // TikTok/BIGO-style gift tier config
 const tierConfig = {
+  normal:    { bg: 'bg-white/[0.04]', border: 'border-white/8', label: 'Normal' },
   common:    { bg: 'bg-white/[0.06]', border: 'border-white/10', label: 'Common' },
   uncommon:  { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', label: 'Uncommon' },
   rare:      { bg: 'bg-blue-500/10', border: 'border-blue-500/20', label: 'Rare' },
@@ -17,15 +18,16 @@ const tierConfig = {
   divine:    { bg: 'bg-yellow-500/10', border: 'border-yellow-300/20', label: 'Divine' }
 };
 
-// BIGO-style tab system: Popular | Multi | Categories | VIP | Backpack
+// BIGO-style tab system
 const TABS = [
-  { id: 'popular', label: 'Popular', icon: '🔥' },
-  { id: 'all',     label: 'All',     icon: '✨' },
-  { id: 'love',    label: 'Love',    icon: '💕' },
-  { id: 'luxury',  label: 'Luxury',  icon: '💎' },
-  { id: 'mythical',label: 'Mythical',icon: '🐉' },
-  { id: 'prestige',label: 'VIP',     icon: '👑' },
-  { id: 'divine',  label: 'Divine',  icon: '⚡' },
+  { id: 'popular',  label: 'Popular',  icon: '🔥' },
+  { id: 'all',      label: 'All',      icon: '✨' },
+  { id: 'roman',    label: 'Roman',    icon: '🏛️' },
+  { id: 'mythical', label: 'Mythical', icon: '🐉' },
+  { id: 'war',      label: 'War',      icon: '⚔️' },
+  { id: 'fortune',  label: 'Fortune',  icon: '💰' },
+  { id: 'love',     label: 'Love',     icon: '💕' },
+  { id: 'celebration', label: 'Celebrate', icon: '🎉' },
 ];
 
 function GiftItem({ gift, inCart, onTap }) {

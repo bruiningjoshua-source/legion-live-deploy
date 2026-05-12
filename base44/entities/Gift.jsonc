@@ -1,0 +1,106 @@
+{
+  "name": "Gift",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "animation_url": {
+      "type": "string",
+      "description": "URL to video/Lottie/GIF animation"
+    },
+    "animation_type": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "burst",
+        "fullscreen",
+        "prestige",
+        "mega"
+      ]
+    },
+    "cost_denarii": {
+      "type": "number",
+      "description": "Cost in Denarii"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary",
+        "prestige",
+        "divine"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "nature",
+        "love",
+        "celebration",
+        "luxury",
+        "mythical",
+        "prestige",
+        "interactive",
+        "divine",
+        "roman",
+        "war",
+        "fortune"
+      ]
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "sort_order": {
+      "type": "number"
+    },
+    "combo_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Can be sent in combos"
+    },
+    "screen_takeover": {
+      "type": "boolean",
+      "default": false,
+      "description": "Takes over the entire screen"
+    },
+    "sound_url": {
+      "type": "string",
+      "description": "Sound effect URL"
+    }
+  },
+  "required": [
+    "name",
+    "cost_denarii",
+    "tier"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
