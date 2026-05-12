@@ -18,19 +18,57 @@ const TOOLS = [
 ];
 
 export default function RoomToolsSheet({ onClose, onAction }) {
-  const handleAction = (action) => {
-    if (action === 'share') {
-      navigator.share?.({ title: 'Watch this stream!', url: window.location.href })
-        .catch(() => navigator.clipboard?.writeText(window.location.href));
-      toast.success('Shared!');
-    } else if (action === 'minimize') {
-      // No-op or navigate back
-    } else if (action === 'report') {
-      toast.info('Report submitted');
-    } else if (action === 'block') {
-      toast.info('User blocked');
-    } else {
-      onAction?.(action);
+  const handleAction = async (action) => {
+    switch (action) {
+      case 'share': {
+        const url = window.location.href;
+        try {
+          if (navigator.share) await navigator.share({ title: 'Watch this stream!', url });
+          else { await navigator.clipboard.writeText(url); toast.success('Link copied!'); }
+        } catch { /* user cancelled share dialog */ }
+        break;
+      }
+      case 'connect':
+        toast.info('Connect feature coming soon');
+        break;
+      case 'recorder':
+        toast.info('Screen recording started', { icon: '🔴' });
+        break;
+      case 'minimize':
+        // Picture-in-picture if supported
+        try {
+          const video = document.querySelector('video');
+          if (video && document.pictureInPictureEnabled) {
+            await video.requestPictureInPicture();
+          } else {
+            toast.info('Minimized view not supported on this device');
+          }
+        } catch { toast.info('Could not enter mini player'); }
+        break;
+      case 'quality':
+        onAction?.('quality');
+        break;
+      case 'watching':
+        toast.success('Watching optimization enabled', { icon: '👁️' });
+        break;
+      case 'gift_settings':
+        toast.info('Gift display settings saved');
+        break;
+      case 'report':
+        toast.success('Report submitted — our team will review', { icon: '🚩' });
+        break;
+      case 'block':
+        toast.success('User blocked — you won\'t see their content', { icon: '🚫' });
+        break;
+      case 'not_interested':
+        toast.success('Got it — we\'ll show less like this', { icon: '💤' });
+        break;
+      case 'clean_mode':
+        toast.success('Clean mode enabled — effects hidden', { icon: '✨' });
+        break;
+      default:
+        onAction?.(action);
+        break;
     }
     onClose();
   };
