@@ -8,6 +8,7 @@ import {
   Tv, Gamepad2, Users, ShoppingBag, Radio,
   Flame, ChevronRight, Eye, Star, Film, Mic, Sword, Globe
 } from 'lucide-react';
+import { toast } from 'sonner';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 
 // Platform hub definitions
@@ -73,7 +74,8 @@ const hubs = [
     icon: Globe,
     color: '#8b5cf6',
     glow: 'rgba(139,92,246,0.35)',
-    badge: '3D',
+    badge: 'SOON',
+    comingSoon: true,
   },
 ];
 
@@ -92,23 +94,33 @@ const CATEGORIES = [
 
 function HubIcon({ hub }) {
   const Icon = hub.icon;
+
+  const handleClick = (e) => {
+    if (hub.comingSoon) {
+      e.preventDefault();
+      toast(`${hub.name} is coming soon!`, { icon: '🚧' });
+    }
+  };
+
   return (
-    <Link to={createPageUrl(hub.path)}>
+    <Link to={createPageUrl(hub.path)} onClick={handleClick}>
       <motion.div
         whileTap={{ scale: 0.92 }}
-        className="flex flex-col items-center gap-2 group"
+        className="flex flex-col items-center gap-2 group relative"
       >
         <div
-          className="w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105 bg-black border border-amber-600/30"
+          className={`w-16 h-16 rounded-[22px] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105 bg-black border ${hub.comingSoon ? 'border-white/10 opacity-60' : 'border-amber-600/30'}`}
           style={{
-            boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(217,119,6,0.2)`,
+            boxShadow: hub.comingSoon ? 'none' : `0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(217,119,6,0.2)`,
           }}
         >
-          <Icon className="w-7 h-7 text-amber-500 relative z-10 drop-shadow-sm" />
+          <Icon className={`w-7 h-7 ${hub.comingSoon ? 'text-white/40' : 'text-amber-500'} relative z-10 drop-shadow-sm`} />
         </div>
         <div className="text-center">
           <p className="text-white text-xs font-semibold leading-tight">{hub.name}</p>
-          <p className="text-white/40 text-[10px] leading-tight">{hub.sub}</p>
+          <p className={`text-[10px] leading-tight ${hub.comingSoon ? 'text-amber-400/60' : 'text-white/40'}`}>
+            {hub.comingSoon ? 'Coming Soon' : hub.sub}
+          </p>
         </div>
       </motion.div>
     </Link>
