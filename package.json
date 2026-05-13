@@ -12,8 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.27",
-    "@base44/vite-plugin": "^1.0.15",
+    "@base44/sdk": "^0.8.28",
+    "@base44/vite-plugin": "^1.0.16",
     "@floating-ui/core": "^1.6.9",
     "@floating-ui/dom": "^1.6.12",
     "@floating-ui/react-dom": "^2.1.2",
