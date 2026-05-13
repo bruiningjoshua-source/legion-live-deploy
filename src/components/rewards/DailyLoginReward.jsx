@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Flame, X } from 'lucide-react';
@@ -15,71 +15,38 @@ const DAY_REWARDS = [
   { day:7, denarii:100, emoji:'⚔️' },
 ];
 
-const todayStr     = () => new Date().toISOString().split('T')[0];
-const yesterdayStr = () => new Date(Date.now()-86400000).toISOString().split('T')[0];
-
 export default function DailyLoginReward({ user, onClose, onClaimed }) {
   const queryClient = useQueryClient();
   const [claimed, setClaimed] = useState(false);
-
-  const { data: streak } = useQuery({
-    queryKey: ['watch-streak', user?.email],
-    queryFn:  async () => {
-      const rows = await base44.entities.WatchStreak.filter({ user_email: user.email }, null, 1);
-      return rows[0] || null;
-    },
-    enabled: !!user?.email,
-  });
-
-  const alreadyClaimed = streak?.last_watch_date === todayStr();
+  const [currentDay, setCurrentDay] = useState(1);
 
   const claimMutation = useMutation({
     mutationFn: async () => {
-      const lastDate    = streak?.last_watch_date;
-      const currentStrk = streak?.current_streak || 0;
-      const newStreak   = lastDate === yesterdayStr() ? currentStrk + 1 : 1;
-      const reward      = DAY_REWARDS[(newStreak - 1) % 7];
-      if (streak?.id) {
-        await base44.entities.WatchStreak.update(streak.id, {
-          current_streak:     newStreak,
-          longest_streak:     Math.max(newStreak, streak.longest_streak || 0),
-          last_watch_date:    todayStr(),
-          total_days_watched: (streak.total_days_watched || 0) + 1,
-        });
-      } else {
-        await base44.entities.WatchStreak.create({
-          user_email: user.email, current_streak: 1, longest_streak: 1,
-          last_watch_date: todayStr(), total_days_watched: 1,
-        });
-      }
-      const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
-      if (wallets[0]) {
-        await base44.entities.Wallet.update(wallets[0].id, {
-          denarii_balance: (wallets[0].denarii_balance || 0) + reward.denarii,
-        });
-      }
-      return { newStreak, reward };
+      const res = await base44.functions.invoke('claimDailyReward', {});
+      return res.data;
     },
-    onSuccess: ({ newStreak, reward }) => {
-      queryClient.invalidateQueries({ queryKey: ['watch-streak', user.email] });
-      queryClient.invalidateQueries({ queryKey: ['wallet', user.email] });
-      queryClient.invalidateQueries({ queryKey: ['user-wallet', user.email] });
+    onSuccess: (data) => {
+      if (data.alreadyClaimed) {
+        onClose?.();
+        return;
+      }
+      setCurrentDay(data.day);
+      queryClient.invalidateQueries({ queryKey: ['user-wallet'] });
       setClaimed(true);
       onClaimed?.();
-      toast.success(`Day ${newStreak} reward: +${reward.denarii} Denarii!`);
+      toast.success(`Day ${data.newStreak} reward: +${data.rewardDenarii} Denarii!`);
     },
     onError: (err) => {
+      const msg = err?.response?.data?.error || err?.message || 'Unknown error';
+      if (msg.includes('Already claimed')) {
+        onClose?.();
+        return;
+      }
       console.error('DailyLoginReward claim error:', err);
-      toast.error('Could not claim reward: ' + (err?.message || 'Unknown error'));
+      toast.error('Could not claim reward: ' + msg);
     },
   });
 
-  // If already claimed today, auto-close the modal instead of rendering nothing
-  if (alreadyClaimed && !claimed) {
-    onClose?.();
-    return null;
-  }
-  const currentDay    = ((streak?.current_streak || 0) % 7) + 1;
   const currentReward = DAY_REWARDS[currentDay - 1];
 
   return (
@@ -107,13 +74,16 @@ export default function DailyLoginReward({ user, onClose, onClaimed }) {
             <span className="text-amber-400 font-bold text-sm uppercase tracking-widest">Daily Reward</span>
           </div>
           <p className="text-white text-2xl font-black mb-1" style={{ fontFamily:"Syne, sans-serif" }}>
-            Day {streak?.current_streak || 1} Streak
+            Day {currentDay} Streak
           </p>
           <p className="text-sm" style={{ color:"rgba(255,255,255,0.40)" }}>Log in every day to earn more Denarii</p>
         </div>
         <div className="px-4 py-4 grid grid-cols-7 gap-1.5">
           {DAY_REWARDS.map((day, i) => {
-            const dayNum=i+1; const isPast=dayNum<currentDay; const isCurrent=dayNum===currentDay; const isFuture=dayNum>currentDay;
+            const dayNum = i + 1;
+            const isPast = dayNum < currentDay;
+            const isCurrent = dayNum === currentDay;
+            const isFuture = dayNum > currentDay;
             return (
               <div key={day.day} className="flex flex-col items-center gap-0.5 py-2 rounded-xl text-center"
                 style={{ background:isCurrent?"rgba(245,166,35,0.18)":isPast?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.02)", border:isCurrent?"1px solid rgba(245,166,35,0.55)":"1px solid rgba(255,255,255,0.05)" }}>
