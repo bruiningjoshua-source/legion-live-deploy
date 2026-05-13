@@ -2,6 +2,7 @@
  * useStreamData — Centralized data-fetching hooks for streaming.
  * Acts as the data access layer, equivalent to an API client/SDK.
  */
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { CACHE } from '@/components/services/constants';
@@ -80,6 +81,19 @@ export function useCreators(limit = 30) {
 
 // ─── Wallet ───────────────────────────────────────────────────
 export function useWallet(userEmail) {
+  const queryClient = useQueryClient();
+
+  // Subscribe to real-time Wallet entity changes for instant balance updates
+  React.useEffect(() => {
+    if (!userEmail) return;
+    const unsubscribe = base44.entities.Wallet.subscribe((event) => {
+      if (event.data?.user_email === userEmail) {
+        queryClient.setQueryData(['wallet', userEmail], event.data);
+      }
+    });
+    return unsubscribe;
+  }, [userEmail, queryClient]);
+
   return useQuery({
     queryKey: ['wallet', userEmail],
     queryFn: async () => {
@@ -88,7 +102,6 @@ export function useWallet(userEmail) {
     },
     enabled: !!userEmail,
     staleTime: 15 * 1000,
-    refetchInterval: 15000,
     refetchOnWindowFocus: false,
   });
 }

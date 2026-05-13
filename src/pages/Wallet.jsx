@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,6 +68,19 @@ export default function Wallet() {
     enabled: !!user?.email,
     staleTime: 30_000,
   });
+
+  // Real-time wallet updates — balance shows instantly after Stripe webhook credits
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsubscribe = base44.entities.Wallet.subscribe((event) => {
+      if (event.data?.user_email === user.email) {
+        queryClient.setQueryData(['wallet', user.email], event.data);
+        // Also refresh purchase history when wallet changes (likely new purchase)
+        queryClient.invalidateQueries({ queryKey: ['currency-purchases', user.email] });
+      }
+    });
+    return unsubscribe;
+  }, [user?.email, queryClient]);
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['gift-transactions', user?.email],

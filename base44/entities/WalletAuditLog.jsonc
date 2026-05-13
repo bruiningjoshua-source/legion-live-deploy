@@ -1,0 +1,105 @@
+{
+  "name": "WalletAuditLog",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "gift_send",
+        "gift_receive",
+        "chargeback",
+        "reversal",
+        "admin_adjustment",
+        "referral_bonus",
+        "refund",
+        "ai_cohost_call",
+        "sentiment_analysis",
+        "financial_intelligence_cache",
+        "watch_streak_reward",
+        "product_click",
+        "voice_command",
+        "checkout_initiated",
+        "webhook_processed",
+        "fraud_review_case"
+      ],
+      "description": "Type of wallet modification"
+    },
+    "amount_denarii": {
+      "type": "number",
+      "description": "Amount changed (positive or negative)"
+    },
+    "previous_balance": {
+      "type": "number"
+    },
+    "new_balance": {
+      "type": "number"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "GiftTransaction, CurrencyPurchase, CreatorReferral, Stripe session/event ID, etc."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable reason for modification"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_email",
+    "action",
+    "amount_denarii",
+    "new_balance"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
