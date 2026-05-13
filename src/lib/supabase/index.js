@@ -3,12 +3,40 @@ import { supabase } from './supabaseCore';
 // ---------------------------------------------------------------------------
 // Entity proxy – maps base44 entity SDK calls to Supabase table operations
 // ---------------------------------------------------------------------------
+// Explicit overrides for entity→table mappings where auto-pluralization fails
+const TABLE_OVERRIDES = {
+  'game_library': 'game_library',
+  'music': 'music',
+  'legion_companion_memory': 'legion_companion_memory',
+  'viewing_history': 'viewing_history',
+  'watch_history': 'watch_history',
+  'watch_later': 'watch_later',
+  'activity_feed': 'activity_feed',
+  'channel_points': 'channel_points',
+  'hype': 'hype',
+};
+
+function toSnakeCase(name) {
+  // Handle consecutive capitals (e.g. PKBattle → pk_battle, PPVEvent → ppv_event, AIVideoGift → ai_video_gift)
+  return name
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')  // ABCDef → ABC_Def
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')      // abcDef → abc_Def
+    .toLowerCase();
+}
+
+function pluralize(snake) {
+  // Check explicit overrides first
+  if (TABLE_OVERRIDES[snake]) return TABLE_OVERRIDES[snake];
+  // Standard English pluralization rules
+  if (snake.endsWith('s') || snake.endsWith('x') || snake.endsWith('sh') || snake.endsWith('ch')) return snake + 'es';
+  if (snake.endsWith('y') && !/[aeiou]y$/.test(snake)) return snake.slice(0, -1) + 'ies';
+  return snake + 's';
+}
+
 function createEntityProxy(entityName) {
-  // Convert PascalCase entity names to snake_case table names
-  const tableName = entityName
-    .replace(/([A-Z])/g, '_$1')
-    .toLowerCase()
-    .replace(/^_/, '');
+  // Convert PascalCase entity names to pluralized snake_case Supabase table names
+  const snakeName = toSnakeCase(entityName);
+  const tableName = pluralize(snakeName);
 
   return {
     async list(sort, limit) {
