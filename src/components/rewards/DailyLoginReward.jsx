@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -22,8 +22,51 @@ export default function DailyLoginReward({ user, onClose, onClaimed }) {
 
   const claimMutation = useMutation({
     mutationFn: async () => {
-      const res = await base44.functions.invoke('claimDailyReward', {});
-      return res.data;
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+      // Fetch existing streak for this user
+      const streaks = await base44.entities.WatchStreak.filter({ user_email: user.email }, null, 1);
+      const streak = streaks[0] || null;
+
+      // Already claimed today — silently close
+      if (streak?.last_watch_date === today) {
+        return { alreadyClaimed: true };
+      }
+
+      // Calculate new streak
+      const prevStreak = streak?.current_streak || 0;
+      const newStreak = (streak?.last_watch_date === yesterday) ? prevStreak + 1 : 1;
+      const dayIndex = (newStreak - 1) % 7;
+      const rewardDenarii = DAY_REWARDS[dayIndex].denarii;
+
+      // Update or create streak record
+      if (streak?.id) {
+        await base44.entities.WatchStreak.update(streak.id, {
+          current_streak: newStreak,
+          longest_streak: Math.max(newStreak, streak.longest_streak || 0),
+          last_watch_date: today,
+          total_days_watched: (streak.total_days_watched || 0) + 1,
+        });
+      } else {
+        await base44.entities.WatchStreak.create({
+          user_email: user.email,
+          current_streak: 1,
+          longest_streak: 1,
+          last_watch_date: today,
+          total_days_watched: 1,
+        });
+      }
+
+      // Credit wallet
+      const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
+      if (wallets[0]) {
+        await base44.entities.Wallet.update(wallets[0].id, {
+          denarii_balance: (wallets[0].denarii_balance || 0) + rewardDenarii,
+        });
+      }
+
+      return { newStreak, rewardDenarii, day: dayIndex + 1 };
     },
     onSuccess: (data) => {
       if (data.alreadyClaimed) {
@@ -37,13 +80,8 @@ export default function DailyLoginReward({ user, onClose, onClaimed }) {
       toast.success(`Day ${data.newStreak} reward: +${data.rewardDenarii} Denarii!`);
     },
     onError: (err) => {
-      const msg = err?.response?.data?.error || err?.message || 'Unknown error';
-      if (msg.includes('Already claimed')) {
-        onClose?.();
-        return;
-      }
       console.error('DailyLoginReward claim error:', err);
-      toast.error('Could not claim reward: ' + msg);
+      toast.error('Could not claim reward: ' + (err?.message || 'Unknown error'));
     },
   });
 
