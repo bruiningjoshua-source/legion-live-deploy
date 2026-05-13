@@ -151,7 +151,7 @@ $$;`,
         'creator_payout_methods(creator_id)', 'creator_payouts(creator_id)', 'creator_payouts(status)',
         'creator_subscriptions(creator_id)', 'creator_subscriptions(user_email)', 'creator_subscriptions(status)',
         'currency_purchases(user_email)', 'currency_purchases(status)',
-        'direct_messages(sender_email)', 'direct_messages(receiver_email)',
+        'direct_messages(sender_email)', 'direct_messages(recipient_email)', 'direct_messages(conversation_id)',
         'fan_club_memberships(user_email)', 'fan_club_memberships(creator_id)',
         'follows(follower_email)', 'follows(creator_id)',
         'gift_transactions(sender_email)', 'gift_transactions(receiver_email)', 'gift_transactions(stream_id)',
@@ -212,6 +212,16 @@ $$;`,
         END; $$;
       `);
       return Response.json({ phase: '3', description: 'Created atomic transfer_denarii() with deadlock-safe row locking', result: r });
+    }
+
+    // ── HOTFIX: Fix DM indexes (recipient_email + conversation_id) ──
+    if (phase === 'hotfix_dm_indexes') {
+      const results = [];
+      const r1 = await execSQL(`CREATE INDEX IF NOT EXISTS "idx_direct_messages_recipient_email" ON public."direct_messages" (recipient_email);`);
+      results.push({ index: 'idx_direct_messages_recipient_email', ...r1 });
+      const r2 = await execSQL(`CREATE INDEX IF NOT EXISTS "idx_direct_messages_conversation_id" ON public."direct_messages" (conversation_id);`);
+      results.push({ index: 'idx_direct_messages_conversation_id', ...r2 });
+      return Response.json({ phase: 'hotfix_dm', description: 'Fixed DM indexes: recipient_email + conversation_id', results });
     }
 
     // ── PREVIEW ──
