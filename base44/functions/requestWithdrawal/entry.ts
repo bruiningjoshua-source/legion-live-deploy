@@ -27,6 +27,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid payout method' }, { status: 400 });
     }
 
+    // KYC gate — require verified identity before any withdrawal
+    const creators = await base44.entities.Creator.filter({ user_email: user.email }, null, 1).catch(() => []);
+    if (!creators[0] || creators[0].kyc_status !== 'verified') {
+      return Response.json({ error: 'Identity verification (KYC) required before withdrawals.' }, { status: 403 });
+    }
+
     // Fetch user wallet
     const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
     const wallet = wallets?.[0];
@@ -35,7 +41,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Wallet not found' }, { status: 404 });
     }
 
-    const balanceUsd = (wallet.denarii_balance || 0) / 65;
+    const balanceUsd = (wallet.denarii_balance || 0) / 180 * 0.60;
     if (balanceUsd < amount) {
       return Response.json({ 
         error: `Insufficient balance. Available: $${balanceUsd.toFixed(2)}` 
@@ -81,8 +87,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Failed to create withdrawal request' }, { status: 500 });
     }
 
-    // Deduct from wallet (preserve denarii precision)
-    const denariiToDeduct = amount * 65;
+    // Deduct from wallet — canonical rate: 180 Denarii/$1, creator earns 60%
+    const denariiToDeduct = Math.ceil(amount / (1/180 * 0.60));
     await base44.asServiceRole.entities.Wallet.update(wallet.id, {
       denarii_balance: Math.max(0, (wallet.denarii_balance || 0) - denariiToDeduct)
     }).catch(err => {

@@ -1,0 +1,94 @@
+{
+  "name": "Wallet",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "denarii_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Primary currency \u2014 180 Denarii = $1 USD"
+    },
+    "sestertii_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "as_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "vip_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Earned from purchases and activity \u2014 drives VIP tier"
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total Denarii spent on gifts"
+    },
+    "total_earned": {
+      "type": "number",
+      "default": 0
+    },
+    "total_purchased_usd": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime USD spent on Denarii packages"
+    },
+    "vip_level": {
+      "type": "number",
+      "default": 0,
+      "description": "Computed VIP tier 0-8"
+    },
+    "lotto_tickets": {
+      "type": "number",
+      "default": 0,
+      "description": "Banked lotto tickets from purchases"
+    },
+    "daily_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive daily login/activity streak"
+    },
+    "pending_withdrawal": {
+      "type": "number",
+      "default": 0
+    },
+    "last_daily_bonus": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

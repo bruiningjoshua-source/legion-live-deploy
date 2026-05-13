@@ -4,15 +4,15 @@ import { Sparkles, Crown, Star, Shield, Lock, Loader2, Zap, Coins, Check } from 
 import GlassCard from '@/components/shared/GlassCard';
 
 // ── Pricing Philosophy ──────────────────────────────────────────────────────
-// Single rate:    65 Denarii = $1 USD  (purchase and earnings base)
-// Creators earn:  70% of face value = $0.70 per $1 gifted
-// Platform keeps: 30%
+// Single rate:    180 Denarii = $1 USD (canonical, matches constants.js)
+// Creators earn:  60% of gift face value
+// Platform keeps: 40%
 // Bonuses:        Scale from 10% → 35% (35% on all packs $100+)
 // Top pack:       $999.99
 // ─────────────────────────────────────────────────────────────────────────────
 export const DENARII_PER_DOLLAR = 180;        // unified rate: 180 Denarii = $1 USD (matches constants.js)
 export const PURCHASE_RATE = 180;             // Denarii buyers receive per $1 before bonus
-export const CREATOR_SHARE = 0.70;            // 70% of face value goes to creator
+export const CREATOR_SHARE = 0.60;            // 60% of gift face value goes to creator (matches constants.js)
 
 export const packages = [
   {
