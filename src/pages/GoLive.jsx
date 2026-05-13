@@ -364,7 +364,7 @@ export default function GoLive() {
             <button
               onClick={() => goLiveMutation.mutate()}
               disabled={!isFormValid || goLiveMutation.isPending}
-              className="w-full py-3.5 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-500 text-white font-bold text-base tracking-wide shadow-[0_0_30px_rgba(6,182,212,0.3)] disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98]"
+              className="w-full py-3.5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-base tracking-wide shadow-[0_0_30px_rgba(239,68,68,0.3)] disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98]"
             >
               {goLiveMutation.isPending ? (
                 <span className="flex items-center justify-center gap-2">
