@@ -68,7 +68,10 @@ export default function DailyLoginReward({ user, onClose, onClaimed }) {
       onClaimed?.();
       toast.success(`Day ${newStreak} reward: +${reward.denarii} Denarii!`);
     },
-    onError: () => toast.error('Could not claim reward.'),
+    onError: (err) => {
+      console.error('DailyLoginReward claim error:', err);
+      toast.error('Could not claim reward: ' + (err?.message || 'Unknown error'));
+    },
   });
 
   // If already claimed today, auto-close the modal instead of rendering nothing
