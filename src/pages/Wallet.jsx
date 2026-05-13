@@ -20,28 +20,16 @@ import CreatorEarningsHub from '@/components/monetization/CreatorEarningsHub';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import RetryPaymentPanel from '@/components/wallet/RetryPaymentPanel';
-import FailedPaymentRetry from '@/components/wallet/FailedPaymentRetry';
 
-// CSRF token generation
-function generateCSRFToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+// Generate a unique token for checkout deduplication (not true CSRF — server validates via Stripe session)
+function generateCheckoutToken() {
+  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2,14)}`;
 }
 
 export default function Wallet() {
   const [showTosGate, setShowTosGate] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(() => !!localStorage.getItem('tos_accepted'));
-  const [csrfToken, setCsrfToken] = useState('');
-
-  // Generate CSRF token on mount
-  useEffect(() => {
-    const token = generateCSRFToken();
-    setCsrfToken(token);
-  }, []);
+  const [checkoutToken, setCheckoutToken] = useState(() => generateCheckoutToken());
 
   // Handle successful purchase redirect
   useEffect(() => {
@@ -75,7 +63,7 @@ export default function Wallet() {
       if (!user?.email) return null;
       const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, '-created_date', 1);
       if (wallets.length > 0) return wallets[0];
-      return base44.entities.Wallet.create({ user_email: user.email, denarii_balance: 0 });
+      return base44.entities.Wallet.create({ user_email: user.email, denarii_balance: 500, sestertii_balance: 0, as_balance: 0 });
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -100,11 +88,10 @@ export default function Wallet() {
         throw new Error('IFRAME_BLOCKED');
       }
 
-      if (!csrfToken) {
-        throw new Error('Security token missing. Please refresh the page.');
-      }
+      // Generate fresh token per checkout to prevent replay
+      const token = generateCheckoutToken();
+      setCheckoutToken(token);
 
-      // Create Stripe checkout session with CSRF token
       const response = await base44.functions.invoke('createDenariiCheckout', {
         packageId: pkg.id,
         denarii: pkg.denarii,
@@ -112,7 +99,7 @@ export default function Wallet() {
         price: pkg.price,
         packageName: pkg.name,
         vipPoints: pkg.vipPoints || 0,
-        csrfToken: csrfToken
+        csrfToken: token
       });
 
       // Redirect to Stripe checkout
@@ -322,9 +309,6 @@ export default function Wallet() {
             {user && (
               <CreatorEarningsHub creatorId={user.email} />
             )}
-
-            {/* Failed payment retry widget */}
-            {user?.email && <FailedPaymentRetry userEmail={user.email} />}
 
             {/* Retry failed/incomplete payments */}
             {user?.email && <RetryPaymentPanel userEmail={user.email} />}

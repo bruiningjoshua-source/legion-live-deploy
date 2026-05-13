@@ -10,8 +10,8 @@ import GlassCard from '@/components/shared/GlassCard';
 // Bonuses:        Scale from 10% → 35% (35% on all packs $100+)
 // Top pack:       $999.99
 // ─────────────────────────────────────────────────────────────────────────────
-export const DENARII_PER_DOLLAR = 65;         // unified rate for purchase and earnings
-export const PURCHASE_RATE = 65;              // Denarii buyers receive per $1 before bonus
+export const DENARII_PER_DOLLAR = 180;        // unified rate: 180 Denarii = $1 USD (matches constants.js)
+export const PURCHASE_RATE = 180;             // Denarii buyers receive per $1 before bonus
 export const CREATOR_SHARE = 0.70;            // 70% of face value goes to creator
 
 export const packages = [

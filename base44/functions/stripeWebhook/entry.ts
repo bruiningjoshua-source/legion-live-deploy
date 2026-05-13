@@ -188,9 +188,9 @@ Deno.serve(async (req) => {
 
           const creators = await base44.asServiceRole.entities.Creator.filter({ id: metadata.creator_id }, null, 1);
           if (creators[0]) {
-            // Platform rate: 260 Denarii per $1 USD sold. Creator earns their share of that.
+            // Platform rate: 180 Denarii per $1 USD (unified with constants.js and CurrencyPackages)
             const creatorEarningUsd = amount * (1 - tipPlatformFee);
-            const earningInDenarii = Math.floor(creatorEarningUsd * 260);
+            const earningInDenarii = Math.floor(creatorEarningUsd * 180);
             await base44.asServiceRole.entities.Creator.update(metadata.creator_id, {
               total_earnings_denarii: (creators[0].total_earnings_denarii || 0) + earningInDenarii
             });
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
                 denarii_balance: (creatorWallets[0].denarii_balance || 0) + earningInDenarii
               });
             }
-            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii @ 260:1 rate (fee:', tipPlatformFee, ')');
+            console.log('[stripeWebhook] Tip processed: $', amount, '→', earningInDenarii, 'denarii @ 180:1 rate (fee:', tipPlatformFee, ')');
           }
         }
 
@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
             stripe_payment_intent: session.payment_intent,
             conversion_rate: denariiAmount / priceUsd, // Track rate for analytics
             vip_multiplier_applied: 1.0, // Always 1.0 (no multiplier boost at purchase time)
-            timestamp_usd_per_denarii: 1 / 260 // Fixed rate: 260 Denarii/$1
+            timestamp_usd_per_denarii: 1 / 180 // Fixed rate: 180 Denarii/$1
           });
 
           console.log('[stripeWebhook] Denarii purchased:', totalDenarii, 'for', metadata.user_email, '| base:', denariiAmount, '+ bonus:', bonusDenarii, '@ ratio', (denariiAmount / priceUsd).toFixed(0), ':1');

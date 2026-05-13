@@ -11,32 +11,34 @@ export default function RetryPaymentPanel({ userEmail }) {
   const [retrying, setRetrying] = useState(null);
 
   const { data: failedLogs = [], refetch } = useQuery({
-    queryKey: ['failed-payments', userEmail],
+    queryKey: ['incomplete-payments', userEmail],
     queryFn: () => base44.entities.WalletAuditLog.filter(
-      { user_email: userEmail, action: 'checkout_initiated' },
+      { user_email: userEmail, action: 'purchase' },
       '-timestamp_utc',
       20
-    ),
+    ).catch(() => []),
     enabled: !!userEmail,
     staleTime: 30000
   });
 
-  // Filter to logs that look like failed/pending checkouts (not yet confirmed by a purchase log)
-  const { data: confirmedPayments = [] } = useQuery({
-    queryKey: ['confirmed-payments', userEmail],
-    queryFn: () => base44.entities.CurrencyPurchase.filter({ user_email: userEmail }, '-created_date', 50),
+  // Filter to purchase audit logs that indicate incomplete/failed transactions
+  const { data: confirmedPurchases = [] } = useQuery({
+    queryKey: ['confirmed-purchases', userEmail],
+    queryFn: () => base44.entities.CurrencyPurchase.filter({ user_email: userEmail }, '-created_date', 50).catch(() => []),
     enabled: !!userEmail,
     staleTime: 30000
   });
 
-  const confirmedIntents = new Set(confirmedPayments.map(p => p.stripe_payment_intent).filter(Boolean));
+  const confirmedIntents = new Set(confirmedPurchases.map(p => p.stripe_payment_intent).filter(Boolean));
 
-  // Show only checkout logs where we don't have a confirmed purchase
+  // Show only logs where the related session has no confirmed CurrencyPurchase record
+  // and the log is from the last 7 days
   const retryablePayments = failedLogs.filter(log => {
     const sessionId = log.related_entity_id;
     if (!sessionId || confirmedIntents.has(sessionId)) return false;
-    // Only show if initiated in the last 7 days
-    const age = Date.now() - new Date(log.timestamp_utc).getTime();
+    const ts = log.timestamp_utc || log.created_date;
+    if (!ts) return false;
+    const age = Date.now() - new Date(ts).getTime();
     return age < 7 * 24 * 60 * 60 * 1000;
   });
 
@@ -84,7 +86,7 @@ export default function RetryPaymentPanel({ userEmail }) {
 
         // Redirect to a new Denarii checkout for the same amount
         const csrfToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const denarii = Math.round(amount * 260); // base rate
+        const denarii = Math.round(amount * 180); // base rate: 180 Denarii/$1 (matches constants.js)
         const checkoutRes = await base44.functions.invoke('createDenariiCheckout', {
           packageId: 'retry',
           denarii,
@@ -141,7 +143,7 @@ export default function RetryPaymentPanel({ userEmail }) {
                   </div>
                   <div>
                     <p className="text-white text-sm font-medium">{amount} — Incomplete</p>
-                    <p className="text-white/40 text-xs">{format(new Date(log.timestamp_utc), 'MMM d, h:mm a')}</p>
+                    <p className="text-white/40 text-xs">{format(new Date(log.timestamp_utc || log.created_date), 'MMM d, h:mm a')}</p>
                   </div>
                 </div>
                 <Button
