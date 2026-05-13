@@ -11,12 +11,14 @@ import VoiceButton from '@/components/legion/VoiceButton';
 import useVoiceInput from '@/components/legion/useVoiceInput';
 
 const SUGGESTIONS = [
-  "How can I grow my audience?",
-  "What's the best time to stream?",
-  "Help me plan content for this week",
-  "How do I earn more from tips?",
-  "Analyze my recent stream performance",
-  "Give me a pep talk before going live",
+  { text: "📊 Analyze my stream performance", icon: "chart" },
+  { text: "📅 Help me schedule streams this week", icon: "calendar" },
+  { text: "✍️ Write a stream announcement", icon: "message" },
+  { text: "🎯 Set goals for this month", icon: "target" },
+  { text: "💡 Give me content ideas", icon: "idea" },
+  { text: "💰 How can I earn more?", icon: "money" },
+  { text: "🚀 Give me a pep talk", icon: "boost" },
+  { text: "📈 Who are my top supporters?", icon: "fans" },
 ];
 
 export default function LegionAI() {
@@ -67,7 +69,8 @@ export default function LegionAI() {
     try {
       const res = await base44.functions.invoke('legionCompanionChat', { message: trimmed });
       const reply = res.data?.reply || 'Sorry, I had trouble responding. Try again.';
-      const botMsg = { role: 'assistant', content: reply, timestamp: Date.now() };
+      const actions = res.data?.actions || [];
+      const botMsg = { role: 'assistant', content: reply, actions, timestamp: Date.now() };
       const final = [...nextMessages, botMsg];
       setMessages(final);
       sessionStorage.setItem('legion_chat', JSON.stringify(final));
@@ -164,21 +167,21 @@ export default function LegionAI() {
             </div>
             <h2 className="text-white font-bold text-lg mb-1">Hey {firstName}!</h2>
             <p className="text-white/40 text-sm mb-6 max-w-xs">
-              I'm Legion — your AI companion. Ask me anything about streaming, growth, or monetization. Or just talk.
+              I'm Legion — your AI companion. I can analyze your streams, schedule content, craft messages, set goals, and help you grow. What do you need?
             </p>
 
             {/* Suggestion chips */}
-            <div className="flex flex-wrap justify-center gap-2 max-w-sm">
+            <div className="flex flex-wrap justify-center gap-2 max-w-md">
               {SUGGESTIONS.map((s, i) => (
                 <motion.button
                   key={i}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.06 }}
-                  onClick={() => sendMessage(s)}
+                  onClick={() => sendMessage(s.text)}
                   className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/60 text-xs hover:bg-purple-500/10 hover:border-purple-500/20 hover:text-purple-300 transition-all"
                 >
-                  {s}
+                  {s.text}
                 </motion.button>
               ))}
             </div>
