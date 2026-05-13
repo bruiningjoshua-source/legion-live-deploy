@@ -1,12 +1,12 @@
 import React from 'react';
-import { Armchair, Palette, Sparkles, Wand2, Settings } from 'lucide-react';
+import { Armchair, Palette, Sparkles, Wand2, Monitor } from 'lucide-react';
 
 const TOOLS = [
   { id: 'seats',    icon: Armchair, label: 'Seats' },
   { id: 'theme',    icon: Palette,  label: 'Theme' },
   { id: 'beauty',   icon: Sparkles, label: 'Beauty' },
   { id: 'magic',    icon: Wand2,    label: 'Magic' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
+  { id: 'obs',      icon: Monitor,  label: 'OBS' },
 ];
 
 export default function GoLiveToolbar({ activeTool, onToolSelect }) {

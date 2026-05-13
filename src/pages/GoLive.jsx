@@ -10,6 +10,7 @@ import LegionAREngine from '@/components/stream/LegionAREngine';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
+import OBSSetupPanel from '@/components/stream/OBSSetupPanel';
 import { AnimatePresence } from 'framer-motion';
 import GoLiveToolbar from '@/components/stream/GoLiveToolbar';
 import GoLiveStreamModeSelector from '@/components/stream/GoLiveStreamModeSelector';
@@ -47,6 +48,7 @@ export default function GoLive() {
   const [showSoundboard, setShowSoundboard] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
   const [activeTool, setActiveTool] = useState(null);
+  const [showOBS, setShowOBS] = useState(false);
   const [seatCount, setSeatCount] = useState(4);
   const videoRef = useRef(null);
   const navigate = useNavigate();
@@ -352,6 +354,10 @@ export default function GoLive() {
             <GoLiveToolbar
               activeTool={activeTool}
               onToolSelect={(tool) => {
+                if (tool === 'obs') {
+                  setShowOBS(true);
+                  return;
+                }
                 setActiveTool(tool);
                 if (tool === 'beauty') setShowBeauty(true);
                 else setShowBeauty(false);
@@ -436,6 +442,17 @@ export default function GoLive() {
             }
           }}
         />
+
+        <AnimatePresence>
+          {showOBS && (
+            <OBSSetupPanel
+              user={user}
+              creator={creator}
+              onClose={() => setShowOBS(false)}
+              onStreamCreated={(stream) => navigate(createPageUrl(`WatchStream?id=${stream.id}`))}
+            />
+          )}
+        </AnimatePresence>
 
         {mocapMode && (
           <LegionMoCap
