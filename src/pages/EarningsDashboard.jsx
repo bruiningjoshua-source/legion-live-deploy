@@ -12,6 +12,7 @@ import {
 import PayoutForecast from '@/components/earnings/PayoutForecast';
 import WithdrawalHistorySection from '@/components/earnings/WithdrawalHistorySection';
 import PayoutMethodsPreview from '@/components/earnings/PayoutMethodsPreview';
+import { denariiToUsd, formatLocalCurrency, detectLocalCurrency } from '@/components/utils/currencyFormatter';
 
 /**
  * Unified Earnings Dashboard Hub
@@ -64,11 +65,12 @@ export default function EarningsDashboard() {
     enabled: !!user?.email
   });
 
-  const freeTierEarningsUsd = (recentTips?.reduce((sum, t) => sum + ((t.total_as_value || 0) / 65), 0) || 0);
+  const freeTierEarningsUsd = (recentTips?.reduce((sum, t) => sum + denariiToUsd(t.total_as_value || 0), 0) || 0);
   const freeTierMonthlyLimit = 86; // ~$20/week
   const isAdmin = user?.role === 'admin';
   const hasMonetization = isAdmin || !!creatorSubs; // Admins always have access
   const exceedsFreeLimit = !hasMonetization && freeTierEarningsUsd > freeTierMonthlyLimit;
+  const localCurrency = detectLocalCurrency();
 
   const walletData = wallet?.[0];
   const creatorData = creator?.[0];
@@ -165,11 +167,11 @@ export default function EarningsDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/30 p-5">
               <p className="text-xs text-green-300/70 mb-1">Total Earned</p>
-              <p className="text-2xl font-bold text-green-400">${((creatorData?.total_earnings_denarii || 0) / 65).toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-400">{formatLocalCurrency(denariiToUsd(creatorData?.total_earnings_denarii || 0), localCurrency)}</p>
             </Card>
             <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 p-5">
               <p className="text-xs text-blue-300/70 mb-1">Available Balance</p>
-              <p className="text-2xl font-bold text-blue-400">${((walletData?.denarii_balance || 0) / 65).toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-400">{formatLocalCurrency(denariiToUsd(walletData?.denarii_balance || 0), localCurrency)}</p>
             </Card>
             <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30 p-5">
               <p className="text-xs text-amber-300/70 mb-1">VIP Points</p>
@@ -186,7 +188,7 @@ export default function EarningsDashboard() {
         {!hasMonetization && exceedsFreeLimit && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-8">
             <p className="text-sm text-amber-300">
-              ⚠️ <strong>Free Tier Limit Reached:</strong> You've earned ${freeTierEarningsUsd.toFixed(2)} in gift earnings this month. Free creators can earn up to $86/month. Unlock unlimited payouts with Creator Monetization.
+              ⚠️ <strong>Free Tier Limit Reached:</strong> You've earned {formatLocalCurrency(freeTierEarningsUsd, localCurrency)} in gift earnings this month. Free creators can earn up to {formatLocalCurrency(86, localCurrency)}/month. Unlock unlimited payouts with Creator Monetization.
             </p>
             <Button className="mt-3 text-xs" onClick={() => setActiveTab('subscriptions')}>
               Upgrade to Creator Monetization →
@@ -265,9 +267,9 @@ export default function EarningsDashboard() {
                   {/* Withdrawal Info Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <Card className="bg-white/5 border-white/10 p-4">
-                      <p className="text-xs text-white/50 mb-2">Available Balance</p>
-                      <p className="text-2xl font-bold text-emerald-400">${((walletData?.denarii_balance || 0) / 65).toFixed(2)}</p>
-                      <p className="text-xs text-white/30 mt-2">Ready to withdraw</p>
+                     <p className="text-xs text-white/50 mb-2">Available Balance</p>
+                     <p className="text-2xl font-bold text-emerald-400">{formatLocalCurrency(denariiToUsd(walletData?.denarii_balance || 0), localCurrency)}</p>
+                     <p className="text-xs text-white/30 mt-2">Ready to withdraw</p>
                     </Card>
                     <Card className="bg-white/5 border-white/10 p-4">
                       <p className="text-xs text-white/50 mb-2">Minimum Withdrawal</p>
