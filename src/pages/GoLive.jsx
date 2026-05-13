@@ -4,13 +4,18 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, FlipHorizontal, Sparkles, Gift, ArrowRight, X, ScreenShare } from 'lucide-react';
+import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
 import { AnimatePresence } from 'framer-motion';
+import GoLiveToolbar from '@/components/stream/GoLiveToolbar';
+import GoLiveStreamModeSelector from '@/components/stream/GoLiveStreamModeSelector';
+import SeatsPanel from '@/components/stream/golive/SeatsPanel';
+import ThemePanel from '@/components/stream/golive/ThemePanel';
+import BeautyPanel from '@/components/stream/golive/BeautyPanel';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
 
@@ -41,6 +46,8 @@ export default function GoLive() {
   const [showBeauty, setShowBeauty] = useState(false);
   const [showSoundboard, setShowSoundboard] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
+  const [activeTool, setActiveTool] = useState(null);
+  const [seatCount, setSeatCount] = useState(4);
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -248,153 +255,168 @@ export default function GoLive() {
         {/* Bottom gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
 
-        {/* TOP BAR */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-safe"
-          style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
-          
-          {/* Close button */}
-          <button onClick={handleClose}
-            className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-            <X className="w-4 h-4 text-white" />
-          </button>
+        {/* TOP BAR — BIGO-style pre-stream header */}
+        <div className="absolute top-0 left-0 right-0 z-20"
+          style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
 
-          {/* Stream type tabs */}
-          <div className="flex items-center gap-1 bg-black/40 backdrop-blur rounded-full px-1 py-1 border border-white/10">
-            {['solo', 'multi_panel', 'pk_battle'].map(type => (
-              <button key={type}
-                onClick={() => setStreamType(type)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  streamType === type
-                    ? 'bg-amber-500 text-black'
-                    : 'text-white/50'
-                }`}>
-                {type === 'solo' ? 'Solo' : type === 'multi_panel' ? 'Multi' : 'PK'}
-              </button>
-            ))}
+          {/* Close + Flip row */}
+          <div className="flex items-center justify-end px-4 mb-2">
+            <button onClick={() => {
+              if (cameraStream) {
+                const tracks = cameraStream.getVideoTracks();
+                const current = tracks[0]?.getSettings()?.facingMode;
+                cameraStream.getTracks().forEach(t => t.stop());
+                navigator.mediaDevices.getUserMedia({
+                  video: { facingMode: current === 'environment' ? 'user' : 'environment' },
+                  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                }).then(s => setCameraStream(s)).catch(() => {});
+              }
+            }}
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center mr-2">
+              <FlipHorizontal className="w-4 h-4 text-white" />
+            </button>
+            <button onClick={handleClose}
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
+              <X className="w-4 h-4 text-white" />
+            </button>
           </div>
 
-          {/* Flip camera */}
-          <button onClick={() => {
-            if (cameraStream) {
-              const tracks = cameraStream.getVideoTracks();
-              const current = tracks[0]?.getSettings()?.facingMode;
-              cameraStream.getTracks().forEach(t => t.stop());
-              navigator.mediaDevices.getUserMedia({
-                video: { facingMode: current === 'environment' ? 'user' : 'environment' },
-                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-              }).then(s => setCameraStream(s)).catch(() => {});
-            }
-          }}
-            className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-            <FlipHorizontal className="w-4 h-4 text-white" />
-          </button>
+          {/* Profile card + title */}
+          <div className="mx-4 bg-black/60 backdrop-blur-xl rounded-2xl border border-white/10 p-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 p-0.5 shrink-0">
+                <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center overflow-hidden">
+                  {creator?.avatar_url ? (
+                    <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg">👤</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-sm truncate">{creator?.display_name || user?.full_name || 'Creator'}</p>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="📢 Add stream title..."
+                  maxLength={100}
+                  className="w-full bg-transparent text-white/50 text-xs placeholder-white/30 focus:outline-none mt-0.5"
+                />
+              </div>
+            </div>
+
+            {/* Category chips */}
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+              {[
+                { value: 'talk_show', label: '💬 Chat' },
+                { value: 'other', label: '💕 Dating' },
+                { value: 'gaming', label: '🎮 Games' },
+                { value: 'education', label: '⭐ Interests' },
+                { value: 'music', label: '💜 Emotional' },
+              ].map(cat => (
+                <button
+                  key={cat.value}
+                  onClick={() => setCategory(cat.value)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    category === cat.value
+                      ? 'bg-white text-black border-white'
+                      : 'bg-black/30 text-white/50 border-white/15'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT SIDE TOOLS */}
-        <div className="absolute right-3 z-20 flex flex-col items-center gap-4"
-          style={{ top: '50%', transform: 'translateY(-50%)' }}>
-          
-          <button onClick={() => setShowBeauty(!showBeauty)}
-            className="flex flex-col items-center gap-1">
-            <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center ${
-              showBeauty ? 'bg-amber-500/30 border-amber-400/50' : 'bg-black/40 border-white/10'
-            }`}>
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-white/60 text-[9px]">Beauty</span>
-          </button>
-
-          <button onClick={() => toast.info('Screen sharing activates once you go live')}
-            className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
-              <ScreenShare className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-white/60 text-[9px]">Screen</span>
-          </button>
-
-          <button onClick={() => setShowSoundboard(v => !v)} className="flex flex-col items-center gap-1">
-            <div
-              className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
-              style={{
-                background: showSoundboard ? 'rgba(245,166,35,0.25)' : 'rgba(0,0,0,0.4)',
-                borderColor: showSoundboard ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.1)',
-              }}
-            >
-              <span className="text-lg">🎵</span>
-            </div>
-            <span className="text-white/60 text-[9px]">Sound</span>
-          </button>
-
-          <button onClick={() => setMocapMode(v=>!v)} className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all"
-              style={{ background:mocapMode?"rgba(139,92,246,0.30)":"rgba(0,0,0,0.4)", borderColor:mocapMode?"rgba(139,92,246,0.60)":"rgba(255,255,255,0.1)", boxShadow:mocapMode?"0 0 12px rgba(139,92,246,0.4)":"none" }}>
-              <span className="text-lg">🎭</span>
-            </div>
-            <span className="text-white/60 text-[9px]">MoCap</span>
-          </button>
-        </div>
-
-        {/* BOTTOM SECTION */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-4"
-          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
-
-          {/* Title input */}
-          <div className="mb-3">
-            <input
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="Add a stream title..."
-              maxLength={100}
-              className="w-full bg-black/40 backdrop-blur border border-white/15 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-amber-500/50"
-            />
-          </div>
-
-          {/* Category pills */}
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-            {['gaming','music','talk_show','dance','cooking','fitness','education','art','comedy','other'].map(cat => (
-              <button key={cat}
-                onClick={() => setCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  category === cat
-                    ? 'bg-amber-500 text-black border-amber-500'
-                    : 'bg-black/30 text-white/50 border-white/10'
-                }`}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ')}
-              </button>
-            ))}
-          </div>
+        {/* BOTTOM SECTION — BIGO-style layout */}
+        <div className="absolute bottom-0 left-0 right-0 z-20"
+          style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
 
           {/* Monetization warning */}
           {!canMonetize && (
-            <button onClick={() => navigate(createPageUrl('CreatorMonetization'))}
-              className="w-full mb-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
-              <Gift className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="text-amber-200 text-xs flex-1 text-left">Enable monetization to earn from gifts</span>
-              <ArrowRight className="w-3 h-3 text-amber-400 shrink-0" />
-            </button>
+            <div className="px-4 mb-2">
+              <button onClick={() => navigate(createPageUrl('CreatorMonetization'))}
+                className="w-full flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
+                <Gift className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="text-amber-200 text-xs flex-1 text-left">Enable monetization to earn from gifts</span>
+                <ArrowRight className="w-3 h-3 text-amber-400 shrink-0" />
+              </button>
+            </div>
           )}
 
+          {/* Tool icons row (Seats, Theme, Beauty, Magic, Settings) */}
+          <div className="mb-3">
+            <GoLiveToolbar
+              activeTool={activeTool}
+              onToolSelect={(tool) => {
+                setActiveTool(tool);
+                if (tool === 'beauty') setShowBeauty(true);
+                else setShowBeauty(false);
+              }}
+            />
+          </div>
+
           {/* GO LIVE button */}
-          <button
-            onClick={() => goLiveMutation.mutate()}
-            disabled={!isFormValid || goLiveMutation.isPending}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-base tracking-wide shadow-[0_0_30px_rgba(239,68,68,0.3)] disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98]"
-          >
-            {goLiveMutation.isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Starting...
-              </span>
-            ) : (
-              '🔴  Go Live'
-            )}
-          </button>
+          <div className="px-4 mb-2">
+            <button
+              onClick={() => goLiveMutation.mutate()}
+              disabled={!isFormValid || goLiveMutation.isPending}
+              className="w-full py-3.5 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-500 text-white font-bold text-base tracking-wide shadow-[0_0_30px_rgba(6,182,212,0.3)] disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98]"
+            >
+              {goLiveMutation.isPending ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Starting...
+                </span>
+              ) : (
+                'Go LIVE'
+              )}
+            </button>
+          </div>
+
+          {/* Stream mode selector at bottom */}
+          <GoLiveStreamModeSelector
+            streamType={streamType}
+            onStreamTypeChange={setStreamType}
+          />
         </div>
 
-        {/* Beauty overlay */}
+        {/* Tool panel overlays */}
         <AnimatePresence>
-          {showBeauty && <BeautyFilter videoRef={videoRef} />}
+          {activeTool === 'seats' && (
+            <SeatsPanel
+              seats={seatCount}
+              onSeatsChange={setSeatCount}
+              onClose={() => setActiveTool(null)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {activeTool === 'theme' && (
+            <ThemePanel
+              onClose={() => setActiveTool(null)}
+              onThemeChange={(change) => toast.success(`${change.type} applied`)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {(activeTool === 'beauty' || showBeauty) && (
+            <BeautyPanel
+              onClose={() => { setActiveTool(null); setShowBeauty(false); }}
+              onApply={(effect) => toast.success(`${effect.type} applied`)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {activeTool === 'magic' && (
+            <BeautyFilter videoRef={videoRef} />
+          )}
         </AnimatePresence>
 
         <AnimatePresence>

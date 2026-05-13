@@ -1,121 +1,117 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link2, Share2, Video, Minimize2, MonitorUp, Eye, Settings, Flag, Ban, HeartOff, Sparkles } from 'lucide-react';
+import {
+  Sparkles, Wand2, Sun, SlidersHorizontal, Music,
+  AudioLines, ListVideo, ScreenShare, Youtube, Mic,
+  MessageCircle, ZoomIn,
+  Users, MessageSquare, LayoutDashboard, Headphones, Video,
+  UserPlus, Database, Clock, X
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-const TOOLS = [
-  { icon: Link2,      label: 'Connect',              action: 'connect' },
-  { icon: Share2,     label: 'Share',                 action: 'share' },
-  { icon: Video,      label: 'Recorder',              action: 'recorder' },
-  { icon: Minimize2,  label: 'Minimize',              action: 'minimize' },
-  { icon: MonitorUp,  label: 'Quality',               action: 'quality' },
-  { icon: Eye,        label: 'Watching\nOptimization', action: 'watching' },
-  { icon: Settings,   label: 'Gift\nSettings',        action: 'gift_settings' },
-  { icon: Flag,       label: 'REPORT',                action: 'report', danger: true },
-  { icon: Ban,        label: 'Block',                 action: 'block', danger: true },
-  { icon: HeartOff,   label: 'Not\nInterested',       action: 'not_interested' },
-  { icon: Sparkles,   label: 'Clean\nMode',           action: 'clean_mode' },
+const ROOM_TOOLS = [
+  { icon: Sparkles,          label: 'Beauty',       action: 'beauty' },
+  { icon: Wand2,             label: 'Magic',        action: 'magic' },
+  { icon: Sun,               label: 'Fill Light',   action: 'fill_light' },
+  { icon: SlidersHorizontal, label: 'Mixer',        action: 'mixer' },
+  { icon: Music,             label: 'Music',        action: 'music' },
+  { icon: AudioLines,        label: 'Sounds',       action: 'sounds' },
+  { icon: ListVideo,         label: 'Program list', action: 'program' },
+  { icon: ScreenShare,       label: 'Share screen', action: 'screen_share' },
+  { icon: Youtube,           label: 'YouTube',      action: 'youtube' },
+  { icon: Mic,               label: 'Singing',      action: 'singing' },
+  { icon: MessageCircle,     label: 'Topic',        action: 'topic' },
+  { icon: ZoomIn,            label: 'Zoom in',      action: 'zoom' },
+];
+
+const OTHER_TOOLS = [
+  { icon: Users,             label: 'Users',           action: 'users' },
+  { icon: MessageSquare,     label: 'Comment',         action: 'comment' },
+  { icon: LayoutDashboard,   label: 'Management',      action: 'management' },
+  { icon: Headphones,        label: 'Live Assistance',  action: 'assistance' },
+  { icon: Video,             label: 'Recorder',        action: 'recorder' },
+  { icon: UserPlus,          label: 'Newcomers',       action: 'newcomers' },
+  { icon: Database,          label: 'Data Center',     action: 'data_center' },
+  { icon: Clock,             label: 'Live time',       action: 'live_time' },
 ];
 
 export default function RoomToolsSheet({ onClose, onAction }) {
-  const handleAction = async (action) => {
+  const handleAction = (action) => {
     switch (action) {
-      case 'share': {
-        const url = window.location.href;
-        try {
-          if (navigator.share) await navigator.share({ title: 'Watch this stream!', url });
-          else { await navigator.clipboard.writeText(url); toast.success('Link copied!'); }
-        } catch { /* user cancelled share dialog */ }
-        break;
-      }
-      case 'connect':
-        toast.info('Connect feature coming soon');
+      case 'screen_share':
+        toast.info('Screen sharing initiated');
         break;
       case 'recorder':
         toast.info('Screen recording started', { icon: '🔴' });
         break;
-      case 'minimize':
-        // Picture-in-picture if supported
-        try {
-          const video = document.querySelector('video');
-          if (video && document.pictureInPictureEnabled) {
-            await video.requestPictureInPicture();
-          } else {
-            toast.info('Minimized view not supported on this device');
-          }
-        } catch { toast.info('Could not enter mini player'); }
+      case 'fill_light':
+        toast.success('Fill light adjusted');
         break;
-      case 'quality':
-        onAction?.('quality');
+      case 'zoom':
+        toast.info('Zoom mode enabled');
         break;
-      case 'watching':
-        toast.success('Watching optimization enabled', { icon: '👁️' });
+      case 'newcomers':
+        toast.info('Newcomer welcome enabled');
         break;
-      case 'gift_settings':
-        toast.info('Gift display settings saved');
+      case 'data_center':
+        toast.info('Opening data center');
         break;
-      case 'report':
-        toast.success('Report submitted — our team will review', { icon: '🚩' });
-        break;
-      case 'block':
-        toast.success('User blocked — you won\'t see their content', { icon: '🚫' });
-        break;
-      case 'not_interested':
-        toast.success('Got it — we\'ll show less like this', { icon: '💤' });
-        break;
-      case 'clean_mode':
-        toast.success('Clean mode enabled — effects hidden', { icon: '✨' });
+      case 'live_time':
+        toast.info('Stream duration display toggled');
         break;
       default:
         onAction?.(action);
+        onClose();
         break;
     }
-    onClose();
   };
+
+  const renderToolGrid = (tools) => (
+    <div className="grid grid-cols-5 gap-y-5 gap-x-2">
+      {tools.map(tool => {
+        const Icon = tool.icon;
+        return (
+          <button
+            key={tool.action}
+            onClick={() => handleAction(tool.action)}
+            className="flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <Icon className="w-5 h-5 text-gray-700" />
+            </div>
+            <span className="text-[10px] font-medium text-gray-600 leading-tight text-center">
+              {tool.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 z-[100] bg-black/40" onClick={onClose} />
 
-      {/* Sheet */}
       <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-        className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl"
+        className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl max-h-[65vh] flex flex-col"
         style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
       >
-        {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
 
-        <h3 className="text-black font-bold text-base px-5 pb-3">Room Tools</h3>
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {/* Room Tools section */}
+          <h3 className="text-black font-bold text-base px-1 pb-3">Room Tools</h3>
+          {renderToolGrid(ROOM_TOOLS)}
 
-        <div className="grid grid-cols-5 gap-y-5 gap-x-2 px-4 pb-4">
-          {TOOLS.map(tool => {
-            const Icon = tool.icon;
-            return (
-              <button
-                key={tool.action}
-                onClick={() => handleAction(tool.action)}
-                className="flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
-              >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                  tool.danger ? 'bg-red-50' : 'bg-gray-100'
-                }`}>
-                  <Icon className={`w-5 h-5 ${tool.danger ? 'text-red-500' : 'text-gray-700'}`} />
-                </div>
-                <span className={`text-[10px] font-medium leading-tight text-center whitespace-pre-line ${
-                  tool.danger ? 'text-red-500' : 'text-gray-600'
-                }`}>
-                  {tool.label}
-                </span>
-              </button>
-            );
-          })}
+          {/* Other Tools section */}
+          <h3 className="text-black font-bold text-base px-1 pt-5 pb-3">Other Tools</h3>
+          {renderToolGrid(OTHER_TOOLS)}
         </div>
       </motion.div>
     </>
