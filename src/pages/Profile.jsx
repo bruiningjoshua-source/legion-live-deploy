@@ -33,7 +33,13 @@ import {
   Share2,
   BarChart3,
   DollarSign,
-  Video
+  Video,
+  Wallet,
+  Settings,
+  HelpCircle,
+  Shield,
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -286,6 +292,40 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Quick Links (BIGO-style list) ── */}
+        <div className="mb-6 rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06]">
+          {[
+            { icon: Wallet, label: 'My Wallet', path: 'Wallet', color: 'text-amber-400' },
+            { icon: DollarSign, label: 'Earnings Hub', path: 'EarningsDashboard', color: 'text-green-400' },
+            { icon: Trophy, label: 'Achievements', path: 'Achievements', color: 'text-purple-400' },
+            { icon: Settings, label: 'Settings', path: 'Settings', color: 'text-white/60' },
+            { icon: HelpCircle, label: 'Help & Info', path: 'HelpAndInfo', color: 'text-sky-400' },
+          ].map((item, i, arr) => (
+            <Link
+              key={item.path}
+              to={createPageUrl(item.path)}
+              className={`flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.04] transition-colors ${
+                i < arr.length - 1 ? 'border-b border-white/[0.04]' : ''
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <item.icon className={`w-5 h-5 ${item.color}`} />
+                <span className="text-white/80 text-sm font-medium">{item.label}</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20" />
+            </Link>
+          ))}
+          <button
+            onClick={() => base44.auth.logout('/')}
+            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-red-500/10 transition-colors border-t border-white/[0.04]"
+          >
+            <div className="flex items-center gap-3">
+              <LogOut className="w-5 h-5 text-red-400" />
+              <span className="text-red-400 text-sm font-medium">Sign Out</span>
+            </div>
+          </button>
+        </div>
 
         {/* Tabs */}
         <Tabs defaultValue="videos" className="space-y-4">
