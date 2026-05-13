@@ -1,9 +1,9 @@
 import React from 'react';
 
 const MODES = [
-  { id: 'multi_panel', label: 'Multi-guest LIVE' },
   { id: 'solo',        label: 'LIVE' },
   { id: 'pk_battle',   label: 'Audio LIVE' },
+  { id: 'game_live',   label: 'Game LIVE' },
 ];
 
 export default function GoLiveStreamModeSelector({ streamType, onStreamTypeChange }) {

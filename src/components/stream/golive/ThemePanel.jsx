@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Upload, Loader2, ImagePlus, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const TABS = ['Theme', 'Layout', 'Background', 'Mic Decor', 'Voice Waves'];
 
@@ -27,6 +29,38 @@ const BG_PRESETS = [
 
 export default function ThemePanel({ activeTheme, onThemeChange, onClose }) {
   const [tab, setTab] = useState('Theme');
+  const [uploading, setUploading] = useState(false);
+  const [customBgs, setCustomBgs] = useState(() => {
+    const saved = localStorage.getItem('ll_custom_backgrounds');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedBg, setSelectedBg] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleBgUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10MB'); return; }
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const newBg = { id: `custom_${Date.now()}`, label: file.name.split('.')[0], url: file_url };
+    const updated = [newBg, ...customBgs];
+    setCustomBgs(updated);
+    localStorage.setItem('ll_custom_backgrounds', JSON.stringify(updated));
+    setSelectedBg(newBg.id);
+    onThemeChange?.({ type: 'background', value: file_url });
+    toast.success('Background uploaded!');
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDeleteCustomBg = (id) => {
+    const updated = customBgs.filter(b => b.id !== id);
+    setCustomBgs(updated);
+    localStorage.setItem('ll_custom_backgrounds', JSON.stringify(updated));
+    if (selectedBg === id) setSelectedBg(null);
+  };
 
   return (
     <motion.div
@@ -104,17 +138,61 @@ export default function ThemePanel({ activeTheme, onThemeChange, onClose }) {
         )}
 
         {tab === 'Background' && (
-          <div>
-            <p className="text-gray-500 text-xs font-semibold mb-3">Common</p>
-            <div className="grid grid-cols-4 gap-2">
-              <button className="aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xl">
-                +
-              </button>
-              {BG_PRESETS.map(bg => (
-                <button key={bg.id} className="aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-cyan-400 transition-all">
-                  <img src={bg.url} alt={bg.label} className="w-full h-full object-cover" />
+          <div className="space-y-4">
+            {/* Upload button */}
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
+            
+            {/* Custom uploads */}
+            {customBgs.length > 0 && (
+              <div>
+                <p className="text-gray-500 text-xs font-semibold mb-2">My Uploads</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {customBgs.map(bg => (
+                    <div key={bg.id} className="relative group">
+                      <button
+                        onClick={() => { setSelectedBg(bg.id); onThemeChange?.({ type: 'background', value: bg.url }); }}
+                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-all w-full ${
+                          selectedBg === bg.id ? 'border-cyan-400 ring-1 ring-cyan-400/30' : 'border-transparent hover:border-cyan-400'
+                        }`}
+                      >
+                        <img src={bg.url} alt={bg.label} className="w-full h-full object-cover" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCustomBg(bg.id)}
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Common backgrounds */}
+            <div>
+              <p className="text-gray-500 text-xs font-semibold mb-2">Common</p>
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="aspect-square rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-cyan-400 hover:text-cyan-500 transition-all"
+                >
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
+                  <span className="text-[9px] font-medium">{uploading ? 'Uploading' : 'Upload'}</span>
                 </button>
-              ))}
+                {BG_PRESETS.map(bg => (
+                  <button
+                    key={bg.id}
+                    onClick={() => { setSelectedBg(bg.id); onThemeChange?.({ type: 'background', value: bg.url }); }}
+                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedBg === bg.id ? 'border-cyan-400 ring-1 ring-cyan-400/30' : 'border-transparent hover:border-cyan-400'
+                    }`}
+                  >
+                    <img src={bg.url} alt={bg.label} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

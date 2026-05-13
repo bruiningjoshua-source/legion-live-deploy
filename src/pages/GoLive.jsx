@@ -17,6 +17,9 @@ import GoLiveStreamModeSelector from '@/components/stream/GoLiveStreamModeSelect
 import SeatsPanel from '@/components/stream/golive/SeatsPanel';
 import ThemePanel from '@/components/stream/golive/ThemePanel';
 import BeautyPanel from '@/components/stream/golive/BeautyPanel';
+import GameSelectPanel from '@/components/stream/golive/GameSelectPanel';
+import GameLivePreview from '@/components/stream/golive/GameLivePreview';
+import GameLiveToolbar from '@/components/stream/golive/GameLiveToolbar';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
 
@@ -50,6 +53,9 @@ export default function GoLive() {
   const [activeTool, setActiveTool] = useState(null);
   const [showOBS, setShowOBS] = useState(false);
   const [seatCount, setSeatCount] = useState(4);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [showGameSelect, setShowGameSelect] = useState(false);
+  const [gameDeviceMode, setGameDeviceMode] = useState('mobile');
   const videoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -79,10 +85,17 @@ export default function GoLive() {
     enabled: !!user?.email
   });
 
-  // Auto-request camera
+  // Auto-request camera (skip for game mode — handled on Go Live)
   useEffect(() => {
     if (user && !hasPermissions && !cameraStream) requestCamera();
   }, [user?.email]);
+
+  // Auto-open game select when switching to game_live  
+  useEffect(() => {
+    if (streamType === 'game_live' && !selectedGame) {
+      setShowGameSelect(true);
+    }
+  }, [streamType]);
 
   // Attach stream to video element
   useEffect(() => {
@@ -125,11 +138,12 @@ export default function GoLive() {
   const goLiveMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Please sign in to go live');
-      if (!hasPermissions || !cameraStream) throw new Error('Camera permissions required');
-      const trimmedTitle = title.trim();
+      if (streamType !== 'game_live' && (!hasPermissions || !cameraStream)) throw new Error('Camera permissions required');
+      const trimmedTitle = (title.trim() || (selectedGame ? `Playing ${selectedGame.title}` : '')).trim();
       if (!trimmedTitle) throw new Error('Stream title is required');
       if (trimmedTitle.length > 100) throw new Error('Title must be under 100 characters');
-      if (!category) throw new Error('Please select a category');
+      const effectiveCategory = category || (streamType === 'game_live' ? 'gaming' : '');
+      if (!effectiveCategory) throw new Error('Please select a category');
 
       let creatorId = creator?.id;
 
@@ -165,8 +179,8 @@ export default function GoLive() {
        const stream = await base44.entities.Stream.create({
          creator_id: creatorId,
          title: trimmedTitle.substring(0, 100),
-         category,
-         stream_type: streamType,
+         category: effectiveCategory,
+         stream_type: streamType === 'game_live' ? 'solo' : streamType,
          platform_type: platformType,
          status: 'live',
          viewer_count: 0,
@@ -235,7 +249,9 @@ export default function GoLive() {
     }
   });
 
-  const isFormValid = title.trim() && category;
+  const isFormValid = streamType === 'game_live' 
+    ? (selectedGame || title.trim()) 
+    : (title.trim() && category);
   const isAdmin = user?.role === 'admin';
   const canMonetize = isAdmin || hostSubscription?.status === 'active' || hostSubscription?.admin_activated;
 
@@ -243,13 +259,23 @@ export default function GoLive() {
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
-        {/* Full screen camera */}
-        <video
-          ref={videoRef}
-          autoPlay playsInline muted
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ transform: 'scaleX(-1)' }}
-        />
+        {/* Full screen camera or game preview */}
+        {streamType === 'game_live' ? (
+          <div className="absolute inset-0 bg-[#0d1117]">
+            <GameLivePreview
+              selectedGame={selectedGame}
+              deviceMode={gameDeviceMode}
+              onSelectGame={() => setShowGameSelect(true)}
+            />
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay playsInline muted
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }}
+          />
+        )}
 
         {/* Top gradient */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10" />
@@ -263,20 +289,22 @@ export default function GoLive() {
 
           {/* Close + Flip row */}
           <div className="flex items-center justify-end px-4 mb-2">
-            <button onClick={() => {
-              if (cameraStream) {
-                const tracks = cameraStream.getVideoTracks();
-                const current = tracks[0]?.getSettings()?.facingMode;
-                cameraStream.getTracks().forEach(t => t.stop());
-                navigator.mediaDevices.getUserMedia({
-                  video: { facingMode: current === 'environment' ? 'user' : 'environment' },
-                  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-                }).then(s => setCameraStream(s)).catch(() => {});
-              }
-            }}
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center mr-2">
-              <FlipHorizontal className="w-4 h-4 text-white" />
-            </button>
+            {streamType !== 'game_live' && (
+              <button onClick={() => {
+                if (cameraStream) {
+                  const tracks = cameraStream.getVideoTracks();
+                  const current = tracks[0]?.getSettings()?.facingMode;
+                  cameraStream.getTracks().forEach(t => t.stop());
+                  navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: current === 'environment' ? 'user' : 'environment' },
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                  }).then(s => setCameraStream(s)).catch(() => {});
+                }
+              }}
+                className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center mr-2">
+                <FlipHorizontal className="w-4 h-4 text-white" />
+              </button>
+            )}
             <button onClick={handleClose}
               className="w-9 h-9 rounded-full bg-black/40 backdrop-blur border border-white/10 flex items-center justify-center">
               <X className="w-4 h-4 text-white" />
@@ -297,39 +325,59 @@ export default function GoLive() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-sm truncate">{creator?.display_name || user?.full_name || 'Creator'}</p>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder="📢 Add stream title..."
-                  maxLength={100}
-                  className="w-full bg-transparent text-white/50 text-xs placeholder-white/30 focus:outline-none mt-0.5"
-                />
+                {streamType === 'game_live' && selectedGame ? (
+                  <button
+                    onClick={() => setShowGameSelect(true)}
+                    className="flex items-center gap-1 mt-0.5"
+                  >
+                    <span className="text-xs">{selectedGame.icon || '🎮'}</span>
+                    <span className="text-cyan-400 text-xs font-medium truncate">{selectedGame.title}</span>
+                    <span className="text-white/30 text-xs">›</span>
+                  </button>
+                ) : streamType === 'game_live' ? (
+                  <button
+                    onClick={() => setShowGameSelect(true)}
+                    className="text-cyan-400 text-xs font-medium mt-0.5"
+                  >
+                    🎮 Select a game ›
+                  </button>
+                ) : (
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="📢 Add stream title..."
+                    maxLength={100}
+                    className="w-full bg-transparent text-white/50 text-xs placeholder-white/30 focus:outline-none mt-0.5"
+                  />
+                )}
               </div>
             </div>
 
-            {/* Category chips */}
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-              {[
-                { value: 'talk_show', label: '💬 Chat' },
-                { value: 'other', label: '💕 Dating' },
-                { value: 'gaming', label: '🎮 Games' },
-                { value: 'education', label: '⭐ Interests' },
-                { value: 'music', label: '💜 Emotional' },
-              ].map(cat => (
-                <button
-                  key={cat.value}
-                  onClick={() => setCategory(cat.value)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                    category === cat.value
-                      ? 'bg-white text-black border-white'
-                      : 'bg-black/30 text-white/50 border-white/15'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            {/* Category chips — hidden in game mode */}
+            {streamType !== 'game_live' && (
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                {[
+                  { value: 'talk_show', label: '💬 Chat' },
+                  { value: 'other', label: '💕 Dating' },
+                  { value: 'gaming', label: '🎮 Games' },
+                  { value: 'education', label: '⭐ Interests' },
+                  { value: 'music', label: '💜 Emotional' },
+                ].map(cat => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setCategory(cat.value)}
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                      category === cat.value
+                        ? 'bg-white text-black border-white'
+                        : 'bg-black/30 text-white/50 border-white/15'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -349,20 +397,24 @@ export default function GoLive() {
             </div>
           )}
 
-          {/* Tool icons row (Seats, Theme, Beauty, Magic, Settings) */}
+          {/* Tool icons row */}
           <div className="mb-3">
-            <GoLiveToolbar
-              activeTool={activeTool}
-              onToolSelect={(tool) => {
-                if (tool === 'obs') {
-                  setShowOBS(true);
-                  return;
-                }
-                setActiveTool(tool);
-                if (tool === 'beauty') setShowBeauty(true);
-                else setShowBeauty(false);
-              }}
-            />
+            {streamType === 'game_live' ? (
+              <GameLiveToolbar onSelectGame={() => setShowGameSelect(true)} />
+            ) : (
+              <GoLiveToolbar
+                activeTool={activeTool}
+                onToolSelect={(tool) => {
+                  if (tool === 'obs') {
+                    setShowOBS(true);
+                    return;
+                  }
+                  setActiveTool(tool);
+                  if (tool === 'beauty') setShowBeauty(true);
+                  else setShowBeauty(false);
+                }}
+              />
+            )}
           </div>
 
           {/* GO LIVE button */}
@@ -370,23 +422,58 @@ export default function GoLive() {
             <button
               onClick={() => goLiveMutation.mutate()}
               disabled={!isFormValid || goLiveMutation.isPending}
-              className="w-full py-3.5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-base tracking-wide shadow-[0_0_30px_rgba(239,68,68,0.3)] disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98]"
+              className={`w-full py-3.5 rounded-full text-white font-bold text-base tracking-wide disabled:opacity-30 disabled:shadow-none transition-all active:scale-[0.98] ${
+                streamType === 'game_live'
+                  ? 'bg-gradient-to-r from-cyan-400 to-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)]'
+                  : 'bg-gradient-to-r from-red-500 to-red-600 shadow-[0_0_30px_rgba(239,68,68,0.3)]'
+              }`}
             >
               {goLiveMutation.isPending ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Starting...
                 </span>
+              ) : streamType === 'game_live' ? (
+                'OK'
               ) : (
                 'Go LIVE'
               )}
             </button>
           </div>
 
+          {/* Device mode toggle for Game LIVE */}
+          {streamType === 'game_live' && (
+            <div className="flex justify-center mb-2">
+              <div className="flex bg-white/[0.06] rounded-full p-0.5 border border-white/[0.08]">
+                <button
+                  onClick={() => setGameDeviceMode('mobile')}
+                  className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                    gameDeviceMode === 'mobile' ? 'bg-white text-black' : 'text-white/40'
+                  }`}
+                >
+                  📱
+                </button>
+                <button
+                  onClick={() => setGameDeviceMode('pc')}
+                  className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                    gameDeviceMode === 'pc' ? 'bg-white text-black' : 'text-white/40'
+                  }`}
+                >
+                  🖥️
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Stream mode selector at bottom */}
           <GoLiveStreamModeSelector
             streamType={streamType}
-            onStreamTypeChange={setStreamType}
+            onStreamTypeChange={(type) => {
+              setStreamType(type);
+              if (type === 'game_live' && !selectedGame) {
+                setShowGameSelect(true);
+              }
+            }}
           />
         </div>
 
@@ -450,6 +537,23 @@ export default function GoLive() {
               creator={creator}
               onClose={() => setShowOBS(false)}
               onStreamCreated={(stream) => navigate(createPageUrl(`WatchStream?id=${stream.id}`))}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Game Select Panel */}
+        <AnimatePresence>
+          {showGameSelect && (
+            <GameSelectPanel
+              onGameSelect={(game) => {
+                setSelectedGame(game);
+                if (!title.trim()) setTitle(`Playing ${game.title}`);
+                if (!category) setCategory('gaming');
+                setShowGameSelect(false);
+              }}
+              onClose={() => setShowGameSelect(false)}
+              deviceMode={gameDeviceMode}
+              onDeviceModeChange={setGameDeviceMode}
             />
           )}
         </AnimatePresence>
