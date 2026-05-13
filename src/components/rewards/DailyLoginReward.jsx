@@ -18,7 +18,7 @@ const DAY_REWARDS = [
 const todayStr     = () => new Date().toISOString().split('T')[0];
 const yesterdayStr = () => new Date(Date.now()-86400000).toISOString().split('T')[0];
 
-export default function DailyLoginReward({ user, onClose }) {
+export default function DailyLoginReward({ user, onClose, onClaimed }) {
   const queryClient = useQueryClient();
   const [claimed, setClaimed] = useState(false);
 
@@ -65,12 +65,17 @@ export default function DailyLoginReward({ user, onClose }) {
       queryClient.invalidateQueries({ queryKey: ['wallet', user.email] });
       queryClient.invalidateQueries({ queryKey: ['user-wallet', user.email] });
       setClaimed(true);
+      onClaimed?.();
       toast.success(`Day ${newStreak} reward: +${reward.denarii} Denarii!`);
     },
     onError: () => toast.error('Could not claim reward.'),
   });
 
-  if (alreadyClaimed && !claimed) return null;
+  // If already claimed today, auto-close the modal instead of rendering nothing
+  if (alreadyClaimed && !claimed) {
+    onClose?.();
+    return null;
+  }
   const currentDay    = ((streak?.current_streak || 0) % 7) + 1;
   const currentReward = DAY_REWARDS[currentDay - 1];
 

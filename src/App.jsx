@@ -36,12 +36,12 @@ const AuthenticatedApp = () => {
 
   React.useEffect(() => {
     if (!user?.email) return;
-    const key = 'll_last_reward_check';
+    const key = 'll_last_reward_claimed';
     const today = new Date().toISOString().split('T')[0];
-    if (localStorage.getItem(key) !== today) {
-      const t = setTimeout(() => { setShowDailyReward(true); localStorage.setItem(key, today); }, 2000);
-      return () => clearTimeout(t);
-    }
+    // Only skip if the user already CLAIMED today (not just saw the modal)
+    if (localStorage.getItem(key) === today) return;
+    const t = setTimeout(() => setShowDailyReward(true), 2000);
+    return () => clearTimeout(t);
   }, [user?.email]);
 
   if (isLoadingAuth) {
@@ -87,7 +87,9 @@ const AuthenticatedApp = () => {
         <OnboardingFlow user={user} onComplete={() => setShowOnboarding(false)} />
       )}
       {showDailyReward && user && (
-        <DailyLoginReward user={user} onClose={() => setShowDailyReward(false)} />
+        <DailyLoginReward user={user} onClose={() => setShowDailyReward(false)} onClaimed={() => {
+          localStorage.setItem('ll_last_reward_claimed', new Date().toISOString().split('T')[0]);
+        }} />
       )}
     </>
   );
