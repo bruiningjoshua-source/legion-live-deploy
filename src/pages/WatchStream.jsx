@@ -35,6 +35,7 @@ import BigoStreamBottomBar from '@/components/stream/BigoStreamBottomBar';
 import RoomToolsSheet from '@/components/stream/RoomToolsSheet';
 import HostProfileSheet from '@/components/stream/HostProfileSheet';
 import WishlistSheet from '@/components/stream/WishlistSheet';
+import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -60,6 +61,7 @@ export default function WatchStream() {
   const [showRoomTools, setShowRoomTools] = useState(false);
   const [showHostProfile, setShowHostProfile] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [showMagicPanel, setShowMagicPanel] = useState(false);
 
   const videoRef = useRef(null);
   const liveStreamRef = useRef(null);
@@ -522,6 +524,7 @@ export default function WatchStream() {
             onClose={() => setShowRoomTools(false)}
             onAction={(action) => {
               if (action === 'quality') setShowQuality(v => !v);
+              if (action === 'magic') { setShowRoomTools(false); setShowMagicPanel(true); }
             }}
           />
         )}
@@ -535,6 +538,12 @@ export default function WatchStream() {
             onFollowClick={() => followMutation?.mutate()}
             onClose={() => setShowHostProfile(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showMagicPanel && (
+          <FilterMenuPanel onClose={() => setShowMagicPanel(false)} />
         )}
       </AnimatePresence>
 

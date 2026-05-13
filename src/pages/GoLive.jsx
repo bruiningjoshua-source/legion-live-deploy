@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
 import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
+import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
@@ -522,7 +523,7 @@ export default function GoLive() {
 
         <AnimatePresence>
           {activeTool === 'magic' && (
-            <BeautyFilter videoRef={videoRef} />
+            <FilterMenuPanel onClose={() => setActiveTool(null)} />
           )}
         </AnimatePresence>
 
