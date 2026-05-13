@@ -22,6 +22,8 @@ import GameLivePreview from '@/components/stream/golive/GameLivePreview';
 import GameLiveToolbar from '@/components/stream/golive/GameLiveToolbar';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';
+import Orchestrator from '@/components/engine/EngineOrchestrator';
+import DebugOverlay from '@/components/engine/DebugOverlay';
 
 // Detect if coming from affiliate marketplace or gaming hub
 const getInitialPlatformType = () => {
@@ -108,10 +110,20 @@ export default function GoLive() {
     }
   }, [cameraStream]);
 
-  // Stop camera on unmount
+  // Stop camera on unmount + shutdown production engine
   useEffect(() => {
-    return () => { cameraStream?.getTracks().forEach(t => t.stop()); };
+    return () => {
+      cameraStream?.getTracks().forEach(t => t.stop());
+      Orchestrator.shutdown();
+    };
   }, [cameraStream]);
+
+  // Boot production engine when camera is ready
+  useEffect(() => {
+    if (hasPermissions) {
+      Orchestrator.init(ZegoService);
+    }
+  }, [hasPermissions]);
 
   const requestCamera = async () => {
     try {
@@ -259,6 +271,8 @@ export default function GoLive() {
   if (hasPermissions) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
+        {/* Debug overlay — toggle via console: window.__legionDebug() */}
+        <DebugOverlay />
         {/* Full screen camera or game preview */}
         {streamType === 'game_live' ? (
           <div className="absolute inset-0 bg-[#0d1117]">

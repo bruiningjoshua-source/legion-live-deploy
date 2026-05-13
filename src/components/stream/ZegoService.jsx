@@ -1,4 +1,5 @@
 import { ZegoExpressEngine } from 'zego-express-engine-webrtc';
+import StreamHealth from '@/components/engine/StreamHealthMonitor';
 
 /**
  * ZegoStreamingService — Production singleton for all real-time streaming.
@@ -100,6 +101,7 @@ class ZegoStreamingService {
             }, { userUpdate: true }).then(() => {
               console.log('[Zego] Reconnected to room:', this.roomId);
               this._reconnectAttempts = 0;
+              StreamHealth.recordReconnect();
             }).catch(e => {
               console.error('[Zego] Reconnect failed:', e.message);
             });
@@ -244,6 +246,7 @@ class ZegoStreamingService {
     await this.engine.startPublishingStream(streamId, this.localStream);
     this.isPublishing = true;
     this._startStatsMonitor();
+    StreamHealth.start(this);
     console.log('[Zego] Publishing stream:', streamId);
     return true;
   }
@@ -573,6 +576,7 @@ class ZegoStreamingService {
     console.log('[Zego] Leaving — cleanup start');
 
     this._stopStatsMonitor();
+    StreamHealth.stop();
 
     const engine = this.engine; // Capture ref in case it's nulled during async ops
 

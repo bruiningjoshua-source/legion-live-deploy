@@ -15,6 +15,9 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { createWebGLPipeline } from './shaders/FilterShaders';
+import EffectBudget from '@/components/engine/EffectBudget';
+import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
+import Disposer from '@/components/engine/ResourceDisposer';
 
 // ── FILTER DEFINITIONS ──────────────────────────────────────────────────
 const FILTERS = [
@@ -390,7 +393,10 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
     const H = canvas.height = video.videoHeight || 1280;
 
     // Try GPU-accelerated WebGL pipeline first
-    if (!glPipelineRef.current) glPipelineRef.current = createWebGLPipeline(canvas);
+    if (!glPipelineRef.current) {
+      glPipelineRef.current = createWebGLPipeline(canvas);
+      if (glPipelineRef.current) Disposer.register('ar-engine', 'custom', glPipelineRef.current);
+    }
     
     if (glPipelineRef.current && activeFilter.id !== 'none') {
       glPipelineRef.current.render(video, activeFilter.id, W, H);
@@ -424,10 +430,11 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
     // Draw particles (need 2d context for particles overlay)
     if (activeOverlay.id !== 'none' && activeOverlay.type === 'particle') {
       const particleCtx = canvas.getContext('2d', { willReadFrequently: true });
+      const maxParticles = AdaptiveQuality.getConfig().maxParticles || 80;
       // Spawn new particles
       if (Math.random() < 0.3) {
         particlesRef.current.push(new Particle(W, H, activeOverlay.id));
-        if (particlesRef.current.length > 80) particlesRef.current.shift();
+        if (particlesRef.current.length > maxParticles) particlesRef.current.shift();
       }
 
       // Update and draw
@@ -462,8 +469,10 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
+      Disposer.disposeScope('ar-engine');
       glPipelineRef.current?.destroy();
       glPipelineRef.current = null;
+      EffectBudget.clear();
       if (canvasRef.current) canvasRef.current._streamCaptured = false;
     };
   }, [processFrame, activeFilter, activeOverlay, activeBg]);
@@ -568,7 +577,12 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
                   <div className="grid grid-cols-3 gap-2">
                     {filteredFilters.map(filter => (
                       <button key={filter.id}
-                        onClick={() => setActiveFilter(filter)}
+                        onClick={() => {
+                          // Deactivate old, activate new in budget
+                          if (activeFilter.id !== 'none') EffectBudget.deactivate(activeFilter.id);
+                          if (filter.id !== 'none' && !EffectBudget.activate(filter.id)) return; // over budget
+                          setActiveFilter(filter);
+                        }}
                         className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-1 border transition-all ${
                           activeFilter.id === filter.id
                             ? 'border-amber-400 bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
@@ -604,6 +618,8 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
                   {AR_OVERLAYS.map(overlay => (
                     <button key={overlay.id}
                       onClick={() => {
+                        if (activeOverlay.id !== 'none') EffectBudget.deactivate(activeOverlay.id);
+                        if (overlay.id !== 'none' && !EffectBudget.activate(overlay.id)) return;
                         setActiveOverlay(overlay);
                         if (overlay.id !== 'none') particlesRef.current = [];
                       }}

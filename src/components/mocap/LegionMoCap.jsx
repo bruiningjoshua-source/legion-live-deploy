@@ -6,6 +6,9 @@ import { buildAvatarFromLAF, applyPoseToAvatar, applyBlendShapes } from './Legio
 import { startMicLipSync, stopMicLipSync, isMicLipSyncActive } from './LegionMicLipSync';
 import { sampleFrame, detectInitialTier, getRendererConfig, onTierChange, isMobile } from './LegionPerformanceScaler';
 import { createSplatBackdrop, getBackdropPresets } from './LegionSplatBackdrop';
+import PerfMonitor from '@/components/engine/PerformanceMonitor';
+import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
+import Disposer from '@/components/engine/ResourceDisposer';
 
 const PRESETS = [
   { id:'warrior',   name:'Warrior',     skinColor:'#e8b89a', hairColor:'#3d2506', bodyColor:'#1a2742', eyeColor:'#1a5276' },
@@ -70,6 +73,7 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
     }
 
     rendererRef.current = renderer;
+    Disposer.register('mocap', 'three-renderer', renderer);
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -184,11 +188,11 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
     }
   }, [onProcessedStream]);
 
-  // ── Feed video frames to MediaPipe ──
+  // ── Feed video frames to MediaPipe (with adaptive frame skipping) ──
   const processLoop = useCallback(() => {
     const video = videoRef?.current;
     const holistic = holisticRef.current;
-    if (video && holistic && video.readyState >= 2) {
+    if (video && holistic && video.readyState >= 2 && AdaptiveQuality.shouldTrack()) {
       holistic.send({ image: video }).catch(() => {});
     }
     animFrameRef.current = requestAnimationFrame(processLoop);
@@ -197,10 +201,14 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
   // ── Mount / unmount ──
   useEffect(() => {
     lastRenderRef.current = performance.now();
+    PerfMonitor.start();
     initThree(selectedPreset);
     initMediaPipe();
     return () => {
       cancelAnimationFrame(animFrameRef.current);
+      // Dispose registered resources
+      Disposer.disposeScope('mocap');
+      // Legacy cleanup for anything not yet registered
       holisticRef.current?.close();
       rendererRef.current?.dispose();
       backdropRef.current?.dispose();
