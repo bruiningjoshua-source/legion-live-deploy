@@ -147,8 +147,12 @@ Deno.serve(async (req) => {
     const freshWallet = freshWallets[0];
 
     const newSenderBalance = (freshWallet.denarii_balance || 0) - totalCost;
+    const newTotalSpent = (freshWallet.total_spent || 0) + totalCost;
+    const newVipPoints = (freshWallet.vip_points || 0) + Math.floor(totalCost / 10);
     await base44.asServiceRole.entities.Wallet.update(freshWallet.id, {
       denarii_balance: newSenderBalance,
+      total_spent: newTotalSpent,
+      vip_points: newVipPoints,
     });
 
     base44.asServiceRole.entities.WalletAuditLog.create({
@@ -198,8 +202,10 @@ Deno.serve(async (req) => {
     if (creatorWallets[0]) {
       const prevCreatorBalance = creatorWallets[0].denarii_balance || 0;
       const newCreatorBalance = prevCreatorBalance + creatorEarning;
+      const newTotalEarned = (creatorWallets[0].total_earned || 0) + creatorEarning;
       await base44.asServiceRole.entities.Wallet.update(creatorWallets[0].id, {
         denarii_balance: newCreatorBalance,
+        total_earned: newTotalEarned,
       });
       base44.asServiceRole.entities.WalletAuditLog.create({
         user_email: creator.user_email,

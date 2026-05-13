@@ -9,6 +9,7 @@ import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import EffectBudget from '@/components/engine/EffectBudget';
 import StreamHealth from '@/components/engine/StreamHealthMonitor';
 import Disposer from '@/components/engine/ResourceDisposer';
+import SessionWatchdog from '@/components/engine/SessionWatchdog';
 import { detectCapabilities } from '@/components/engine/BrowserCompat';
 
 class EngineOrchestratorService {
@@ -56,6 +57,9 @@ class EngineOrchestratorService {
       StreamHealth.start(zegoService);
     }
 
+    // Start long-session stability watchdog
+    SessionWatchdog.start();
+
     // Expose for LegionPerformanceScaler bridge
     if (typeof window !== 'undefined') window.__legionAdaptiveQuality = AdaptiveQuality;
 
@@ -69,6 +73,7 @@ class EngineOrchestratorService {
 
     PerfMonitor.stop();
     StreamHealth.stop();
+    SessionWatchdog.stop();
     EffectBudget.clear();
     Disposer.disposeAll();
 
@@ -90,6 +95,7 @@ class EngineOrchestratorService {
         limit: EffectBudget.getBudget(),
       },
       resources: Disposer.getStats(),
+      session: SessionWatchdog.getStatus(),
     };
   }
 
