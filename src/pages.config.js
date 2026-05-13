@@ -124,6 +124,7 @@ import WatchVideo from './pages/WatchVideo';
 import CreatorPayoutForecast from './pages/CreatorPayoutForecast';
 import EarningsDashboard from './pages/EarningsDashboard';
 import LegionSpaces from './pages/LegionSpaces';
+import LegionAI from './pages/LegionAI';
 import __Layout from './Layout.jsx';
 
 
@@ -205,6 +206,7 @@ export const PAGES = {
     "CreatorPayoutForecast": CreatorPayoutForecast,
     "EarningsDashboard": EarningsDashboard,
     "LegionSpaces": LegionSpaces,
+    "LegionAI": LegionAI,
 }
 
 export const pagesConfig = {

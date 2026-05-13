@@ -146,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
 
   // Disable heavy animations on mobile for performance
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const needsAnimatedBg = !['GoLive', 'WatchStream'].includes(currentPageName);
+  const needsAnimatedBg = !['GoLive', 'WatchStream', 'LegionAI'].includes(currentPageName);
   const optimizedParticles = isMobile ? 'low' : particleIntensity;
 
   // CSS variables and animations are now in globals.css
@@ -202,8 +202,10 @@ export default function Layout({ children, currentPageName }) {
       )}
       
       <main className={`${
-        currentPageName === 'GoLive' || currentPageName === 'WatchStream' || currentPageName === 'VideoEditor'
+        ['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName)
           ? 'h-screen overflow-hidden'
+        : currentPageName === 'LegionAI'
+          ? 'h-screen overflow-hidden pb-16'
           : 'min-h-screen pb-24'
       }`}>
         {children}
