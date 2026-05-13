@@ -1,0 +1,48 @@
+/**
+ * useGiftStore — Gift/wallet state.
+ * Replaces prop drilling for wallet balance, gift animations, and combo state.
+ */
+import { create } from 'zustand';
+
+const useGiftStore = create((set, get) => ({
+  // Wallet
+  wallet: null,
+  denariiBalance: 0,
+
+  // Gift queue state (mirrors GiftQueueManager for UI)
+  activeAnimations: [],
+  queueDepth: 0,
+
+  // Combo
+  activeCombo: null, // { giftName, count, startedAt }
+
+  // Actions
+  setWallet: (wallet) => set({ 
+    wallet, 
+    denariiBalance: wallet?.denarii_balance || 0 
+  }),
+
+  updateBalance: (newBalance) => set((state) => ({
+    denariiBalance: newBalance,
+    wallet: state.wallet ? { ...state.wallet, denarii_balance: newBalance } : null,
+  })),
+
+  setAnimations: (active, depth) => set({ 
+    activeAnimations: active, 
+    queueDepth: depth 
+  }),
+
+  setCombo: (combo) => set({ activeCombo: combo }),
+  clearCombo: () => set({ activeCombo: null }),
+
+  // Reset
+  reset: () => set({
+    wallet: null,
+    denariiBalance: 0,
+    activeAnimations: [],
+    queueDepth: 0,
+    activeCombo: null,
+  }),
+}));
+
+export default useGiftStore;

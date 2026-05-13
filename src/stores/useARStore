@@ -1,0 +1,51 @@
+/**
+ * useARStore — AR/Filter engine state.
+ * Replaces prop drilling between FilterMenuPanel, LegionAREngine, EffectStack, and GoLive.
+ */
+import { create } from 'zustand';
+
+const useARStore = create((set) => ({
+  // Active effects
+  activeFilter: 'none',
+  activeOverlay: null,
+  activeBackground: null,
+  beautyLevel: 0,
+
+  // MoCap
+  mocapEnabled: false,
+  mocapAvatar: null,
+
+  // Performance
+  effectBudgetUsage: 0,
+  effectBudgetLimit: 10,
+
+  // Actions
+  setActiveFilter: (filter) => set({ activeFilter: filter }),
+  setActiveOverlay: (overlay) => set({ activeOverlay: overlay }),
+  setActiveBackground: (bg) => set({ activeBackground: bg }),
+  setBeautyLevel: (level) => set({ beautyLevel: level }),
+
+  setMoCap: (enabled, avatar = null) => set({ 
+    mocapEnabled: enabled, 
+    mocapAvatar: avatar 
+  }),
+
+  updateBudget: (usage, limit) => set({ 
+    effectBudgetUsage: usage, 
+    effectBudgetLimit: limit 
+  }),
+
+  // Reset
+  reset: () => set({
+    activeFilter: 'none',
+    activeOverlay: null,
+    activeBackground: null,
+    beautyLevel: 0,
+    mocapEnabled: false,
+    mocapAvatar: null,
+    effectBudgetUsage: 0,
+    effectBudgetLimit: 10,
+  }),
+}));
+
+export default useARStore;

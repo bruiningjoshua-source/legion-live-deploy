@@ -1,0 +1,52 @@
+/**
+ * useStreamStore — Global stream state.
+ * Replaces prop drilling for active stream data across WatchStream, GoLive, and overlays.
+ */
+import { create } from 'zustand';
+
+const useStreamStore = create((set, get) => ({
+  // Active stream data
+  activeStream: null,
+  streamStatus: 'idle', // idle | connecting | live | ended
+  viewerCount: 0,
+  peakViewers: 0,
+
+  // Host info
+  isHost: false,
+  hostCreator: null,
+
+  // Stream UI state
+  chatOpen: true,
+  giftPanelOpen: false,
+  moderationPanelOpen: false,
+
+  // Actions
+  setActiveStream: (stream) => set({ activeStream: stream }),
+  setStreamStatus: (status) => set({ streamStatus: status }),
+  
+  updateViewerCount: (count) => set((state) => ({
+    viewerCount: count,
+    peakViewers: Math.max(state.peakViewers, count),
+  })),
+
+  setIsHost: (isHost, creator = null) => set({ isHost, hostCreator: creator }),
+
+  toggleChat: () => set((state) => ({ chatOpen: !state.chatOpen })),
+  toggleGiftPanel: () => set((state) => ({ giftPanelOpen: !state.giftPanelOpen, moderationPanelOpen: false })),
+  toggleModerationPanel: () => set((state) => ({ moderationPanelOpen: !state.moderationPanelOpen, giftPanelOpen: false })),
+
+  // Reset on stream end / page leave
+  reset: () => set({
+    activeStream: null,
+    streamStatus: 'idle',
+    viewerCount: 0,
+    peakViewers: 0,
+    isHost: false,
+    hostCreator: null,
+    chatOpen: true,
+    giftPanelOpen: false,
+    moderationPanelOpen: false,
+  }),
+}));
+
+export default useStreamStore;

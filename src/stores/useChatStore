@@ -1,0 +1,58 @@
+/**
+ * useChatStore — Chat message state.
+ * Replaces prop drilling for chat messages, pinned messages, and moderation state.
+ */
+import { create } from 'zustand';
+
+const MAX_MESSAGES = 200;
+
+const useChatStore = create((set, get) => ({
+  messages: [],
+  pinnedMessage: null,
+  chatEnabled: true,
+  slowMode: false,
+  slowModeSeconds: 0,
+
+  // Actions
+  addMessage: (msg) => set((state) => {
+    const updated = [...state.messages, msg];
+    // Keep buffer capped to prevent memory growth
+    if (updated.length > MAX_MESSAGES) {
+      return { messages: updated.slice(-MAX_MESSAGES) };
+    }
+    return { messages: updated };
+  }),
+
+  addMessages: (msgs) => set((state) => {
+    const updated = [...state.messages, ...msgs];
+    if (updated.length > MAX_MESSAGES) {
+      return { messages: updated.slice(-MAX_MESSAGES) };
+    }
+    return { messages: updated };
+  }),
+
+  setPinnedMessage: (msg) => set({ pinnedMessage: msg }),
+  clearPinnedMessage: () => set({ pinnedMessage: null }),
+
+  setChatEnabled: (enabled) => set({ chatEnabled: enabled }),
+  setSlowMode: (enabled, seconds = 5) => set({ 
+    slowMode: enabled, 
+    slowModeSeconds: seconds 
+  }),
+
+  // Remove a message (moderation)
+  removeMessage: (msgId) => set((state) => ({
+    messages: state.messages.filter(m => m.id !== msgId),
+  })),
+
+  // Reset
+  reset: () => set({
+    messages: [],
+    pinnedMessage: null,
+    chatEnabled: true,
+    slowMode: false,
+    slowModeSeconds: 0,
+  }),
+}));
+
+export default useChatStore;
