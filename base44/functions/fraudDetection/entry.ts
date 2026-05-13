@@ -6,6 +6,36 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// ── HTTP Handler (so direct invocations don't hang) ──
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Admin only' }, { status: 403 });
+    }
+    const body = await req.json().catch(() => ({}));
+    const { action, user_email, amount, activity_type } = body;
+
+    if (action === 'check' && user_email) {
+      const result = await detectFraud(user_email, activity_type || 'gift', amount || 0, {}, base44);
+      return Response.json(result);
+    }
+
+    if (action === 'status') {
+      return Response.json({
+        cached_users: userActivity.size,
+        cache_warmed: cacheWarmed,
+        thresholds: FRAUD_THRESHOLDS
+      });
+    }
+
+    return Response.json({ error: 'Provide action: "check" or "status"' }, { status: 400 });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
+
 // In-memory cache (warm layer); DB is the source of truth on cold start
 const userActivity = new Map();
 let cacheWarmed = false;

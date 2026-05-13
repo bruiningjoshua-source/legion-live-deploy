@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // End-to-end live Stripe payment test
 Deno.serve(async (req) => {
@@ -10,8 +10,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { test_type } = body; // 'full_cycle', 'webhook', 'payout'
+    const body = await req.json().catch(() => ({}));
+    const test_type = body?.test_type || 'full_cycle';
 
     let result;
     

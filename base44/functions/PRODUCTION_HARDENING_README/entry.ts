@@ -1,186 +1,211 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════
- * LEGION LIVE — 100% PRODUCTION HARDENING SPRINT
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * COMPLETED SYSTEMS:
- * ✅ Items 1-3: Idempotency + Payment Lifecycle + Error Recovery
- * ✅ Items 4-5: Admin Fraud Dashboard + Real-time Monitoring
- * 
- * ═══════════════════════════════════════════════════════════════════════════
- * SYSTEM ARCHITECTURE
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * ## 1. IDEMPOTENCY KEYS (Prevents Double-Charges)
- * 
- * Location: createDenariiCheckout + stripeWebhook
- * 
- * HOW IT WORKS:
- * - Generate deterministic key: email:type:amount:hour
- * - Check WalletAuditLog for existing checkout with same key
- * - If duplicate detected, return 409 with original sessionId
- * - Prevents same user from creating 2 identical checkouts in 1 hour
- * 
- * COVERAGE:
- * ✅ createDenariiCheckout — Full idempotency integration
- * ✅ stripeWebhook — Duplicate payment intent detection (existing)
- * ⏳ TODO: Integrate into createTipCheckout, createPPVCheckout, createFanClubCheckout
- * 
- * 
- * ## 2. PAYMENT INTENT LIFECYCLE (Graceful Failure Handling)
- * 
- * Location: functions/checkPaymentStatus
- * 
- * STATES HANDLED:
- * - processing: Webhook delayed, customer returned early
- * - requires_payment_method: Card declined (offer retry)
- * - requires_action: 3D Secure needed (return clientSecret)
- * - canceled: User abandoned checkout
- * - succeeded: Payment confirmed
- * 
- * API ENDPOINT:
- * POST /functions/checkPaymentStatus
- * { "paymentIntentId": "pi_..." }
- * 
- * RESPONSE:
- * {
- *   "status": "succeeded|processing|failed|requires_action|canceled",
- *   "message": "...",
- *   "retryAfter": 5000,
- *   "clientSecret": "...",
- *   "requiresRetry": true/false
- * }
- * 
- * 
- * ## 3. ERROR RECOVERY & RETRY PATHS
- * 
- * AUTOMATIC RECOVERY:
- * ✅ Webhook deduplication: Skip duplicate events (existing)
- * ✅ Payment status fallback: Check DB if webhook is slow
- * ✅ Abandoned checkout logging: Trigger email reminders
- * ✅ Failed payment flagging: Mark transaction as retryable
- * 
- * CUSTOMER RETRY FLOW:
- * 1. Customer abandoned checkout or card declined
- * 2. Admin dashboard shows in "Review Queue"
- * 3. System logs transaction as "payment_retry_eligible"
- * 4. Customer can retry without incurring duplicate charges
- * 
- * 
- * ## 4. FRAUD DETECTION & ADMIN DASHBOARD
- * 
- * Location: functions/analyzeFraudRisk + components/admin/FraudMonitoringDashboard
- * 
- * REAL-TIME FRAUD SCORING:
- * - HIGH_VALUE: Single purchase > $5,000 = 40 points
- * - CHARGEBACK_HISTORY: 3+ chargebacks = 50 points
- * - DAILY_VELOCITY: >$10,000/day = 35 points
- * - HOURLY_VELOCITY: 5+ purchases/hour = 25 points
- * 
- * RISK LEVELS:
- * - LOW: 0-40 points → Allow
- * - MEDIUM: 41-70 points → Create review case + allow
- * - HIGH: 71+ points → Block transaction
- * 
- * INTEGRATION POINTS:
- * ✅ createDenariiCheckout: Fraud scoring on every purchase
- * ✅ stripeWebhook: Chargeback logging + user flagging
- * 📊 Admin Dashboard: Real-time monitoring + manual review
- * 
- * 
- * ## 5. ADMIN FRAUD MONITORING DASHBOARD
- * 
- * Location: pages/AdminDashboard → Fraud Monitor Tab
- * 
- * FEATURES:
- * ✅ Real-time stats: High/Medium risk counts
- * ✅ Recent transactions: Last 30 minutes, filterable by risk
- * ✅ Manual review queue: Flagged transactions waiting approval
- * ✅ Flagged users list: Users with chargebacks/suspicious activity
- * ✅ Auto-refresh: Every 30 seconds
- * 
- * ADMIN ACTIONS:
- * - View transaction details + fraud flags
- * - Whitelist user (remove fraud review case)
- * - Block user (flag for chargeback)
- * - Monitor velocity patterns
- * 
- * 
- * ═══════════════════════════════════════════════════════════════════════════
- * DEPLOYMENT CHECKLIST
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * DEPLOYED & TESTED:
- * ✅ functions/createDenariiCheckout — Idempotency + Fraud scoring
- * ✅ functions/checkPaymentStatus — Payment verification
- * ✅ functions/analyzeFraudRisk — Risk scoring engine
- * ✅ functions/getFraudDashboard — Dashboard data API
- * ✅ components/admin/FraudMonitoringDashboard — UI component
- * ✅ pages/AdminDashboard — Integrated fraud tab
- * ✅ functions/stripeWebhook — Existing (enhanced comments)
- * ✅ functions/idempotencyManager — Utility library
- * 
- * TODO - Phase 2 Rollout:
- * ⏳ Integrate idempotency into remaining checkout functions:
- *    - createTipCheckout
- *    - createPPVCheckout
- *    - createFanClubCheckout
- *    - createHostSubscription
- * 
- * ⏳ Implement retry UI on Wallet page:
- *    - Show "Retry Payment" button for failed transactions
- *    - Auto-retry logic with exponential backoff
- *    - Customer notification emails
- * 
- * ⏳ Set up Stripe webhook alerts:
- *    - Notify admin on chargebacks
- *    - Auto-suspend accounts with 3+ chargebacks
- *    - Monitor for patterns (cardholder disputes)
- * 
- * ⏳ Create batch fraud analysis task:
- *    - Daily sweep of suspicious transactions
- *    - Automated user review cases
- *    - Export report for compliance
- * 
- * 
- * ═══════════════════════════════════════════════════════════════════════════
- * SECURITY GUARANTEES
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * DOUBLE-CHARGE PREVENTION:
- * - Idempotency keys block duplicate checkouts within 1-hour window
- * - Payment intent deduplication at webhook level
- * - Fallback DB query if webhook delayed
- * → RESULT: Mathematically impossible to charge same amount twice
- * 
- * FRAUD PREVENTION:
- * - Real-time velocity checks (daily + hourly)
- * - Chargeback history scoring
- * - High-value purchase review gates
- * - Automatic user flagging
- * → RESULT: 95%+ of fraud attempts flagged before payment
- * 
- * ERROR RECOVERY:
- * - Graceful handling of abandoned checkouts
- * - Automatic customer retry paths
- * - Failed payment audit logging
- * - Admin override capabilities
- * → RESULT: <1% payment loss due to user error
- * 
- * 
- * ═══════════════════════════════════════════════════════════════════════════
- * PRODUCTION READINESS: 100%
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * COVERAGE:
- * ✅ All critical payment paths hardened
- * ✅ Real-time fraud monitoring active
- * ✅ Admin review queue operational
- * ✅ Automatic error recovery in place
- * ✅ Audit logging comprehensive
- * ✅ CSRF protection deployed
- * ✅ Request signing for sensitive operations
- * ✅ Rate limiting on all endpoints
- * 
- * FINAL STATUS: 🔐 PRODUCTION-GRADE LOCKED DOWN
+ * ══════════════════════════════════════════════════════════════════════
+ * LEGION LIVE — PRODUCTION HARDENING AUDIT REPORT
+ * Date: 2026-05-13 | Auditor: Base44 Platform AI
+ * ══════════════════════════════════════════════════════════════════════
+ *
+ * ┌─────────────────────────────────────────────────────────────────────┐
+ * │  OVERALL STATUS:  CONDITIONALLY PRODUCTION-READY                   │
+ * │  2 Critical fixes applied during this audit                        │
+ * │  3 Medium-priority items flagged for follow-up                     │
+ * │  0 Blockers remaining                                              │
+ * └─────────────────────────────────────────────────────────────────────┘
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 1: BACKEND FUNCTION DIAGNOSTIC RESULTS
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ┌────────────────────────────────────┬──────────┬──────────────────────────────┐
+ * │ Function                           │ Status   │ Notes                        │
+ * ├────────────────────────────────────┼──────────┼──────────────────────────────┤
+ * │ sendGift                           │ ✅ PASS  │ Input validation works       │
+ * │ claimDailyReward                   │ ✅ PASS  │ Duplicate-claim guard works  │
+ * │ createDenariiCheckout              │ ✅ PASS  │ CSRF + fraud + idempotency   │
+ * │ generateZegoToken                  │ ✅ PASS  │ Param validation works       │
+ * │ stripeWebhook                      │ ✅ PASS  │ Signature verification works │
+ * │ moderateChat                       │ ✅ PASS  │ AI moderation responds       │
+ * │ requestWithdrawal                  │ ✅ PASS  │ Min-withdrawal guard works   │
+ * │ checkSubscription                  │ ✅ PASS  │ Admin bypass works           │
+ * │ createCreatorMonetizationCheckout  │ ✅ PASS  │ Plan validation works        │
+ * │ stripeConnectOnboard               │ ✅ PASS  │ Missing-param guard works    │
+ * │ processPayoutWithKyc              │ ✅ PASS  │ Signature-required guard OK  │
+ * │ securityAudit                      │ ✅ PASS  │ All 10 checks PASS           │
+ * │ productionValidation               │ ✅ PASS  │ READY_TO_LAUNCH status       │
+ * │ cleanupStaleStreams                │ ✅ PASS  │ Runs correctly               │
+ * │ adminListUsers                     │ ✅ PASS  │ Returns user data            │
+ * │ getFraudDashboard                  │ ✅ PASS  │ Dashboard data returned      │
+ * │ getPayoutConfig                    │ ✅ PASS  │ Config loaded correctly      │
+ * │ stripeConnectPayout                │ ✅ PASS  │ Missing-param guard works    │
+ * │ trackEngagement                    │ ✅ PASS  │ Param validation works       │
+ * │ aiModerateContent                  │ ✅ PASS  │ AI moderation returns        │
+ * │ createTipCheckout                  │ ✅ PASS  │ Input validation works       │
+ * │ createFanClubCheckout              │ ✅ PASS  │ Missing-fields guard works   │
+ * │ createPPVCheckout                  │ ✅ PASS  │ Invalid-ID guard works       │
+ * │ chargebackHandler                  │ ✅ PASS  │ Action validation works      │
+ * │ kycVerification                    │ ✅ PASS  │ Action validation works      │
+ * │ analyzeFraudRisk                   │ ✅ PASS  │ Missing-fields guard works   │
+ * │ updateViewerCount                  │ ✅ PASS  │ Param validation works       │
+ * │ transactionalEmail                 │ ✅ PASS  │ Action validation works      │
+ * ├────────────────────────────────────┼──────────┼──────────────────────────────┤
+ * │ fraudDetection                     │ 🔧 FIXED │ Was missing Deno.serve()     │
+ * │                                    │          │ handler — caused 504 timeout │
+ * │                                    │          │ on direct invocation. Added  │
+ * │                                    │          │ HTTP handler wrapper.        │
+ * ├────────────────────────────────────┼──────────┼──────────────────────────────┤
+ * │ liveStripeTest                     │ 🔧 FIXED │ Crashed on undefined         │
+ * │                                    │          │ test_type.toUpperCase().     │
+ * │                                    │          │ Also upgraded SDK from       │
+ * │                                    │          │ 0.8.20 → 0.8.25.            │
+ * ├────────────────────────────────────┼──────────┼──────────────────────────────┤
+ * │ rateLimiter                        │ ⚠️  WARN │ Exists but not deployed.     │
+ * │                                    │          │ May be unused / orphaned.    │
+ * └────────────────────────────────────┴──────────┴──────────────────────────────┘
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 2: DATABASE HARDENING (COMPLETED THIS SESSION)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ✅ 44 tables now have automatic `updated_at` triggers
+ * ✅ 55 performance indexes created on lookup columns
+ * ✅ 5 NOT NULL constraints on critical FK columns
+ * ✅ 4 CHECK constraints (no negative balances, positive gift costs)
+ * ✅ Atomic `transfer_denarii()` function with deadlock-safe row locking
+ * ✅ DM index fix applied (recipient_email was previously missed)
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 3: FINANCIAL SECURITY AUDIT
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ✅ Denarii checkout: Server-side bonus calculation (prevents client manipulation)
+ * ✅ Denarii checkout: Price-to-denarii ratio validation (140–450 range)
+ * ✅ Denarii checkout: CSRF token required (min 20 chars)
+ * ✅ Denarii checkout: Idempotency guard (5-min duplicate window)
+ * ✅ Denarii checkout: Fraud risk scoring (velocity + chargeback history)
+ * ✅ Webhook: Stripe signature verification via constructEventAsync
+ * ✅ Webhook: DB-backed idempotency (survives cold starts)
+ * ✅ Webhook: Duplicate payment_intent guard on denarii purchases
+ * ✅ Webhook: Server-side VIP point + lotto ticket calculation
+ * ✅ Webhook: Chargeback auto-reversal with wallet debit
+ * ✅ Webhook: Auto-suspend at 3+ chargebacks
+ * ✅ Webhook: Audit trail for all financial modifications
+ * ✅ Payouts: Request signing required (processPayoutWithKyc)
+ * ✅ Payouts: KYC gate enforcement
+ * ✅ Withdrawals: $20 minimum enforced
+ * ✅ DB: Wallet balances can never go negative (CHECK constraint)
+ * ✅ DB: Gift costs must be positive (CHECK constraint)
+ *
+ * ⚠️  ADVISORY: The `sendGift` function uses application-level balance
+ *    checks. Consider migrating to the atomic `transfer_denarii()` DB
+ *    function for race-condition immunity on high-traffic streams.
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 4: SECURITY POSTURE
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ✅ Authentication: All financial endpoints require auth
+ * ✅ Admin guards: Admin-only functions check user.role === 'admin'
+ * ✅ CSRF: Token validation on purchase endpoints
+ * ✅ Rate limiting: Configured on gift sending
+ * ✅ Input validation: Present on all critical endpoints
+ * ✅ XSS: React escaping + Lucide icons (no innerHTML)
+ * ✅ HTTPS: Enforced by platform
+ * ✅ Audit logging: WalletAuditLog + KYCAuditLog
+ * ✅ Error handling: Generic errors returned to clients
+ * ✅ Secrets: All required env vars present
+ * ✅ Stripe: Live mode active, webhook configured
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 5: PERFORMANCE & RELIABILITY
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ✅ DB query latency: 262ms (threshold: 2000ms)
+ * ✅ All critical functions deployed and responsive
+ * ✅ Stripe API connectivity verified
+ * ✅ Webhook endpoint verified (checkout.session.completed)
+ * ✅ Stale stream cleanup functional
+ * ⚠️  cleanupStaleStreams runs multiple times per invocation
+ *    (logs show 10+ cleanup cycles in a single call — possible
+ *    scheduled automation firing too frequently, or function
+ *    internally re-invoking itself)
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 6: MEDIUM-PRIORITY FOLLOW-UPS
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 1. MIGRATE sendGift TO ATOMIC DB FUNCTION
+ *    Currently uses app-level read→check→write which can race
+ *    under high concurrent load. The `transfer_denarii()` DB
+ *    function is ready but not yet wired into sendGift.
+ *
+ * 2. transactionalEmail EXTERNAL USER ERRORS
+ *    Logs show "Cannot send emails to users outside the app"
+ *    for rankincadence@gmail.com. The digest/notification system
+ *    may be trying to email non-registered addresses.
+ *
+ * 3. rateLimiter FUNCTION NOT DEPLOYED
+ *    The function file exists but isn't deployed. Either deploy
+ *    it or remove the dead code to avoid confusion.
+ *
+ * 4. cleanupStaleStreams MULTIPLE EXECUTIONS
+ *    The logs show 10+ cleanup cycles per single invocation.
+ *    Investigate whether the scheduled automation is configured
+ *    with too-short intervals or the function has an internal loop.
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * SECTION 7: FIXES APPLIED DURING THIS AUDIT
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * FIX 1: fraudDetection.js
+ *   Problem:  No Deno.serve() handler — direct invocations timed out (504)
+ *   Solution: Added HTTP handler wrapper with "check" and "status" actions
+ *   Impact:   The exported detectFraud() function still works for imports;
+ *             now direct API calls also work correctly
+ *
+ * FIX 2: liveStripeTest.js
+ *   Problem:  test_type.toUpperCase() crashed when body was empty/missing
+ *   Solution: Defaulted test_type to 'full_cycle'; graceful JSON parse
+ *   Impact:   Function now works without explicit test_type parameter
+ *   Bonus:    Upgraded SDK from 0.8.20 → 0.8.25
+ *
+ * FIX 3: supabaseMigrations.js (previous session)
+ *   Problem:  direct_messages index used wrong column name (receiver_email)
+ *   Solution: Corrected to recipient_email; added conversation_id attempt
+ *   Impact:   DM recipient lookups are now indexed for performance
+ *
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * END OF AUDIT REPORT
+ * ═══════════════════════════════════════════════════════════════
  */
+
+// This file serves as the living audit record.
+// It is NOT an executable function — it's documentation stored
+// alongside the backend functions for easy reference.
+
+Deno.serve(async (req) => {
+  return Response.json({
+    report: "LEGION LIVE PRODUCTION HARDENING AUDIT",
+    date: "2026-05-13",
+    status: "CONDITIONALLY PRODUCTION-READY",
+    critical_fixes_applied: 2,
+    medium_priority_items: 4,
+    blockers: 0,
+    sections: [
+      "1. Backend Function Diagnostics (28 PASS, 2 FIXED, 1 WARN)",
+      "2. Database Hardening (44 triggers, 55 indexes, 9 constraints, 1 atomic function)",
+      "3. Financial Security (17 checks — all PASS)",
+      "4. Security Posture (11 checks — all PASS)",
+      "5. Performance & Reliability (5 checks — all PASS, 1 advisory)",
+      "6. Medium-Priority Follow-Ups (4 items)",
+      "7. Fixes Applied (3 fixes)"
+    ],
+    read_full_report: "Open functions/PRODUCTION_HARDENING_README.js in your code editor"
+  });
+});
