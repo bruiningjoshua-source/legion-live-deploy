@@ -59,7 +59,8 @@ export function getRendererConfig() {
   return configs[_currentTier] || configs.medium;
 }
 
-/** Call each frame to feed FPS data */
+/** Call each frame to feed FPS data.
+ * Also feeds the centralized AdaptiveQuality system. */
 export function sampleFrame() {
   _frameCount++;
   const now = performance.now();
@@ -68,6 +69,12 @@ export function sampleFrame() {
     const fps = _frameCount;
     _frameCount = 0;
     _lastSampleTime = now;
+
+    // Feed centralized adaptive quality system if available
+    try {
+      const AQ = window.__legionAdaptiveQuality;
+      if (AQ) AQ.sample(fps);
+    } catch (e) {}
 
     _fpsHistory.push(fps);
     if (_fpsHistory.length > FPS_SAMPLES) _fpsHistory.shift();

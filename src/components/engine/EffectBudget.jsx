@@ -8,38 +8,42 @@
 
 // Effect cost classification
 const EFFECT_COSTS = {
-  // Filters
+  // Original filters
   none: 0,
-  beauty_soft: 1,
-  beauty_glam: 1,
-  dream_glow: 1,
-  cinematic: 1,
-  golden_hour: 1,
-  cool_fade: 1,
-  warm_vintage: 1,
-  bw_crisp: 1,
-  vivid_pop: 2,
-  neon_dream: 2,
-  synthwave: 2,
+  beauty_soft: 1, beauty_glam: 1, dream_glow: 1, cinematic: 1,
+  golden_hour: 1, cool_fade: 1, warm_vintage: 1, bw_crisp: 1,
+  vivid_pop: 2, neon_dream: 2, synthwave: 2,
 
-  // Overlays (particles)
-  sparkles: 2,
-  fire: 3,
-  hearts: 2,
-  stars: 2,
-  galaxy: 3,
-  halo: 1,
+  // Original overlays (particles)
+  sparkles: 2, fire: 3, hearts: 2, stars: 2, galaxy: 3, halo: 1,
 
   // Background effects
-  blur_light: 2,
-  blur_strong: 3,
-  gradient_purple: 1,
-  gradient_gold: 1,
-  gradient_dark: 0,
+  blur_light: 2, blur_strong: 3, gradient_purple: 1, gradient_gold: 1, gradient_dark: 0,
 
   // MoCap
-  mocap_active: 4,
-  ar_processing: 2,
+  mocap_active: 4, ar_processing: 2,
+
+  // Advanced visual filters
+  dither: 1, vhs: 2, chromatic_aberration: 2, rgb_split: 2,
+  film_grain: 1, crt_scanlines: 1, analog_noise: 1, bloom: 1,
+  soft_glow: 1, sharpen: 1, tilt_shift: 2, dream_blur: 1,
+  gaussian_blur: 1, pixelate: 2, thermal: 2, infrared: 1,
+  night_vision: 1, xray: 1, cyberpunk_neon: 2, vaporwave: 2,
+
+  // Advanced beauty
+  skin_smooth: 1, eye_bright: 1, teeth_white: 1, face_slim: 2,
+  jawline: 2, makeup: 2, lip_tint: 1, anime_face: 3,
+  doll_face: 2, k_beauty: 1,
+
+  // Advanced particles
+  floating_hearts: 2, snow: 2, rain: 2, fire_embers: 3,
+  lightning: 2, sakura: 2, smoke: 2, bubbles: 1,
+  spark_trails: 2, golden_aura: 2,
+
+  // Advanced interactive
+  water_ripple: 3, spotlight: 1, portal: 3, shockwave: 2,
+  bass_pulse: 2, hologram: 3, matrix_rain: 2, energy_field: 2,
+  glitch: 3, letterbox: 0,
 };
 
 // Budget per quality tier

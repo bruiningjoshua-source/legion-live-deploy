@@ -13,11 +13,16 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Layers, Hand } from 'lucide-react';
 import { createWebGLPipeline } from './shaders/FilterShaders';
 import EffectBudget from '@/components/engine/EffectBudget';
 import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import Disposer from '@/components/engine/ResourceDisposer';
+import ARBridge from '@/components/ar/ARTrackingBridge';
+import EffectStack from '@/components/ar/EffectStack';
+import { AdvancedParticle, updateParticleSystem } from '@/components/ar/AdvancedParticle';
+import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
+import GestureHUD from '@/components/ar/GestureHUD';
 
 // ── FILTER DEFINITIONS ──────────────────────────────────────────────────
 const FILTERS = [
@@ -310,9 +315,15 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   const [isProcessing, setIsProcessing] = useState(false);
   const [category, setCategory] = useState('all');
   const [showPanel, setShowPanel] = useState(false);
+  const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('filters');
   const [intensity, setIntensity] = useState(100);
   const [fps, setFps] = useState(0);
+  const [handTrackingEnabled, setHandTrackingEnabled] = useState(false);
+  const [faceTrackingEnabled, setFaceTrackingEnabled] = useState(false);
+  const [gesturesEnabled, setGesturesEnabled] = useState(false);
+  const [advancedActive, setAdvancedActive] = useState(false);
+  const advancedParticlesRef = useRef({}); // { type: Particle[] }
 
   const canvasRef = useRef(null);
   const glPipelineRef = useRef(null);
@@ -445,6 +456,32 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       });
     }
 
+    // ── Advanced AR: tracking + gesture effects + effect stack ──
+    if (handTrackingEnabled || faceTrackingEnabled) {
+      ARBridge.processFrame(video);
+    }
+
+    // Apply stacked advanced effects
+    const stackLayers = EffectStack.getLayers();
+    const stackParticles = EffectStack.getActiveParticles();
+    if (stackLayers.length > 0 || stackParticles.length > 0) {
+      const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
+      const time = performance.now();
+      const handPos = ARBridge.getHandPosition();
+      
+      // Apply filter stack
+      EffectStack.applyToCanvas(ctx2, W, H, time, handPos);
+      
+      // Advanced particle effects
+      for (const pe of stackParticles) {
+        if (!advancedParticlesRef.current[pe.type]) advancedParticlesRef.current[pe.type] = [];
+        advancedParticlesRef.current[pe.type] = updateParticleSystem(
+          advancedParticlesRef.current[pe.type], pe.type, W, H, 80
+        );
+        advancedParticlesRef.current[pe.type].forEach(p => p.draw(ctx2));
+      }
+    }
+
     // FPS counter
     fpsCounterRef.current.frames++;
     const now = Date.now();
@@ -454,11 +491,21 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
     }
 
     animFrameRef.current = requestAnimationFrame(processFrame);
-  }, [videoRef, activeFilter, activeOverlay, activeBg, applyFilterToCanvas, drawBackground]);
+  }, [videoRef, activeFilter, activeOverlay, activeBg, applyFilterToCanvas, drawBackground, handTrackingEnabled, faceTrackingEnabled]);
+
+  // Track whether advanced effects are active
+  useEffect(() => {
+    const unsub = EffectStack.onChange((state) => {
+      setAdvancedActive(state.layers.length > 0 || state.particles.length > 0 || state.gestureEffects > 0);
+    });
+    return unsub;
+  }, []);
 
   // Start/stop processing loop
+  const hasAnyEffect = activeFilter.id !== 'none' || activeOverlay.id !== 'none' || activeBg.id !== 'none' || advancedActive || handTrackingEnabled || faceTrackingEnabled;
+  
   useEffect(() => {
-    if (activeFilter.id === 'none' && activeOverlay.id === 'none' && activeBg.id === 'none') {
+    if (!hasAnyEffect) {
       cancelAnimationFrame(animFrameRef.current);
       setIsProcessing(false);
       return;
@@ -475,7 +522,12 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       EffectBudget.clear();
       if (canvasRef.current) canvasRef.current._streamCaptured = false;
     };
-  }, [processFrame, activeFilter, activeOverlay, activeBg]);
+  }, [processFrame, hasAnyEffect]);
+
+  // Cleanup tracking on unmount
+  useEffect(() => {
+    return () => { ARBridge.destroy(); EffectStack.clearAll(); };
+  }, []);
 
   return (
     <>
@@ -488,24 +540,74 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
         />
       )}
 
-      {/* AR Control Panel Toggle */}
-      <button
-        onClick={() => setShowPanel(v => !v)}
-        className="absolute left-3 z-30 flex flex-col items-center gap-1"
-        style={{ top: '50%', transform: 'translateY(-50%)' }}
-      >
-        <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all ${
-          showPanel || isProcessing
-            ? 'bg-amber-500/30 border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-            : 'bg-black/40 border-white/10'
-        }`}>
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <span className="text-white/60 text-[9px]">FX</span>
-        {isProcessing && (
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-        )}
-      </button>
+      {/* AR Control Buttons (left side) */}
+      <div className="absolute left-3 z-30 flex flex-col items-center gap-3"
+        style={{ top: '45%', transform: 'translateY(-50%)' }}>
+        {/* Quick FX panel */}
+        <button
+          onClick={() => { setShowPanel(v => !v); setShowAdvancedPanel(false); }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all ${
+            showPanel || isProcessing
+              ? 'bg-amber-500/30 border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+              : 'bg-black/40 border-white/10'
+          }`}>
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white/60 text-[9px]">FX</span>
+          {isProcessing && (
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          )}
+        </button>
+
+        {/* Advanced Effects Studio */}
+        <button
+          onClick={() => { setShowAdvancedPanel(v => !v); setShowPanel(false); }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all ${
+            showAdvancedPanel || advancedActive
+              ? 'bg-purple-500/30 border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]'
+              : 'bg-black/40 border-white/10'
+          }`}>
+            <Layers className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white/60 text-[9px]">Studio</span>
+        </button>
+
+        {/* Hand/Face Tracking Toggle */}
+        <button
+          onClick={async () => {
+            if (!handTrackingEnabled && !faceTrackingEnabled) {
+              await ARBridge.enableHands();
+              await ARBridge.enableFace();
+              ARBridge.enableGestures();
+              setHandTrackingEnabled(true);
+              setFaceTrackingEnabled(true);
+              setGesturesEnabled(true);
+            } else {
+              ARBridge.disableGestures();
+              setHandTrackingEnabled(false);
+              setFaceTrackingEnabled(false);
+              setGesturesEnabled(false);
+            }
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all ${
+            handTrackingEnabled
+              ? 'bg-green-500/30 border-green-400/50 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+              : 'bg-black/40 border-white/10'
+          }`}>
+            <Hand className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white/60 text-[9px]">Track</span>
+        </button>
+      </div>
+
+      {/* Gesture HUD */}
+      <GestureHUD enabled={gesturesEnabled} />
 
       {/* AR Panel */}
       <AnimatePresence>
@@ -673,6 +775,13 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Advanced Effects Studio Panel */}
+      <AnimatePresence>
+        {showAdvancedPanel && (
+          <FilterMenuPanel onClose={() => setShowAdvancedPanel(false)} />
         )}
       </AnimatePresence>
     </>

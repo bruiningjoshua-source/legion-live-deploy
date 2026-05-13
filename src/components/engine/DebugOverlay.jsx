@@ -6,11 +6,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PerfMonitor from './PerformanceMonitor';
-import AdaptiveQuality from './AdaptiveQuality';
-import EffectBudget from './EffectBudget';
-import StreamHealth from './StreamHealthMonitor';
-import Disposer from './ResourceDisposer';
+import PerfMonitor from '@/components/engine/PerformanceMonitor';
+import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
+import EffectBudget from '@/components/engine/EffectBudget';
+import StreamHealth from '@/components/engine/StreamHealthMonitor';
+import Disposer from '@/components/engine/ResourceDisposer';
 
 export default function DebugOverlay() {
   const [visible, setVisible] = useState(false);

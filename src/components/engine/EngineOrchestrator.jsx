@@ -4,12 +4,12 @@
  * Wires: PerfMonitor → AdaptiveQuality → EffectBudget → StreamHealth
  */
 
-import PerfMonitor from './PerformanceMonitor';
-import AdaptiveQuality from './AdaptiveQuality';
-import EffectBudget from './EffectBudget';
-import StreamHealth from './StreamHealthMonitor';
-import Disposer from './ResourceDisposer';
-import { detectCapabilities } from './BrowserCompat';
+import PerfMonitor from '@/components/engine/PerformanceMonitor';
+import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
+import EffectBudget from '@/components/engine/EffectBudget';
+import StreamHealth from '@/components/engine/StreamHealthMonitor';
+import Disposer from '@/components/engine/ResourceDisposer';
+import { detectCapabilities } from '@/components/engine/BrowserCompat';
 
 class EngineOrchestratorService {
   constructor() {
@@ -55,6 +55,9 @@ class EngineOrchestratorService {
     if (zegoService) {
       StreamHealth.start(zegoService);
     }
+
+    // Expose for LegionPerformanceScaler bridge
+    if (typeof window !== 'undefined') window.__legionAdaptiveQuality = AdaptiveQuality;
 
     console.log('[EngineOrchestrator] Initialized — tier:', AdaptiveQuality.getTier());
   }
