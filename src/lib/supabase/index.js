@@ -207,6 +207,16 @@ const auth = {
 // ---------------------------------------------------------------------------
 const functions = {
   async invoke(functionName, params) {
+    const netlifyResponse = await fetch(`/.netlify/functions/base44-function`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ functionName, params }),
+    }).catch(() => null);
+
+    if (netlifyResponse?.ok) {
+      return { data: await netlifyResponse.json(), status: netlifyResponse.status };
+    }
+
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: params,
     });
