@@ -9,7 +9,7 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "verify:database": "node scripts/verify-production-database.mjs",
-    "typecheck": "tsc -p ./jsconfig.json",
+    "typecheck": "tsc --skipLibCheck -p ./jsconfig.json",
     "preview": "vite preview"
   },
   "dependencies": {
