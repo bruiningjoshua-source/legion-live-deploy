@@ -1,9 +1,8 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Home, Compass, Video, Bot, User } from 'lucide-react';
-import { toast } from 'sonner';
 
 const TABS = [
   { id: 'live',    label: 'Live',    icon: Home,    path: createPageUrl('Home') },

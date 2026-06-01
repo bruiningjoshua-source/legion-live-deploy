@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Radio, X, Shield } from 'lucide-react';
+import { Radio } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -24,9 +24,7 @@ import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
 import ZegoService from '@/components/stream/ZegoService';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
-import RaidButton from '@/components/stream/RaidButton';
 import ChannelPointsPanel from '@/components/stream/ChannelPointsPanel';
-import ClipButton from '@/components/stream/ClipButton';
 import EntranceEffect from '@/components/stream/EntranceEffect';
 import HostLiveControls from '@/components/stream/HostLiveControls';
 import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';

@@ -5,7 +5,6 @@
  */
 
 import EffectBudget from '@/components/engine/EffectBudget';
-import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import { ADVANCED_FILTERS, GESTURE_EFFECTS, getFilterById } from './AdvancedFilters';
 
 // Register all advanced filter costs in EffectBudget

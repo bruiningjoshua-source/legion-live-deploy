@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { X, Plus, Check } from 'lucide-react';
 
 // Row 1: [avatar+name+badges+follow] ... [viewer avatars + count + X]

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Ban } from 'lucide-react';
+import { Ban } from 'lucide-react';
 
 const BEAUTY_TABS = ['Presets', 'Beauty', 'Make up', 'Filter'];
 
