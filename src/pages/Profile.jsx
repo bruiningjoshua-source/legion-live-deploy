@@ -37,7 +37,6 @@ import {
   Wallet,
   Settings,
   HelpCircle,
-  Shield,
   ChevronRight,
   LogOut
 } from 'lucide-react';

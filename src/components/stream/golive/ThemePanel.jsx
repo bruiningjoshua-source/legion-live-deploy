@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X, Upload, Loader2, ImagePlus, Trash2 } from 'lucide-react';
+import { X, Loader2, ImagePlus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 

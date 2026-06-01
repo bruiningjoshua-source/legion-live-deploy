@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Tv, Gamepad2, Users, ShoppingBag, Radio,
-  Flame, ChevronRight, Eye, Star, Film, Mic, Sword, Globe
+  Flame, ChevronRight, Star, Film, Mic, Sword, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';

@@ -5,7 +5,7 @@ import {
   AudioLines, ListVideo, ScreenShare, Youtube, Mic,
   MessageCircle, ZoomIn,
   Users, MessageSquare, LayoutDashboard, Headphones, Video,
-  UserPlus, Database, Clock, X
+  UserPlus, Database, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 

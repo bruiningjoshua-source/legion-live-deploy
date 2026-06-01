@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Smartphone, Monitor, HelpCircle } from 'lucide-react';
+import { Monitor, HelpCircle } from 'lucide-react';
 
 export default function GameLivePreview({ selectedGame, deviceMode, onSelectGame }) {
   return (

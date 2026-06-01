@@ -2,8 +2,8 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Plus, Minus, Send, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 // TikTok/BIGO-style gift tier config

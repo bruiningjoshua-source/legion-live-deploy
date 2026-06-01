@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
-import BeautyFilter from '@/components/stream/BeautyFilter';
 import LegionAREngine from '@/components/stream/LegionAREngine';
 import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
 import Soundboard from '@/components/stream/Soundboard';

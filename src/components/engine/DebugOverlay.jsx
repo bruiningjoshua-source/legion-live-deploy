@@ -4,8 +4,8 @@
  * Shows: FPS, memory, GPU budget, stream health, tier, dropped frames.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import PerfMonitor from '@/components/engine/PerformanceMonitor';
 import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import EffectBudget from '@/components/engine/EffectBudget';

@@ -20,7 +20,7 @@ import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import Disposer from '@/components/engine/ResourceDisposer';
 import ARBridge from '@/components/ar/ARTrackingBridge';
 import EffectStack from '@/components/ar/EffectStack';
-import { AdvancedParticle, updateParticleSystem } from '@/components/ar/AdvancedParticle';
+import { updateParticleSystem } from '@/components/ar/AdvancedParticle';
 import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
 import GestureHUD from '@/components/ar/GestureHUD';
 

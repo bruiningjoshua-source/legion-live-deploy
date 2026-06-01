@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Send } from 'lucide-react';
 
 // "Wishes of HOST" panel — shows creator's wish gifts with progress
 

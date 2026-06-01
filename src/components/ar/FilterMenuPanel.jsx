@@ -4,13 +4,13 @@
  * gesture assignments, and preset management.
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, Clock, Layers, Hand, Save, Trash2, ChevronDown, X, Sparkles } from 'lucide-react';
+import { Search, Star, Layers, Hand, Save, Trash2, X, Sparkles } from 'lucide-react';
 import { ADVANCED_FILTERS, FILTER_CATEGORIES, getTrendingFilters, getFilterById } from './AdvancedFilters';
 import EffectStack from './EffectStack';
 import EffectBudget from '@/components/engine/EffectBudget';
-import GestureRecognizer, { DEFAULT_GESTURE_MAP } from './GestureRecognizer';
+import GestureRecognizer from './GestureRecognizer';
 
 export default function FilterMenuPanel({ onClose }) {
   const [activeTab, setActiveTab] = useState('trending');
