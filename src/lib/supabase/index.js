@@ -180,9 +180,11 @@ const auth = {
   async updateMe(data) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+    // profiles.email is NOT NULL, so always supply it on upsert — otherwise the
+    // very first profile write for a user violates the constraint.
     const { error } = await supabase
       .from('profiles')
-      .upsert({ id: user.id, ...data }, { onConflict: 'id' });
+      .upsert({ id: user.id, email: user.email, ...data }, { onConflict: 'id' });
     if (error) throw error;
   },
 
@@ -207,9 +209,15 @@ const auth = {
 // ---------------------------------------------------------------------------
 const functions = {
   async invoke(functionName, params) {
+    // Forward the user's access token so authenticated Netlify handlers
+    // (go-live token, gifts, withdrawals, daily reward, …) can identify them.
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers = { 'Content-Type': 'application/json' };
+    if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
     const netlifyResponse = await fetch(`/.netlify/functions/base44-function`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ functionName, params }),
     }).catch(() => null);
 
