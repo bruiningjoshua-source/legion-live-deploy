@@ -175,6 +175,22 @@ export default function WatchStream() {
       await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
       if (!mounted) return;
       ZegoService.onRoomEvent((event) => {
+        if (event.type === 'remoteStreamAdded') {
+          const { remoteStream } = event;
+          if (!mounted) return;
+          liveStreamRef.current = remoteStream;
+          setLiveStream(remoteStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = remoteStream;
+            videoRef.current.muted = false;
+            videoRef.current.playsInline = true;
+            videoRef.current.play().catch(() => {});
+          }
+        }
+        if (event.type === 'remoteStreamRemoved') {
+          if (videoRef.current) videoRef.current.srcObject = null;
+          setLiveStream(null);
+        }
         if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
         }
@@ -183,11 +199,10 @@ export default function WatchStream() {
           ZegoService.leave().catch(() => {});
         }
       });
-      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 1500);
-      setTimeout(() => { if (mounted) ZegoService.getRemoteStreams(); }, 4000);
-      if (mounted) setLiveStream(true);
+      // Pull any streams already in the room (host started before viewer joined)
+      if (mounted) await ZegoService.getRemoteStreams();
     };
-    init().catch(err => { console.error('[WatchStream] Join failed:', err); if (mounted) setLiveStream(true); });
+    init().catch(err => { console.error('[WatchStream] Join failed:', err); });
     return () => {
       mounted = false;
       zegoInitAttempted.current = false;

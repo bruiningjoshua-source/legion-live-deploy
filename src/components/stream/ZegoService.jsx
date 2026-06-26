@@ -318,16 +318,8 @@ class ZegoStreamingService {
         });
       }
 
-      // Auto-attach to first available <video> element if solo viewing
-      if (this.remoteStreams.size === 1) {
-        const videoEl = document.querySelector('video[data-zego-remote]') || document.querySelector('video');
-        if (videoEl && remoteStream) {
-          videoEl.srcObject = remoteStream;
-          videoEl.play().catch(e => console.warn('[Zego] autoplay blocked:', e));
-        }
-      }
-
       console.log('[Zego] Playing remote stream:', streamId);
+      // Notify listeners (e.g. WatchStream) who will attach to their own videoRef
       this._notifyRoomEvent({ type: 'remoteStreamAdded', streamId, remoteStream, userInfo });
       return remoteStream;
     } catch (e) {

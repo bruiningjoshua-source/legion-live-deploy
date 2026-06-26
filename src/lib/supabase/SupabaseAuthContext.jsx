@@ -48,14 +48,13 @@ export const AuthProvider = ({ children }) => {
         .single();
 
       const fullUser = {
+        ...(profile || {}),
+        // Auth fields always win — never let profile override the real auth id/email
         id: authUser.id,
         email: authUser.email,
         full_name: profile?.full_name || authUser.user_metadata?.full_name || '',
         role: profile?.role || 'user',
         avatar_url: profile?.avatar_url || '',
-        ...(profile || {}),
-        email: authUser.email,
-        id: authUser.id,
       };
 
       setUser(fullUser);

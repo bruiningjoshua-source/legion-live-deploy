@@ -120,20 +120,41 @@ const handlers = {
     return { success: true };
   },
 
-  async updateViewerCount({ supabase, params }) {
-    const { streamId, viewerCount } = params || {};
-    if (!streamId || Number.isNaN(Number(viewerCount))) {
-      return json(400, { error: 'streamId and viewerCount are required' });
+  async updateViewerCount({ supabase, admin, params }) {
+    const { streamId, action } = params || {};
+    if (!streamId || !['join', 'leave'].includes(action)) {
+      return json(400, { error: 'streamId and action (join|leave) are required' });
     }
 
-    const { data, error } = await supabase
-      .from('streams')
-      .update({ viewer_count: Math.max(0, Number(viewerCount)) })
-      .eq('id', streamId)
-      .select()
-      .single();
-    if (error) throw error;
-    return { success: true, stream: data };
+    // Use service role for cross-user writes; fall back to user client if unavailable
+    const db = admin || supabase;
+    const delta = action === 'join' ? 1 : -1;
+
+    // Atomic increment/decrement — no read-then-write race condition
+    const { data, error } = await db.rpc('increment_viewer_count', {
+      p_stream_id: streamId,
+      p_delta: delta,
+    });
+
+    if (error) {
+      // RPC not deployed yet — fall back to a best-effort update
+      const { data: stream } = await db
+        .from('streams')
+        .select('viewer_count')
+        .eq('id', streamId)
+        .single();
+      const current = stream?.viewer_count || 0;
+      const { data: updated, error: updateErr } = await db
+        .from('streams')
+        .update({ viewer_count: Math.max(0, current + delta) })
+        .eq('id', streamId)
+        .select('viewer_count')
+        .single();
+      if (updateErr) throw updateErr;
+      return { success: true, viewerCount: updated.viewer_count, atomic: false };
+    }
+
+    return { success: true, viewerCount: data, atomic: true };
   },
 
   async sendGift({ supabase, user, params }) {
@@ -327,6 +348,360 @@ const handlers = {
     if (error) throw error;
     return data;
   },
+  // ─── AI Chat Moderation ──────────────────────────────────────────────────
+  async aiModerateContent({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { content_type, content, stream_id, user_email, user_name } = params || {};
+
+    // Check active bans first
+    try {
+      const db = admin || supabase;
+      const { data: bans } = await db
+        .from('user_bans')
+        .select('*')
+        .eq('user_email', user_email)
+        .eq('is_active', true)
+        .limit(5);
+      const now = new Date();
+      const activeBan = (bans || []).find(b => !b.expires_at || new Date(b.expires_at) > now);
+      if (activeBan) {
+        return json(200, { approved: false, action: 'banned', reason: `Banned until ${activeBan.expires_at || 'indefinitely'}` });
+      }
+    } catch (_) { /* bans table may not exist yet — fail open */ }
+
+    // If no OpenAI key, approve and move on (fail open)
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) {
+      return json(200, { approved: true, flagged: false, warning: 'Moderation unavailable' });
+    }
+
+    try {
+      const prompt = `You are a content moderator for a live streaming platform. Analyze this ${content_type}: "${content}". Return JSON only: {"status":"approved","category":"none","severity":"none","confidence":0.99,"reason":"ok","safe_for_minors":true}`;
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } }),
+      });
+      const data = await res.json();
+      const result = JSON.parse(data.choices?.[0]?.message?.content || '{"status":"approved"}');
+      const approved = result.status === 'approved' || result.status === 'warning';
+      return json(200, { approved, flagged: result.status === 'warning', reason: result.reason, category: result.category });
+    } catch (_) {
+      return json(200, { approved: true, flagged: false, warning: 'Moderation temporarily unavailable' });
+    }
+  },
+
+  // ─── Stripe: Buy Denarii ─────────────────────────────────────────────────
+  async createDenariiCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { packageId, denarii, bonus = 0, price, packageName, vipPoints = 0, lottoTickets = 0 } = params || {};
+    if (!packageId || !denarii || !price) return json(400, { error: 'Missing required fields' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const origin = process.env.URL || 'https://legionlive.app';
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: packageName || `${Number(denarii).toLocaleString()} Denarii`,
+            description: bonus > 0 ? `${Number(denarii).toLocaleString()} + ${Number(bonus).toLocaleString()} Bonus Denarii` : undefined,
+          },
+          unit_amount: Math.round(Number(price) * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      customer_email: user.email,
+      success_url: `${origin}/Wallet?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${origin}/Wallet?cancelled=true`,
+      metadata: {
+        user_email: user.email,
+        package_id: packageId,
+        denarii_amount: String(denarii),
+        bonus_denarii: String(bonus),
+        vip_points: String(vipPoints),
+        lotto_tickets: String(lottoTickets),
+        purchase_type: 'denarii',
+      },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── Stripe: Tip Checkout ────────────────────────────────────────────────
+  async createTipCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { creatorEmail, amount, streamId, message } = params || {};
+    if (!creatorEmail || !amount) return json(400, { error: 'creatorEmail and amount required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const origin = process.env.URL || 'https://legionlive.app';
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: `Tip to ${creatorEmail}`, description: message || undefined },
+          unit_amount: Math.round(Number(amount) * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      customer_email: user.email,
+      success_url: `${origin}/WatchStream?id=${streamId || ''}&tip=true`,
+      cancel_url: `${origin}/WatchStream?id=${streamId || ''}`,
+      metadata: { user_email: user.email, creator_email: creatorEmail, stream_id: streamId || '', purchase_type: 'tip', message: message || '' },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── Stripe: Fan Club Checkout ───────────────────────────────────────────
+  async createFanClubCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { creatorEmail, tier = 'basic', priceMonthly = 4.99 } = params || {};
+    if (!creatorEmail) return json(400, { error: 'creatorEmail required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const origin = process.env.URL || 'https://legionlive.app';
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: `${creatorEmail} Fan Club — ${tier}` },
+          unit_amount: Math.round(Number(priceMonthly) * 100),
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }],
+      mode: 'subscription',
+      customer_email: user.email,
+      success_url: `${origin}/FanClubs?joined=true`,
+      cancel_url: `${origin}/FanClubs`,
+      metadata: { user_email: user.email, creator_email: creatorEmail, tier, purchase_type: 'fan_club' },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── Stripe: Creator Monetization Checkout ───────────────────────────────
+  async createCreatorMonetizationCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { plan = 'monthly' } = params || {};
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const prices = { monthly: 999, yearly: 9900 }; // cents
+    const origin = process.env.URL || 'https://legionlive.app';
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: `Legion Live Creator — ${plan === 'yearly' ? 'Annual' : 'Monthly'}` },
+          unit_amount: prices[plan] || 999,
+          recurring: { interval: plan === 'yearly' ? 'year' : 'month' },
+        },
+        quantity: 1,
+      }],
+      mode: 'subscription',
+      customer_email: user.email,
+      success_url: `${origin}/CreatorMonetization?activated=true`,
+      cancel_url: `${origin}/CreatorMonetization`,
+      metadata: { user_email: user.email, purchase_type: 'creator_monetization', plan },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── Stripe: Stripe Connect Onboard ─────────────────────────────────────
+  async stripeConnectOnboard({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id, stripe_account_id')
+      .eq('user_email', user.email)
+      .single();
+
+    if (!creator) return json(404, { error: 'Creator profile not found' });
+
+    let accountId = creator.stripe_account_id;
+    if (!accountId) {
+      const account = await stripe.accounts.create({ type: 'express', email: user.email });
+      accountId = account.id;
+      await supabase.from('creators').update({ stripe_account_id: accountId }).eq('id', creator.id);
+    }
+
+    const origin = process.env.URL || 'https://legionlive.app';
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${origin}/CreatorPayouts?refresh=true`,
+      return_url: `${origin}/CreatorPayouts?connected=true`,
+      type: 'account_onboarding',
+    });
+
+    return { url: accountLink.url };
+  },
+
+  // ─── Cancel Subscription ─────────────────────────────────────────────────
+  async cancelSubscription({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { subscriptionId } = params || {};
+    if (!subscriptionId) return json(400, { error: 'subscriptionId required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const cancelled = await stripe.subscriptions.cancel(subscriptionId);
+    return { success: true, status: cancelled.status };
+  },
+
+  // ─── Legion AI Companion ─────────────────────────────────────────────────
+  async legionCompanionChat({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { message } = params || {};
+    if (!message) return json(400, { error: 'message required' });
+
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    if (!anthropicKey) return json(500, { error: 'AI companion not configured' });
+
+    const db = admin || supabase;
+
+    // Load companion memory
+    const { data: memories } = await db
+      .from('legion_companion_memories')
+      .select('*')
+      .eq('creator_email', user.email)
+      .limit(1);
+    const memory = memories?.[0];
+
+    const systemPrompt = `You are Legion, an AI companion and advisor for a live streaming creator on Legion Live.
+Creator: ${user.email}. ${memory?.conversation_summary ? `Context: ${memory.conversation_summary}` : ''}
+Be concise, warm, and actionable. You help creators grow their audience, earn more, and improve streams.
+Reply in JSON: { "reply": "your response here" }`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: `${systemPrompt}\n\nCreator: "${message}"` }],
+      }),
+    });
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '{"reply":"Sorry, I could not respond right now."}';
+    let reply = 'I could not respond right now.';
+    try {
+      const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || text);
+      reply = parsed.reply || reply;
+    } catch (_) { reply = text; }
+
+    // Update interaction count
+    if (memory) {
+      await db.from('legion_companion_memories')
+        .update({ total_interactions: (memory.total_interactions || 0) + 1 })
+        .eq('id', memory.id)
+        .catch(() => {});
+    }
+
+    return { reply, action: null };
+  },
+
+  // ─── Save User Theme ─────────────────────────────────────────────────────
+  async saveUserTheme({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { theme } = params || {};
+    if (!theme) return json(400, { error: 'theme required' });
+    const { error } = await supabase.from('profiles').update({ theme }).eq('id', user.id);
+    if (error) throw error;
+    return { success: true };
+  },
+
+  // ─── Get Trending Content ────────────────────────────────────────────────
+  async getTrendingContent({ supabase, params }) {
+    const { limit = 20, category } = params || {};
+    let query = supabase
+      .from('streams')
+      .select('id, title, viewer_count, creator_id, category, thumbnail_url, created_at')
+      .eq('status', 'live')
+      .order('viewer_count', { ascending: false })
+      .limit(Number(limit));
+    if (category) query = query.eq('category', category);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { streams: data || [] };
+  },
+
+  // ─── Get Payout Config ───────────────────────────────────────────────────
+  async getPayoutConfig({ supabase, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    return {
+      platform_cut: 0.5,
+      creator_cut: 0.5,
+      minimum_withdrawal_usd: 20,
+      payout_schedule: 'weekly',
+      supported_methods: ['stripe_connect', 'paypal'],
+      denarii_to_usd_rate: 0.01,
+    };
+  },
+
+  // ─── Forecast Creator Payouts ────────────────────────────────────────────
+  async forecastCreatorPayouts({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id, total_earnings')
+      .eq('user_email', user.email)
+      .single();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: txns } = await supabase
+      .from('gift_transactions')
+      .select('amount_denarii, created_at')
+      .eq('receiver_email', user.email)
+      .gte('created_at', thirtyDaysAgo);
+    const total30d = (txns || []).reduce((s, t) => s + (t.amount_denarii || 0), 0);
+    const projected = (total30d / 30) * 30 * 0.01 * 0.5; // denarii → USD → creator cut
+    return { projected_usd: projected.toFixed(2), period_days: 30, total_denarii_30d: total30d };
+  },
+
 };
 
 export const handler = async (event) => {
