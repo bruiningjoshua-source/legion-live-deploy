@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayableGameModal, { PLAYABLE_GAMES } from '@/components/gaming/PlayableGameModal';
+import { SEEDED_GAMES, getTrendingGames, getFeaturedGames } from '@/components/gaming/SeededGameLibrary';
 import ScreenShareSetupModal from '@/components/gaming/ScreenShareSetupModal';
 import GooglePlaySearch, { GOOGLE_PLAY_CATALOG } from '@/components/gaming/GooglePlaySearch';
 
@@ -54,9 +55,9 @@ function GameCard({ game, onPlay, onStream }) {
       <div className="relative aspect-square bg-gradient-to-br from-stone-900 to-stone-800 overflow-hidden">
         {game.icon_url ? (
           <img src={game.icon_url} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : game._emoji ? (
+        ) : (game._emoji || game.emoji) ? (
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-stone-900 to-stone-800">
-            {game._emoji}
+            {game._emoji || game.emoji}
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -71,12 +72,28 @@ function GameCard({ game, onPlay, onStream }) {
               <Play className="w-2.5 h-2.5" /> PLAY NOW
             </span>
           )}
+          {game._trending && (
+            <span className="flex items-center gap-0.5 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md">
+              🔥 TRENDING
+            </span>
+          )}
+          {game._featured && !game._trending && (
+            <span className="flex items-center gap-0.5 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md">
+              ⭐ FEATURED
+            </span>
+          )}
           {game.source === 'google_play' && (
             <span className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md">
               <Globe className="w-2.5 h-2.5" /> Play Store
             </span>
           )}
         </div>
+        {/* Live viewer count for seeded games */}
+        {game._viewers > 0 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white/80 text-[8px] px-1.5 py-0.5 rounded-md">
+            👁 {(game._viewers/1000).toFixed(0)}K
+          </div>
+        )}
 
         {game.is_featured && (
           <div className="absolute top-2 right-2">
@@ -146,6 +163,13 @@ export default function GamesExpo() {
     const dbTitles = new Set(games.map(g => g.title?.toLowerCase()));
 
     // Built-in HTML5 playable games not in DB
+    const seededAAA = (getTrendingGames(20) || []).map(g => ({
+      id: g.id, title: g.title, genre: g.category, platform: g.platform,
+      rating: g.rating, installs: g.viewers * 10, isFree: true,
+      description: `${g.publisher} · ${g.tags?.join(', ')}`,
+      emoji: g.emoji, _isSeeded: true, _streams: g.streams, _viewers: g.viewers,
+      _trending: g.trending, _featured: g.featured,
+    }));
     const builtInGames = PLAYABLE_GAMES
       .filter(pg => !dbTitles.has(pg.title.toLowerCase()))
       .map(pg => ({
@@ -178,7 +202,7 @@ export default function GamesExpo() {
         _emoji: pg.icon,
       }));
 
-    return [...games, ...builtInGames, ...googleGames];
+    return [...seededAAA, ...games, ...builtInGames, ...googleGames];
   }, [games]);
 
   const filteredGames = useMemo(() => {

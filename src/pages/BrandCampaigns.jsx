@@ -375,6 +375,69 @@ export default function BrandCampaigns() {
           <StatCard icon={DollarSign} label="Total Earned" value={`$${totalEarnings}`} color="emerald" sub="from campaigns" />
         </div>
 
+        {/* Featured Brand Opportunities from Seeded Data */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-white font-black text-base">🔥 Hot Brand Opportunities</h2>
+            <span className="text-white/30 text-xs">{getFeaturedBrands().length} available</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {getFeaturedBrands(8).map(brand => (
+              <div key={brand.id} className="shrink-0 w-44 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:border-emerald-500/30 transition-all">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+                    style={{ background: `${brand.color}22`, border: `1px solid ${brand.color}44` }}>
+                    {brand.emoji}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white font-bold text-xs truncate">{brand.name}</p>
+                    <p className="text-white/40 text-[10px] capitalize">{brand.category}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-emerald-400 font-black text-sm">{brand.commissionRate}%</span>
+                  <span className="text-white/30 text-[10px]">commission</span>
+                </div>
+                <p className="text-white/50 text-[10px] leading-relaxed line-clamp-2 mb-2.5">{brand.tagline}</p>
+                <div className="flex items-center gap-1 mb-2">
+                  <Users className="w-2.5 h-2.5 text-white/30" />
+                  <span className="text-white/30 text-[10px]">{brand.minFollowers.toLocaleString()}+ followers</span>
+                </div>
+                <button className="w-full py-1.5 rounded-lg text-[10px] font-bold transition-all"
+                  style={{ background: `${brand.color}22`, color: brand.color, border: `1px solid ${brand.color}44` }}>
+                  Apply Now
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Paying Brands */}
+        <div>
+          <h2 className="text-white font-black text-base mb-3">💰 Top Commission Rates</h2>
+          <div className="space-y-2">
+            {getTopPayingBrands(5).map((brand, i) => (
+              <div key={brand.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-amber-500/20 transition-all">
+                <div className="w-6 h-6 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
+                  <span className="text-amber-400 font-black text-xs">{i + 1}</span>
+                </div>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shrink-0"
+                  style={{ background: `${brand.color}22` }}>
+                  {brand.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm truncate">{brand.name}</p>
+                  <p className="text-white/40 text-[10px]">Avg order ${brand.avgOrderValue}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-emerald-400 font-black text-base">{brand.commissionRate}%</p>
+                  <p className="text-white/30 text-[10px]">per sale</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
           {[
