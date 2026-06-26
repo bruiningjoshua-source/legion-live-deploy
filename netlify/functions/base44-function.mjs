@@ -702,6 +702,243 @@ Reply in JSON: { "reply": "your response here" }`;
     return { projected_usd: projected.toFixed(2), period_days: 30, total_denarii_30d: total30d };
   },
 
+  // ─── Check Payment Status ────────────────────────────────────────────────
+  async checkPaymentStatus({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { paymentIntentId } = params || {};
+    if (!paymentIntentId) return json(400, { error: 'Missing paymentIntentId' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    // Check our audit log first — fastest path
+    const { data: logs } = await supabase
+      .from('wallet_audit_logs')
+      .select('*')
+      .eq('user_email', user.email)
+      .eq('related_entity_id', paymentIntentId)
+      .limit(1);
+    if (logs?.[0]?.action === 'purchase') {
+      return { status: 'confirmed', processedAt: logs[0].created_at };
+    }
+
+    // Fall back to Stripe
+    try {
+      const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const statusMap = { succeeded: 'confirmed', requires_payment_method: 'requires_payment_method', requires_action: 'requires_action', canceled: 'canceled', processing: 'processing' };
+      return { status: statusMap[pi.status] || pi.status, stripeStatus: pi.status, clientSecret: pi.status === 'requires_action' ? pi.client_secret : null, amount: pi.amount / 100, currency: pi.currency, lastError: pi.last_payment_error?.message || null };
+    } catch (_) {
+      // Try as a checkout session ID
+      try {
+        const session = await stripe.checkout.sessions.retrieve(paymentIntentId);
+        return { status: session.payment_status === 'paid' ? 'confirmed' : session.status, stripeStatus: session.status, paymentStatus: session.payment_status };
+      } catch (_) {
+        return json(404, { error: 'Payment not found' });
+      }
+    }
+  },
+
+  // ─── Retry Payment ───────────────────────────────────────────────────────
+  async retryPayment({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { paymentIntentId } = params || {};
+    if (!paymentIntentId) return json(400, { error: 'Payment intent ID required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (!pi) return json(404, { error: 'Payment not found' });
+    if (pi.status === 'succeeded') return { success: true, status: 'succeeded', message: 'Already completed' };
+
+    if (pi.status === 'requires_payment_method' || pi.status === 'processing') {
+      try {
+        const origin = process.env.URL || 'https://legionlive.app';
+        const confirmed = await stripe.paymentIntents.confirm(paymentIntentId, {
+          return_url: `${origin}/Wallet?retry_success=true`,
+        });
+        if (confirmed.status === 'succeeded') {
+          return { success: true, status: 'succeeded' };
+        }
+        if (confirmed.status === 'requires_action') {
+          return { success: false, status: 'requires_action', clientSecret: confirmed.client_secret };
+        }
+      } catch (err) {
+        return json(400, { success: false, status: 'failed', message: err.message });
+      }
+    }
+    return json(400, { success: false, status: pi.status, message: `Cannot retry payment in status: ${pi.status}` });
+  },
+
+  // ─── Moderate Chat (manual moderator action) ─────────────────────────────
+  async moderateChat({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { message, stream_id, user_email: targetEmail, user_name, action } = params || {};
+
+    const db = admin || supabase;
+
+    // If a moderator is taking a direct action (ban/remove)
+    if (action === 'ban' && targetEmail) {
+      await db.from('user_bans').insert({
+        user_email: targetEmail,
+        stream_id: stream_id || null,
+        ban_type: 'stream',
+        reason: `Moderator action by ${user.email}`,
+        severity: 'temporary',
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        banned_by_email: user.email,
+        is_active: true,
+      }).catch(() => {});
+      return { success: true, action: 'banned' };
+    }
+
+    if (action === 'remove' && params?.message_id) {
+      await db.from('chat_messages').delete().eq('id', params.message_id).catch(() => {});
+      return { success: true, action: 'removed' };
+    }
+
+    // AI moderation path
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey || !message) return json(200, { approved: true, flagged: false });
+
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: `Moderate this live stream chat message. Message: "${message}". Return JSON: {"status":"fine"|"suspicious"|"violation","category":"none"|"spam"|"harassment"|"explicit","confidence":0-1,"reason":"brief"}` }],
+          response_format: { type: 'json_object' },
+        }),
+      });
+      const data = await res.json();
+      const result = JSON.parse(data.choices?.[0]?.message?.content || '{"status":"fine"}');
+
+      if (result.status === 'violation' && result.confidence > 0.85) {
+        await db.from('moderation_alerts').insert({ stream_id, user_email: targetEmail, user_name, alert_type: result.category, severity: 'high', content: message, ai_confidence: result.confidence, action_taken: 'flagged' }).catch(() => {});
+        return { approved: false, action: 'message_removed', reason: result.reason };
+      }
+      if (result.status === 'suspicious') {
+        return { approved: true, flagged: true, flag_reason: result.reason };
+      }
+      return { approved: true, flagged: false };
+    } catch (_) {
+      return { approved: true, flagged: false };
+    }
+  },
+
+  // ─── Create Host Subscription ────────────────────────────────────────────
+  async createHostSubscription({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { plan = 'monthly' } = params || {};
+    if (!['monthly', 'yearly'].includes(plan)) return json(400, { error: 'Invalid plan — must be monthly or yearly' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    // Check for existing active subscription
+    const { data: existingSubs } = await supabase
+      .from('creator_subscriptions')
+      .select('id')
+      .eq('user_email', user.email)
+      .eq('status', 'active')
+      .limit(1);
+    if (existingSubs?.length) return json(400, { error: 'You already have an active host subscription' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const prices = {
+      monthly: { amount: 500,  interval: 'month', name: 'Legion Host — Monthly ($5/mo)' },
+      yearly:  { amount: 1200, interval: 'year',  name: 'Legion Host — Yearly ($12/yr)' },
+    };
+    const selected = prices[plan];
+    const origin = process.env.URL || 'https://legionlive.app';
+
+    // Find or create Stripe customer
+    const existing = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customer = existing.data[0] || await stripe.customers.create({ email: user.email });
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: selected.name },
+          unit_amount: selected.amount,
+          recurring: { interval: selected.interval },
+        },
+        quantity: 1,
+      }],
+      mode: 'subscription',
+      success_url: `${origin}/Profile?subscription=success`,
+      cancel_url: `${origin}/Profile?subscription=cancelled`,
+      metadata: { user_email: user.email, plan_type: plan, subscription_type: 'host_subscription' },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── Create PPV Checkout ─────────────────────────────────────────────────
+  async createPPVCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { event_id } = params || {};
+    if (!event_id) return json(400, { error: 'event_id required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    // Check event exists
+    const { data: events } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', event_id)
+      .limit(1);
+    const ppvEvent = events?.[0];
+    if (!ppvEvent) return json(404, { error: 'Event not found' });
+
+    // Check for existing ticket
+    const { data: existingTickets } = await supabase
+      .from('fan_club_memberships')
+      .select('id')
+      .eq('event_id', event_id)
+      .eq('user_email', user.email)
+      .limit(1);
+    if (existingTickets?.length) return json(400, { error: 'You already have a ticket for this event' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const origin = process.env.URL || 'https://legionlive.app';
+    const priceUsd = ppvEvent.price_usd || ppvEvent.ticket_price || 9.99;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: ppvEvent.title || 'PPV Event' },
+          unit_amount: Math.round(Number(priceUsd) * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      customer_email: user.email,
+      success_url: `${origin}/PPVEvents?success=true&event_id=${event_id}`,
+      cancel_url: `${origin}/PPVEvents?cancelled=true`,
+      metadata: { event_id, user_email: user.email, purchase_type: 'ppv_ticket' },
+    });
+
+    return { url: session.url, sessionId: session.id };
+  },
+
 };
 
 export const handler = async (event) => {
