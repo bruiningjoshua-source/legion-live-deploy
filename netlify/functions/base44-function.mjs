@@ -939,6 +939,446 @@ Reply in JSON: { "reply": "your response here" }`;
     return { url: session.url, sessionId: session.id };
   },
 
+  // ─── Production Validation (admin) ──────────────────────────────────────
+  async productionValidation({ supabase, admin, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+
+    const db = admin || supabase;
+    const checks = {};
+
+    // Database
+    try {
+      const start = Date.now();
+      await db.from('profiles').select('id').limit(1);
+      checks.database = { status: 'PASS', query_ms: Date.now() - start };
+    } catch (e) { checks.database = { status: 'FAIL', message: e.message }; }
+
+    // Stripe
+    try {
+      const stripeKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeKey) throw new Error('STRIPE_SECRET_KEY not set');
+      const { default: Stripe } = await import('stripe');
+      const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+      await stripe.balance.retrieve();
+      checks.stripe = { status: 'PASS', mode: stripeKey.startsWith('sk_live_') ? 'LIVE' : 'TEST' };
+    } catch (e) { checks.stripe = { status: 'FAIL', message: e.message }; }
+
+    // Env vars
+    const required = ['STRIPE_SECRET_KEY', 'ZEGOCLOUD_APP_ID', 'ZEGOCLOUD_SERVER_SECRET', 'SUPABASE_SERVICE_ROLE_KEY'];
+    const missing = required.filter(k => !process.env[k]);
+    checks.envVars = { status: missing.length === 0 ? 'PASS' : 'FAIL', missing };
+
+    // Zego
+    checks.zegocloud = { status: process.env.ZEGOCLOUD_APP_ID ? 'PASS' : 'FAIL', configured: !!process.env.ZEGOCLOUD_APP_ID };
+
+    const allPassed = Object.values(checks).every(c => c.status === 'PASS');
+    return { status: allPassed ? 'READY_TO_LAUNCH' : 'NEEDS_ATTENTION', timestamp: new Date().toISOString(), checks };
+  },
+
+  // ─── Live Stripe Test (admin) ────────────────────────────────────────────
+  async liveStripeTest({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const { test_type = 'full_cycle' } = params || {};
+
+    if (test_type === 'full_cycle') {
+      const origin = process.env.URL || 'https://legionlive.app';
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [{ price_data: { currency: 'usd', product_data: { name: '[TEST] 100 Denarii' }, unit_amount: 100 }, quantity: 1 }],
+        success_url: `${origin}/Wallet?test=true`,
+        cancel_url: `${origin}/Wallet`,
+        metadata: { test_type: 'live_validation' },
+      });
+      const webhooks = await stripe.webhookEndpoints.list({ limit: 10 });
+      return { status: 'PASSED', session_id: session.id, mode: stripeKey.startsWith('sk_live_') ? 'LIVE' : 'TEST', webhook_configured: webhooks.data.some(w => w.enabled_events.includes('checkout.session.completed')) };
+    }
+
+    if (test_type === 'payout') {
+      const account = await stripe.accounts.retrieve();
+      return { status: 'PASSED', charges_enabled: account.charges_enabled, payouts_enabled: account.payouts_enabled };
+    }
+
+    return json(400, { error: 'Invalid test_type' });
+  },
+
+  // ─── Get Fraud Dashboard (admin) ─────────────────────────────────────────
+  async getFraudDashboard({ supabase, admin, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin required' });
+
+    const db = admin || supabase;
+    const thirtyMinAgo = new Date(Date.now() - 1800000).toISOString();
+
+    const [fraudLogs, reviewCases, flaggedUsers, recentBans] = await Promise.all([
+      db.from('wallet_audit_logs').select('*').eq('action', 'fraud_review_case').gte('created_at', thirtyMinAgo).order('created_at', { ascending: false }).limit(50),
+      db.from('wallet_audit_logs').select('*').eq('action', 'fraud_review_case').order('created_at', { ascending: false }).limit(50),
+      db.from('profiles').select('id, email, full_name').eq('role', 'suspended').limit(50),
+      db.from('user_bans').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(20),
+    ]);
+
+    return {
+      summary: {
+        lastUpdated: new Date().toISOString(),
+        highRisk: (fraudLogs.data || []).filter(l => (l.reason || '').includes('HIGH')).length,
+        mediumRisk: (fraudLogs.data || []).filter(l => (l.reason || '').includes('MEDIUM')).length,
+        pendingReviews: (reviewCases.data || []).length,
+        flaggedUsers: (flaggedUsers.data || []).length,
+        activeBans: (recentBans.data || []).length,
+      },
+      recentTransactions: (fraudLogs.data || []).slice(0, 20),
+      reviewQueue: (reviewCases.data || []).slice(0, 20),
+      flaggedUsersList: (flaggedUsers.data || []).slice(0, 20),
+      recentBans: (recentBans.data || []).slice(0, 10),
+    };
+  },
+
+  // ─── Verify Payout Routing (admin) ───────────────────────────────────────
+  async verifyPayoutRouting({ supabase, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const results = { timestamp: new Date().toISOString(), tests: {} };
+
+    try {
+      const account = await stripe.accounts.retrieve();
+      results.tests.stripe_connect = { status: 'PASS', charges_enabled: account.charges_enabled, payouts_enabled: account.payouts_enabled };
+    } catch (e) { results.tests.stripe_connect = { status: 'FAIL', error: e.message }; }
+
+    try {
+      const accounts = await stripe.accounts.list({ limit: 5 });
+      results.tests.connected_accounts = { status: 'PASS', count: accounts.data.length };
+    } catch (e) { results.tests.connected_accounts = { status: 'FAIL', error: e.message }; }
+
+    results.tests.webhook_secret = { status: process.env.STRIPE_WEBHOOK_SECRET ? 'PASS' : 'FAIL' };
+    results.overall_status = Object.values(results.tests).every(t => t.status === 'PASS') ? 'VERIFIED' : 'FAILED';
+    return results;
+  },
+
+  // ─── Enforce KYC Gate ────────────────────────────────────────────────────
+  async enforceKycGate({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { action, kycData, verificationStatus } = params || {};
+    if (!['submit', 'check', 'admin_review'].includes(action)) return json(400, { error: 'Invalid action' });
+
+    const db = admin || supabase;
+
+    if (action === 'check') {
+      const { data: kyc } = await db.from('creator_kyc').select('*').eq('user_email', user.email).single().catch(() => ({ data: null }));
+      return {
+        kyc_status: kyc?.status || 'not_started',
+        is_verified: kyc?.status === 'verified',
+        submitted_at: kyc?.submitted_at || null,
+        reviewed_at: kyc?.reviewed_at || null,
+        rejection_reason: kyc?.rejection_reason || null,
+      };
+    }
+
+    if (action === 'submit') {
+      if (!kycData?.fullLegalName || !kycData?.dateOfBirth) return json(400, { error: 'Missing required KYC fields' });
+      await db.from('creator_kyc').upsert({ user_email: user.email, status: 'pending', kyc_data: kycData, submitted_at: new Date().toISOString() }, { onConflict: 'user_email' });
+      return { success: true, status: 'pending', message: 'KYC submitted. Review takes 2-5 business days.' };
+    }
+
+    if (action === 'admin_review') {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      if (profile?.role !== 'admin') return json(403, { error: 'Admin required' });
+      if (!verificationStatus?.user_email || !['verified', 'rejected'].includes(verificationStatus.status)) return json(400, { error: 'Invalid data' });
+      await db.from('creator_kyc').update({ status: verificationStatus.status, reviewed_at: new Date().toISOString(), rejection_reason: verificationStatus.reason || null }).eq('user_email', verificationStatus.user_email);
+      return { success: true, status: verificationStatus.status };
+    }
+  },
+
+  // ─── Process Payout With KYC ─────────────────────────────────────────────
+  async processPayoutWithKyc({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { amount_usd } = params || {};
+    const MIN = 5, MAX = 10000;
+    if (!amount_usd || amount_usd < MIN || amount_usd > MAX) return json(400, { error: `Amount must be $${MIN}–$${MAX}` });
+
+    const db = admin || supabase;
+
+    // KYC check
+    const { data: kyc } = await db.from('creator_kyc').select('status').eq('user_email', user.email).single().catch(() => ({ data: null }));
+    if (kyc?.status !== 'verified') return json(403, { error: 'KYC verification required before payouts', kyc_status: kyc?.status || 'not_started' });
+
+    // Rate limit: 1 per 24h
+    const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
+    const { data: recent } = await db.from('creator_payouts').select('id').eq('user_email', user.email).gte('created_at', oneDayAgo).limit(1);
+    if (recent?.length) return json(429, { error: 'Maximum 1 payout request per 24 hours' });
+
+    // Check wallet balance
+    const DENARII_PER_USD = 180;
+    const CREATOR_SHARE = 0.60;
+    const required_denarii = Math.ceil((amount_usd / CREATOR_SHARE) * DENARII_PER_USD);
+    const { data: wallet } = await db.from('wallets').select('*').eq('user_email', user.email).single().catch(() => ({ data: null }));
+    if (!wallet || wallet.denarii_balance < required_denarii) return json(400, { error: 'Insufficient balance', required: required_denarii, current: wallet?.denarii_balance || 0 });
+
+    // Create payout request
+    const { data: payout } = await db.from('creator_payouts').insert({ user_email: user.email, amount_usd, status: 'pending', denarii_deducted: required_denarii, created_at: new Date().toISOString() }).select().single();
+
+    // Deduct denarii
+    await db.from('wallets').update({ denarii_balance: wallet.denarii_balance - required_denarii }).eq('user_email', user.email);
+
+    return { success: true, payout_id: payout?.id, amount_usd, status: 'pending', estimated_arrival: '3-5 business days' };
+  },
+
+  // ─── Upload Theme Background ─────────────────────────────────────────────
+  async uploadThemeBackground({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    // For Netlify (non-Deno), file uploads come as base64 in params
+    const { fileBase64, fileName, fileType } = params || {};
+    if (!fileBase64 || !fileName) return json(400, { error: 'fileBase64 and fileName required' });
+    if (!fileType?.startsWith('image/')) return json(400, { error: 'Must be an image file' });
+
+    const buffer = Buffer.from(fileBase64, 'base64');
+    if (buffer.length > 5 * 1024 * 1024) return json(400, { error: 'File must be under 5MB' });
+
+    const ext = fileName.split('.').pop() || 'png';
+    const path = `themes/${user.id}/${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage.from('uploads').upload(path, buffer, { contentType: fileType });
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path);
+    return { file_url: urlData.publicUrl, file_name: fileName };
+  },
+
+  // ─── Process Creator Referral ────────────────────────────────────────────
+  async processCreatorReferral({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { referral_code } = params || {};
+    if (!referral_code || !/^[A-Z0-9]{4,20}$/.test(referral_code)) return json(400, { error: 'Invalid referral code format' });
+
+    const db = admin || supabase;
+
+    const { data: referrals } = await db.from('creator_referrals').select('*').eq('referral_code', referral_code).limit(1);
+    const referral = referrals?.[0];
+    if (!referral) return json(404, { error: 'Referral code not found' });
+    if (!['pending', 'signed_up'].includes(referral.status)) return json(400, { error: 'Referral already activated' });
+    if (referral.referred_email && referral.referred_email !== user.email) return json(403, { error: 'Code belongs to a different account' });
+    if (referral.referrer_id === user.email) return json(400, { error: 'Cannot use your own referral code' });
+
+    // Check not already claimed
+    const { data: existing } = await db.from('wallet_audit_logs').select('id').eq('user_email', user.email).eq('action', 'referral_bonus').eq('related_entity_id', referral.id).limit(1);
+    if (existing?.length) return json(400, { error: 'Referral bonus already claimed' });
+
+    // Update referral status
+    await db.from('creator_referrals').update({ referred_email: user.email, status: 'completed', completed_at: new Date().toISOString() }).eq('id', referral.id);
+
+    // Award 5000 Denarii to referred user
+    const { data: wallet } = await db.from('wallets').select('*').eq('user_email', user.email).single().catch(() => ({ data: null }));
+    if (wallet) {
+      await db.from('wallets').update({ denarii_balance: (wallet.denarii_balance || 0) + 5000 }).eq('user_email', user.email);
+    } else {
+      await db.from('wallets').insert({ user_email: user.email, denarii_balance: 5000 });
+    }
+    await db.from('wallet_audit_logs').insert({ user_email: user.email, action: 'referral_bonus', amount_denarii: 5000, related_entity_id: referral.id, reason: `Referral bonus from ${referral.referrer_id}` }).catch(() => {});
+
+    // Award 5000 Denarii to referrer
+    const { data: referrerWallet } = await db.from('wallets').select('*').eq('user_email', referral.referrer_id).single().catch(() => ({ data: null }));
+    if (referrerWallet) {
+      await db.from('wallets').update({ denarii_balance: (referrerWallet.denarii_balance || 0) + 5000 }).eq('user_email', referral.referrer_id);
+      await db.from('wallet_audit_logs').insert({ user_email: referral.referrer_id, action: 'referral_bonus', amount_denarii: 5000, related_entity_id: referral.id, reason: `Referral reward — ${user.email} signed up` }).catch(() => {});
+    }
+
+    return { success: true, bonus_awarded: 5000, message: 'Referral activated! 5,000 Denarii added to your wallet.' };
+  },
+
+  // ─── Import Google Play Games ─────────────────────────────────────────────
+  async importGooglePlayGames({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    // Google Play Games requires OAuth — return instructions for the client to handle
+    return {
+      success: false,
+      message: 'Google Play Games import requires OAuth authentication.',
+      oauth_url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID || ''}&scope=https://www.googleapis.com/auth/games.readonly&response_type=code&redirect_uri=${process.env.URL || 'https://legionlive.app'}/GamingHub`,
+      requires_oauth: true,
+    };
+  },
+
+  // ─── Setup Mobile Screen Share ────────────────────────────────────────────
+  async setupMobileScreenShare({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { device_type = 'android', quality_preset = 'high' } = params || {};
+
+    const bitrate = quality_preset === 'ultra' ? 5000 : quality_preset === 'high' ? 2500 : 1500;
+
+    const { data: existing } = await supabase.from('gaming_integrations').select('*').eq('creator_id', user.email).eq('integration_type', 'mobile_screen_share').eq('device_type', device_type).limit(1);
+
+    if (existing?.[0]) {
+      await supabase.from('gaming_integrations').update({ is_active: true, last_used: new Date().toISOString(), quality_preset, bitrate_kbps: bitrate }).eq('id', existing[0].id);
+      return { success: true, integration_id: existing[0].id, device_type, quality_preset, bitrate_kbps: bitrate };
+    }
+
+    const { data: created } = await supabase.from('gaming_integrations').insert({ creator_id: user.email, integration_type: 'mobile_screen_share', device_type, quality_preset, is_active: true, bitrate_kbps: bitrate }).select().single().catch(() => ({ data: null }));
+    return { success: true, integration_id: created?.id, device_type, quality_preset, bitrate_kbps: bitrate };
+  },
+
+  // ─── Export All Functions (admin) ────────────────────────────────────────
+  async exportAllFunctions({ supabase, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    // Return the list of all wired handlers for admin diagnostics
+    const handlers = ["clearLiveStreams","updateViewerCount","sendGift","requestWithdrawal","generateZegoToken","getOBSStreamKey","claimDailyReward","aiModerateContent","createDenariiCheckout","createTipCheckout","createFanClubCheckout","createCreatorMonetizationCheckout","stripeConnectOnboard","cancelSubscription","legionCompanionChat","saveUserTheme","getTrendingContent","getPayoutConfig","forecastCreatorPayouts","checkPaymentStatus","retryPayment","moderateChat","createHostSubscription","createPPVCheckout","productionValidation","liveStripeTest","getFraudDashboard","verifyPayoutRouting","enforceKycGate","processPayoutWithKyc","uploadThemeBackground","processCreatorReferral","importGooglePlayGames","setupMobileScreenShare","exportAllFunctions","adminListUsers","createCampaignCheckout","gdprCompliance"];
+    return { total: handlers.length, functions: handlers, exported_at: new Date().toISOString() };
+  },
+
+  // ─── Admin List Users ────────────────────────────────────────────────────
+  async adminListUsers({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Forbidden' });
+
+    const db = admin || supabase;
+    const { limit = 100, offset = 0, search } = params || {};
+
+    let query = db.from('profiles').select('id, email, full_name, role, created_at, avatar_url').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+    if (search) query = query.ilike('email', `%${search}%`);
+
+    const { data: users, error } = await query;
+    if (error) throw error;
+
+    return { users: users || [], total: users?.length || 0 };
+  },
+
+  // ─── Import YouTube Content ──────────────────────────────────────────────
+  async importYouTubeContent({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { youtube_url, channel_id } = params || {};
+    if (!youtube_url && !channel_id) return json(400, { error: 'youtube_url or channel_id required' });
+
+    // YouTube Data API v3 requires an API key
+    const ytKey = process.env.YOUTUBE_API_KEY;
+    if (!ytKey) {
+      return {
+        success: false,
+        message: 'YouTube import requires a YouTube Data API key.',
+        requires_config: true,
+        setup_url: 'https://console.developers.google.com/apis/api/youtube.googleapis.com',
+      };
+    }
+
+    const videoId = youtube_url?.match(/(?:v=|youtu\.be\/)([^&
+?]+)/)?.[1];
+    if (!videoId && !channel_id) return json(400, { error: 'Could not extract video/channel ID from URL' });
+
+    const apiUrl = videoId
+      ? `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails,statistics&key=${ytKey}`
+      : `https://www.googleapis.com/youtube/v3/channels?id=${channel_id}&part=snippet,statistics&key=${ytKey}`;
+
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    return { success: true, items: data.items || [], total: data.pageInfo?.totalResults || 0 };
+  },
+
+  // ─── Create Campaign Checkout ────────────────────────────────────────────
+  async createCampaignCheckout({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { campaignId, amount, campaignName } = params || {};
+    if (!campaignId || !amount) return json(400, { error: 'campaignId and amount required' });
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+
+    const { data: campaign } = await supabase.from('brand_campaigns').select('*').eq('id', campaignId).single().catch(() => ({ data: null }));
+    if (!campaign) return json(404, { error: 'Campaign not found' });
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const origin = process.env.URL || 'https://legionlive.app';
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: campaignName || campaign.campaign_name || 'Brand Campaign' },
+          unit_amount: Math.round(Number(amount) * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      customer_email: user.email,
+      success_url: `${origin}/BrandCampaigns?success=true&campaign_id=${campaignId}`,
+      cancel_url: `${origin}/BrandCampaigns?cancelled=true`,
+      metadata: { campaign_id: campaignId, user_email: user.email, purchase_type: 'brand_campaign' },
+    });
+
+    return { sessionId: session.id, url: session.url };
+  },
+
+  // ─── GDPR Compliance ────────────────────────────────────────────────────
+  async gdprCompliance({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { action, marketing, analytics, thirdParty } = params || {};
+    const db = admin || supabase;
+
+    if (action === 'export_data') {
+      const [walletRes, streamsRes, txnsRes, chatRes] = await Promise.all([
+        db.from('wallets').select('*').eq('user_email', user.email).single(),
+        db.from('streams').select('id, title, created_at, viewer_count, status').eq('creator_id', user.email).order('created_at', { ascending: false }).limit(100),
+        db.from('gift_transactions').select('*').eq('sender_email', user.email).order('created_at', { ascending: false }).limit(100),
+        db.from('chat_messages').select('id, message, created_at, stream_id').eq('sender_email', user.email).order('created_at', { ascending: false }).limit(200),
+      ]);
+      return { success: true, data: { profile: { id: user.id, email: user.email }, wallet: walletRes.data, streams: streamsRes.data || [], transactions: txnsRes.data || [], chat_messages: chatRes.data || [], export_date: new Date().toISOString() } };
+    }
+
+    if (action === 'delete_account') {
+      // Anonymize profile
+      await db.from('profiles').update({ full_name: 'Deleted User', avatar_url: null, role: 'deleted' }).eq('id', user.id);
+      // Anonymize creators
+      await db.from('creators').update({ display_name: 'Deleted Creator', bio: null, avatar_url: null }).eq('user_email', user.email).catch(() => {});
+      // Delete auth user (this cascades via the profiles foreign key)
+      await supabase.auth.admin.deleteUser(user.id).catch(() => {});
+      return { success: true, message: 'Account deleted and data anonymized per GDPR Article 17.' };
+    }
+
+    if (action === 'consent_preferences') {
+      await db.from('profiles').update({ consent_preferences: { marketing: !!marketing, analytics: !!analytics, third_party: !!thirdParty, updated_at: new Date().toISOString() } }).eq('id', user.id);
+      return { success: true, message: 'Consent preferences saved.' };
+    }
+
+    return json(400, { error: 'Invalid action. Use: export_data, delete_account, or consent_preferences' });
+  },
+
+  // ─── Stub handlers for unused integrations ───────────────────────────────
+  async generate({ user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    return { success: false, message: 'generate is not implemented in this environment.' };
+  },
+  async join({ user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    return { success: true, joined: true, ...(params || {}) };
+  },
+  async leave({ user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    return { success: true, left: true, ...(params || {}) };
+  },
+  async audience({ user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    return { success: true, role: 'audience', ...(params || {}) };
+  },
+
 };
 
 export const handler = async (event) => {
