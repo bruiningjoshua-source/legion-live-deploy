@@ -199,17 +199,44 @@ function createTone(audioCtx, pad, duration=0.35, effects={}) {
   osc.stop(audioCtx.currentTime + duration);
 }
 
-function playNote(audioCtx, freq, duration=0.4) {
+function playNote(audioCtx, freq, duration=0.4, effects={}) {
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.connect(gain); gain.connect(audioCtx.destination);
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = effects.filter ? effects.filter * 16000 + 400 : 12000;
+  osc.connect(filter); filter.connect(gain);
+
+  // Delay
+  if (effects.delay > 0.05) {
+    const delayNode = audioCtx.createDelay(1.0);
+    const delayGain = audioCtx.createGain();
+    delayNode.delayTime.value = effects.delay * 0.5;
+    delayGain.gain.value = effects.delay * 0.4;
+    gain.connect(delayNode); delayNode.connect(delayGain); delayGain.connect(audioCtx.destination);
+  }
+  gain.connect(audioCtx.destination);
+
   osc.type = 'triangle';
   osc.frequency.value = freq;
+  const vol = effects.volume ?? 0.3;
   gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(vol, audioCtx.currentTime + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
   osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+// ── Reverb impulse generator ──────────────────────────────────────────────────
+function createReverbBuffer(audioCtx, duration=1.5, decay=2.0) {
+  const rate = audioCtx.sampleRate;
+  const len = rate * duration;
+  const buf = audioCtx.createBuffer(2, len, rate);
+  for (let ch=0; ch<2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i=0; i<len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, decay);
+  }
+  return buf;
 }
 
 export default function MusicStudio() {
@@ -239,15 +266,73 @@ export default function MusicStudio() {
   const stepRef = useRef(0);
   const gainNodeRef = useRef(null);
   const micStreamRef = useRef(null);
+  const reverbNodeRef = useRef(null);
+  const delayNodeRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordTimerRef = useRef(null);
+  const [pianoRoll, setPianoRoll] = useState([]); // [{note, freq, time, duration}]
+  const [recordingPianoRoll, setRecordingPianoRoll] = useState(false);
+  const pianoRollStartRef = useRef(0);
 
   const getAudioCtx = useCallback(() => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      gainNodeRef.current = audioCtxRef.current.createGain();
-      gainNodeRef.current.connect(audioCtxRef.current.destination);
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtxRef.current = ctx;
+      gainNodeRef.current = ctx.createGain();
+      // Master reverb
+      const reverb = ctx.createConvolver();
+      reverb.buffer = createReverbBuffer(ctx, 2.0, 3.0);
+      reverbNodeRef.current = reverb;
+      // Master delay
+      const delay = ctx.createDelay(1.0);
+      delay.delayTime.value = 0.25;
+      delayNodeRef.current = delay;
+      const delayGain = ctx.createGain();
+      delayGain.gain.value = 0;
+      // Routing: gain → reverb → destination, gain → delay → destination
+      gainNodeRef.current.connect(ctx.destination);
+      gainNodeRef.current.connect(reverb); reverb.connect(ctx.destination);
+      gainNodeRef.current.connect(delay); delay.connect(delayGain); delayGain.connect(ctx.destination);
     }
     if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
     return audioCtxRef.current;
+  }, []);
+
+  // ── Start/Stop recording audio via MediaRecorder on the audio context ─────
+  const startRecording = useCallback(async () => {
+    const ctx = getAudioCtx();
+    recordedChunksRef.current = [];
+    try {
+      // Create a MediaStreamDestination to capture the audio context output
+      const dest = ctx.createMediaStreamDestination();
+      gainNodeRef.current.connect(dest);
+      if (reverbNodeRef.current) reverbNodeRef.current.connect(dest);
+      const mr = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus' });
+      mr.ondataavailable = e => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+      mr.onstop = () => {
+        gainNodeRef.current.disconnect(dest);
+        const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='legion-beat.webm'; a.click();
+        URL.revokeObjectURL(url);
+      };
+      mediaRecorderRef.current = mr;
+      mr.start(100);
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordTimerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
+    } catch (e) {
+      console.error('Recording failed:', e);
+    }
+  }, [getAudioCtx]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current?.state !== 'inactive') mediaRecorderRef.current?.stop();
+    clearInterval(recordTimerRef.current);
+    setIsRecording(false);
   }, []);
 
   const triggerPad = useCallback((pad, padIdx) => {
@@ -260,8 +345,12 @@ export default function MusicStudio() {
   }, [getAudioCtx, effects, masterVolume, padVolumes, padMuted]);
 
   const triggerNote = useCallback((freq, note) => {
+    if (recordingPianoRoll) {
+      const startTime = Date.now() - pianoRollStartRef.current;
+      setPianoRoll(r => [...r, { note, freq, time: startTime, duration: 400 }]);
+    }
     const ctx = getAudioCtx();
-    playNote(ctx, freq * Math.pow(2, pianoOctave));
+    playNote(ctx, freq * Math.pow(2, pianoOctave), 0.4, { ...effects, volume: masterVolume * 0.3 });
     setActiveNotes(n => { const s=new Set(n); s.add(note); return s; });
     setTimeout(() => setActiveNotes(n => { const s=new Set(n); s.delete(note); return s; }), 200);
   }, [getAudioCtx, pianoOctave]);
@@ -524,6 +613,45 @@ export default function MusicStudio() {
         {/* PIANO */}
         {tab==='piano' && (
           <div>
+            {/* Piano Roll Recording Controls */}
+            <div className="flex items-center gap-2 mb-3 p-2.5 rounded-xl bg-white/4 border border-white/8">
+              <button
+                onClick={() => {
+                  if (!recordingPianoRoll) {
+                    setPianoRoll([]);
+                    pianoRollStartRef.current = Date.now();
+                    setRecordingPianoRoll(true);
+                  } else {
+                    setRecordingPianoRoll(false);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                style={{background: recordingPianoRoll ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff'}}>
+                {recordingPianoRoll ? '⏹ Stop Capture' : '⏺ Capture Notes'}
+              </button>
+              <span className="text-white/40 text-xs flex-1">
+                {recordingPianoRoll ? 'Play notes — being recorded...' : pianoRoll.length > 0 ? `${pianoRoll.length} notes captured` : 'Capture your piano playing'}
+              </span>
+              {pianoRoll.length > 0 && !recordingPianoRoll && (
+                <button onClick={() => setPianoRoll([])} className="text-white/30 text-xs hover:text-white/60">Clear</button>
+              )}
+            </div>
+
+            {/* Captured notes visualization */}
+            {pianoRoll.length > 0 && !recordingPianoRoll && (
+              <div className="mb-3 p-2 rounded-xl bg-white/4 border border-white/8 overflow-x-auto">
+                <div className="text-white/40 text-[10px] mb-1.5">Captured sequence</div>
+                <div className="flex gap-1 flex-wrap">
+                  {pianoRoll.map((n, i) => (
+                    <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-mono"
+                      style={{background:`${activePack.color}33`, color: activePack.color}}>
+                      {n.note}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/50 text-sm">Piano Roll</span>
               <div className="flex items-center gap-2">
@@ -600,6 +728,37 @@ export default function MusicStudio() {
               className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-white/40 text-xs font-semibold">
               Reset All Effects
             </button>
+
+            {/* ── Recording Section ── */}
+            <div className="mt-6 pt-4 border-t border-white/8">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold flex items-center gap-2">
+                  <span>⏺️</span> Record Session
+                </span>
+                {isRecording && (
+                  <span className="text-xs font-mono text-red-400 animate-pulse">
+                    {Math.floor(recordingTime/60)}:{String(recordingTime%60).padStart(2,'0')} REC
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {!isRecording ? (
+                  <button onClick={startRecording}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white"
+                    style={{background:'linear-gradient(135deg,#ef4444,#dc2626)'}}>
+                    ⏺ Start Recording
+                  </button>
+                ) : (
+                  <button onClick={stopRecording}
+                    className="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/20 text-xs font-bold text-white">
+                    ⏹ Stop & Export
+                  </button>
+                )}
+              </div>
+              <p className="text-white/30 text-[10px] mt-2 text-center">
+                Exports as .webm audio — play your beat while recording
+              </p>
+            </div>
           </div>
         )}
 
