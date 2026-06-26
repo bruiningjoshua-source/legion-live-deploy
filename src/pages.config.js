@@ -115,6 +115,7 @@ import Videos from './pages/Videos';
 import VlogStudio from './pages/VlogStudio';
 import Wallet from './pages/Wallet';
 import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
+import WatchMarketplaceLive from './pages/WatchMarketplaceLive';
 import WatchHistory from './pages/WatchHistory';
 import WatchLater from './pages/WatchLater';
 import WatchParties from './pages/WatchParties';
@@ -198,6 +199,7 @@ export const PAGES = {
     "VlogStudio": VlogStudio,
     "Wallet": Wallet,
     "WatchAffiliateVideo": WatchAffiliateVideo,
+    "WatchMarketplaceLive": WatchMarketplaceLive,
     "WatchHistory": WatchHistory,
     "WatchLater": WatchLater,
     "WatchParties": WatchParties,

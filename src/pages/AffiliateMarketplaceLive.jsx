@@ -14,7 +14,7 @@ function formatCount(n) {
 
 function StreamCard({ stream }) {
   return (
-    <Link to={createPageUrl('WatchStream') + `?id=${stream.id}`} className="block group">
+    <Link to={createPageUrl('WatchMarketplaceLive') + `?id=${stream.id}`} className="block group">
       <div className="relative w-full rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15] transition-all mb-2" style={{ aspectRatio: '16/9' }}>
         {stream.thumbnail_url ? (
           <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />

@@ -111,6 +111,21 @@ export default function AffiliateGoLive() {
         started_at: new Date().toISOString()
       });
 
+      // Use 'mktplace_' prefix to completely isolate from Legion Live rooms
+      const marketplaceRoomId = `mktplace_${stream.id}`;
+      const userId = user.email.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32);
+      const tokenRes = await base44.functions.invoke('generateZegoToken', {
+        roomId: marketplaceRoomId, userId, role: 'host',
+      });
+      const { appId, token, serverUrl } = tokenRes.data || {};
+      if (appId && token) {
+        const ZegoService = (await import('@/components/stream/ZegoService')).default;
+        await ZegoService.initialize(appId, serverUrl);
+        await ZegoService.loginRoom(marketplaceRoomId, userId, user.full_name || 'Host', token);
+        await ZegoService.createLocalStream();
+        await ZegoService.startPublishing(stream.id);
+      }
+
       return stream;
     },
     onSuccess: (stream) => {

@@ -91,6 +91,76 @@ export const FRAGMENT_SHADERS = {
       gl_FragColor=vec4(p,1.0);
     }
   `),
+  teal_orange:    F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      float l=dot(c.rgb,vec3(0.299,0.587,0.114));
+      float skin=step(0.35,c.r)*step(0.0,c.r-c.b-0.05)*step(c.b,c.r);
+      vec3 warm=c.rgb*vec3(1.12,0.98,0.82)+vec3(0.07,0.0,0.0);
+      vec3 cool=c.rgb*vec3(0.85,1.02,1.18)+vec3(0.0,0.02,0.06);
+      gl_FragColor=vec4(mix(cool,warm,skin),1.0);
+    }
+  `),
+  noir_grade:     F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      float g=dot(c.rgb,vec3(0.21,0.72,0.07));
+      g=(g-0.5)*1.3+0.5; g=clamp(g,0.0,1.0);
+      vec2 d=v_texCoord-0.5; float vig=1.0-dot(d,d)*1.6;
+      gl_FragColor=vec4(vec3(g,g,g+0.05)*max(0.0,vig),1.0);
+    }
+  `),
+  film_bleach:    F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      float l=dot(c.rgb,vec3(0.299,0.587,0.114));
+      vec3 b=mix(c.rgb,vec3(l*1.1,l*1.05,l*0.95),0.5);
+      gl_FragColor=vec4(clamp(b*0.92+0.04,0.0,1.0),1.0);
+    }
+  `),
+  moonlight_grade:F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      vec3 cool=vec3(c.r*0.88,c.g*0.92,c.b*1.12)+vec3(0.02,0.03,0.08);
+      float l=dot(cool,vec3(0.299,0.587,0.114));
+      gl_FragColor=vec4(mix(cool,vec3(l),0.2)*0.88,1.0);
+    }
+  `),
+  kodak_400:      F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      vec2 px=1.0/u_resolution;
+      float grain=fract(sin(dot(v_texCoord*u_resolution,vec2(12.9898,78.233)))*43758.5453)*0.06-0.03;
+      vec3 g=c.rgb*vec3(1.08,1.03,0.88)+vec3(0.05,0.02,0.0)+grain;
+      gl_FragColor=vec4(clamp(g,0.0,1.0),1.0);
+    }
+  `),
+  cyberpunk_2:    F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      vec3 o=c.rgb*vec3(1.15,0.7,1.35)+vec3(0.04,0.0,0.08);
+      float scan=mod(floor(v_texCoord.y*u_resolution.y),4.0)<2.0?1.0:0.92;
+      gl_FragColor=vec4(clamp(o*scan,0.0,1.0),1.0);
+    }
+  `),
+  fuji_pro:       F(`
+    void main(){
+      vec4 c=texture2D(u_image,v_texCoord);
+      gl_FragColor=vec4(clamp(c.rgb*vec3(0.97,1.06,1.02)+vec3(0.03,0.04,0.07),0.0,1.0),1.0);
+    }
+  `),
+  summer_haze:    F(`
+    void main(){
+      vec2 px=1.0/u_resolution; vec4 c=texture2D(u_image,v_texCoord);
+      vec4 b=vec4(0.0);
+      b+=texture2D(u_image,v_texCoord+vec2(-1,0)*px*1.5)*0.25;
+      b+=texture2D(u_image,v_texCoord)*0.5;
+      b+=texture2D(u_image,v_texCoord+vec2(1,0)*px*1.5)*0.25;
+      vec3 h=mix(c.rgb,b.rgb,0.15)*vec3(1.06,1.04,0.88)+vec3(0.08,0.05,0.0);
+      gl_FragColor=vec4(clamp(h,0.0,1.0),1.0);
+    }
+  `),
+
 };
 
 export function createWebGLPipeline(canvas) {

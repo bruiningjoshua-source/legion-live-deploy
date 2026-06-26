@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+  const gameLibrary = getGamesByCategory(selectedCategory || 'all');
+  const trendingGames = getTrendingGames(8);import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -8,6 +9,7 @@ import {
   Zap, ChevronRight, Radio, TrendingUp
 } from 'lucide-react';
 import GamingStreamCard from '@/components/gaming/GamingStreamCard';
+import { SEEDED_GAMES, GAME_CATEGORIES, getGamesByCategory, getTrendingGames } from '@/components/gaming/SeededGameLibrary';
 
 const GAMING_CATEGORIES = [
   { id: 'all', label: 'All Games', icon: Gamepad2 },
@@ -167,7 +169,7 @@ export default function GamingHub() {
 
         {/* Category tabs */}
         <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide items-center">
-          {GAMING_CATEGORIES.map(cat => (
+          {GAME_CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}

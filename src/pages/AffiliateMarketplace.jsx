@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/shared/GlassCard';
+import { SEEDED_BRANDS, BRAND_CATEGORIES, getBrandsByCategory, getFeaturedBrands } from '@/components/marketplace/SeededBrands';
 import PremiumButton from '@/components/shared/PremiumButton';
 
 // Affiliate marketplace theme colors - emerald/green
