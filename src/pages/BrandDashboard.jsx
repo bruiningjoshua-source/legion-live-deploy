@@ -1,4 +1,3 @@
-import { SEEDED_BRANDS, BRAND_CATEGORIES as SEEDED_BRAND_CATS, getFeaturedBrands, getTopPayingBrands } from '@/components/marketplace/SeededBrands';
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

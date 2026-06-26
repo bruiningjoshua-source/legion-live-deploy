@@ -3,9 +3,9 @@
  * Uses MediaPipe for face + body tracking, WebGL + Canvas for rendering.
  * 80 filters from AdvancedFilters.jsx, 7 particle FX, 6 virtual backgrounds.
  */
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Layers, Search, Star, Wand2, Camera, ZoomIn } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+
+import { Search } from 'lucide-react';
 import { ADVANCED_FILTERS, FILTER_CATEGORIES, getTrendingFilters, getFilterById } from '@/components/ar/AdvancedFilters';
 
 const WASM_BASE  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm';

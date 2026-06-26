@@ -10,9 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShoppingBag, ExternalLink, Heart, Share2, Copy, Check,
-  X, Eye, Tag, Star, ChevronUp, ChevronDown, Gift, Zap,
-  ShoppingCart, TrendingUp, MessageCircle
+  ShoppingBag, Copy, Check,
+  X, Eye,
+  ShoppingCart, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ZegoService from '@/components/stream/ZegoService';

@@ -1277,8 +1277,7 @@ Reply in JSON: { "reply": "your response here" }`;
       };
     }
 
-    const videoId = youtube_url?.match(/(?:v=|youtu\.be\/)([^&
-?]+)/)?.[1];
+        const videoId = youtube_url?.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1];
     if (!videoId && !channel_id) return json(400, { error: 'Could not extract video/channel ID from URL' });
 
     const apiUrl = videoId

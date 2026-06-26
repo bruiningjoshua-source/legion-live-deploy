@@ -19,7 +19,7 @@ import { X, RotateCcw, User, Mic, MicOff, Image, Upload, Palette, Smile } from '
 import { createFilterBank, smoothLandmarks, solveFace, solvePose } from './LegionPoseSolver';
 import { buildAvatarFromLAF, applyPoseToAvatar, applyBlendShapes, triggerExpression } from './LegionAvatarRenderer';
 import { startMicLipSync, stopMicLipSync, isMicLipSyncActive } from './LegionMicLipSync';
-import { sampleFrame, detectInitialTier, getRendererConfig, onTierChange, isMobile } from './LegionPerformanceScaler';
+import { sampleFrame, getRendererConfig, onTierChange, isMobile } from './LegionPerformanceScaler';
 import { createSplatBackdrop, getBackdropPresets } from './LegionSplatBackdrop';
 import { loadVRM, isVRMFile } from './LegionVRMLoader';
 import PerfMonitor from '@/components/engine/PerformanceMonitor';

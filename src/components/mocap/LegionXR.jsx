@@ -11,8 +11,8 @@
  * The XR session replaces the rAF loop automatically.
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useCallback, useEffect } from 'react';
+
 
 export function useWebXR() {
   const [xrSupported,  setXrSupported]  = useState(false);

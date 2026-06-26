@@ -3,13 +3,11 @@
  * Beat pads, 16-step sequencer, piano roll, effects rack,
  * mixer, recording, and export. Web Audio API powered.
  */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play, Square, RotateCcw, Volume2, Music, Zap, Mic, MicOff,
-  Download, Share2, ChevronDown, ChevronUp, Wand2, Settings,
-  Layers, Piano, Sliders, Radio, Save, Trash2, Plus, Minus,
-  SkipBack, SkipForward, Repeat, Shuffle, Clock
+  Play, Square, RotateCcw, Volume2, Music, Mic, MicOff, ChevronDown, ChevronUp, Wand2, Save, Trash2, Plus, Minus,
+  SkipBack, Repeat
 } from 'lucide-react';
 import RemixStudio from '@/components/music/RemixStudio';
 

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayableGameModal, { PLAYABLE_GAMES } from '@/components/gaming/PlayableGameModal';
-import { SEEDED_GAMES, getTrendingGames, getFeaturedGames } from '@/components/gaming/SeededGameLibrary';
+import { getTrendingGames } from '@/components/gaming/SeededGameLibrary';
 import ScreenShareSetupModal from '@/components/gaming/ScreenShareSetupModal';
 import GooglePlaySearch, { GOOGLE_PLAY_CATALOG } from '@/components/gaming/GooglePlaySearch';
 

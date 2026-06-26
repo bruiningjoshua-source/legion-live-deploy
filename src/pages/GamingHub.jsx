@@ -9,7 +9,7 @@ import {
   Zap, ChevronRight, Radio, TrendingUp
 } from 'lucide-react';
 import GamingStreamCard from '@/components/gaming/GamingStreamCard';
-import { SEEDED_GAMES, GAME_CATEGORIES, getGamesByCategory, getTrendingGames } from '@/components/gaming/SeededGameLibrary';
+import { GAME_CATEGORIES, getGamesByCategory, getTrendingGames } from '@/components/gaming/SeededGameLibrary';
 
 const GAMING_CATEGORIES = [
   { id: 'all', label: 'All Games', icon: Gamepad2 },
