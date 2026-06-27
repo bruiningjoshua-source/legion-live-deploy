@@ -212,6 +212,7 @@ export const PAGES = {
     "LegionSpaces": LegionSpaces,
     "LegionAI": LegionAI,
     "LiveSplatFilters": LiveSplatFilters,
+    "NotFound": lazy(() => import('./pages/NotFound')),
 }
 
 export const pagesConfig = {

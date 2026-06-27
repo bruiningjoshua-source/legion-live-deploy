@@ -165,10 +165,12 @@ const handlers = {
     if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
-    const { senderWalletId, receiverWalletId, amountDenarii, reason, relatedEntityId, giftId, streamId, receiverEmail, receiverCreatorId } = params || {};
-    if (!senderWalletId || !receiverWalletId || !amountDenarii) {
-      return json(400, { error: 'senderWalletId, receiverWalletId, and amountDenarii are required' });
-    }
+    // Accept both old wallet-ID style and new creator-ID style from GiftService
+    const {
+      senderWalletId, receiverWalletId, amountDenarii,
+      giftId, quantity = 1, streamId, creatorId,
+      reason, relatedEntityId,
+    } = params || {};
 
     // Rate limit: max 30 gifts per minute per user
     const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
@@ -181,18 +183,50 @@ const handlers = {
       return json(429, { error: 'Too many gifts — please slow down' });
     }
 
-    // Ownership check: verify the sender wallet belongs to this user
-    const { data: senderWallet } = await supabase.from('wallets').select('user_email').eq('id', senderWalletId).single().catch(() => ({ data: null }));
-    if (!senderWallet || senderWallet.user_email !== user.email) {
-      return json(403, { error: 'You do not own this wallet' });
+    // Resolve wallet IDs from authenticated user identity (no client-trust issue)
+    let resolvedSenderWalletId = senderWalletId;
+    let resolvedReceiverWalletId = receiverWalletId;
+    let resolvedAmount = amountDenarii;
+
+    if (!resolvedSenderWalletId) {
+      // Resolve sender wallet from JWT identity — always safe, no client-trust
+      const { data: sw } = await supabase.from('wallets').select('id').eq('user_email', user.email).single().catch(() => ({ data: null }));
+      if (!sw) return json(404, { error: 'Sender wallet not found' });
+      resolvedSenderWalletId = sw.id;
+    } else {
+      // If caller supplied a wallet ID, verify ownership
+      const { data: sw } = await supabase.from('wallets').select('user_email').eq('id', resolvedSenderWalletId).single().catch(() => ({ data: null }));
+      if (!sw || sw.user_email !== user.email) return json(403, { error: 'You do not own this wallet' });
+    }
+
+    if (!resolvedReceiverWalletId && creatorId) {
+      // Resolve receiver wallet from creatorId
+      const { data: creator } = await supabase.from('creators').select('user_email').eq('id', creatorId).single().catch(() => ({ data: null }));
+      if (!creator) return json(404, { error: 'Creator not found' });
+      const { data: rw } = await supabase.from('wallets').select('id').eq('user_email', creator.user_email).single().catch(() => ({ data: null }));
+      if (!rw) return json(404, { error: 'Creator wallet not found' });
+      resolvedReceiverWalletId = rw.id;
+    }
+
+    if (!resolvedSenderWalletId || !resolvedReceiverWalletId) {
+      return json(400, { error: 'Could not resolve sender and receiver wallets' });
+    }
+
+    // Resolve gift cost if not provided
+    if (!resolvedAmount && giftId) {
+      const { data: gift } = await supabase.from('gifts').select('cost_denarii').eq('id', giftId).single().catch(() => ({ data: null }));
+      resolvedAmount = (gift?.cost_denarii || 0) * (Number(quantity) || 1);
+    }
+    if (!resolvedAmount || resolvedAmount <= 0) {
+      return json(400, { error: 'Could not determine gift amount' });
     }
 
     const { data: transfer, error: transferError } = await supabase.rpc('transfer_denarii', {
-      p_sender_wallet_id: senderWalletId,
-      p_receiver_wallet_id: receiverWalletId,
-      p_amount: amountDenarii,
+      p_sender_wallet_id: resolvedSenderWalletId,
+      p_receiver_wallet_id: resolvedReceiverWalletId,
+      p_amount: resolvedAmount,
       p_reason: reason || 'gift',
-      p_related_entity_id: relatedEntityId || null,
+      p_related_entity_id: relatedEntityId || streamId || null,
     });
     if (transferError) throw transferError;
 
