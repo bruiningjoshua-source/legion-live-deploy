@@ -3,23 +3,11 @@
   publish = "dist"
   functions = "netlify/functions"
 
-[functions]
-  # Allow Stripe webhook to receive raw body for signature verification
-  # All other functions parse JSON normally
-  included_files = ["netlify/functions/**"]
-
-[[functions]]
-  path = "/api/stripe-webhook"
-  name = "stripe-webhook"
-
-[functions."stripe-webhook"]
-  # isBase64Encoded must be false; Stripe sends plaintext JSON
-  # Netlify parses body as-is for this function
-  node_bundler = "esbuild"
-
+# Stripe webhook background function (15-min timeout vs 10s default)
+# Netlify detects background functions automatically from the -background suffix
 [[redirects]]
   from = "/api/stripe-webhook"
-  to = "/.netlify/functions/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook-background"
   status = 200
 
 [[redirects]]
