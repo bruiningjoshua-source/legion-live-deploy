@@ -33,6 +33,99 @@ import GrantMonetization from '@/components/admin/GrantMonetization';
 // Admin authorization is enforced by user.role === 'admin' (managed server-side).
 // No hardcoded email lists — admin roles are assigned in the platform.
 
+function AdminManagement() {
+  const qc = useQueryClient();
+  const [newEmail, setNewEmail] = useState('');
+  const [newNote, setNewNote]   = useState('');
+  const [adding, setAdding]     = useState(false);
+
+  const { data: me } = useQuery({ queryKey:['current-user'], queryFn:()=>base44.auth.me() });
+
+  const { data: adminsData, isLoading } = useQuery({
+    queryKey: ['admin-list'],
+    queryFn: () => base44.functions.invoke('listAdmins'),
+    refetchInterval: 30000,
+  });
+  const admins = adminsData?.data?.admins || [];
+
+  const addAdmin = async () => {
+    if (!newEmail.trim()) return;
+    setAdding(true);
+    try {
+      await base44.functions.invoke('grantAdmin', { email: newEmail.trim(), note: newNote.trim() || undefined });
+      qc.invalidateQueries({ queryKey:['admin-list'] });
+      setNewEmail(''); setNewNote('');
+      toast.success(`Admin granted to ${newEmail}`);
+    } catch (e) {
+      toast.error(e.message || 'Failed to grant admin');
+    } finally { setAdding(false); }
+  };
+
+  const removeAdmin = async (email) => {
+    if (email === me?.email) { toast.error("You can't remove your own admin access"); return; }
+    try {
+      await base44.functions.invoke('revokeAdmin', { email });
+      qc.invalidateQueries({ queryKey:['admin-list'] });
+      toast.success(`Admin revoked from ${email}`);
+    } catch (e) {
+      toast.error(e.message || 'Failed to revoke admin');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="bg-white/[0.03] border-white/[0.08]">
+        <CardHeader><CardTitle className="text-white text-base flex items-center gap-2"><span>🛡️</span> Admin Access Control</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-white/40 text-xs">Only users on this list can access admin functions. Adding someone here grants them the admin role. Removing them immediately revokes it.</p>
+
+          {/* Current admins */}
+          <div className="space-y-2">
+            {isLoading ? (
+              <div className="text-white/30 text-sm py-4 text-center">Loading…</div>
+            ) : admins.map(a => (
+              <div key={a.email} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-sm shrink-0">🛡️</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm truncate">{a.email}</p>
+                  <p className="text-white/30 text-xs">{a.note || 'Admin'} · Added by {a.added_by}</p>
+                </div>
+                {a.email !== me?.email && (
+                  <button onClick={()=>removeAdmin(a.email)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 transition-all hover:bg-red-500/10">
+                    Revoke
+                  </button>
+                )}
+                {a.email === me?.email && (
+                  <span className="text-white/20 text-xs">You</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add new admin */}
+          <div className="pt-2 border-t border-white/[0.07] space-y-2">
+            <p className="text-white/40 text-xs font-semibold uppercase tracking-wider">Grant Admin Access</p>
+            <input value={newEmail} onChange={e=>setNewEmail(e.target.value)}
+              placeholder="Email address" className="ll-input py-2.5 text-sm" />
+            <input value={newNote} onChange={e=>setNewNote(e.target.value)}
+              placeholder="Role / note (optional, e.g. Moderator)" className="ll-input py-2.5 text-sm" />
+            <button onClick={addAdmin} disabled={!newEmail.trim() || adding}
+              className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40 transition-all"
+              style={{background:'rgba(245,166,35,0.15)',border:'1px solid rgba(245,166,35,0.4)',color:'#f5a623'}}>
+              {adding ? 'Granting…' : '+ Grant Admin'}
+            </button>
+          </div>
+
+          <p className="text-white/20 text-[10px] text-center pt-1">
+            Granting admin gives full platform access. Only grant to trusted team members.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');

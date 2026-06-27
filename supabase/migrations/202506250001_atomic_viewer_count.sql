@@ -29,23 +29,75 @@ grant execute on function public.increment_viewer_count(uuid, integer) to authen
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Admin allowlist — ONLY these two emails can ever hold the admin role.
--- Any attempt by RLS or code to set another email to admin will be blocked.
+-- Admin allowlist — controls who can hold the admin role.
+--
+-- HOW TO ADD AN ADMIN:
+--   insert into public.admin_allowlist (email, added_by)
+--   values ('newadmin@example.com', 'bruiningjoshua@gmail.com');
+--   update public.profiles set role = 'admin' where email = 'newadmin@example.com';
+--
+-- HOW TO REMOVE AN ADMIN:
+--   delete from public.admin_allowlist where email = 'removedadmin@example.com';
+--   update public.profiles set role = 'user' where email = 'removedadmin@example.com';
+--
+-- The trigger below ensures nobody can get admin role unless they're in this table.
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Allowlist table
+-- Allowlist table (add/remove rows here to manage admins)
 create table if not exists public.admin_allowlist (
-  email text primary key,
-  granted_at timestamptz default now()
+  email      text primary key,
+  added_by   text,
+  added_at   timestamptz default now(),
+  note       text        -- optional: why this person is admin
 );
 
--- Seed the two permanent admins
-insert into public.admin_allowlist (email) values
-  ('bruiningjoshua@gmail.com'),
-  ('inthestixproductions@gmail.com')
+-- Seed the two founders
+insert into public.admin_allowlist (email, added_by, note) values
+  ('bruiningjoshua@gmail.com',    'system', 'Founder'),
+  ('inthestixproductions@gmail.com', 'system', 'Co-Founder')
 on conflict (email) do nothing;
 
--- Block any service role attempt to grant admin to non-allowlisted emails
+-- Helper: grant admin to a user (checks allowlist first)
+create or replace function public.grant_admin(p_email text, p_granted_by text, p_note text default null)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- Add to allowlist
+  insert into public.admin_allowlist (email, added_by, note)
+  values (p_email, p_granted_by, p_note)
+  on conflict (email) do update set note = coalesce(p_note, public.admin_allowlist.note);
+  -- Grant the role
+  update public.profiles set role = 'admin' where email = p_email;
+  if not found then
+    return 'Added to allowlist. Role will be set when user signs up.';
+  end if;
+  return 'Admin granted to ' || p_email;
+end;
+$$;
+
+-- Helper: revoke admin from a user
+create or replace function public.revoke_admin(p_email text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- Remove from allowlist
+  delete from public.admin_allowlist where email = p_email;
+  -- Downgrade role
+  update public.profiles set role = 'user' where email = p_email;
+  return 'Admin revoked from ' || p_email;
+end;
+$$;
+
+grant execute on function public.grant_admin(text, text, text) to service_role;
+grant execute on function public.revoke_admin(text) to service_role;
+
+-- Trigger: blocks role=admin if email is not in allowlist
 create or replace function public.enforce_admin_allowlist()
 returns trigger
 language plpgsql
@@ -57,7 +109,9 @@ begin
     if not exists (
       select 1 from public.admin_allowlist where email = new.email
     ) then
-      raise exception 'Admin role is restricted. Email % is not on the admin allowlist.', new.email;
+      raise exception
+        'Admin role is restricted. Add % to admin_allowlist first, then retry.',
+        new.email;
     end if;
   end if;
   return new;
@@ -69,7 +123,7 @@ create trigger enforce_admin_allowlist_trigger
   before insert or update on public.profiles
   for each row execute function public.enforce_admin_allowlist();
 
--- Grant the two admins their role (safe: they're in the allowlist)
+-- Grant founders their role
 update public.profiles
 set role = 'admin'
 where email in ('bruiningjoshua@gmail.com', 'inthestixproductions@gmail.com');
