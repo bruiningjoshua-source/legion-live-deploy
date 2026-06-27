@@ -181,6 +181,12 @@ const handlers = {
       return json(429, { error: 'Too many gifts — please slow down' });
     }
 
+    // Ownership check: verify the sender wallet belongs to this user
+    const { data: senderWallet } = await supabase.from('wallets').select('user_email').eq('id', senderWalletId).single().catch(() => ({ data: null }));
+    if (!senderWallet || senderWallet.user_email !== user.email) {
+      return json(403, { error: 'You do not own this wallet' });
+    }
+
     const { data: transfer, error: transferError } = await supabase.rpc('transfer_denarii', {
       p_sender_wallet_id: senderWalletId,
       p_receiver_wallet_id: receiverWalletId,
@@ -611,8 +617,10 @@ const handlers = {
   // ─── Legion AI Companion ─────────────────────────────────────────────────
   async legionCompanionChat({ supabase, admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { message } = params || {};
-    if (!message) return json(400, { error: 'message required' });
+    const { message: rawMessage } = params || {};
+    if (!rawMessage) return json(400, { error: 'message required' });
+    // Sanitize: clamp length, strip control chars to prevent prompt injection
+    const message = String(rawMessage).replace(/[ -]/g, ' ').slice(0, 500);
 
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (!anthropicKey) return json(500, { error: 'AI companion not configured' });
@@ -819,6 +827,15 @@ Reply in JSON: { "reply": "your response here" }`;
     }
 
     if (action === 'remove' && params?.message_id) {
+      // IDOR fix: only delete if user is the stream host or admin
+      const { data: msg } = await db.from('chat_messages').select('stream_id').eq('id', params.message_id).single().catch(() => ({ data: null }));
+      if (msg?.stream_id) {
+        const { data: stream } = await db.from('streams').select('creator_id').eq('id', msg.stream_id).single().catch(() => ({ data: null }));
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single().catch(() => ({ data: null }));
+        const isHost = stream?.creator_id === user.id || stream?.creator_id === user.email;
+        const isAdmin = profile?.role === 'admin';
+        if (!isHost && !isAdmin) return json(403, { error: 'Only the stream host can remove messages' });
+      }
       await db.from('chat_messages').delete().eq('id', params.message_id).catch(() => {});
       return { success: true, action: 'removed' };
     }

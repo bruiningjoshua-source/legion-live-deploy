@@ -95,7 +95,7 @@ async function fulfillDenarii(db, meta, amountPaid) {
     purchased_at:    new Date().toISOString(),
   }).catch(() => {}); // table may have different schema
 
-  console.log(`[webhook] Denarii fulfilled: ${total} → ${user_email}`);
+  console.log(`[webhook] Denarii fulfilled: ${total} denarii`);
 }
 
 async function fulfillTip(db, meta, amountPaid) {
@@ -138,7 +138,7 @@ async function fulfillTip(db, meta, amountPaid) {
     related_entity_id: stream_id || null,
   }).catch(() => {});
 
-  console.log(`[webhook] Tip fulfilled: $${amountPaid / 100} → ${creator_email}`);
+  console.log(`[webhook] Tip fulfilled: $${amountPaid / 100}`);
 }
 
 async function fulfillFanClub(db, meta, stripeSubscriptionId) {
@@ -161,7 +161,7 @@ async function fulfillFanClub(db, meta, stripeSubscriptionId) {
     message:     `${user_email} joined your fan club (${tier || 'basic'} tier)`,
   }).catch(() => {});
 
-  console.log(`[webhook] Fan club fulfilled: ${user_email} → ${creator_email}`);
+  console.log('[webhook] Fan club fulfilled');
 }
 
 async function fulfillCreatorMonetization(db, meta, stripeSubscriptionId, plan) {
@@ -188,7 +188,7 @@ async function fulfillCreatorMonetization(db, meta, stripeSubscriptionId, plan) 
     message: 'You can now earn from gifts, tips, and fan club subscriptions.',
   }).catch(() => {});
 
-  console.log(`[webhook] Creator monetization activated: ${user_email}`);
+  console.log('[webhook] Creator monetization activated');
 }
 
 async function fulfillHostSubscription(db, meta, stripeSubscriptionId) {
@@ -214,7 +214,7 @@ async function fulfillHostSubscription(db, meta, stripeSubscriptionId) {
     message: 'You can now go live on Legion Live.',
   }).catch(() => {});
 
-  console.log(`[webhook] Host subscription fulfilled: ${user_email}`);
+  console.log('[webhook] Host subscription fulfilled');
 }
 
 async function fulfillPPVTicket(db, meta) {
@@ -243,7 +243,7 @@ async function fulfillPPVTicket(db, meta) {
     related_entity_id: event_id,
   }).catch(() => {});
 
-  console.log(`[webhook] PPV ticket fulfilled: ${user_email} → event ${event_id}`);
+  console.log(`[webhook] PPV ticket fulfilled: event ${event_id}`);
 }
 
 async function fulfillBrandCampaign(db, meta, amountPaid) {
@@ -263,7 +263,7 @@ async function fulfillBrandCampaign(db, meta, amountPaid) {
     related_entity_id: campaign_id,
   }).catch(() => {});
 
-  console.log(`[webhook] Brand campaign fulfilled: ${campaign_id}`);
+  console.log(`[webhook] Brand campaign fulfilled`);
 }
 
 async function handleSubscriptionCancelled(db, subscription) {
@@ -281,7 +281,7 @@ async function handleSubscriptionCancelled(db, subscription) {
   await db.from('creator_subscriptions').update({ status: 'cancelled' })
     .eq('stripe_subscription_id', subId).catch(() => {});
 
-  console.log(`[webhook] Subscription cancelled: ${subId}`);
+  console.log('[webhook] Subscription cancelled');
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -326,7 +326,7 @@ export const handler = async (event) => {
         const amountPaid    = session.amount_total || 0;
         const subId         = session.subscription || null;
 
-        console.log(`[webhook] checkout.session.completed: type=${purchaseType} user=${meta.user_email}`);
+        console.log(`[webhook] checkout.session.completed: type=${purchaseType}`);
 
         switch (purchaseType) {
           case 'denarii':
