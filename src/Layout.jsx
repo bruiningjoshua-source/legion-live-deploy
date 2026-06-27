@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { initLegionForge, legionBus, legionStorage } from '@/components/core/legion';
@@ -208,7 +208,16 @@ export default function Layout({ children, currentPageName }) {
           ? 'h-screen overflow-hidden pb-16'
           : 'min-h-screen pb-24'
       }`}>
-        {children}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-white/40 text-xs font-medium">Loading…</span>
+            </div>
+          </div>
+        }>
+          {children}
+        </Suspense>
       </main>
       
       {!['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName) && <BottomNav />}

@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 /**
  * pages.config.js - Page routing configuration
  * 
@@ -11,7 +12,7 @@
  * 
  *   import HomePage from './pages/HomePage';
  *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
+ *   const Settings = lazy(() => import('./pages/Settings'));
  *   
  *   export const PAGES = {
  *       "HomePage": HomePage,
@@ -26,7 +27,7 @@
  * 
  * Example with Layout (wraps all pages):
  *
- *   import Home from './pages/Home';
+ *   const Home = lazy(() => import('./pages/Home'));
  *   import Settings from './pages/Settings';
  *   import __Layout from './Layout.jsx';
  *
@@ -47,86 +48,86 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Achievements from './pages/Achievements';
-import AdminDashboard from './pages/AdminDashboard';
-import AffiliateDashboard from './pages/AffiliateDashboard';
-import AffiliateGoLive from './pages/AffiliateGoLive';
-import AffiliateHub from './pages/AffiliateHub';
-import AffiliateMarketplace from './pages/AffiliateMarketplace';
-import AffiliateMarketplaceExplore from './pages/AffiliateMarketplaceExplore';
-import AffiliateMarketplaceLive from './pages/AffiliateMarketplaceLive';
-import AmbassadorProgram from './pages/AmbassadorProgram';
-import BrandCampaigns from './pages/BrandCampaigns';
-import BrandDashboard from './pages/BrandDashboard';
-import ChannelAnalytics from './pages/ChannelAnalytics';
-import Clips from './pages/Clips';
-import CollabMatching from './pages/CollabMatching';
-import CollaborationHub from './pages/CollaborationHub';
-import CommunityForums from './pages/CommunityForums';
-import CommunityGuidelines from './pages/CommunityGuidelines';
-import ContentModerationAdmin from './pages/ContentModerationAdmin';
-import CreatorAnalytics from './pages/CreatorAnalytics';
-import CreatorCommunity from './pages/CreatorCommunity';
-import CreatorMonetization from './pages/CreatorMonetization';
-import CreatorOnboarding from './pages/CreatorOnboarding';
-import CreatorPayouts from './pages/CreatorPayouts';
-import CreatorProfile from './pages/CreatorProfile';
-import CreatorStudio from './pages/CreatorStudio';
-import CreatorSuccessProgram from './pages/CreatorSuccessProgram';
-import CustomizeTheme from './pages/CustomizeTheme';
-import DataPrivacy from './pages/DataPrivacy';
-import EventDetails from './pages/EventDetails';
-import Events from './pages/Events';
-import ExclusiveContentManager from './pages/ExclusiveContentManager';
-import Explore from './pages/Explore';
-import FanClubs from './pages/FanClubs';
-import Following from './pages/Following';
-import ForumPost from './pages/ForumPost';
-import GamesExpo from './pages/GamesExpo';
-import GamingHub from './pages/GamingHub';
-import GamingSetup from './pages/GamingSetup';
-import GoLive from './pages/GoLive';
-import HelpAndInfo from './pages/HelpAndInfo';
-import Highlights from './pages/Highlights';
+const Achievements = lazy(() => import('./pages/Achievements'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AffiliateDashboard = lazy(() => import('./pages/AffiliateDashboard'));
+const AffiliateGoLive = lazy(() => import('./pages/AffiliateGoLive'));
+const AffiliateHub = lazy(() => import('./pages/AffiliateHub'));
+const AffiliateMarketplace = lazy(() => import('./pages/AffiliateMarketplace'));
+const AffiliateMarketplaceExplore = lazy(() => import('./pages/AffiliateMarketplaceExplore'));
+const AffiliateMarketplaceLive = lazy(() => import('./pages/AffiliateMarketplaceLive'));
+const AmbassadorProgram = lazy(() => import('./pages/AmbassadorProgram'));
+const BrandCampaigns = lazy(() => import('./pages/BrandCampaigns'));
+const BrandDashboard = lazy(() => import('./pages/BrandDashboard'));
+const ChannelAnalytics = lazy(() => import('./pages/ChannelAnalytics'));
+const Clips = lazy(() => import('./pages/Clips'));
+const CollabMatching = lazy(() => import('./pages/CollabMatching'));
+const CollaborationHub = lazy(() => import('./pages/CollaborationHub'));
+const CommunityForums = lazy(() => import('./pages/CommunityForums'));
+const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
+const ContentModerationAdmin = lazy(() => import('./pages/ContentModerationAdmin'));
+const CreatorAnalytics = lazy(() => import('./pages/CreatorAnalytics'));
+const CreatorCommunity = lazy(() => import('./pages/CreatorCommunity'));
+const CreatorMonetization = lazy(() => import('./pages/CreatorMonetization'));
+const CreatorOnboarding = lazy(() => import('./pages/CreatorOnboarding'));
+const CreatorPayouts = lazy(() => import('./pages/CreatorPayouts'));
+const CreatorProfile = lazy(() => import('./pages/CreatorProfile'));
+const CreatorStudio = lazy(() => import('./pages/CreatorStudio'));
+const CreatorSuccessProgram = lazy(() => import('./pages/CreatorSuccessProgram'));
+const CustomizeTheme = lazy(() => import('./pages/CustomizeTheme'));
+const DataPrivacy = lazy(() => import('./pages/DataPrivacy'));
+const EventDetails = lazy(() => import('./pages/EventDetails'));
+const Events = lazy(() => import('./pages/Events'));
+const ExclusiveContentManager = lazy(() => import('./pages/ExclusiveContentManager'));
+const Explore = lazy(() => import('./pages/Explore'));
+const FanClubs = lazy(() => import('./pages/FanClubs'));
+const Following = lazy(() => import('./pages/Following'));
+const ForumPost = lazy(() => import('./pages/ForumPost'));
+const GamesExpo = lazy(() => import('./pages/GamesExpo'));
+const GamingHub = lazy(() => import('./pages/GamingHub'));
+const GamingSetup = lazy(() => import('./pages/GamingSetup'));
+const GoLive = lazy(() => import('./pages/GoLive'));
+const HelpAndInfo = lazy(() => import('./pages/HelpAndInfo'));
+const Highlights = lazy(() => import('./pages/Highlights'));
 import Home from './pages/Home';
-import ImportYouTubeLibrary from './pages/ImportYouTubeLibrary';
-import Leaderboard from './pages/Leaderboard';
-import MusicStudio from './pages/MusicStudio';
-import PPVEvents from './pages/PPVEvents';
-import PayoutRouting from './pages/PayoutRouting';
-import PlatformAdminAnalytics from './pages/PlatformAdminAnalytics';
-import PlatformAnalytics from './pages/PlatformAnalytics';
-import PlatformStatus from './pages/PlatformStatus';
-import PlaylistView from './pages/PlaylistView';
-import Playlists from './pages/Playlists';
-import PodcastStudio from './pages/PodcastStudio';
-import Podcasts from './pages/Podcasts';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import ProductionReadiness from './pages/ProductionReadiness';
-import Profile from './pages/Profile';
-import Quests from './pages/Quests';
+const ImportYouTubeLibrary = lazy(() => import('./pages/ImportYouTubeLibrary'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const MusicStudio = lazy(() => import('./pages/MusicStudio'));
+const PPVEvents = lazy(() => import('./pages/PPVEvents'));
+const PayoutRouting = lazy(() => import('./pages/PayoutRouting'));
+const PlatformAdminAnalytics = lazy(() => import('./pages/PlatformAdminAnalytics'));
+const PlatformAnalytics = lazy(() => import('./pages/PlatformAnalytics'));
+const PlatformStatus = lazy(() => import('./pages/PlatformStatus'));
+const PlaylistView = lazy(() => import('./pages/PlaylistView'));
+const Playlists = lazy(() => import('./pages/Playlists'));
+const PodcastStudio = lazy(() => import('./pages/PodcastStudio'));
+const Podcasts = lazy(() => import('./pages/Podcasts'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const ProductionReadiness = lazy(() => import('./pages/ProductionReadiness'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Quests = lazy(() => import('./pages/Quests'));
 import Settings from './pages/Settings';
-import TermsOfService from './pages/TermsOfService';
-import TheAmphitheatre from './pages/TheAmphitheatre';
-import UpcomingStreams from './pages/UpcomingStreams';
-import VideoEditor from './pages/VideoEditor';
-import VideoUpload from './pages/VideoUpload';
-import Videos from './pages/Videos';
-import VlogStudio from './pages/VlogStudio';
-import Wallet from './pages/Wallet';
-import WatchAffiliateVideo from './pages/WatchAffiliateVideo';
-import WatchMarketplaceLive from './pages/WatchMarketplaceLive';
-import WatchHistory from './pages/WatchHistory';
-import WatchLater from './pages/WatchLater';
-import WatchParties from './pages/WatchParties';
-import WatchPartyRoom from './pages/WatchPartyRoom';
-import WatchStream from './pages/WatchStream';
-import WatchVideo from './pages/WatchVideo';
-import CreatorPayoutForecast from './pages/CreatorPayoutForecast';
-import EarningsDashboard from './pages/EarningsDashboard';
-import LegionSpaces from './pages/LegionSpaces';
-import LegionAI from './pages/LegionAI';
-import LiveSplatFilters from './pages/LiveSplatFilters';
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const TheAmphitheatre = lazy(() => import('./pages/TheAmphitheatre'));
+const UpcomingStreams = lazy(() => import('./pages/UpcomingStreams'));
+const VideoEditor = lazy(() => import('./pages/VideoEditor'));
+const VideoUpload = lazy(() => import('./pages/VideoUpload'));
+const Videos = lazy(() => import('./pages/Videos'));
+const VlogStudio = lazy(() => import('./pages/VlogStudio'));
+const Wallet = lazy(() => import('./pages/Wallet'));
+const WatchAffiliateVideo = lazy(() => import('./pages/WatchAffiliateVideo'));
+const WatchMarketplaceLive = lazy(() => import('./pages/WatchMarketplaceLive'));
+const WatchHistory = lazy(() => import('./pages/WatchHistory'));
+const WatchLater = lazy(() => import('./pages/WatchLater'));
+const WatchParties = lazy(() => import('./pages/WatchParties'));
+const WatchPartyRoom = lazy(() => import('./pages/WatchPartyRoom'));
+const WatchStream = lazy(() => import('./pages/WatchStream'));
+const WatchVideo = lazy(() => import('./pages/WatchVideo'));
+const CreatorPayoutForecast = lazy(() => import('./pages/CreatorPayoutForecast'));
+const EarningsDashboard = lazy(() => import('./pages/EarningsDashboard'));
+const LegionSpaces = lazy(() => import('./pages/LegionSpaces'));
+const LegionAI = lazy(() => import('./pages/LegionAI'));
+const LiveSplatFilters = lazy(() => import('./pages/LiveSplatFilters'));
 import __Layout from './Layout.jsx';
 
 
