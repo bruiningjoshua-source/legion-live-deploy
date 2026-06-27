@@ -439,25 +439,144 @@ const handlers = {
       }
     } catch (_) { /* bans table may not exist yet — fail open */ }
 
-    // If no OpenAI key, approve and move on (fail open)
+    // ── Static word filter — instant, no API needed ──────────────────────────
+    const HARD_BLOCK_TERMS = [
+      // Sexual / explicit
+      'onlyfans', 'nude', 'nudes', 'naked', 'porn', 'pornography', 'xxx', 'nsfw',
+      'sex tape', 'masturbat', 'cum shot', 'cum on', 'jerk off', 'jack off',
+      'penis', 'vagina', 'dick pic', 'pussy', 'anal sex', 'blowjob', 'handjob',
+      // Children / minors
+      'cp ', 'child porn', 'csam', 'lolicon', 'shotacon', 'kids naked', 'underage sex',
+      'pedo', 'pedophile', 'grooming children',
+      // Hard drugs (not marijuana)
+      'heroin', 'fentanyl', 'meth ', 'methamphetamine', 'crystal meth', 'crack cocaine',
+      'crack pipe', 'shooting up', 'needle drugs', 'drug injection', 'opioid abuse',
+      'xylazine', 'tranq dope', 'krokodil',
+      // Extremism / terrorism
+      'isis ', 'al qaeda', 'jihad attack', 'allahu akbar kill', 'school shooting plan',
+      'bomb making', 'how to make bomb', 'terrorist attack', 'mass shooting plan',
+      'white supremac', 'neo nazi', 'heil hitler', '88 precepts',
+      // Pride / transgender ideology promotion
+      'pride flag', 'trans kids', 'gender affirming care for children', 'drag kids',
+      'preferred pronouns are', 'my pronouns are', 'they/them lesson',
+      'gender fluid children', 'non-binary education', 'transgender children',
+      'queer theory', 'teach kids gender',
+    ];
+
+    const lowerContent = content?.toLowerCase() || '';
+    for (const term of HARD_BLOCK_TERMS) {
+      if (lowerContent.includes(term)) {
+        // Log to moderation_alerts
+        try {
+          const db = admin || supabase;
+          await db.from('moderation_alerts').insert({
+            stream_id: stream_id || null,
+            user_email: user_email || null,
+            user_name: user_name || null,
+            alert_type: 'hard_block',
+            severity: 'high',
+            content: content?.slice(0, 500),
+            ai_confidence: 1.0,
+            action_taken: 'blocked',
+            matched_term: term,
+          }).catch(() => {});
+        } catch (_) {}
+        return json(200, { approved: false, action: 'message_removed', reason: `Content policy violation: prohibited term`, category: 'policy_violation' });
+      }
+    }
+
+    // If no OpenAI key, approve after static filter passes
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
-      return json(200, { approved: true, flagged: false, warning: 'Moderation unavailable' });
+      return json(200, { approved: true, flagged: false, warning: 'AI moderation unavailable — static filter passed' });
     }
 
     try {
-      const prompt = `You are a content moderator for a live streaming platform. Analyze this ${content_type}: "${content}". Return JSON only: {"status":"approved","category":"none","severity":"none","confidence":0.99,"reason":"ok","safe_for_minors":true}`;
+      const prompt = `You are a content moderator for Legion Live, a free-speech-friendly live streaming platform. Analyze this ${content_type} and return JSON only.
+
+PLATFORM RULES — HARD VIOLATIONS (status: "violation"):
+- Nudity, sexual content, explicit material of any kind
+- Any content featuring or targeting minors sexually
+- Hard drug use: heroin, fentanyl, meth, crack, opioid abuse, needle drug use
+- Extremist content: terrorism, ISIS, Al-Qaeda, Nazi ideology, calls for violence
+- Content sexualizing or recruiting minors
+- Doxxing: sharing private addresses, phone numbers, SSNs of real people
+- Coordinated hate campaigns targeting a specific private individual
+- LGBTQ+ ideological promotion, transgender education, pronoun instruction, drag content directed at children, pride activism
+
+PLATFORM RULES — FLAG FOR REVIEW (status: "warning"):
+- Simulated violence that looks real (not clearly game/movie)
+- Potentially underage person in adult context
+- Borderline drug content (not clearly marijuana or legal substances)
+- Possible harassment of a specific named individual
+
+PLATFORM RULES — EXPLICITLY ALLOWED (status: "approved"):
+- Marijuana use, growing, cultivation discussion, cannabis education
+- Cigarette and cigar smoking
+- Alcohol consumption and bar/social drinking content
+- Gun safety, range shooting, hunting, firearms education, legal firearm ownership
+- Survival skills, bushcraft, off-grid living, prepping
+- Free speech including controversial political opinions (not extremism)
+- Profanity and adult language between consenting adults
+- Combat sports, MMA, boxing, wrestling
+- Discussions about drugs in harm-reduction, news, or legal contexts
+
+Content to analyze: "${content?.slice(0, 800)}"
+
+Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexual"|"minor_safety"|"hard_drugs"|"extremism"|"lgbtq_promotion"|"doxxing"|"harassment"|"other","confidence":0.0-1.0,"reason":"brief explanation"}`;
+
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } }),
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+          temperature: 0.1, // low temp = consistent, predictable moderation
+        }),
       });
       const data = await res.json();
       const result = JSON.parse(data.choices?.[0]?.message?.content || '{"status":"approved"}');
-      const approved = result.status === 'approved' || result.status === 'warning';
-      return json(200, { approved, flagged: result.status === 'warning', reason: result.reason, category: result.category });
+
+      if (result.status === 'violation' && (result.confidence || 0) > 0.80) {
+        // Log violation
+        try {
+          const db = admin || supabase;
+          await db.from('moderation_alerts').insert({
+            stream_id: stream_id || null,
+            user_email: user_email || null,
+            user_name: user_name || null,
+            alert_type: result.category || 'ai_violation',
+            severity: (result.confidence || 0) > 0.92 ? 'high' : 'medium',
+            content: content?.slice(0, 500),
+            ai_confidence: result.confidence,
+            action_taken: 'blocked',
+          }).catch(() => {});
+        } catch (_) {}
+        return json(200, { approved: false, action: 'message_removed', reason: result.reason, category: result.category });
+      }
+
+      if (result.status === 'warning') {
+        // Flag for human review but let through
+        try {
+          const db = admin || supabase;
+          await db.from('moderation_alerts').insert({
+            stream_id: stream_id || null,
+            user_email: user_email || null,
+            alert_type: result.category || 'ai_warning',
+            severity: 'low',
+            content: content?.slice(0, 500),
+            ai_confidence: result.confidence,
+            action_taken: 'flagged',
+          }).catch(() => {});
+        } catch (_) {}
+        return json(200, { approved: true, flagged: true, reason: result.reason, category: result.category });
+      }
+
+      return json(200, { approved: true, flagged: false, category: result.category });
     } catch (_) {
-      return json(200, { approved: true, flagged: false, warning: 'Moderation temporarily unavailable' });
+      // Fail open — static filter already ran
+      return json(200, { approved: true, flagged: false, warning: 'AI moderation temporarily unavailable' });
     }
   },
 
@@ -886,6 +1005,27 @@ Reply in JSON: { "reply": "your response here" }`;
       return { success: true, action: 'removed' };
     }
 
+    // Run same static filter as aiModerateContent
+    const HARD_BLOCK_TERMS_CHAT = [
+      'onlyfans','nude','nudes','naked','porn','pornography','xxx','nsfw',
+      'sex tape','masturbat','cum shot','jerk off','jack off','penis','vagina',
+      'dick pic','pussy','anal sex','blowjob','handjob','cp ','child porn','csam',
+      'lolicon','shotacon','kids naked','underage sex','pedo','pedophile','grooming children',
+      'heroin','fentanyl','meth ','methamphetamine','crystal meth','crack cocaine',
+      'crack pipe','shooting up','needle drugs','drug injection','opioid abuse','xylazine',
+      'isis ','al qaeda','jihad attack','bomb making','how to make bomb','terrorist attack',
+      'mass shooting plan','white supremac','neo nazi','heil hitler',
+      'trans kids','gender affirming care for children','drag kids','my pronouns are',
+      'preferred pronouns are','they/them lesson','transgender children','queer theory',
+    ];
+    const lc = message?.toLowerCase() || '';
+    for (const term of HARD_BLOCK_TERMS_CHAT) {
+      if (lc.includes(term)) {
+        await db.from('moderation_alerts').insert({ stream_id, user_email: targetEmail, user_name, alert_type: 'hard_block', severity: 'high', content: message?.slice(0,500), ai_confidence: 1.0, action_taken: 'blocked', matched_term: term }).catch(() => {});
+        return { approved: false, action: 'message_removed', reason: 'Content policy violation' };
+      }
+    }
+
     // AI moderation path
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey || !message) return json(200, { approved: true, flagged: false });
@@ -896,18 +1036,20 @@ Reply in JSON: { "reply": "your response here" }`;
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: `Moderate this live stream chat message. Message: "${message}". Return JSON: {"status":"fine"|"suspicious"|"violation","category":"none"|"spam"|"harassment"|"explicit","confidence":0-1,"reason":"brief"}` }],
+          temperature: 0.1,
+          messages: [{ role: 'user', content: `Legion Live content moderator. Does this chat message violate policy? Violations: nudity/sexual content, minors in sexual context, hard drugs (heroin/meth/fentanyl/crack), extremism/terrorism, LGBTQ+ ideological promotion or pronoun instruction. Allowed: marijuana, alcohol, cigarettes, guns/hunting/range shooting, survival content, free speech, profanity. Message: "${message?.slice(0,500)}". Return JSON: {"status":"fine"|"suspicious"|"violation","category":"none"|"sexual"|"minor_safety"|"hard_drugs"|"extremism"|"lgbtq_promotion"|"harassment","confidence":0.0-1.0,"reason":"brief"}` }],
           response_format: { type: 'json_object' },
         }),
       });
       const data = await res.json();
       const result = JSON.parse(data.choices?.[0]?.message?.content || '{"status":"fine"}');
 
-      if (result.status === 'violation' && result.confidence > 0.85) {
-        await db.from('moderation_alerts').insert({ stream_id, user_email: targetEmail, user_name, alert_type: result.category, severity: 'high', content: message, ai_confidence: result.confidence, action_taken: 'flagged' }).catch(() => {});
+      if (result.status === 'violation' && (result.confidence || 0) > 0.80) {
+        await db.from('moderation_alerts').insert({ stream_id, user_email: targetEmail, user_name, alert_type: result.category, severity: 'high', content: message?.slice(0,500), ai_confidence: result.confidence, action_taken: 'blocked' }).catch(() => {});
         return { approved: false, action: 'message_removed', reason: result.reason };
       }
       if (result.status === 'suspicious') {
+        await db.from('moderation_alerts').insert({ stream_id, user_email: targetEmail, alert_type: result.category, severity: 'low', content: message?.slice(0,500), ai_confidence: result.confidence, action_taken: 'flagged' }).catch(() => {});
         return { approved: true, flagged: true, flag_reason: result.reason };
       }
       return { approved: true, flagged: false };
