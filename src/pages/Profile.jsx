@@ -216,58 +216,62 @@ export default function Profile() {
     : 0;
 
   return (
-    <div className="min-h-screen pt-16 pb-24">
+    <div className="ll-page-enter min-h-screen pt-16 pb-24">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
-        {/* Profile Header */}
-        <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] overflow-hidden mb-6">
-          {/* Cover */}
-          <div className="h-28 sm:h-32 bg-gradient-to-r from-amber-900/60 via-stone-800/40 to-amber-900/60 relative">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800')] bg-cover bg-center opacity-30" />
+        {/* ── Profile Header ── */}
+        <div className="ll-card overflow-hidden mb-5">
+          {/* Banner */}
+          <div className="h-24 relative overflow-hidden"
+            style={{ background:'linear-gradient(135deg, #1a0a00, #3d1a00, #7a3010)' }}>
+            <div className="absolute inset-0 opacity-20"
+              style={{ backgroundImage:"url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800')", backgroundSize:'cover', backgroundPosition:'center' }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            {/* Edit button */}
+            <button onClick={handleEdit}
+              className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ll-interactive"
+              style={{ background:'rgba(0,0,0,0.5)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.8)' }}>
+              <Edit className="w-3 h-3" /> Edit
+            </button>
           </div>
 
-          <CardContent className="relative px-4 sm:px-6 pb-6">
-            {/* Avatar + Edit button row */}
-            <div className="flex items-end justify-between -mt-14 mb-4">
-              <div className="relative inline-block">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-stone-800 border-4 border-stone-900">
-                    {creator?.avatar_url ? (
-                      <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl sm:text-4xl">👤</div>
-                    )}
-                  </div>
+          <div className="px-4 pb-5 -mt-10 relative">
+            {/* Avatar */}
+            <div className="flex items-end justify-between mb-3">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden border-3 border-[#050508]"
+                  style={{ boxShadow:'0 0 0 3px #050508, 0 0 0 4px rgba(245,166,35,0.4)', background:'linear-gradient(135deg,#f5a623,#e63946)' }}>
+                  {creator?.avatar_url ? (
+                    <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl">⚔️</div>
+                  )}
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-700 transition-colors">
-                  <Camera className="w-4 h-4 text-white" />
+                <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer ll-interactive"
+                  style={{ background:'#f5a623' }}>
+                  <Camera className="w-3.5 h-3.5 text-black" />
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </label>
               </div>
-              <Button onClick={handleEdit} variant="outline" size="sm" className="border-amber-500/30 text-amber-300 mb-1">
-                <Edit className="w-3.5 h-3.5 mr-1.5" />
-                Edit
-              </Button>
+              {/* Badge pill */}
+              <div className="mb-1">
+                <span className="ll-pill ll-pill-gold">{badge.icon} {badge.label}</span>
+              </div>
             </div>
 
-            {/* Info */}
-            <div>
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-amber-100">{creator?.display_name || user?.full_name || 'Legionnaire'}</h1>
-                {creator?.is_verified && <Crown className="w-5 h-5 text-amber-400" />}
-                <Badge className="bg-amber-600/20 text-amber-300 border-amber-500/30 text-xs">
-                  {badge.icon} {badge.label}
-                </Badge>
+            {/* Name + info */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h1 className="ll-heading text-xl text-white">{creator?.display_name || user?.full_name || 'Legionnaire'}</h1>
+                {creator?.is_verified && <Crown className="w-4 h-4 text-amber-400" />}
               </div>
-              <p className="text-amber-400/70 capitalize text-sm mb-1">{creator?.category?.replace('_', ' ') || 'Content Creator'}</p>
-              {creator?.bio && (
-                <p className="text-amber-100/80 text-sm max-w-md">{creator.bio}</p>
-              )}
-              {/* Social links display */}
+              <p className="text-white/40 text-xs capitalize mb-1.5">{creator?.category?.replace('_',' ') || 'Content Creator'}</p>
+              {creator?.bio && <p className="text-white/60 text-sm leading-relaxed">{creator.bio}</p>}
               {creator?.social_links && Object.values(creator.social_links).some(Boolean) && (
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   {Object.entries(creator.social_links).filter(([,v]) => v).map(([platform, value]) => (
-                    <a key={platform} href={value.startsWith('http') ? value : `https://${value}`} target="_blank" rel="noopener noreferrer" 
-                       className="text-amber-400/60 hover:text-amber-300 text-xs flex items-center gap-1 transition-colors">
+                    <a key={platform} href={value.startsWith('http') ? value : `https://${value}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-amber-400/60 hover:text-amber-400 text-xs flex items-center gap-1 transition-colors">
                       <LinkIcon className="w-3 h-3" /> {platform}
                     </a>
                   ))}
@@ -275,41 +279,43 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-4 mt-4">
+            {/* Stats row */}
+            <div className="grid grid-cols-4 gap-2">
               {[
-                { val: formatCount(creator?.follower_count), label: 'Followers' },
-                { val: creator?.level || 1, label: 'Level' },
-                { val: formatCount(creator?.pk_wins), label: 'PK Wins' },
-                { val: formatCount(totalEarnings), label: '🪙 Earned' },
+                { val: formatCount(creator?.follower_count), label:'Followers' },
+                { val: creator?.level || 1,                  label:'Level'     },
+                { val: formatCount(creator?.pk_wins),        label:'PK Wins'   },
+                { val: formatCount(totalEarnings),           label:'Earned 🪙' },
               ].map(stat => (
-                <div key={stat.label} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 sm:p-4 text-center">
-                  <p className="text-lg sm:text-2xl font-bold text-amber-100">{stat.val}</p>
-                  <p className="text-amber-400/60 text-[10px] sm:text-sm">{stat.label}</p>
+                <div key={stat.label} className="ll-card-inset text-center py-3 px-1">
+                  <p className="ll-heading text-base text-white">{stat.val}</p>
+                  <p className="text-white/30 text-[10px] mt-0.5">{stat.label}</p>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* ── Quick Links (BIGO-style list) ── */}
-        <div className="mb-6 rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06]">
+        {/* ── Quick Links ── */}
+        <div className="ll-card overflow-hidden mb-5">
           {[
-            { icon: Wallet, label: 'My Wallet', path: 'Wallet', color: 'text-amber-400' },
-            { icon: DollarSign, label: 'Earnings Hub', path: 'EarningsDashboard', color: 'text-green-400' },
-            { icon: Trophy, label: 'Achievements', path: 'Achievements', color: 'text-purple-400' },
-            { icon: Settings, label: 'Settings', path: 'Settings', color: 'text-white/60' },
-            { icon: HelpCircle, label: 'Help & Info', path: 'HelpAndInfo', color: 'text-sky-400' },
+            { icon: Wallet,     label: 'My Wallet',    path: 'Wallet',           color: '#f5a623', bg:'rgba(245,166,35,0.12)' },
+            { icon: DollarSign, label: 'Earnings Hub', path: 'EarningsDashboard',color: '#10b981', bg:'rgba(16,185,129,0.12)' },
+            { icon: Trophy,     label: 'Achievements', path: 'Achievements',      color: '#8b5cf6', bg:'rgba(139,92,246,0.12)' },
+            { icon: Settings,   label: 'Settings',     path: 'Settings',          color: '#94a3b8', bg:'rgba(148,163,184,0.10)' },
+            { icon: HelpCircle, label: 'Help & FAQ',   path: 'HelpAndInfo',       color: '#06b6d4', bg:'rgba(6,182,212,0.12)' },
           ].map((item, i, arr) => (
             <Link
               key={item.path}
               to={createPageUrl(item.path)}
-              className={`flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.04] transition-colors ${
-                i < arr.length - 1 ? 'border-b border-white/[0.04]' : ''
-              }`}
+              className="flex items-center justify-between px-4 py-3.5 ll-interactive transition-colors hover:bg-white/[0.03]"
+              style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
             >
               <div className="flex items-center gap-3">
-                <item.icon className={`w-5 h-5 ${item.color}`} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: item.bg }}>
+                  <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                </div>
                 <span className="text-white/80 text-sm font-medium">{item.label}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-white/20" />

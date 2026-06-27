@@ -136,7 +136,7 @@ export default function Explore() {
   }, [queryClient]);
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="ll-page-enter min-h-screen pt-20 pb-24">
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
@@ -153,16 +153,17 @@ export default function Explore() {
         </motion.div>
 
         {/* Search & Filters */}
-        <GlassCard padding="p-4" className="mb-8" animate={false}>
-          <div className="space-y-4">
+        <div className="ll-card mb-6 p-4">
+          <div className="space-y-3">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-              <Input
-                placeholder="Search streams, creators..."
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+              <input
+                placeholder="Search streams, creators…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-amber-500/50 focus:bg-white/10 rounded-xl transition-all"
+                className="ll-input pl-11 h-11"
+                style={{ paddingLeft: '2.75rem' }}
               />
             </div>
 
@@ -218,7 +219,7 @@ export default function Explore() {
               )}
             </div>
           </div>
-        </GlassCard>
+        </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

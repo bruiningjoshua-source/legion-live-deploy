@@ -142,7 +142,7 @@ export default function Wallet() {
   // Loading state
   if (walletLoading) {
     return (
-      <div className="min-h-screen pt-20 pb-24">
+      <div className="ll-page-enter min-h-screen pt-20 pb-24">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
           <Skeleton className="h-12 w-48 bg-white/5" />
           <Skeleton className="h-4 w-32 bg-white/5" />
@@ -201,65 +201,54 @@ export default function Wallet() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05, duration: 0.3 }}
         >
-          <GlassCard className="mb-8 relative overflow-hidden" padding="p-0" glow glowColor="amber">
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10" />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            
-            <div className="relative p-6 md:p-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="ll-card mb-6 relative overflow-hidden p-0"
+            style={{ border:'1px solid rgba(245,166,35,0.2)', background:'rgba(245,166,35,0.04)' }}>
+            {/* Ambient glow */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background:'radial-gradient(ellipse at 80% 20%, rgba(245,166,35,0.08) 0%, transparent 60%)' }} />
+
+            <div className="relative p-5">
+              {/* Label */}
+              <p className="ll-label text-white/30 mb-3">YOUR BALANCE</p>
+
+              {/* Main balance */}
+              <div className="flex items-end gap-3 mb-4">
+                <span className="text-4xl leading-none">🪙</span>
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Coins className="w-5 h-5 text-amber-400" />
-                    <p className="text-white/50 text-sm font-medium">Total Balance</p>
+                  <div className="ll-display text-5xl text-white leading-none">
+                    {formatCount(wallet?.denarii_balance || 0)}
                   </div>
-                  <div className="flex items-baseline gap-3">
-                    <motion.span 
-                      className="text-5xl"
-                      animate={{ rotate: [0, -10, 10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                    >
-                      🪙
-                    </motion.span>
-                    <span className="text-5xl md:text-6xl font-black text-white">
-                      {formatCount(wallet?.denarii_balance || 0)}
-                    </span>
-                    <span className="text-white/50 font-medium">Denarii</span>
-                  </div>
-
-                  {/* Secondary currencies */}
-                  <div className="flex items-center gap-3 mt-5">
-                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10">
-                      <span>🥈</span>
-                      <span className="text-white/80 font-medium">{wallet?.sestertii_balance || 0}</span>
-                      <span className="text-white/40 text-sm">Sestertii</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10">
-                      <span>🥉</span>
-                      <span className="text-white/80 font-medium">{wallet?.as_balance || 0}</span>
-                      <span className="text-white/40 text-sm">As</span>
-                    </div>
-                  </div>
-
-                  {/* Conversion info */}
-                  <p className="text-white/30 text-xs mt-4">
-                    ≈ ${((wallet?.denarii_balance || 0) / DENARII_PER_DOLLAR).toFixed(2)} USD value
-                    {(wallet?.total_purchased_usd || 0) > 0 && ` · $${(wallet.total_purchased_usd).toFixed(2)} lifetime spend`}
+                  <p className="text-white/35 text-sm mt-1">
+                    Denarii · ≈ ${((wallet?.denarii_balance || 0) / DENARII_PER_DOLLAR).toFixed(2)} USD
                   </p>
                 </div>
+              </div>
 
-                {/* VIP Panel */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 min-w-[240px]">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-12 h-12 rounded-xl ${vipTier.bgColor} flex items-center justify-center text-2xl shadow-lg`}>
-                      {vipTier.icon}
-                    </div>
-                    <div>
-                      <p className={`font-bold text-lg ${vipTier.color}`}>{vipTier.name}</p>
-                      <p className="text-white/40 text-xs">{vipPoints.toLocaleString()} VIP points</p>
-                    </div>
+              {/* Secondary balances */}
+              <div className="flex gap-2 mb-4">
+                {[
+                  { emoji:'🥈', val: wallet?.sestertii_balance || 0, label:'Sestertii' },
+                  { emoji:'🥉', val: wallet?.as_balance || 0, label:'As' },
+                ].map(c => (
+                  <div key={c.label} className="flex items-center gap-2 ll-card-inset px-3 py-2">
+                    <span className="text-sm">{c.emoji}</span>
+                    <span className="text-white/70 text-sm font-semibold">{c.val}</span>
+                    <span className="text-white/30 text-xs">{c.label}</span>
                   </div>
-                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                ))}
+              </div>
+
+              {/* VIP tier */}
+              <div className="ll-card-inset p-3 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${vipTier.bgColor}`}>
+                  {vipTier.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className={`text-sm font-bold ${vipTier.color}`}>{vipTier.name}</p>
+                    <p className="text-white/30 text-xs">{vipPoints.toLocaleString()} pts</p>
+                  </div>
+                  <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(vipProgress, 100)}%` }}
@@ -286,7 +275,7 @@ export default function Wallet() {
                 </div>
               </div>
             </div>
-          </GlassCard>
+          </div>
         </motion.div>
 
         {/* Tabs */}
