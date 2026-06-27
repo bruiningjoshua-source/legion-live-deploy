@@ -9,11 +9,11 @@
  * State: stored in stream.lottery_config (JSON). Results in gift_transactions.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Ticket, Trophy, Users, Play, Settings, RefreshCw } from 'lucide-react';
+import { X, Settings, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DEFAULT_CONFIG = {

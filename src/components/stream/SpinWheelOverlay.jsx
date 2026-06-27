@@ -9,11 +9,11 @@
  * The spin result is server-authoritative — client animation only.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Settings, Play, Square, Coins, Trophy, RefreshCw } from 'lucide-react';
+import { X, Settings, Play, Square, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ── Default prize pool ─────────────────────────────────────────────────────

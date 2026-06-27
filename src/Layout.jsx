@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import CreatorOnboarding from '@/components/onboarding/CreatorOnboarding';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { initLegionForge, legionBus, legionStorage } from '@/components/core/legion';
@@ -18,6 +17,7 @@ import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
+import CreatorOnboarding from '@/components/onboarding/CreatorOnboarding';
 import useScrollPreservation from '@/components/navigation/useScrollPreservation';
 import NotificationService from '@/components/services/NotificationService';
 import OfflineService from '@/components/services/OfflineService';
@@ -179,6 +179,16 @@ export default function Layout({ children, currentPageName }) {
     <>
       <AnimatePresence>
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
+      </AnimatePresence>
+
+      {/* Creator Onboarding — shown once on first login */}
+      <AnimatePresence>
+        {showOnboarding && user && (
+          <CreatorOnboarding user={user} onComplete={() => {
+            setShowOnboarding(false);
+            localStorage.setItem('legion_onboarding_done', '1');
+          }} />
+        )}
       </AnimatePresence>
       
       {showTutorial && (

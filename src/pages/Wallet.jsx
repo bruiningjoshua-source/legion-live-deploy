@@ -8,7 +8,6 @@ import {
   History,
   Gift,
   CreditCard,
-  Coins,
   RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';

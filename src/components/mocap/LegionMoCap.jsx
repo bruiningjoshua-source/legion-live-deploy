@@ -22,6 +22,7 @@ import { startMicLipSync, stopMicLipSync, isMicLipSyncActive } from './LegionMic
 import { sampleFrame, getRendererConfig, onTierChange, isMobile } from './LegionPerformanceScaler';
 import { createSplatBackdrop, getBackdropPresets } from './LegionSplatBackdrop';
 import { loadVRM, isVRMFile } from './LegionVRMLoader';
+import LegionLive2D from './LegionLive2D';
 import PerfMonitor from '@/components/engine/PerformanceMonitor';
 import AdaptiveQuality from '@/components/engine/AdaptiveQuality';
 import Disposer from '@/components/engine/ResourceDisposer';
@@ -79,6 +80,8 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
   const [currentBackdrop,  setCurrentBackdrop]  = useState('studio');
   const [activeTab,        setActiveTab]        = useState('avatar');
   const [vrmLoaded,        setVrmLoaded]        = useState(null); // VRM file name
+  const [live2dMode,       setLive2dMode]       = useState(false); // true = use Live2D renderer
+  const [live2dFaceRig,    setLive2dFaceRig]    = useState(null); // pass face rig to Live2D
   const [vrmLoading,       setVrmLoading]       = useState(false);
   const [customColors,     setCustomColors]     = useState({});  // overrides on selectedPreset
   const [exprActive,       setExprActive]       = useState(null);
@@ -191,6 +194,7 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
     const faceLM = smoothLandmarks(results.faceLandmarks, filtersRef.current?.slice(0, 468), now);
     const poseLM = smoothLandmarks(results.poseLandmarks, filtersRef.current?.slice(468, 501), now);
     const faceRig = solveFace(faceLM);
+    if (live2dMode) { setLive2dFaceRig(faceRig); }
     const poseRig = solvePose(poseLM);
 
     // Hand rig from MediaPipe hand landmarks
@@ -218,6 +222,8 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
     const dt = (now - lastRenderRef.current) / 1000;
     lastRenderRef.current = now;
     if (backdropRef.current) backdropRef.current.update(dt);
+    // Update spring bone physics for VRM hair/clothing
+    if (vrmAvatarRef.current?.update) vrmAvatarRef.current.update(Math.min(dt, 0.033));
     sampleFrame();
 
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -381,9 +387,21 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none">
+      {/* 3D Canvas — hidden in Live2D mode */}
       <canvas ref={canvasRef} width={720} height={1280}
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ pointerEvents: 'none' }} />
+        style={{ pointerEvents: 'none', display: live2dMode ? 'none' : 'block' }} />
+
+      {/* Live2D Renderer */}
+      {live2dMode && (
+        <div className="absolute inset-0">
+          <LegionLive2D
+            faceRig={live2dFaceRig}
+            micVolume={micEnabled ? 0.5 : 0}
+            onStreamReady={(stream) => { onProcessedStream?.(stream); streamSentRef.current = true; }}
+          />
+        </div>
+      )}
 
       {/* Loading overlay */}
       <AnimatePresence>
@@ -486,6 +504,27 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
                       <span className="font-medium">{preset.name}</span>
                     </button>
                   ))}
+
+                  {/* Live2D Mode Toggle */}
+                  <div className="mt-3 pt-3 border-t border-white/8">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-white/40 text-[10px] uppercase tracking-wider">Live2D Mode</p>
+                      <button onClick={() => setLive2dMode(v => !v)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold ll-interactive transition-all"
+                        style={{
+                          background: live2dMode ? 'rgba(236,72,153,0.2)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${live2dMode ? 'rgba(236,72,153,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                          color: live2dMode ? '#f472b6' : 'rgba(255,255,255,0.4)',
+                        }}>
+                        {live2dMode ? '✓ Live2D Active' : '2D Anime Mode'}
+                      </button>
+                    </div>
+                    {live2dMode && (
+                      <p className="text-white/25 text-[10px] mb-3">
+                        Upload your .model3.json via the canvas controls below
+                      </p>
+                    )}
+                  </div>
 
                   {/* VRM Import */}
                   <div className="mt-3 pt-3 border-t border-white/8">

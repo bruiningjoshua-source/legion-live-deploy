@@ -21,7 +21,6 @@ import GiftStreakOverlay from '@/components/stream/GiftStreakOverlay';
 import SpinWheel from '@/components/stream/SpinWheel';
 import StreamLottery from '@/components/stream/StreamLottery';
 import ViewerChallenge from '@/components/stream/ViewerChallenge';
-import HostGoalBar from '@/components/stream/HostGoalBar';
 import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
 import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';

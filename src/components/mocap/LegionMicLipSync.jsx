@@ -4,7 +4,7 @@
  * CPU-light: single AnalyserNode, no FFT processing beyond getByteFrequencyData.
  */
 
-import { setMicVolume } from './LegionAvatarRenderer';
+import { setMicVolume, updateSpeechBlink } from './LegionAvatarRenderer';
 
 let _audioCtx = null;
 let _analyser = null;
@@ -73,6 +73,8 @@ function tick() {
   const normalized = Math.min(1, Math.max(0, (_smoothVol - 0.02) * 3.5));
 
   setMicVolume(normalized);
+  // Feed speech volume to the cadence blink system
+  updateSpeechBlink(normalized, performance.now());
 }
 
 /** Stop mic lip-sync and release resources. */

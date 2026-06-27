@@ -6,7 +6,7 @@
  */
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, Ticket, Trophy, RotateCcw, Settings } from 'lucide-react';
+import { X, Plus, Trash2, RotateCcw, Settings } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';

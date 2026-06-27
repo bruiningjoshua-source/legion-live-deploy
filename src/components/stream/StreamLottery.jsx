@@ -4,8 +4,8 @@
  * Countdown timer, animated drum roll, random winner reveal.
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Ticket, Trophy, Users, Clock, Play, StopCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Trophy, Play, StopCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';

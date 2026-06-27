@@ -4,8 +4,8 @@
  * Countdown timer, progress tracker, winner claim.
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Zap, Clock, Trophy, Plus, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Zap, Check } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';

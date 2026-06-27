@@ -1,3 +1,4 @@
+import { createSpringBoneSystem } from './LegionSpringBones';
 /**
  * LegionVRMLoader — VRM 0.x / 1.0 file import for Legion Live.
  *
@@ -251,14 +252,28 @@ export async function loadVRM(source, THREE, onProgress) {
   if (height > 0) scene.scale.setScalar(targetHeight / height);
   scene.position.y = -box.min.y * (targetHeight / height) - 0.9;
 
+  onProgress?.('Initialising physics…');
+  let springBones = null;
+  try {
+    springBones = createSpringBoneSystem(gltf, THREE);
+    if (springBones?.isActive) {
+      console.log('[VRM] Spring bones:', springBones.chainCount, 'chains');
+    }
+  } catch (e) {
+    console.warn('[VRM] Spring bones init failed:', e.message);
+  }
+
   return {
     group: scene,
     bones,
     expressions,
     applyExpression,
     resetAllExpressions,
+    springBones,
     isVRM: true,
+    update: (dt) => { springBones?.update(dt); },
     dispose: () => {
+      springBones?.dispose();
       scene.traverse(obj => {
         if (obj.isMesh) {
           obj.geometry?.dispose();

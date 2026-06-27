@@ -53,6 +53,12 @@ let _lastBlinkTime = 0;
 let _nextBlinkIn = 3000;
 let _isBlinking = false;
 let _blinkPhase = 0;
+// Speech-cadence blink state
+let _speechHistory = [];   // rolling 500ms RMS buffer
+let _isSpeaking = false;
+let _lastSpeechTime = 0;
+let _speakingBlinks = 0;   // blinks triggered during speech pauses
+let _prevMicVol = 0;
 let _eyeGazeX = 0;
 let _eyeGazeY = 0;
 let _eyeGazeTargetX = 0;
@@ -62,7 +68,38 @@ let _micVolume = 0;
 let _currentExpression = null;
 let _expressionWeight = 0;
 
-function scheduleNextBlink() { _nextBlinkIn = 2000 + Math.random() * 4000; }
+function scheduleNextBlink(isSpeech = false) {
+  if (isSpeech) {
+    // During speech: blink at natural inter-phrase boundaries (1.5–3s)
+    _nextBlinkIn = 1500 + Math.random() * 1500;
+  } else {
+    // Idle: slower random blink (2–6s, averages ~3.5s like humans at rest)
+    _nextBlinkIn = 2000 + Math.random() * 4000;
+  }
+}
+
+// Call this from MicLipSync with raw volume each frame
+export function updateSpeechBlink(micVol, timestamp = performance.now()) {
+  const SPEECH_THRESHOLD = 0.08;
+  const SPEECH_HOLD_MS   = 400;  // keep "speaking" state this long after volume drops
+
+  // Track speaking state
+  if (micVol > SPEECH_THRESHOLD) {
+    _isSpeaking = true;
+    _lastSpeechTime = timestamp;
+  } else if (_isSpeaking && (timestamp - _lastSpeechTime) > SPEECH_HOLD_MS) {
+    // Just stopped speaking — ideal blink moment (Nakano et al. 2006)
+    _isSpeaking = false;
+    if ((timestamp - _lastBlinkTime) > 800) {
+      // Trigger a natural blink at phrase boundary
+      _isBlinking = true;
+      _blinkPhase = 0;
+      _lastBlinkTime = timestamp;
+    }
+  }
+
+  _prevMicVol = micVol;
+}
 
 export function setMicVolume(v) { _micVolume = Math.max(0, Math.min(1, v)); }
 
@@ -370,15 +407,20 @@ export function applyPoseToAvatar(bones, faceRig, poseRig, handRig) {
     });
   }
 
-  // Blink scheduling
+  // Speech-cadence blink scheduling
   if (!faceRig) {
     const timeSinceBlink = now - _lastBlinkTime;
     if (!_isBlinking && timeSinceBlink > _nextBlinkIn) {
       _isBlinking = true; _blinkPhase = 0; _lastBlinkTime = now;
     }
     if (_isBlinking) {
-      _blinkPhase += dt * 8;
-      if (_blinkPhase >= 1.0) { _isBlinking = false; _blinkPhase = 0; scheduleNextBlink(); }
+      // Speech blinks are faster (8 frames) than idle blinks (6 frames) — more natural
+      const blinkSpeed = _isSpeaking ? 9 : 6.5;
+      _blinkPhase += dt * blinkSpeed;
+      if (_blinkPhase >= 1.0) {
+        _isBlinking = false; _blinkPhase = 0;
+        scheduleNextBlink(_isSpeaking);
+      }
     }
   }
 

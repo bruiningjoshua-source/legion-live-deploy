@@ -6,7 +6,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, Crown, TrendingUp } from 'lucide-react';
+import { Flame, Crown } from 'lucide-react';
 
 const COMBO_THRESHOLDS = [
   { min:2,  label:'COMBO',    color:'#f5a623', scale:1.0, glow:'rgba(245,166,35,0.5)' },

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { ChevronRight, Rocket } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 export default function ComingSoon({ 
   title = 'Coming Soon',
