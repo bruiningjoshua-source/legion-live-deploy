@@ -1,6 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { createHash, randomBytes, createCipheriv, randomInt } from 'node:crypto';
 
+// ── Admin allowlist — only these emails can ever be admin ────────────────────
+const ADMIN_ALLOWLIST = new Set([
+  'bruiningjoshua@gmail.com',
+  'inthestixproductions@gmail.com',
+]);
+
+function isAllowedAdmin(email) {
+  return ADMIN_ALLOWLIST.has(email?.toLowerCase().trim());
+}
+
 const json = (statusCode, body) => ({
   statusCode,
   headers: { 'Content-Type': 'application/json' },
@@ -98,8 +108,8 @@ const getCurrentUser = async (supabase, event) => {
 const handlers = {
   async clearLiveStreams({ supabase, admin, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     // Ending every live stream/creator is a cross-user maintenance operation,
@@ -712,7 +722,9 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!user) return json(401, { error: 'Unauthorized' });
     const { theme } = params || {};
     if (!theme) return json(400, { error: 'theme required' });
-    const { error } = await supabase.from('profiles').update({ theme }).eq('id', user.id);
+    // Never allow role escalation through this endpoint
+    const { error } = await supabase.from('profiles').update({ theme }).eq('id', user.id)
+      .neq('role', 'admin'); // RLS handles this too but belt-and-suspenders
     if (error) throw error;
     return { success: true };
   },
@@ -1013,8 +1025,8 @@ Reply in JSON: { "reply": "your response here" }`;
   // ─── Production Validation (admin) ──────────────────────────────────────
   async productionValidation({ supabase, admin, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
 
     const db = admin || supabase;
     const checks = {};
@@ -1051,8 +1063,8 @@ Reply in JSON: { "reply": "your response here" }`;
   // ─── Live Stripe Test (admin) ────────────────────────────────────────────
   async liveStripeTest({ supabase, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
@@ -1087,7 +1099,7 @@ Reply in JSON: { "reply": "your response here" }`;
   async getFraudDashboard({ supabase, admin, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin required' });
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin required' });
 
     const db = admin || supabase;
     const thirtyMinAgo = new Date(Date.now() - 1800000).toISOString();
@@ -1118,8 +1130,8 @@ Reply in JSON: { "reply": "your response here" }`;
   // ─── Verify Payout Routing (admin) ───────────────────────────────────────
   async verifyPayoutRouting({ supabase, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
@@ -1170,7 +1182,7 @@ Reply in JSON: { "reply": "your response here" }`;
 
     if (action === 'admin_review') {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-      if (profile?.role !== 'admin') return json(403, { error: 'Admin required' });
+      if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin required' });
       if (!verificationStatus?.user_email || !['verified', 'rejected'].includes(verificationStatus.status)) return json(400, { error: 'Invalid data' });
       await db.from('creator_kyc').update({ status: verificationStatus.status, reviewed_at: new Date().toISOString(), rejection_reason: verificationStatus.reason || null }).eq('user_email', verificationStatus.user_email);
       return { success: true, status: verificationStatus.status };
@@ -1306,8 +1318,8 @@ Reply in JSON: { "reply": "your response here" }`;
   // ─── Export All Functions (admin) ────────────────────────────────────────
   async exportAllFunctions({ supabase, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
+    const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
     // Return the list of all wired handlers for admin diagnostics
     const handlers = ["clearLiveStreams","updateViewerCount","sendGift","requestWithdrawal","generateZegoToken","getOBSStreamKey","claimDailyReward","aiModerateContent","createDenariiCheckout","createTipCheckout","createFanClubCheckout","createCreatorMonetizationCheckout","stripeConnectOnboard","cancelSubscription","legionCompanionChat","saveUserTheme","getTrendingContent","getPayoutConfig","forecastCreatorPayouts","checkPaymentStatus","retryPayment","moderateChat","createHostSubscription","createPPVCheckout","productionValidation","liveStripeTest","getFraudDashboard","verifyPayoutRouting","enforceKycGate","processPayoutWithKyc","uploadThemeBackground","processCreatorReferral","importGooglePlayGames","setupMobileScreenShare","exportAllFunctions","adminListUsers","createCampaignCheckout","gdprCompliance"];
     return { total: handlers.length, functions: handlers, exported_at: new Date().toISOString() };
@@ -1317,7 +1329,7 @@ Reply in JSON: { "reply": "your response here" }`;
   async adminListUsers({ supabase, admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return json(403, { error: 'Forbidden' });
+    if (profile?.role !== 'admin' || !isAllowedAdmin(user.email)) return json(403, { error: 'Forbidden' });
 
     const db = admin || supabase;
     const { limit = 100, offset = 0, search } = params || {};
@@ -1414,6 +1426,10 @@ Reply in JSON: { "reply": "your response here" }`;
     }
 
     if (action === 'delete_account') {
+      // Prevent admin accounts from self-deleting via this endpoint
+      if (isAllowedAdmin(user.email)) {
+        return json(403, { error: 'Admin accounts cannot be self-deleted. Contact another admin.' });
+      }
       // Anonymize profile
       await db.from('profiles').update({ full_name: 'Deleted User', avatar_url: null, role: 'deleted' }).eq('id', user.id);
       // Anonymize creators
