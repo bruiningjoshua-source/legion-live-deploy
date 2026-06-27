@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import CreatorOnboarding from '@/components/onboarding/CreatorOnboarding';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { initLegionForge, legionBus, legionStorage } from '@/components/core/legion';
@@ -27,6 +28,7 @@ export default function Layout({ children, currentPageName }) {
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   
   // Single initializer for all localStorage-backed preferences (via legionStorage)

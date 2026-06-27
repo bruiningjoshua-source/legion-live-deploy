@@ -17,6 +17,11 @@ import ChatService from '@/components/services/ChatService';
 import BulletChat from '@/components/stream/BulletChat';
 import GiftPanel from '@/components/gifts/GiftPanel';
 import GiftAnimation from '@/components/gifts/GiftAnimation';
+import GiftStreakOverlay from '@/components/stream/GiftStreakOverlay';
+import SpinWheel from '@/components/stream/SpinWheel';
+import StreamLottery from '@/components/stream/StreamLottery';
+import ViewerChallenge from '@/components/stream/ViewerChallenge';
+import HostGoalBar from '@/components/stream/HostGoalBar';
 import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
 import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
@@ -44,6 +49,10 @@ export default function WatchStream() {
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [giftAnimation, setGiftAnimation] = useState(null);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showLottery, setShowLottery] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [recentGifts, setRecentGifts] = useState([]);
   const [liveStream, setLiveStream] = useState(null);
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -257,6 +266,7 @@ export default function WatchStream() {
   const sendGift = ({ gift, quantity }) => {
     setShowGiftPanel(false);
     setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity });
+    setRecentGifts(g => [{...gift, sender_email: user?.email, sender_name: user?.full_name, quantity, created_at: new Date().toISOString()}, ...g].slice(0,20));
     _sendGift.mutate({ gift, quantity });
   };
 
@@ -390,6 +400,9 @@ export default function WatchStream() {
         </button>
       </div>
 
+      {/* ── GIFT STREAK OVERLAY ── */}
+      <GiftStreakOverlay recentGifts={recentGifts} leaderboard={[]} />
+
       {/* ── GIFT LEADERBOARD (top right below row 2) ── */}
       <div className="absolute z-20 right-3"
         style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 72px)' }}>
@@ -489,6 +502,9 @@ export default function WatchStream() {
       )}
 
       {giftAnimation && <GiftAnimation gift={giftAnimation} />}
+      {showSpinWheel  && <SpinWheel    streamId={streamId} isHost={false} onClose={()=>setShowSpinWheel(false)} />}
+      {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} />}
+      {showChallenge  && <ViewerChallenge streamId={streamId} isHost={false} onClose={()=>setShowChallenge(false)} />}
 
       {showEndDialog && (
         <EndStreamDialog

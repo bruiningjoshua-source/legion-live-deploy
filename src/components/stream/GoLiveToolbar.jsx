@@ -1,6 +1,9 @@
 import React from 'react';
 import { Armchair, Palette, Sparkles, Wand2, Monitor } from 'lucide-react';
 
+// Gamification tools exported so GoLive can open them
+export const GAMIFICATION_TOOLS = ['spin', 'lottery', 'challenge', 'goal'];
+
 const TOOLS = [
   { id: 'seats',    icon: Armchair, label: 'Seats' },
   { id: 'theme',    icon: Palette,  label: 'Theme' },

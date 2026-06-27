@@ -9,14 +9,37 @@ export default function Login() {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [isRecovery, setIsRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetComplete, setResetComplete] = useState(false);
 
   useEffect(() => {
+    // Detect recovery mode from URL hash (Supabase sets #type=recovery)
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    if (hash.includes('type=recovery') || params.get('type') === 'recovery') {
+      setIsRecovery(true);
+    }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) window.location.replace('/');
-      if (event === 'PASSWORD_RECOVERY') window.location.replace('/Profile?reset=true');
+      if (event === 'SIGNED_IN' && session && !isRecovery) window.location.replace('/');
+      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
+    setLoading(true); setError('');
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setResetComplete(true);
+      setTimeout(() => window.location.replace('/'), 2000);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setLoading(true); setError('');
@@ -70,7 +93,30 @@ export default function Login() {
           </p>
         </div>
 
-        {resetSent ? (
+        {isRecovery ? (
+          <div className="space-y-4">
+            {resetComplete ? (
+              <div className="text-center space-y-3">
+                <div className="text-4xl">✅</div>
+                <p className="text-white font-semibold">Password updated!</p>
+                <p className="text-white/40 text-sm">Redirecting you in…</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-white/60 text-sm text-center">Choose your new password</p>
+                <input type="password" placeholder="New password (min 6 chars)" value={newPassword}
+                  onChange={e=>setNewPassword(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&handleUpdatePassword()}
+                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-amber-500" />
+                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+                <button onClick={handleUpdatePassword} disabled={loading}
+                  className="w-full py-3 rounded-xl bg-amber-500 text-black font-bold text-sm hover:bg-amber-400 transition-colors disabled:opacity-50">
+                  {loading ? 'Updating…' : 'Set New Password'}
+                </button>
+              </>
+            )}
+          </div>
+        ) : resetSent ? (
           <div className="text-center space-y-4">
             <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
               <span className="text-2xl">✉️</span>
@@ -82,7 +128,7 @@ export default function Login() {
               Back to sign in
             </button>
           </div>
-        ) : (
+          ) : (
           <div className="space-y-4">
             <input
               type="email" placeholder="Email address" value={email}

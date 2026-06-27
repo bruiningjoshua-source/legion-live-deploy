@@ -13,6 +13,10 @@ import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLip
 import OBSSetupPanel from '@/components/stream/OBSSetupPanel';
 import { AnimatePresence } from 'framer-motion';
 import GoLiveToolbar from '@/components/stream/GoLiveToolbar';
+import SpinWheel from '@/components/stream/SpinWheel';
+import StreamLottery from '@/components/stream/StreamLottery';
+import ViewerChallenge from '@/components/stream/ViewerChallenge';
+import HostGoalBar from '@/components/stream/HostGoalBar';
 import GoLiveStreamModeSelector from '@/components/stream/GoLiveStreamModeSelector';
 import SeatsPanel from '@/components/stream/golive/SeatsPanel';
 import ThemePanel from '@/components/stream/golive/ThemePanel';
@@ -53,6 +57,11 @@ export default function GoLive() {
   const [showSoundboard, setShowSoundboard] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
   const [activeTool, setActiveTool] = useState(null);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showLottery, setShowLottery] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [showGoalBar, setShowGoalBar] = useState(true);
+  const [streamGoal, setStreamGoal] = useState(null);
   const [showOBS, setShowOBS] = useState(false);
   const [seatCount, setSeatCount] = useState(4);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -419,6 +428,10 @@ export default function GoLive() {
               <GoLiveToolbar
                 activeTool={activeTool}
                 onToolSelect={(tool) => {
+                  if (tool === 'spin')      { setShowSpinWheel(true); return; }
+                  if (tool === 'lottery')   { setShowLottery(true); return; }
+                  if (tool === 'challenge') { setShowChallenge(true); return; }
+                  if (tool === 'goal')      { setShowGoalBar(true); return; }
                   if (tool === 'obs') {
                     setShowOBS(true);
                     return;
@@ -490,6 +503,19 @@ export default function GoLive() {
             }}
           />
         </div>
+
+        {/* ── Gamification overlays ── */}
+        {showSpinWheel  && <SpinWheel    streamId={streamId} isHost onClose={()=>setShowSpinWheel(false)} />}
+        {showLottery    && <StreamLottery streamId={streamId} isHost onClose={()=>setShowLottery(false)} />}
+        {showChallenge  && <ViewerChallenge streamId={streamId} isHost onClose={()=>setShowChallenge(false)} />}
+
+        {/* ── Host Goal Bar ── */}
+        {showGoalBar && stream?.id && (
+          <div className="absolute z-20 left-3 right-3" style={{top:'calc(max(12px, env(safe-area-inset-top)) + 60px)'}}>
+            <HostGoalBar streamId={stream.id} isHost currentTotal={stream?.viewer_count || 0}
+              onGoalUpdate={(goal)=>setStreamGoal(goal)} />
+          </div>
+        )}
 
         {/* Tool panel overlays */}
         <AnimatePresence>
