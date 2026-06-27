@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  # Allow Stripe webhook to receive raw body for signature verification
+  # All other functions parse JSON normally
+  included_files = ["netlify/functions/**"]
+
+[[functions]]
+  path = "/api/stripe-webhook"
+  name = "stripe-webhook"
+
+[functions."stripe-webhook"]
+  # isBase64Encoded must be false; Stripe sends plaintext JSON
+  # Netlify parses body as-is for this function
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

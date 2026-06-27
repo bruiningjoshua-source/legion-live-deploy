@@ -97,6 +97,9 @@ const getCurrentUser = async (supabase, event) => {
 
 const handlers = {
   async clearLiveStreams({ supabase, admin, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return json(403, { error: 'Admin only' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     // Ending every live stream/creator is a cross-user maintenance operation,
@@ -120,7 +123,8 @@ const handlers = {
     return { success: true };
   },
 
-  async updateViewerCount({ supabase, admin, params }) {
+  async updateViewerCount({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     const { streamId, action } = params || {};
     if (!streamId || !['join', 'leave'].includes(action)) {
       return json(400, { error: 'streamId and action (join|leave) are required' });
@@ -157,12 +161,24 @@ const handlers = {
     return { success: true, viewerCount: data, atomic: true };
   },
 
-  async sendGift({ supabase, user, params }) {
+  async sendGift({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     const { senderWalletId, receiverWalletId, amountDenarii, reason, relatedEntityId, giftId, streamId, receiverEmail, receiverCreatorId } = params || {};
     if (!senderWalletId || !receiverWalletId || !amountDenarii) {
       return json(400, { error: 'senderWalletId, receiverWalletId, and amountDenarii are required' });
+    }
+
+    // Rate limit: max 30 gifts per minute per user
+    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+    const { count: recentGifts } = await supabase
+      .from('gift_transactions')
+      .select('id', { count: 'exact', head: true })
+      .eq('sender_email', user.email)
+      .gte('created_at', oneMinuteAgo);
+    if ((recentGifts || 0) >= 30) {
+      return json(429, { error: 'Too many gifts — please slow down' });
     }
 
     const { data: transfer, error: transferError } = await supabase.rpc('transfer_denarii', {
@@ -192,7 +208,8 @@ const handlers = {
     return { success: true, transfer, transaction };
   },
 
-  async requestWithdrawal({ supabase, user, params }) {
+  async requestWithdrawal({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     const amountDenarii = Number(params?.amount_denarii || params?.amountDenarii);
@@ -224,7 +241,8 @@ const handlers = {
   },
 
   // ─── Go Live: ZegoCloud streaming token ──────────────────────────────────
-  async generateZegoToken({ user, params }) {
+  async generateZegoToken({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     const { roomId, userId, role } = params || {};
@@ -266,7 +284,8 @@ const handlers = {
   },
 
   // ─── Go Live: OBS / RTMP stream key ──────────────────────────────────────
-  async getOBSStreamKey({ user, params }) {
+  async getOBSStreamKey({ supabase, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     const { streamId } = params || {};
@@ -341,7 +360,8 @@ const handlers = {
   },
 
   // ─── Daily login reward (server-authoritative + idempotent) ──────────────
-  async claimDailyReward({ supabase, user }) {
+  async claimDailyReward({ supabase, admin, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user?.email) return json(401, { error: 'Authentication required' });
 
     const { data, error } = await supabase.rpc('claim_daily_reward', { p_user_email: user.email });
