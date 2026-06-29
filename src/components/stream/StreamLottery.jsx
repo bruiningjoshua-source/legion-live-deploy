@@ -46,7 +46,7 @@ const LOTTO_TYPES = [
 
 const REWARD_PRESETS = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
-export default function StreamLottery({ streamId, streamUrl, isHost, onClose }) {
+export default function StreamLottery({ streamId, streamUrl, isHost, onClose, onGiftSent }) {
   const qc           = useQueryClient();
   const timerRef     = useRef(null);
   const shareUrlRef  = useRef(`${window.location.origin}/watch/${streamId}`);
@@ -74,6 +74,14 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose }) 
   const balance  = wallet?.denarii_balance || 0;
   const canAfford = balance >= reward;
   const typeData  = LOTTO_TYPES.find(t => t.id === lottoType);
+
+  // ── Auto-enter on gift send (send_gift type) ─────────────────────────────────
+  useEffect(() => {
+    if (lottoType === 'send_gift' && phase === 'open' && onGiftSent) {
+      // Parent calls this whenever a gift is sent during the lottery
+      onGiftSent(() => { if (!myEntry) enterLottery(); });
+    }
+  }, [lottoType, phase, onGiftSent, myEntry, enterLottery]);
 
   // ── Countdown ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -316,7 +324,11 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose }) 
                     </button>
                   )}
                   {lottoType === 'send_gift' && (
-                    <p className="text-white/40 text-sm text-center">Send any gift to enter automatically</p>
+                    <div className="ll-card-inset p-3 text-center">
+                      <p className="text-2xl mb-1.5">🎁</p>
+                      <p className="text-white/70 text-sm font-semibold">Send any gift to enter</p>
+                      <p className="text-white/35 text-xs mt-1">Your entry is confirmed automatically when your gift goes through</p>
+                    </div>
                   )}
                   {lottoType === 'password' && (
                     <div className="space-y-2">

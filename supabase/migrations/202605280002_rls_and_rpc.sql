@@ -238,3 +238,69 @@ begin
   return v_purchase_id;
 end;
 $$;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Direct Messages table (channel-filtered private messaging)
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists public.direct_messages (
+  id              uuid default gen_random_uuid() primary key,
+  sender_email    text not null,
+  receiver_email  text not null,
+  content         text not null check (char_length(content) <= 2000),
+  channel         text not null default 'general'
+                  check (channel in ('general','games','marketplace','brand_partnerships',
+                                     'amphitheatre','pods','music','senate')),
+  read            boolean default false,
+  created_at      timestamptz default now()
+);
+
+alter table public.direct_messages enable row level security;
+
+create policy "Users read own direct messages"
+  on public.direct_messages for select
+  using (auth.email() = sender_email or auth.email() = receiver_email);
+
+create policy "Users send direct messages"
+  on public.direct_messages for insert
+  with check (auth.email() = sender_email and char_length(content) > 0);
+
+create policy "Receivers mark messages read"
+  on public.direct_messages for update
+  using (auth.email() = receiver_email)
+  with check (auth.email() = receiver_email);
+
+create index if not exists dm_participants_channel_idx
+  on public.direct_messages (sender_email, receiver_email, channel, created_at desc);
+
+create index if not exists dm_receiver_unread_idx
+  on public.direct_messages (receiver_email, read, channel)
+  where read = false;
+
+-- Brand applications table
+create table if not exists public.brand_applications (
+  id                uuid default gen_random_uuid() primary key,
+  user_email        text not null,
+  company_name      text not null,
+  website           text,
+  category          text,
+  description       text,
+  contact_email     text not null,
+  contact_name      text,
+  tier_id           text not null,
+  tier_name         text,
+  amount_usd        numeric(10,2),
+  stripe_session_id text,
+  status            text default 'pending_payment',
+  created_at        timestamptz default now()
+);
+
+alter table public.brand_applications enable row level security;
+
+create policy "Users read own brand applications"
+  on public.brand_applications for select
+  using (auth.email() = user_email);
+
+create policy "Authenticated users create brand applications"
+  on public.brand_applications for insert
+  with check (auth.email() = user_email);

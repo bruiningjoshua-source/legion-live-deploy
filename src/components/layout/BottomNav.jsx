@@ -2,14 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { Home, Compass, Video, Bot, User } from 'lucide-react';
+import { Home, Compass, Video, MessageCircle, User } from 'lucide-react';
 
 const TABS = [
-  { id: 'live',    label: 'Live',    icon: Home,    path: createPageUrl('Home') },
-  { id: 'explore', label: 'Explore', icon: Compass, path: createPageUrl('Explore') },
-  { id: 'golive',  label: '',        icon: Video,   path: createPageUrl('GoLive'), center: true },
-  { id: 'legion',  label: 'Legion',  icon: Bot,     path: createPageUrl('LegionAI') },
-  { id: 'me',      label: 'Me',      icon: User,    path: createPageUrl('Profile') },
+  { id: 'live',     label: 'Live',     icon: Home,          path: createPageUrl('Home') },
+  { id: 'explore',  label: 'Explore',  icon: Compass,       path: createPageUrl('Explore') },
+  { id: 'golive',   label: '',         icon: Video,         path: createPageUrl('GoLive'), center: true },
+  { id: 'messages', label: 'Messages', icon: MessageCircle, path: createPageUrl('DirectMessages') },
+  { id: 'me',       label: 'Me',       icon: User,          path: createPageUrl('Profile') },
 ];
 
 export default function BottomNav() {

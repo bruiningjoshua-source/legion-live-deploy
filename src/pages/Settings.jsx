@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Shield, User, LogOut, Palette,
+import { Sun, Shield, User, LogOut, Palette,
   Sparkles, Zap, Monitor, Trash2, Image, ChevronRight,
   Check, Eye, RefreshCw, HelpCircle, Lock
 } from 'lucide-react';

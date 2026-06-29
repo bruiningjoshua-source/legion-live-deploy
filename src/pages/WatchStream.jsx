@@ -52,6 +52,7 @@ export default function WatchStream() {
   const [showLottery, setShowLottery] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
   const [recentGifts, setRecentGifts] = useState([]);
+  const lotteryGiftCallbackRef = useRef(null);
   const [liveStream, setLiveStream] = useState(null);
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -266,6 +267,8 @@ export default function WatchStream() {
     setShowGiftPanel(false);
     setGiftAnimation({ gift, sender: user?.full_name || 'Anonymous', quantity });
     setRecentGifts(g => [{...gift, sender_email: user?.email, sender_name: user?.full_name, quantity, created_at: new Date().toISOString()}, ...g].slice(0,20));
+    // Trigger lottery entry if send_gift lottery is active
+    if (lotteryGiftCallbackRef.current) lotteryGiftCallbackRef.current();
     _sendGift.mutate({ gift, quantity });
   };
 
@@ -502,7 +505,7 @@ export default function WatchStream() {
 
       {giftAnimation && <GiftAnimation gift={giftAnimation} />}
       {showSpinWheel  && <SpinWheel    streamId={streamId} isHost={false} onClose={()=>setShowSpinWheel(false)} />}
-      {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} />}
+      {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} onGiftSent={cb => { lotteryGiftCallbackRef.current = cb; }} />}
       {showChallenge  && <ViewerChallenge streamId={streamId} isHost={false} onClose={()=>setShowChallenge(false)} />}
 
       {showEndDialog && (

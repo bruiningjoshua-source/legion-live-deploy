@@ -1,7 +1,7 @@
 {
   "name": "Legion Live",
   "short_name": "Legion Live",
-  "description": "Stream, earn, and connect — the creator platform built for the next generation",
+  "description": "Stream, earn, and connect \u2014 the creator platform built for the next generation",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -9,22 +9,96 @@
   "theme_color": "#f5a623",
   "scope": "/",
   "lang": "en-US",
-  "categories": ["entertainment", "social", "lifestyle"],
+  "categories": [
+    "entertainment",
+    "social",
+    "lifestyle"
+  ],
   "screenshots": [],
   "icons": [
-    { "src": "/icons/icon-72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-128.png",  "sizes": "128x128", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-144.png",  "sizes": "144x144", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-152.png",  "sizes": "152x152", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-384.png",  "sizes": "384x384", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icons/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
+    {
+      "src": "/icons/icon-72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
   ],
   "shortcuts": [
-    { "name": "Go Live",   "short_name": "Go Live",  "url": "/GoLive",   "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] },
-    { "name": "Explore",   "short_name": "Explore",  "url": "/Explore",  "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] },
-    { "name": "Wallet",    "short_name": "Wallet",   "url": "/Wallet",   "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] }
+    {
+      "name": "Go Live",
+      "short_name": "Go Live",
+      "url": "/GoLive",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Explore",
+      "short_name": "Explore",
+      "url": "/Explore",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "short_name": "Wallet",
+      "url": "/Wallet",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
   ],
   "prefer_related_applications": false
 }
