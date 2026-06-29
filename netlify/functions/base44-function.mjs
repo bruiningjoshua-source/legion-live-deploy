@@ -1334,6 +1334,7 @@ Reply in JSON: { "reply": "your response here" }`;
   // ─── Process Payout With KYC ─────────────────────────────────────────────
   async processPayoutWithKyc({ supabase, admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
+    if (!user) return json(401, { error: 'Unauthorized' });
     const { amount_usd } = params || {};
     const MIN = 5, MAX = 10000;
     if (!amount_usd || amount_usd < MIN || amount_usd > MAX) return json(400, { error: `Amount must be $${MIN}–$${MAX}` });
@@ -1388,6 +1389,7 @@ Reply in JSON: { "reply": "your response here" }`;
 
   // ─── Process Creator Referral ────────────────────────────────────────────
   async processCreatorReferral({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
     if (!user) return json(401, { error: 'Unauthorized' });
     const { referral_code } = params || {};
     if (!referral_code || !/^[A-Z0-9]{4,20}$/.test(referral_code)) return json(400, { error: 'Invalid referral code format' });
