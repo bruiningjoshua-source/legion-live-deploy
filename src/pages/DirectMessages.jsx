@@ -41,8 +41,8 @@ export default function DirectMessages() {
     try {
       const { data } = await supabase
         .from('direct_messages')
-        .select('sender_email, receiver_email, content, created_at, read, channel')
-        .or(`sender_email.eq.${user.email},receiver_email.eq.${user.email}`)
+        .select('sender_email, recipient_email, content, created_at, read, channel')
+        .or(`sender_email.eq.${user.email},recipient_email.eq.${user.email}`)
         .eq('channel', activeChannel)
         .order('created_at', { ascending: false });
 
@@ -50,11 +50,11 @@ export default function DirectMessages() {
       // Build unique conversations
       const map = {};
       data.forEach(msg => {
-        const other = msg.sender_email === user.email ? msg.receiver_email : msg.sender_email;
+        const other = msg.sender_email === user.email ? msg.recipient_email : msg.sender_email;
         if (!map[other]) {
-          map[other] = { email: other, name: other.split('@')[0], lastMessage: msg.content, lastAt: msg.created_at, unread: 0 };
+          map[other] = { email: other, name: other.split('@')[0], lastMessage: msg.message || msg.body || '', lastAt: msg.created_at, unread: 0 };
         }
-        if (msg.receiver_email === user.email && !msg.read) map[other].unread++;
+        if (msg.recipient_email === user.email && !msg.is_read) map[other].unread++;
       });
       setConversations(Object.values(map).sort((a,b) => new Date(b.lastAt) - new Date(a.lastAt)));
     } catch (e) { console.error('[DM] load conversations:', e); }
@@ -69,16 +69,16 @@ export default function DirectMessages() {
       .from('direct_messages')
       .select('*')
       .eq('channel', activeChannel)
-      .or(`and(sender_email.eq.${user.email},receiver_email.eq.${selectedConvo.email}),and(sender_email.eq.${selectedConvo.email},receiver_email.eq.${user.email})`)
+      .or(`and(sender_email.eq.${user.email},recipient_email.eq.${selectedConvo.email}),and(sender_email.eq.${selectedConvo.email},recipient_email.eq.${user.email})`)
       .order('created_at', { ascending: true });
     setMessages(data || []);
     // Mark as read
     await supabase.from('direct_messages')
       .update({ read: true })
-      .eq('receiver_email', user.email)
+      .eq('recipient_email', user.email)
       .eq('sender_email', selectedConvo.email)
       .eq('channel', activeChannel)
-      .eq('read', false);
+      .eq('is_read', false);
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior:'smooth' }), 50);
   }, [user?.email, selectedConvo, activeChannel]);
 
@@ -91,7 +91,7 @@ export default function DirectMessages() {
       .channel(`dm_${user.email}`)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'direct_messages',
-        filter: `receiver_email=eq.${user.email}`,
+        filter: `recipient_email=eq.${user.email}`,
       }, payload => {
         const msg = payload.new;
         if (msg.channel === activeChannel && selectedConvo?.email === msg.sender_email) {
@@ -110,7 +110,7 @@ export default function DirectMessages() {
 
   const sendMessage = async () => {
     if (!draft.trim() || !selectedConvo || !user?.email) return;
-    const msg = { sender_email: user.email, receiver_email: selectedConvo.email, content: draft.trim(), channel: activeChannel, read: false };
+    const msg = { sender_email: user.email, recipient_email: selectedConvo.email, message: draft.trim(), channel: activeChannel, is_read: false };
     setDraft('');
     // Optimistic
     setMessages(m => [...m, { ...msg, id: 'pending-' + Date.now(), created_at: new Date().toISOString() }]);
@@ -236,7 +236,7 @@ export default function DirectMessages() {
                         borderBottomLeftRadius: !isMe ? 4 : undefined,
                         color: 'rgba(255,255,255,0.9)',
                       }}>
-                      {msg.content}
+                      {msg.message || msg.body || ''}
                       <p className="text-[10px] mt-1 opacity-40">
                         {new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
                       </p>
