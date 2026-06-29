@@ -181,6 +181,9 @@ export default function Layout({ children, currentPageName }) {
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
       </AnimatePresence>
 
+      {/* PWA Install Banner */}
+      <PWAInstallBanner />
+
       {/* Creator Onboarding — shown once on first login */}
       <AnimatePresence>
         {showOnboarding && user && (

@@ -289,6 +289,20 @@ export default function Settings() {
                   </div>
                 ))}
 
+                {/* Dark / Light mode */}
+                <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                      <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-white/80 text-sm font-medium">Light Mode</p>
+                      <p className="text-white/35 text-xs">Switch to light colour scheme</p>
+                    </div>
+                  </div>
+                  <Switch checked={colorScheme === 'light'} onCheckedChange={v => toggleDarkMode(!v)} />
+                </div>
+
                 <button onClick={() => { setTheme('roman'); setBg('roman'); setParticles(2); setAnimatedBg(true); setReducedMotion(false); toast.success('Reset to defaults'); }}
                   className="flex items-center gap-1.5 text-white/30 hover:text-white/55 text-xs transition-colors ll-interactive">
                   <RefreshCw className="w-3 h-3" /> Reset defaults

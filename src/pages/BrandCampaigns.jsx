@@ -151,35 +151,96 @@ function ActiveCampaignCard({ campaign, brand }) {
   );
 }
 
+const BRAND_TIERS = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 99,
+    period: 'month',
+    color: '#10b981',
+    features: [
+      'Listed in Brand Marketplace',
+      'Up to 3 creator partnerships/month',
+      'Basic analytics dashboard',
+      'Campaign management tools',
+      'Standard support',
+    ],
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: 299,
+    period: 'month',
+    color: '#f5a623',
+    badge: 'POPULAR',
+    features: [
+      'Featured placement in Brand Marketplace',
+      'Unlimited creator partnerships',
+      'Advanced analytics & reporting',
+      'Priority creator matching',
+      'Live stream product overlays',
+      'Dedicated account manager',
+    ],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 999,
+    period: 'month',
+    color: '#8b5cf6',
+    features: [
+      'Top-of-marketplace placement',
+      'Exclusive creator partnerships',
+      'Real-time campaign analytics',
+      'White-label stream integration',
+      'Custom commission structures',
+      'API access',
+      '24/7 priority support',
+    ],
+  },
+];
+
 function BrandSignupForm({ onClose }) {
-  const [form, setForm] = useState({
-    company_name: '',
-    website: '',
-    category: '',
-    description: '',
-    budget: '',
-    contact_email: '',
+  const [step, setStep]   = useState('tier'); // tier | details | success
+  const [tier, setTier]   = useState(null);
+  const [form, setForm]   = useState({
+    company_name: '', website: '', category: '', description: '',
+    contact_email: '', contact_name: '',
   });
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
-    if (!form.company_name || !form.contact_email || !form.category) {
+    if (!form.company_name || !form.contact_email || !form.category || !tier) {
       toast.error('Please fill in all required fields');
       return;
     }
-    // Save brand interest
     try {
+      // Create Stripe checkout for the tier
+      const result = await base44.functions.invoke('createBrandSubscription', {
+        tier_id:       tier.id,
+        tier_name:     tier.name,
+        amount_usd:    tier.price,
+        company_name:  form.company_name,
+        website:       form.website,
+        category:      form.category,
+        description:   form.description,
+        contact_email: form.contact_email,
+        contact_name:  form.contact_name,
+      });
+      if (result?.data?.url) {
+        window.location.href = result.data.url; // Stripe checkout
+        return;
+      }
+      // Fallback: save application
       await base44.entities.BrandCampaign.create({
-        campaign_name: `${form.company_name} — Brand Application`,
+        campaign_name: `${form.company_name} — ${tier.name} Application`,
         description: form.description,
-        budget: parseFloat(form.budget) || 0,
-        status: 'pending',
-        campaign_type: 'brand_application',
+        budget: tier.price,
+        status: 'pending_payment',
+        campaign_type: 'brand_subscription',
         creator_id: 'pending_review',
       });
-    } catch (e) {
-      // Non-blocking — just show success
-    }
+    } catch (e) {}
     setSubmitted(true);
   };
 
@@ -190,20 +251,50 @@ function BrandSignupForm({ onClose }) {
           <CheckCircle className="w-8 h-8 text-emerald-400" />
         </div>
         <h3 className="text-white font-black text-xl mb-2">Application Submitted!</h3>
-        <p className="text-white/40 text-sm mb-6">We'll review your application and connect you with creators within 24-48 hours.</p>
-        <button onClick={onClose}
-          className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm">
-          Done
-        </button>
+        <p className="text-white/40 text-sm mb-6">We'll complete setup and connect you with creators within 24 hours.</p>
+        <button onClick={onClose} className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm">Done</button>
+      </div>
+    );
+  }
+
+  if (step === 'tier') {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-white font-black text-xl mb-1">Choose Your Plan</h3>
+          <p className="text-white/40 text-sm">Select the advertising tier that fits your brand</p>
+        </div>
+        {BRAND_TIERS.map(t => (
+          <button key={t.id} onClick={() => { setTier(t); setStep('details'); }}
+            className="w-full p-4 rounded-2xl text-left ll-interactive transition-all"
+            style={{ background: tier?.id===t.id ? `${t.color}15` : 'rgba(255,255,255,0.04)', border: `1.5px solid ${tier?.id===t.id ? t.color+'60' : 'rgba(255,255,255,0.1)'}` }}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <p className="text-white font-black text-base">{t.name}</p>
+                {t.badge && <span className="ll-pill text-[10px] font-black" style={{background:`${t.color}25`,border:`1px solid ${t.color}50`,color:t.color}}>{t.badge}</span>}
+              </div>
+              <div className="text-right">
+                <span className="font-black text-xl" style={{color:t.color}}>${t.price}</span>
+                <span className="text-white/30 text-xs">/{t.period}</span>
+              </div>
+            </div>
+            <ul className="space-y-1">
+              {t.features.map(f => <li key={f} className="text-white/50 text-xs flex items-center gap-1.5"><span style={{color:t.color}}>✓</span>{f}</li>)}
+            </ul>
+          </button>
+        ))}
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-white font-black text-xl mb-1">List Your Brand</h3>
-        <p className="text-white/40 text-sm">Connect with Legion Live creators and drive real sales</p>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setStep('tier')} className="text-white/30 hover:text-white/60 ll-interactive">←</button>
+        <div>
+          <h3 className="text-white font-black text-xl mb-0.5">Brand Details</h3>
+          <p className="text-white/40 text-sm">{tier?.name} plan · ${tier?.price}/{tier?.period}</p>
+        </div>
       </div>
 
       {[

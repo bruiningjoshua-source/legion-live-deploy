@@ -1,56 +1,86 @@
 /**
- * StreamLottery — BIGO-style in-stream lottery for Legion Live.
- * Host opens a draw, viewers buy tickets with Denarii.
- * Countdown timer, animated drum roll, random winner reveal.
+ * StreamLottery — Rewritten per Legion Live spec.
+ *
+ * Host clicks lotto icon → chooses type:
+ *   share_stream  — viewers share the stream link to enter
+ *   send_gift     — viewers send a gift to enter
+ *   password      — viewers enter a password the host announces in chat
+ *
+ * Reward: 10–10,000 Denarii, deducted from HOST wallet when winner is drawn.
+ * Host sets reward amount and duration. Viewer entry is free (barrier is the action).
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { X, Trophy, Play, StopCircle } from 'lucide-react';
+import { X, Play, StopCircle, Share2, Gift, Lock, Check, Copy } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
-const LOTTERY_PRESETS = [
-  { label: 'Quick Draw',  duration: 60,  ticketCost: 50,   prize: '500 Denarii',  prizeValue: 500  },
-  { label: 'Mini Lotto',  duration: 120, ticketCost: 100,  prize: '1000 Denarii', prizeValue: 1000 },
-  { label: 'Big Pot',     duration: 300, ticketCost: 200,  prize: '5000 Denarii', prizeValue: 5000 },
-  { label: 'Custom',      duration: 0,   ticketCost: 0,    prize: '',             prizeValue: 0    },
+const LOTTO_TYPES = [
+  {
+    id: 'share_stream',
+    label: 'Share Stream',
+    icon: Share2,
+    color: '#3b82f6',
+    description: 'Viewers share your stream link to enter',
+    howToEnter: 'Share the stream link — your entry is confirmed automatically',
+  },
+  {
+    id: 'send_gift',
+    label: 'Send Gift',
+    icon: Gift,
+    color: '#f5a623',
+    description: 'Viewers send any gift to enter',
+    howToEnter: 'Send any gift during the lottery window to enter',
+  },
+  {
+    id: 'password',
+    label: 'Password',
+    icon: Lock,
+    color: '#8b5cf6',
+    description: 'Viewers enter a secret password you announce',
+    howToEnter: 'Type the password the host announced to enter',
+  },
 ];
 
-export default function StreamLottery({ streamId, isHost, onClose }) {
-  const qc = useQueryClient();
-  const timerRef = useRef(null);
+const REWARD_PRESETS = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
-  const [phase, setPhase]         = useState('setup');   // setup | open | drawing | winner
-  const [preset, setPreset]       = useState(0);
-  const [custom, setCustom]       = useState({ duration:180, ticketCost:100, prize:'2000 Denarii', prizeValue:2000 });
+export default function StreamLottery({ streamId, streamUrl, isHost, onClose }) {
+  const qc           = useQueryClient();
+  const timerRef     = useRef(null);
+  const shareUrlRef  = useRef(`${window.location.origin}/watch/${streamId}`);
+
+  const [phase, setPhase]         = useState('type');     // type | config | open | drawing | winner
+  const [lottoType, setLottoType] = useState(null);
+  const [reward, setReward]       = useState(500);
+  const [duration, setDuration]   = useState(120);
+  const [password, setPassword]   = useState('');
   const [timeLeft, setTimeLeft]   = useState(0);
-  const [entries, setEntries]     = useState([]);  // {name, email, tickets}
+  const [entries, setEntries]     = useState([]);
   const [winner, setWinner]       = useState(null);
-  const [drumRoll, setDrumRoll]   = useState(false);
-  const [myTickets, setMyTickets] = useState(0);
+  const [myEntry, setMyEntry]     = useState(false);
+  const [pwInput, setPwInput]     = useState('');
+  const [copied, setCopied]       = useState(false);
 
-  const { data: user } = useQuery({ queryKey:['current-user'], queryFn:()=>base44.auth.me() });
+  const { data: user }   = useQuery({ queryKey:['current-user'], queryFn:()=>base44.auth.me() });
   const { data: wallet } = useQuery({
-    queryKey:['wallet', user?.email],
-    queryFn: ()=>base44.entities.Wallet.filter({ user_email: user?.email }),
-    enabled: !!user?.email,
-    select: d=>d[0],
+    queryKey: ['wallet', user?.email],
+    queryFn:  () => base44.entities.Wallet.filter({ user_email: user?.email }),
+    enabled:  !!user?.email,
+    select:   d => d[0],
   });
 
-  const cfg = preset < 3 ? LOTTERY_PRESETS[preset] : { ...LOTTERY_PRESETS[3], ...custom };
+  const balance  = wallet?.denarii_balance || 0;
+  const canAfford = balance >= reward;
+  const typeData  = LOTTO_TYPES.find(t => t.id === lottoType);
 
-  // Countdown
+  // ── Countdown ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'open') return;
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current);
-          drawWinner();
-          return 0;
-        }
+        if (t <= 1) { clearInterval(timerRef.current); drawWinner(); return 0; }
         return t - 1;
       });
     }, 1000);
@@ -58,77 +88,82 @@ export default function StreamLottery({ streamId, isHost, onClose }) {
   }, [phase]);
 
   const startLottery = () => {
-    setEntries([]);
-    setWinner(null);
-    setMyTickets(0);
-    setTimeLeft(cfg.duration);
-    setPhase('open');
-    toast.success('🎟️ Lottery opened! Players can now buy tickets.');
+    if (!canAfford) { toast.error(`Need ${reward.toLocaleString()} Denarii to fund this lottery`); return; }
+    if (lottoType === 'password' && !password.trim()) { toast.error('Set a password first'); return; }
+    setEntries([]); setWinner(null); setMyEntry(false);
+    setTimeLeft(duration); setPhase('open');
+    toast.success(`🎟️ Lottery open! ${typeData?.description}`);
   };
 
-  const buyTickets = (qty = 1) => {
-    const cost = cfg.ticketCost * qty;
-    if ((wallet?.denarii_balance || 0) < cost) {
-      toast.error(`Need ${cost} Denarii for ${qty} ticket${qty > 1 ? 's' : ''}`); return;
+  const enterLottery = useCallback((nameOverride) => {
+    if (myEntry) { toast('Already entered!'); return; }
+    const name = nameOverride || user?.full_name || user?.email?.split('@')[0] || 'Anonymous';
+    setEntries(e => [...e, { name, email: user?.email, id: Date.now() }]);
+    setMyEntry(true);
+    toast.success('🎟️ You\'re entered!');
+  }, [myEntry, user]);
+
+  const submitPassword = () => {
+    if (pwInput.trim().toLowerCase() === password.trim().toLowerCase()) {
+      enterLottery();
+    } else {
+      toast.error('Wrong password');
     }
-    // Deduct and add entry
-    base44.functions.invoke('sendGift', {
-      creatorId: user?.id, streamId, giftId:'lottery_ticket',
-      quantity: qty, reason:`Lottery ticket x${qty}`, amountDenarii: cost,
-    }).catch(()=>{});
-    setEntries(e => {
-      const existing = e.find(x => x.email === user?.email);
-      if (existing) return e.map(x => x.email === user?.email ? {...x, tickets: x.tickets + qty} : x);
-      return [...e, { name: user?.full_name || 'Anonymous', email: user?.email, tickets: qty }];
-    });
-    setMyTickets(t => t + qty);
-    qc.invalidateQueries({ queryKey:['wallet', user?.email] });
-    toast.success(`🎟️ ${qty} ticket${qty>1?'s':''} purchased!`);
   };
 
-  const drawWinner = () => {
+  const drawWinner = useCallback(async () => {
     setPhase('drawing');
-    setDrumRoll(true);
-    // Build weighted pool
-    const pool = entries.flatMap(e => Array(e.tickets).fill(e));
-    if (pool.length === 0) {
+    if (entries.length === 0) {
       toast.info('No entries — lottery cancelled');
-      setPhase('setup'); setDrumRoll(false); return;
+      setPhase('type'); return;
     }
-    // Animate shuffle for 3s then reveal
+    // Animate shuffle for 3s
     let count = 0;
     const interval = setInterval(() => {
-      setWinner(pool[Math.floor(Math.random() * pool.length)]);
+      setWinner(entries[Math.floor(Math.random() * entries.length)]);
       count++;
       if (count > 20) {
         clearInterval(interval);
-        const finalWinner = pool[Math.floor(Math.random() * pool.length)];
-        setWinner(finalWinner);
-        setDrumRoll(false);
+        const final = entries[Math.floor(Math.random() * entries.length)];
+        setWinner(final);
         setPhase('winner');
-        confetti({ particleCount: 200, spread: 100, origin:{ y:0.5 }, colors:['#f5a623','#ef4444','#8b5cf6','#10b981','#fff'] });
-        toast.success(`🏆 ${finalWinner.name} won ${cfg.prize}!`, { duration: 8000 });
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 },
+          colors: ['#f5a623','#ef4444','#8b5cf6','#10b981','#fff'] });
+        // Deduct from host wallet
+        base44.functions.invoke('sendGift', {
+          streamId, giftId: 'lottery_reward', quantity: 1,
+          reason: `Lottery reward: ${reward.toLocaleString()} Denarii → ${final.name}`,
+          amountDenarii: reward,
+        }).catch(() => {});
+        toast.success(`🏆 ${final.name} wins ${reward.toLocaleString()} Denarii!`, { duration: 8000 });
+        qc.invalidateQueries({ queryKey: ['wallet', user?.email] });
       }
     }, 120);
+  }, [entries, reward, streamId, user?.email, qc]);
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(shareUrlRef.current);
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
   const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-  const totalTickets = entries.reduce((s,e)=>s+e.tickets,0);
-  const myOdds = totalTickets > 0 ? ((myTickets / totalTickets) * 100).toFixed(1) : 0;
 
   return (
-    <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm bg-[#0a0a14] rounded-3xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm p-4">
+      <motion.div initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
+        transition={{type:'spring',damping:30,stiffness:300}}
+        className="w-full max-w-sm bg-[#0a0a14] rounded-3xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/8 sticky top-0 bg-[#0a0a14] z-10">
           <div>
             <h2 className="ll-heading text-white text-lg">🎟️ Stream Lottery</h2>
             <p className="text-white/35 text-xs">
-              {phase === 'setup' ? 'Configure and start' :
-               phase === 'open'  ? `${entries.length} players · ${totalTickets} tickets` :
-               phase === 'drawing' ? 'Drawing winner…' : 'We have a winner!'}
+              {phase === 'type'    ? 'Choose lottery type' :
+               phase === 'config'  ? `${typeData?.label} · Set reward` :
+               phase === 'open'    ? `${entries.length} entries · ${fmt(timeLeft)}` :
+               phase === 'drawing' ? 'Drawing winner…' : '🏆 We have a winner!'}
             </p>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-xl ll-card flex items-center justify-center ll-interactive">
@@ -138,124 +173,183 @@ export default function StreamLottery({ streamId, isHost, onClose }) {
 
         <div className="p-4 space-y-4">
 
-          {/* SETUP phase */}
-          {phase === 'setup' && isHost && (
+          {/* ── STEP 1: Choose Type ── */}
+          {phase === 'type' && (
             <>
-              <p className="ll-label text-white/30">Select Preset</p>
-              <div className="grid grid-cols-2 gap-2">
-                {LOTTERY_PRESETS.slice(0,3).map((p,i)=>(
-                  <button key={i} onClick={()=>setPreset(i)}
-                    className="p-3 rounded-2xl text-left ll-interactive transition-all"
-                    style={{
-                      background: preset===i ? 'rgba(245,166,35,0.15)' : 'rgba(255,255,255,0.04)',
-                      border: `1.5px solid ${preset===i ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                    }}>
-                    <p className="text-white font-bold text-sm">{p.label}</p>
-                    <p className="text-white/40 text-[10px] mt-0.5">{p.prize}</p>
-                    <p className="text-amber-400 text-[10px]">{p.ticketCost}🪙 · {fmt(p.duration)}</p>
+              <p className="ll-label text-white/30">How do viewers enter?</p>
+              <div className="space-y-2">
+                {LOTTO_TYPES.map(t => (
+                  <button key={t.id} onClick={() => { setLottoType(t.id); setPhase('config'); }}
+                    className="w-full flex items-center gap-3 p-4 rounded-2xl ll-interactive text-left transition-all"
+                    style={{ background:'rgba(255,255,255,0.04)', border:'1.5px solid rgba(255,255,255,0.08)' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background:`${t.color}22`, border:`1px solid ${t.color}44` }}>
+                      <t.icon className="w-5 h-5" style={{ color: t.color }} />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">{t.label}</p>
+                      <p className="text-white/40 text-xs mt-0.5">{t.description}</p>
+                    </div>
                   </button>
                 ))}
-                <button onClick={()=>setPreset(3)}
-                  className="p-3 rounded-2xl text-left ll-interactive transition-all"
-                  style={{
-                    background: preset===3 ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.04)',
-                    border: `1.5px solid ${preset===3 ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  }}>
-                  <p className="text-white font-bold text-sm">Custom</p>
-                  <p className="text-white/40 text-[10px] mt-0.5">Set your own</p>
-                </button>
               </div>
-
-              {preset === 3 && (
-                <div className="space-y-2">
-                  {[
-                    {key:'prize', label:'Prize label', type:'text', ph:'e.g. 2000 Denarii'},
-                    {key:'prizeValue', label:'Denarii value', type:'number', ph:'2000'},
-                    {key:'ticketCost', label:'Ticket cost (Denarii)', type:'number', ph:'100'},
-                    {key:'duration', label:'Duration (seconds)', type:'number', ph:'180'},
-                  ].map(f=>(
-                    <div key={f.key}>
-                      <p className="text-white/40 text-xs mb-1">{f.label}</p>
-                      <input type={f.type} value={custom[f.key]} placeholder={f.ph}
-                        onChange={e=>setCustom(c=>({...c,[f.key]:f.type==='number'?Number(e.target.value):e.target.value}))}
-                        className="ll-input py-2.5 text-sm" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <button onClick={startLottery}
-                className="w-full py-4 rounded-2xl ll-heading text-sm ll-interactive"
-                style={{background:'linear-gradient(135deg,#f5a623,#e6891e)',color:'#000',boxShadow:'0 4px 24px rgba(245,166,35,0.3)'}}>
-                <Play className="w-4 h-4 inline mr-2" />Open Lottery
-              </button>
             </>
           )}
 
-          {/* OPEN phase */}
+          {/* ── STEP 2: Config ── */}
+          {phase === 'config' && isHost && (
+            <>
+              {/* Reward amount */}
+              <div>
+                <p className="ll-label text-white/30 mb-3">Reward Amount (from your wallet)</p>
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {REWARD_PRESETS.map(r => (
+                    <button key={r} onClick={() => setReward(r)}
+                      className="py-2.5 rounded-xl text-sm font-bold ll-interactive transition-all"
+                      style={{
+                        background: reward === r ? 'rgba(245,166,35,0.2)' : 'rgba(255,255,255,0.04)',
+                        border: `1.5px solid ${reward === r ? 'rgba(245,166,35,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                        color: reward === r ? '#f5a623' : 'rgba(255,255,255,0.6)',
+                      }}>
+                      {r >= 1000 ? `${r/1000}K` : r}🪙
+                    </button>
+                  ))}
+                </div>
+                {/* Custom amount */}
+                <input type="number" min={10} max={10000} value={reward}
+                  onChange={e => setReward(Math.max(10, Math.min(10000, Number(e.target.value))))}
+                  className="ll-input py-2.5 text-sm" placeholder="Custom amount (10–10,000)" />
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-white/30 text-xs">Your balance: {balance.toLocaleString()} Denarii</p>
+                  {!canAfford && <p className="text-red-400 text-xs">Insufficient balance</p>}
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <p className="ll-label text-white/30 mb-2">Duration</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {[[30,'30s'],[60,'1m'],[120,'2m'],[300,'5m']].map(([s, l]) => (
+                    <button key={s} onClick={() => setDuration(s)}
+                      className="py-2 rounded-xl text-xs font-bold ll-interactive"
+                      style={{
+                        background: duration === s ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.04)',
+                        border: `1.5px solid ${duration === s ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                        color: duration === s ? '#a78bfa' : 'rgba(255,255,255,0.5)',
+                      }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Password field if type=password */}
+              {lottoType === 'password' && (
+                <div>
+                  <p className="ll-label text-white/30 mb-2">Secret Password</p>
+                  <input value={password} onChange={e => setPassword(e.target.value)}
+                    className="ll-input py-2.5 text-sm" placeholder="Announce this in chat" />
+                  <p className="text-white/25 text-[10px] mt-1.5">
+                    Announce this password verbally — viewers type it to enter
+                  </p>
+                </div>
+              )}
+
+              {/* Share link preview */}
+              {lottoType === 'share_stream' && (
+                <div className="ll-card-inset p-3">
+                  <p className="text-white/40 text-xs mb-1.5">Viewers share this link:</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-white/60 text-xs flex-1 truncate font-mono">{shareUrlRef.current}</p>
+                    <button onClick={copyLink} className="ll-interactive">
+                      {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-white/30" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button onClick={() => setPhase('type')}
+                  className="px-4 py-3 rounded-2xl ll-card text-white/50 text-sm font-semibold ll-interactive">
+                  ← Back
+                </button>
+                <button onClick={startLottery} disabled={!canAfford}
+                  className="flex-1 py-3 rounded-2xl font-bold text-sm ll-interactive disabled:opacity-40"
+                  style={{ background:'linear-gradient(135deg,#f5a623,#e6891e)', color:'#000' }}>
+                  <Play className="w-4 h-4 inline mr-1.5" />Open Lottery
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ── STEP 3: Open ── */}
           {phase === 'open' && (
             <>
               {/* Timer */}
               <div className="ll-card p-4 text-center"
-                style={{borderColor: timeLeft < 30 ? 'rgba(239,68,68,0.4)' : 'rgba(245,166,35,0.2)'}}>
+                style={{ borderColor: timeLeft < 20 ? 'rgba(239,68,68,0.4)' : `${typeData?.color}33` }}>
                 <div className="ll-display text-5xl mb-1"
-                  style={{color: timeLeft < 30 ? '#ef4444' : '#f5a623'}}>{fmt(timeLeft)}</div>
-                <p className="text-white/40 text-xs">Time remaining</p>
-                {/* Progress bar */}
-                <div className="w-full h-1 bg-white/10 rounded-full mt-3 overflow-hidden">
+                  style={{ color: timeLeft < 20 ? '#ef4444' : typeData?.color }}>{fmt(timeLeft)}</div>
+                <p className="text-white font-semibold">{typeData?.label} Lottery</p>
+                <p className="text-amber-400 font-bold text-sm mt-1">🏆 {reward.toLocaleString()} Denarii</p>
+                <div className="w-full h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
                   <motion.div className="h-full rounded-full"
-                    style={{
-                      background: timeLeft < 30 ? '#ef4444' : '#f5a623',
-                      width: `${(timeLeft / cfg.duration) * 100}%`,
-                      transition: 'width 1s linear, background 0.3s'
-                    }} />
+                    style={{ background: typeData?.color, width:`${(timeLeft/duration)*100}%`, transition:'width 1s linear' }} />
                 </div>
               </div>
 
-              {/* Prize */}
-              <div className="ll-card-inset p-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-white/40 text-xs">Prize</p>
-                  <p className="text-white font-bold">{cfg.prize}</p>
-                </div>
-                <div className="ml-auto text-right">
-                  <p className="text-white/40 text-xs">Ticket</p>
-                  <p className="text-amber-400 font-bold">{cfg.ticketCost}🪙</p>
-                </div>
-              </div>
-
-              {/* Buy buttons — viewers */}
-              {!isHost && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-white/50 text-sm">Your tickets: <span className="text-amber-400 font-bold">{myTickets}</span></p>
-                    {myTickets > 0 && <p className="text-white/30 text-xs">Win odds: {myOdds}%</p>}
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[1,5,10].map(qty=>(
-                      <button key={qty} onClick={()=>buyTickets(qty)}
-                        className="py-3 rounded-xl font-bold text-sm ll-interactive transition-all"
-                        style={{background:'rgba(245,166,35,0.12)',border:'1px solid rgba(245,166,35,0.3)',color:'#f5a623'}}>
-                        ×{qty}<br/><span className="text-[10px] font-normal text-white/40">{cfg.ticketCost*qty}🪙</span>
+              {/* Entry method for viewers */}
+              {!isHost && !myEntry && (
+                <div className="ll-card p-4">
+                  <p className="text-white/50 text-xs mb-3">{typeData?.howToEnter}</p>
+                  {lottoType === 'share_stream' && (
+                    <button onClick={() => {
+                      navigator.share
+                        ? navigator.share({ title:'Join my stream on Legion Live!', url: shareUrlRef.current })
+                            .then(() => enterLottery())
+                            .catch(() => { copyLink(); enterLottery(); })
+                        : (() => { copyLink(); enterLottery(); })();
+                    }}
+                      className="w-full py-3 rounded-2xl font-bold text-sm ll-interactive"
+                      style={{ background:`${typeData?.color}22`, border:`1px solid ${typeData?.color}44`, color: typeData?.color }}>
+                      <Share2 className="w-4 h-4 inline mr-2" />Share Stream to Enter
+                    </button>
+                  )}
+                  {lottoType === 'send_gift' && (
+                    <p className="text-white/40 text-sm text-center">Send any gift to enter automatically</p>
+                  )}
+                  {lottoType === 'password' && (
+                    <div className="space-y-2">
+                      <input value={pwInput} onChange={e => setPwInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && submitPassword()}
+                        className="ll-input py-2.5 text-sm" placeholder="Enter the password" />
+                      <button onClick={submitPassword}
+                        className="w-full py-3 rounded-2xl font-bold text-sm ll-interactive"
+                        style={{ background:`${typeData?.color}22`, border:`1px solid ${typeData?.color}44`, color: typeData?.color }}>
+                        <Lock className="w-4 h-4 inline mr-2" />Submit Password
                       </button>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Leaderboard */}
+              {myEntry && (
+                <div className="ll-card p-3 flex items-center gap-2"
+                  style={{ borderColor:'rgba(16,185,129,0.3)', background:'rgba(16,185,129,0.08)' }}>
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <p className="text-emerald-400 text-sm font-semibold">You're entered! Good luck 🍀</p>
+                </div>
+              )}
+
+              {/* Entry list */}
               {entries.length > 0 && (
                 <div>
-                  <p className="ll-label text-white/30 mb-2">Ticket Holders</p>
-                  <div className="space-y-1.5">
-                    {[...entries].sort((a,b)=>b.tickets-a.tickets).slice(0,5).map((e,i)=>(
-                      <div key={e.email} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03]">
-                        <span className="text-white/30 text-xs w-4">{i+1}</span>
-                        <span className="text-white/70 text-sm flex-1 truncate">{e.name}</span>
-                        <span className="ll-pill ll-pill-gold">{e.tickets} 🎟️</span>
+                  <p className="ll-label text-white/30 mb-2">{entries.length} Entries</p>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {entries.slice(-8).reverse().map((e, i) => (
+                      <div key={e.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03]">
+                        <span className="text-white/70 text-sm truncate flex-1">{e.name}</span>
+                        <span className="ll-pill ll-pill-gold text-[10px]">entered</span>
                       </div>
                     ))}
                   </div>
@@ -263,54 +357,50 @@ export default function StreamLottery({ streamId, isHost, onClose }) {
               )}
 
               {isHost && (
-                <button onClick={drawWinner}
-                  className="w-full py-3 rounded-2xl text-sm font-bold ll-interactive"
-                  style={{background:'rgba(239,68,68,0.15)',border:'1px solid rgba(239,68,68,0.3)',color:'#ef4444'}}>
-                  <StopCircle className="w-4 h-4 inline mr-2" />Draw Now
+                <button onClick={() => { clearInterval(timerRef.current); drawWinner(); }}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold ll-interactive"
+                  style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444' }}>
+                  <StopCircle className="w-4 h-4 inline mr-1.5" />Draw Now
                 </button>
               )}
             </>
           )}
 
-          {/* DRAWING phase */}
+          {/* ── STEP 4: Drawing ── */}
           {phase === 'drawing' && (
             <div className="py-8 text-center space-y-4">
-              <motion.div
-                animate={{scale:[1,1.1,1], rotate:[0,5,-5,0]}}
-                transition={{repeat:Infinity,duration:0.3}}
-                className="text-6xl">🥁</motion.div>
+              <motion.div animate={{scale:[1,1.1,1],rotate:[0,5,-5,0]}} transition={{repeat:Infinity,duration:0.3}} className="text-6xl">🥁</motion.div>
               <p className="ll-heading text-white text-xl">Drawing winner…</p>
               {winner && (
-                <motion.p key={winner.email} initial={{opacity:0,y:-10}} animate={{opacity:1,y:0}}
+                <motion.p key={winner.id} initial={{opacity:0,y:-10}} animate={{opacity:1,y:0}}
                   className="text-amber-400 font-bold text-lg">{winner.name}</motion.p>
               )}
             </div>
           )}
 
-          {/* WINNER phase */}
+          {/* ── STEP 5: Winner ── */}
           {phase === 'winner' && winner && (
             <div className="py-6 text-center space-y-4">
-              <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5}}
-                className="text-7xl">🏆</motion.div>
+              <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5}} className="text-7xl">🏆</motion.div>
               <div>
                 <p className="text-white/40 text-sm mb-1">Winner</p>
                 <p className="ll-heading text-white text-2xl">{winner.name}</p>
               </div>
               <div className="ll-card p-3">
-                <p className="text-amber-400 font-bold text-lg">{cfg.prize}</p>
-                <p className="text-white/30 text-xs mt-0.5">Prize awarded</p>
+                <p className="text-amber-400 font-bold text-xl">{reward.toLocaleString()} 🪙</p>
+                <p className="text-white/30 text-xs mt-0.5">Denarii transferred from host wallet</p>
               </div>
               {isHost && (
-                <button onClick={()=>{ setPhase('setup'); setWinner(null); setEntries([]); }}
+                <button onClick={() => { setPhase('type'); setWinner(null); setEntries([]); setLottoType(null); }}
                   className="w-full py-3 rounded-2xl text-sm font-bold ll-interactive"
-                  style={{background:'rgba(245,166,35,0.12)',border:'1px solid rgba(245,166,35,0.3)',color:'#f5a623'}}>
+                  style={{ background:'rgba(245,166,35,0.12)', border:'1px solid rgba(245,166,35,0.3)', color:'#f5a623' }}>
                   Run Another Lottery
                 </button>
               )}
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

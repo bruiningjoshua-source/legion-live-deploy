@@ -625,3 +625,59 @@ video[style*="16/9"],
 [data-radix-collection-item] {
   transition: color 0.15s, background 0.15s;
 }
+
+/* ══════════════════════════════════════════════════════════
+ * DARK / LIGHT MODE TOGGLE
+ * Default is dark (ll-dark class on <html>).
+ * ll-light class switches to a lighter palette.
+ * ══════════════════════════════════════════════════════════ */
+
+:root {
+  --ll-bg-primary:   #050508;
+  --ll-bg-secondary: #0a0a14;
+  --ll-bg-surface:   rgba(255,255,255,0.04);
+  --ll-border:       rgba(255,255,255,0.08);
+  --ll-text-primary: rgba(255,255,255,0.95);
+  --ll-text-muted:   rgba(255,255,255,0.4);
+  --ll-text-faint:   rgba(255,255,255,0.2);
+}
+
+html.ll-light {
+  --ll-bg-primary:   #f4f4f8;
+  --ll-bg-secondary: #ffffff;
+  --ll-bg-surface:   rgba(0,0,0,0.04);
+  --ll-border:       rgba(0,0,0,0.09);
+  --ll-text-primary: rgba(0,0,0,0.9);
+  --ll-text-muted:   rgba(0,0,0,0.45);
+  --ll-text-faint:   rgba(0,0,0,0.25);
+}
+
+/* Apply vars to base elements */
+html.ll-light body {
+  background-color: var(--ll-bg-primary);
+  color: var(--ll-text-primary);
+}
+html.ll-light .ll-card {
+  background: var(--ll-bg-surface);
+  border-color: var(--ll-border);
+}
+html.ll-light .ll-card-inset {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.08);
+}
+html.ll-light .bg-\[#050508\],
+html.ll-light .bg-\[#0a0a14\],
+html.ll-light .bg-\[#070710\] {
+  background-color: var(--ll-bg-primary) !important;
+}
+html.ll-light .text-white { color: var(--ll-text-primary) !important; }
+html.ll-light .text-white\/80 { color: var(--ll-text-primary) !important; }
+html.ll-light .text-white\/60,
+html.ll-light .text-white\/50 { color: var(--ll-text-muted) !important; }
+html.ll-light .text-white\/40,
+html.ll-light .text-white\/30,
+html.ll-light .text-white\/25,
+html.ll-light .text-white\/20 { color: var(--ll-text-faint) !important; }
+html.ll-light .border-white\/10,
+html.ll-light .border-white\/8,
+html.ll-light .border-white\/06 { border-color: var(--ll-border) !important; }
