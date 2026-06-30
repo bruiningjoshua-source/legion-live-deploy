@@ -12,6 +12,7 @@ import { RateLimitProvider } from '@/components/security/RateLimiter';
 import { CSRFProvider } from '@/components/security/CSRFProtection';
 import { ErrorTrackerProvider } from '@/components/monitoring/ErrorTracker';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
+import PWAInstallBanner from '@/components/pwa/PWAInstallBanner';
 import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
