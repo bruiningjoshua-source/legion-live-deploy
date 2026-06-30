@@ -82,18 +82,15 @@ async function fulfillDenarii(db, meta, amountPaid) {
     related_entity_id: meta.package_id || null,
   });
 
-  // Currency purchase record
+  // Currency purchase record (matches actual currency_purchases schema)
   await db.from('currency_purchases').insert({
     user_email,
-    package_id:      meta.package_id,
+    package_name:    meta.package_name || meta.package_id || 'Denarii Package',
     denarii_amount:  den,
     bonus_denarii:   bonus,
-    vip_points:      vip,
-    lotto_tickets:   lotto,
     amount_usd:      amountPaid / 100,
     status:          'completed',
-    purchased_at:    new Date().toISOString(),
-  }).catch(() => {}); // table may have different schema
+  }).catch((e) => console.error('[webhook] currency_purchases insert failed:', e.message));
 
   console.log(`[webhook] Denarii fulfilled: ${total} denarii`);
 }
@@ -112,15 +109,16 @@ async function fulfillTip(db, meta, amountPaid) {
     }).eq('user_email', creator_email);
   }
 
-  // Log the tip
+  // Log the tip (table column is creator_email, not receiver_email)
   await db.from('tips').insert({
     sender_email:  senderEmail,
-    receiver_email: creator_email,
+    creator_email: creator_email,
     stream_id:     stream_id || null,
     amount_usd:    amountPaid / 100,
+    amount_denarii: creatorDenarii,
     message:       message || null,
     status:        'completed',
-  }).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   await db.from('wallet_audit_logs').insert({
     user_email:  creator_email,
@@ -135,8 +133,8 @@ async function fulfillTip(db, meta, amountPaid) {
     type:        'tip_received',
     title:       `💰 You received a $${(amountPaid / 100).toFixed(2)} tip!`,
     message:     `${senderEmail} sent you a tip${message ? `: "${message.slice(0, 80)}"` : ''}`,
-    related_entity_id: stream_id || null,
-  }).catch(() => {});
+    metadata: { related_id: stream_id || null },
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log(`[webhook] Tip fulfilled: $${amountPaid / 100}`);
 }
@@ -150,7 +148,7 @@ async function fulfillFanClub(db, meta, stripeSubscriptionId) {
     tier:            tier || 'basic',
     status:          'active',
     stripe_subscription_id: stripeSubscriptionId || null,
-    started_at:      new Date().toISOString(),
+    joined_at:       new Date().toISOString(),
   }, { onConflict: 'user_email,creator_email' });
 
   // Notify creator
@@ -159,7 +157,7 @@ async function fulfillFanClub(db, meta, stripeSubscriptionId) {
     type:        'new_fan_club_member',
     title:       '🎉 New fan club member!',
     message:     `${user_email} joined your fan club (${tier || 'basic'} tier)`,
-  }).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log('[webhook] Fan club fulfilled');
 }
@@ -167,26 +165,20 @@ async function fulfillFanClub(db, meta, stripeSubscriptionId) {
 async function fulfillCreatorMonetization(db, meta, stripeSubscriptionId, plan) {
   const { user_email } = meta;
 
+  // creator_monetizations is keyed by creator_email with feature-flag columns, not a plan/status row
   await db.from('creator_monetizations').upsert({
-    user_email,
-    plan:            plan || 'monthly',
-    status:          'active',
-    stripe_subscription_id: stripeSubscriptionId || null,
-    activated_at:    new Date().toISOString(),
-  }, { onConflict: 'user_email' }).catch(() => {});
-
-  // Update creator profile
-  await db.from('creators').update({
-    monetization_enabled: true,
-    monetization_plan:    plan || 'monthly',
-  }).eq('user_email', user_email).catch(() => {});
+    creator_email: user_email,
+    subscriptions_enabled: true,
+    tips_enabled: true,
+    ppv_enabled: true,
+  }, { onConflict: 'creator_email' }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   await db.from('notifications').insert({
     user_email,
     type:    'monetization_activated',
     title:   '✅ Creator monetization activated!',
     message: 'You can now earn from gifts, tips, and fan club subscriptions.',
-  }).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log('[webhook] Creator monetization activated');
 }
@@ -194,54 +186,45 @@ async function fulfillCreatorMonetization(db, meta, stripeSubscriptionId, plan) 
 async function fulfillHostSubscription(db, meta, stripeSubscriptionId) {
   const { user_email, plan_type } = meta;
 
-  await db.from('creator_subscriptions').upsert({
+  await db.from('creator_subscriptions').insert({
     user_email,
-    plan:            plan_type || 'monthly',
+    plan_type:       plan_type || 'monthly',
     status:          'active',
     stripe_subscription_id: stripeSubscriptionId || null,
     started_at:      new Date().toISOString(),
     expires_at:      plan_type === 'yearly'
       ? new Date(Date.now() + 365 * 86400000).toISOString()
       : new Date(Date.now() + 30  * 86400000).toISOString(),
-  }, { onConflict: 'user_email' });
-
-  await db.from('creators').update({ is_host: true }).eq('user_email', user_email).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   await db.from('notifications').insert({
     user_email,
     type:    'host_subscription_activated',
     title:   '🎙️ Host subscription active!',
     message: 'You can now go live on Legion Live.',
-  }).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log('[webhook] Host subscription fulfilled');
 }
 
-async function fulfillPPVTicket(db, meta) {
+async function fulfillPPVTicket(db, meta, amountPaid) {
   const { user_email, event_id } = meta;
 
   await db.from('ppv_tickets').insert({
     user_email,
-    event_id,
-    status:      'active',
+    ppv_event_id: event_id,
+    amount_usd:   amountPaid / 100,
+    status:       'active',
     purchased_at: new Date().toISOString(),
-  }).catch(() => {});
-
-  // Grant access flag
-  await db.from('fan_club_memberships').upsert({
-    user_email,
-    event_id,
-    type:   'ppv',
-    status: 'active',
-  }, { onConflict: 'user_email,event_id' }).catch(() => {});
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   await db.from('notifications').insert({
     user_email,
     type:    'ppv_ticket_purchased',
     title:   '🎫 PPV ticket confirmed!',
     message: 'Your ticket has been confirmed. You\'ll receive a reminder before the event.',
-    related_entity_id: event_id,
-  }).catch(() => {});
+    metadata: { related_id: event_id },
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log(`[webhook] PPV ticket fulfilled: event ${event_id}`);
 }
@@ -249,21 +232,39 @@ async function fulfillPPVTicket(db, meta) {
 async function fulfillBrandCampaign(db, meta, amountPaid) {
   const { user_email, campaign_id } = meta;
 
-  await db.from('live_campaigns').update({
-    status:     'active',
-    paid_at:    new Date().toISOString(),
-    amount_usd: amountPaid / 100,
-  }).eq('id', campaign_id).catch(() => {});
+  // createCampaignCheckout validates against brand_campaigns — fulfill the same table
+  await db.from('brand_campaigns').update({
+    status: 'active',
+  }).eq('id', campaign_id).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   await db.from('notifications').insert({
     user_email,
     type:    'campaign_activated',
     title:   '📢 Brand campaign activated!',
     message: 'Your campaign is now live and visible to creators.',
-    related_entity_id: campaign_id,
-  }).catch(() => {});
+    metadata: { related_id: campaign_id },
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log(`[webhook] Brand campaign fulfilled`);
+}
+
+async function fulfillBrandSubscription(db, meta, stripeSubscriptionId) {
+  const { user_email, contact_email, company_name, tier_id, tier_name } = meta;
+
+  await db.from('brand_applications').update({
+    status: 'active',
+    stripe_subscription_id: stripeSubscriptionId || null,
+    activated_at: new Date().toISOString(),
+  }).eq('user_email', user_email).eq('tier_id', tier_id).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
+
+  await db.from('notifications').insert({
+    user_email,
+    type:    'brand_subscription_activated',
+    title:   `✅ ${tier_name} plan activated!`,
+    message: `${company_name}'s advertising plan is now live. You'll be matched with creators shortly.`,
+  }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
+
+  console.log(`[webhook] Brand subscription fulfilled: ${company_name} — ${tier_name}`);
 }
 
 async function handleSubscriptionCancelled(db, subscription) {
@@ -271,15 +272,15 @@ async function handleSubscriptionCancelled(db, subscription) {
 
   // Fan club
   await db.from('fan_club_memberships').update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
-    .eq('stripe_subscription_id', subId).catch(() => {});
+    .eq('stripe_subscription_id', subId).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   // Creator monetization
   await db.from('creator_monetizations').update({ status: 'cancelled' })
-    .eq('stripe_subscription_id', subId).catch(() => {});
+    .eq('stripe_subscription_id', subId).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   // Host subscription
   await db.from('creator_subscriptions').update({ status: 'cancelled' })
-    .eq('stripe_subscription_id', subId).catch(() => {});
+    .eq('stripe_subscription_id', subId).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
   console.log('[webhook] Subscription cancelled');
 }
@@ -340,9 +341,11 @@ export const handler = async (event) => {
           case 'host_subscription':
             await fulfillHostSubscription(db, meta, subId); break;
           case 'ppv_ticket':
-            await fulfillPPVTicket(db, meta); break;
+            await fulfillPPVTicket(db, meta, amountPaid); break;
           case 'brand_campaign':
             await fulfillBrandCampaign(db, meta, amountPaid); break;
+          case 'brand_subscription':
+            await fulfillBrandSubscription(db, meta, subId); break;
           default:
             console.warn(`[webhook] Unknown purchase_type: ${purchaseType}`);
         }
@@ -360,9 +363,9 @@ export const handler = async (event) => {
         const subId   = invoice.subscription;
         if (subId) {
           await db.from('creator_subscriptions').update({ status: 'past_due' })
-            .eq('stripe_subscription_id', subId).catch(() => {});
+            .eq('stripe_subscription_id', subId).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
           await db.from('fan_club_memberships').update({ status: 'past_due' })
-            .eq('stripe_subscription_id', subId).catch(() => {});
+            .eq('stripe_subscription_id', subId).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
         }
         break;
       }

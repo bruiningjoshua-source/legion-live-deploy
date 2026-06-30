@@ -592,7 +592,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -636,7 +636,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -669,7 +669,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -703,7 +703,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
     const prices = { monthly: 999, yearly: 9900 }; // cents
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -750,7 +750,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
       await supabase.from('creators').update({ stripe_account_id: accountId }).eq('id', creator.id);
     }
 
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${origin}/CreatorPayouts?refresh=true`,
@@ -834,6 +834,107 @@ Reply in JSON: { "reply": "your response here" }`;
     }
 
     return { reply, action: null };
+  },
+
+  // ─── Brand Subscription ──────────────────────────────────────────────────
+  async createBrandSubscription({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { tier_id, tier_name, amount_usd, company_name, website, category, description, contact_email, contact_name } = params || {};
+    if (!tier_id || !amount_usd || !company_name || !contact_email) {
+      return json(400, { error: 'tier_id, amount_usd, company_name, contact_email required' });
+    }
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          recurring: { interval: 'month' },
+          product_data: {
+            name: `Legion Live — ${tier_name} Brand Plan`,
+            description: 'Advertising and creator partnerships on Legion Live',
+          },
+          unit_amount: Math.round(amount_usd * 100),
+        },
+        quantity: 1,
+      }],
+      metadata: {
+        purchase_type: 'brand_subscription',
+        tier_id, tier_name,
+        company_name, website: website || '',
+        category: category || '', description: description || '',
+        contact_email, contact_name: contact_name || '',
+        user_email: user.email,
+      },
+      customer_email: contact_email,
+      success_url: `${origin}/BrandDashboard?success=true`,
+      cancel_url:  `${origin}/BrandCampaigns?cancelled=true`,
+    });
+
+    const db = admin || supabase;
+    await db.from('brand_applications').insert({
+      user_email:    user.email,
+      company_name,  website,  category,  description,
+      contact_email, contact_name,
+      tier_id, tier_name,
+      amount_usd,
+      stripe_session_id: session.id,
+      status: 'pending_payment',
+    }).catch(() => {});
+
+    return { url: session.url, session_id: session.id };
+  },
+
+  // ─── Grant Admin ──────────────────────────────────────────────────────────
+  async grantAdmin({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    if (!isAllowedAdmin(user.email)) return json(403, { error: 'Only admins can grant admin access' });
+    const { email, note } = params || {};
+    if (!email) return json(400, { error: 'email required' });
+    const db = admin || supabase;
+    const { data, error } = await db.rpc('grant_admin', {
+      p_email: email.toLowerCase().trim(),
+      p_granted_by: user.email,
+      p_note: note || null,
+    });
+    if (error) throw error;
+    return { success: true, message: data };
+  },
+
+  // ─── Revoke Admin ─────────────────────────────────────────────────────────
+  async revokeAdmin({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    if (!isAllowedAdmin(user.email)) return json(403, { error: 'Only admins can revoke admin access' });
+    const { email } = params || {};
+    if (!email) return json(400, { error: 'email required' });
+    if (email.toLowerCase().trim() === user.email.toLowerCase()) {
+      return json(400, { error: 'You cannot revoke your own admin access' });
+    }
+    const db = admin || supabase;
+    const { data, error } = await db.rpc('revoke_admin', {
+      p_email: email.toLowerCase().trim(),
+    });
+    if (error) throw error;
+    return { success: true, message: data };
+  },
+
+  // ─── List Admins ──────────────────────────────────────────────────────────
+  async listAdmins({ supabase, admin, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    if (!isAllowedAdmin(user.email)) return json(403, { error: 'Admin only' });
+    const db = admin || supabase;
+    const { data, error } = await db
+      .from('admin_allowlist')
+      .select('email, added_by, added_at, note')
+      .order('added_at', { ascending: true });
+    if (error) throw error;
+    return { admins: data || [] };
   },
 
   // ─── Save User Theme ─────────────────────────────────────────────────────
@@ -952,7 +1053,7 @@ Reply in JSON: { "reply": "your response here" }`;
 
     if (pi.status === 'requires_payment_method' || pi.status === 'processing') {
       try {
-        const origin = process.env.URL || 'https://legionlive.app';
+        const origin = process.env.URL || 'https://legion-live.netlify.app';
         const confirmed = await stripe.paymentIntents.confirm(paymentIntentId, {
           return_url: `${origin}/Wallet?retry_success=true`,
         });
@@ -1084,7 +1185,7 @@ Reply in JSON: { "reply": "your response here" }`;
       yearly:  { amount: 1200, interval: 'year',  name: 'Legion Host — Yearly ($12/yr)' },
     };
     const selected = prices[plan];
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
 
     // Find or create Stripe customer
     const existing = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -1141,7 +1242,7 @@ Reply in JSON: { "reply": "your response here" }`;
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
     const priceUsd = ppvEvent.price_usd || ppvEvent.ticket_price || 9.99;
 
     const session = await stripe.checkout.sessions.create({
@@ -1216,7 +1317,7 @@ Reply in JSON: { "reply": "your response here" }`;
     const { test_type = 'full_cycle' } = params || {};
 
     if (test_type === 'full_cycle') {
-      const origin = process.env.URL || 'https://legionlive.app';
+      const origin = process.env.URL || 'https://legion-live.netlify.app';
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
@@ -1436,7 +1537,7 @@ Reply in JSON: { "reply": "your response here" }`;
     return {
       success: false,
       message: 'Google Play Games import requires OAuth authentication.',
-      oauth_url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID || ''}&scope=https://www.googleapis.com/auth/games.readonly&response_type=code&redirect_uri=${process.env.URL || 'https://legionlive.app'}/GamingHub`,
+      oauth_url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID || ''}&scope=https://www.googleapis.com/auth/games.readonly&response_type=code&redirect_uri=${process.env.URL || 'https://legion-live.netlify.app'}/GamingHub`,
       requires_oauth: true,
     };
   },
@@ -1531,7 +1632,7 @@ Reply in JSON: { "reply": "your response here" }`;
 
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
-    const origin = process.env.URL || 'https://legionlive.app';
+    const origin = process.env.URL || 'https://legion-live.netlify.app';
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
