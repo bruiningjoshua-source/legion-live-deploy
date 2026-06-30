@@ -53,7 +53,23 @@ boot();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(reg => console.log('[SW] Registered:', reg.scope))
+      .then(reg => {
+        console.log('[SW] Registered:', reg.scope);
+        // Check for updates immediately and every hour
+        reg.update();
+        setInterval(() => reg.update(), 60 * 60 * 1000);
+        // When a new SW is waiting, activate it immediately
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker?.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version ready — reload to pick it up
+              console.log('[SW] New version available, reloading...');
+              window.location.reload();
+            }
+          });
+        });
+      })
       .catch(err => console.warn('[SW] Registration failed:', err));
   });
 }

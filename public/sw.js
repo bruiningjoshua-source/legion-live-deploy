@@ -8,7 +8,7 @@
  * - Android Chrome: full PWA — install, push, background sync
  */
 
-const CACHE_NAME     = 'legion-live-v1';
+const CACHE_NAME     = 'legion-live-v3'; // bumped — forces old cache clear on update
 const OFFLINE_URL    = '/';
 
 // Assets to pre-cache on install (app shell)
