@@ -74,11 +74,13 @@ export default function GiftVideoOverlay({ gift, sender, quantity = 1, onComplet
                 autoPlay
                 muted={false}
                 playsInline
+                preload="auto"
                 className="w-full h-auto rounded-2xl"
                 style={{
                   filter: `drop-shadow(0 0 ${isBigGift ? 40 : 20}px ${tierColor}aa)`,
                 }}
                 onEnded={() => setEnded(true)}
+                onError={() => { setEnded(true); }}
               />
             ) : (
               // Fallback: icon burst for gifts without video

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -76,6 +76,29 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
     if (activeTab === 'all') return gifts.filter(g => g.is_active !== false).sort((a, b) => (a.cost_denarii || 0) - (b.cost_denarii || 0));
     return gifts.filter(g => g.is_active !== false && g.category === activeTab).sort((a, b) => (a.cost_denarii || 0) - (b.cost_denarii || 0));
   }, [gifts, activeTab, popularGifts]);
+
+  // Prefetch the 3 cheapest (most commonly sent) gift videos on panel open so
+  // they're warm in browser cache by the time a viewer actually sends one —
+  // avoids a visible stall between tap and animation start.
+  useEffect(() => {
+    // Respect data-saver mode and slow connections — don't prefetch video on metered networks
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn?.saveData || conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g') return;
+
+    const toPrefetch = popularGifts.slice(0, 3).filter(g => g.video_url);
+    toPrefetch.forEach(g => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'video';
+      link.href = g.video_url;
+      document.head.appendChild(link);
+    });
+    return () => {
+      document.querySelectorAll(`link[rel="prefetch"][as="video"]`).forEach(el => {
+        if (toPrefetch.some(g => g.video_url === el.href || el.href.endsWith(g.video_url))) el.remove();
+      });
+    };
+  }, [popularGifts]);
 
   const { totalCost, cartItems } = useMemo(() => {
     const items = Object.entries(giftCart)
