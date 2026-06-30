@@ -49,6 +49,16 @@ async function boot() {
 
 boot();
 
+// ── Listen for SW reload signal ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'SW_UPDATED' && event.data?.action === 'reload') {
+      console.log('[main] SW signalled reload — refreshing for fresh content');
+      window.location.reload();
+    }
+  });
+}
+
 // ── PWA Service Worker Registration ──────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
