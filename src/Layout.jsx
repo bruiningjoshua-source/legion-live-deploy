@@ -8,40 +8,6 @@ import LoadingScreen from '@/components/shared/LoadingScreen';
 import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
 import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
-
-// Temporary diagnostic wrapper — shows crash details ON SCREEN in red
-// so we can identify the blank-screen bug without needing DevTools
-class ScreenErrorBoundary extends React.Component {
-  state = { error: null };
-  static getDerivedStateFromError(e) { return { error: e }; }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{
-          position:'fixed',inset:0,background:'#0a0000',color:'#fff',
-          zIndex:99999,overflow:'auto',padding:'24px',fontFamily:'monospace'
-        }}>
-          <div style={{background:'#ef4444',borderRadius:'12px',padding:'16px',marginBottom:'16px'}}>
-            <strong>💥 CRASH DETECTED — Send this to Josh</strong>
-          </div>
-          <div style={{background:'#1a0000',borderRadius:'8px',padding:'12px',fontSize:'12px',wordBreak:'break-all'}}>
-            <p><strong>Error:</strong> {this.state.error?.message}</p>
-            <p style={{marginTop:'8px',opacity:0.6}}><strong>Stack:</strong></p>
-            <pre style={{fontSize:'10px',opacity:0.5,whiteSpace:'pre-wrap'}}>
-              {this.state.error?.stack?.slice(0,600)}
-            </pre>
-          </div>
-          <button onClick={() => window.location.reload()}
-            style={{marginTop:'16px',background:'#f5a623',color:'#000',border:'none',
-                    borderRadius:'8px',padding:'12px 24px',fontWeight:'bold',cursor:'pointer'}}>
-            Reload
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import { RateLimitProvider } from '@/components/security/RateLimiter';
 import { CSRFProvider } from '@/components/security/CSRFProtection';
@@ -282,7 +248,6 @@ export default function Layout({ children, currentPageName }) {
   // DIAGNOSTIC
   console.log('[Layout] Reached return statement — rendering ErrorBoundary');
   return (
-    <ScreenErrorBoundary>
     <ErrorBoundary>
       <CSRFProvider>
         <RateLimitProvider>
@@ -329,6 +294,5 @@ export default function Layout({ children, currentPageName }) {
         </RateLimitProvider>
       </CSRFProvider>
     </ErrorBoundary>
-    </ScreenErrorBoundary>
   );
 }
