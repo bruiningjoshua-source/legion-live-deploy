@@ -82,12 +82,8 @@ export default function Layout({ children, currentPageName }) {
   });
 
   useEffect(() => {
-    // If age check data isn't available yet (loading/error), default to showing content
-    if (user && user.role !== 'admin' && user.age_verified === false) {
-      setShowAgeVerification(true);
-    } else {
-      setShowAgeVerification(false);
-    }
+    // Age verification gate disabled — all users set to verified in DB
+    setShowAgeVerification(false);
   }, [user]);
 
   // Show tutorial for new users — cleanup ensures it only fires once
