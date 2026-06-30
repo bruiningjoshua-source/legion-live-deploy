@@ -20,18 +20,16 @@ const tierConfig = {
 
 // BIGO-style tab system
 const TABS = [
-  { id: 'popular',  label: 'Popular',  icon: '🔥' },
-  { id: 'all',      label: 'All',      icon: '✨' },
-  { id: 'roman',    label: 'Roman',    icon: '🏛️' },
-  { id: 'mythical', label: 'Mythical', icon: '🐉' },
-  { id: 'war',      label: 'War',      icon: '⚔️' },
-  { id: 'fortune',  label: 'Fortune',  icon: '💰' },
-  { id: 'love',     label: 'Love',     icon: '💕' },
-  { id: 'celebration', label: 'Celebrate', icon: '🎉' },
+  { id: 'popular',   label: 'Popular',   icon: '🔥' },
+  { id: 'all',       label: 'All',       icon: '✨' },
+  { id: 'common',    label: 'Common',    icon: '🏛️' },
+  { id: 'rare',      label: 'Rare',      icon: '🔱' },
+  { id: 'epic',      label: 'Epic',      icon: '🔥' },
+  { id: 'legendary', label: 'Legendary', icon: '⚔️' },
 ];
 
 function GiftItem({ gift, inCart, onTap }) {
-  const config = tierConfig[gift.tier] || tierConfig.common;
+  const config = tierConfig[gift.category] || tierConfig.common;
   const formatPrice = (p) => p >= 1000 ? `${(p / 1000).toFixed(p >= 10000 ? 0 : 1)}K` : String(p);
 
   return (

@@ -16,7 +16,7 @@ import ChatService from '@/components/services/ChatService';
 
 import BulletChat from '@/components/stream/BulletChat';
 import GiftPanel from '@/components/gifts/GiftPanel';
-import GiftAnimation from '@/components/gifts/GiftAnimation';
+import GiftVideoOverlay from '@/components/gifts/GiftVideoOverlay';
 import GiftStreakOverlay from '@/components/stream/GiftStreakOverlay';
 import SpinWheel from '@/components/stream/SpinWheel';
 import StreamLottery from '@/components/stream/StreamLottery';
@@ -503,7 +503,7 @@ export default function WatchStream() {
         <ViewerAuctionWidget streamId={streamId} user={user} />
       )}
 
-      {giftAnimation && <GiftAnimation gift={giftAnimation} />}
+      {giftAnimation && <GiftVideoOverlay gift={giftAnimation.gift} sender={giftAnimation.sender} quantity={giftAnimation.quantity} onComplete={() => setGiftAnimation(null)} />}
       {showSpinWheel  && <SpinWheel    streamId={streamId} isHost={false} onClose={()=>setShowSpinWheel(false)} />}
       {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} onGiftSent={cb => { lotteryGiftCallbackRef.current = cb; }} />}
       {showChallenge  && <ViewerChallenge streamId={streamId} isHost={false} onClose={()=>setShowChallenge(false)} />}
