@@ -215,22 +215,32 @@ const functions = {
     const headers = { 'Content-Type': 'application/json' };
     if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-    const netlifyResponse = await fetch(`/.netlify/functions/base44-function`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ functionName, params }),
-    }).catch(() => null);
-
-    if (netlifyResponse?.ok) {
-      return { data: await netlifyResponse.json(), status: netlifyResponse.status };
+    let netlifyResponse;
+    try {
+      netlifyResponse = await fetch(`/.netlify/functions/base44-function`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ functionName, params }),
+      });
+    } catch (networkErr) {
+      // Genuine network failure (offline, DNS, CORS) — surface it directly.
+      // Do NOT silently fall through to Supabase Edge Functions: that system
+      // uses a completely different naming convention (kebab-case function
+      // slugs vs. this camelCase functionName), so a fallback call there is
+      // guaranteed to fail and produces a confusing, unrelated error message
+      // that masks the real problem.
+      throw new Error(`Network error calling ${functionName}: ${networkErr.message}`);
     }
 
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body: params,
-    });
-    if (error) throw error;
-    // Mimic axios-like response shape that the app expects
-    return { data, status: 200 };
+    const body = await netlifyResponse.json().catch(() => ({}));
+
+    if (!netlifyResponse.ok) {
+      // Surface the actual error from the Netlify function instead of
+      // silently retrying against an unrelated system.
+      throw new Error(body?.error || `${functionName} failed with status ${netlifyResponse.status}`);
+    }
+
+    return { data: body, status: netlifyResponse.status };
   },
 };
 
