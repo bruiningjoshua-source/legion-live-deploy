@@ -245,8 +245,6 @@ export default function Layout({ children, currentPageName }) {
     </>
   );
 
-  // DIAGNOSTIC
-  console.log('[Layout] Reached return statement — rendering ErrorBoundary');
   return (
     <ErrorBoundary>
       <CSRFProvider>
