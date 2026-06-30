@@ -6,7 +6,6 @@ import Navbar from '@/components/layout/Navbar.jsx';
 import BottomNav from '@/components/layout/BottomNav.jsx';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
-import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import { RateLimitProvider } from '@/components/security/RateLimiter';
@@ -15,7 +14,6 @@ import { ErrorTrackerProvider } from '@/components/monitoring/ErrorTracker';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
-import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
 import CreatorOnboarding from '@/components/onboarding/CreatorOnboarding';
 import useScrollPreservation from '@/components/navigation/useScrollPreservation';
@@ -258,32 +256,9 @@ export default function Layout({ children, currentPageName }) {
               }}
             />
             
-            {needsAnimatedBg ? (
-              <AnimatedBackground 
-                theme={currentTheme} 
-                intensity={optimizedParticles}
-                showParticles={optimizedParticles !== 'off'}
-              >
-                <div className="min-h-screen">
-                  <div className="fixed bottom-24 right-4 z-40">
-                    <AdvancedThemeCustomizer
-                      currentTheme={currentTheme}
-                      onThemeChange={setCurrentTheme}
-                      particleIntensity={particleIntensity}
-                      onParticleChange={setParticleIntensity}
-                      animatedBg={animatedBg}
-                      onAnimatedBgChange={setAnimatedBg}
-                      user={user}
-                    />
-                  </div>
-                  {renderContent()}
-                </div>
-              </AnimatedBackground>
-            ) : (
-              <div className="min-h-screen bg-[#0f0f12]">
-                {renderContent()}
-              </div>
-            )}
+            <div className="min-h-screen bg-[#050508]">
+              {renderContent()}
+            </div>
           </ErrorTrackerProvider>
         </RateLimitProvider>
       </CSRFProvider>
