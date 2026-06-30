@@ -6,8 +6,10 @@ import Navbar from '@/components/layout/Navbar.jsx';
 import BottomNav from '@/components/layout/BottomNav.jsx';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
+import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
+import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import { RateLimitProvider } from '@/components/security/RateLimiter';
 import { CSRFProvider } from '@/components/security/CSRFProtection';
 import { ErrorTrackerProvider } from '@/components/monitoring/ErrorTracker';
@@ -257,9 +259,32 @@ export default function Layout({ children, currentPageName }) {
               }}
             />
             
-            <div className="min-h-screen bg-[#050508]">
-              {renderContent()}
-            </div>
+            {needsAnimatedBg ? (
+              <AnimatedBackground
+                theme={currentTheme}
+                intensity={optimizedParticles}
+                showParticles={optimizedParticles !== 'off'}
+              >
+                <div className="min-h-screen">
+                  <div className="fixed bottom-24 right-4 z-40">
+                    <AdvancedThemeCustomizer
+                      currentTheme={currentTheme}
+                      onThemeChange={setCurrentTheme}
+                      particleIntensity={particleIntensity}
+                      onParticleChange={setParticleIntensity}
+                      animatedBg={animatedBg}
+                      onAnimatedBgChange={setAnimatedBg}
+                      user={user}
+                    />
+                  </div>
+                  {renderContent()}
+                </div>
+              </AnimatedBackground>
+            ) : (
+              <div className="min-h-screen bg-[#0f0f12]">
+                {renderContent()}
+              </div>
+            )}
           </ErrorTrackerProvider>
         </RateLimitProvider>
       </CSRFProvider>
