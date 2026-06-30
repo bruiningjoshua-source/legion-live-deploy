@@ -1,3 +1,4 @@
+// Build: 2026-06-30 21:33:36 UTC
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl =
