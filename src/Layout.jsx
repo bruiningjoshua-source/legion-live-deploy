@@ -25,6 +25,8 @@ import { Toaster } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
+  // DIAGNOSTIC — remove after black screen is fixed
+  console.log('[Layout] Mounting, page:', currentPageName);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShieldMenu, setShowShieldMenu] = useState(false);
@@ -212,9 +214,11 @@ export default function Layout({ children, currentPageName }) {
       
       {/* Theme variables are now in globals.css */}
       
+      {console.log('[Layout] About to render Navbar')}
       {currentPageName !== 'VideoEditor' && (
         <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       )}
+      {console.log('[Layout] Navbar rendered')}
       
       <main className={`${
         ['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName)
@@ -245,6 +249,10 @@ export default function Layout({ children, currentPageName }) {
     </>
   );
 
+  // DIAGNOSTIC
+  console.log('[Layout] Reached return statement — rendering ErrorBoundary');
+  // DIAGNOSTIC
+  console.log('[Layout] Reached return statement — rendering ErrorBoundary');
   return (
     <ErrorBoundary>
       <CSRFProvider>
