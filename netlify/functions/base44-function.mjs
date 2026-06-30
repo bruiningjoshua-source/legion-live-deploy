@@ -767,6 +767,17 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const { subscriptionId } = params || {};
     if (!subscriptionId) return json(400, { error: 'subscriptionId required' });
 
+    // Ownership check — verify this subscription belongs to the authenticated user
+    // before letting them cancel it. Without this, any user could cancel anyone's
+    // subscription by guessing/enumerating Stripe subscription IDs.
+    const [hostSub, fanSub, monetizationSub] = await Promise.all([
+      supabase.from('creator_subscriptions').select('id').eq('stripe_subscription_id', subscriptionId).eq('user_email', user.email).limit(1),
+      supabase.from('fan_club_memberships').select('id').eq('stripe_subscription_id', subscriptionId).eq('user_email', user.email).limit(1),
+      supabase.from('creator_monetizations').select('id').eq('creator_email', user.email).limit(1),
+    ]);
+    const owns = (hostSub.data?.length || fanSub.data?.length || monetizationSub.data?.length);
+    if (!owns) return json(403, { error: 'You do not own this subscription' });
+
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
@@ -1230,12 +1241,13 @@ Reply in JSON: { "reply": "your response here" }`;
     const ppvEvent = events?.[0];
     if (!ppvEvent) return json(404, { error: 'Event not found' });
 
-    // Check for existing ticket
+    // Check for existing ticket — ppv_tickets is the real table (fan_club_memberships has no event_id column)
     const { data: existingTickets } = await supabase
-      .from('fan_club_memberships')
+      .from('ppv_tickets')
       .select('id')
-      .eq('event_id', event_id)
+      .eq('ppv_event_id', event_id)
       .eq('user_email', user.email)
+      .eq('status', 'active')
       .limit(1);
     if (existingTickets?.length) return json(400, { error: 'You already have a ticket for this event' });
 
@@ -1243,7 +1255,7 @@ Reply in JSON: { "reply": "your response here" }`;
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
     const origin = process.env.URL || 'https://legion-live.netlify.app';
-    const priceUsd = ppvEvent.price_usd || ppvEvent.ticket_price || 9.99;
+    const priceUsd = ppvEvent.price_usd || 9.99;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

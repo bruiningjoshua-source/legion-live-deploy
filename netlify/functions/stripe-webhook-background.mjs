@@ -48,7 +48,7 @@ async function alreadyProcessed(db, key) {
 
 // ── Fulfilment handlers ───────────────────────────────────────────────────────
 
-async function fulfillDenarii(db, meta, amountPaid) {
+async function fulfillDenarii(db, meta, amountPaid, stripePaymentIntent, stripeSessionId) {
   const { user_email, denarii_amount, bonus_denarii, vip_points, lotto_tickets } = meta;
   const den   = Number(denarii_amount)  || 0;
   const bonus = Number(bonus_denarii)   || 0;
@@ -73,23 +73,26 @@ async function fulfillDenarii(db, meta, amountPaid) {
     }).eq('user_email', user_email);
   }
 
-  // Audit log
+  // Audit log — related_entity_id stores the Stripe session ID so checkPaymentStatus
+  // and RetryPaymentPanel can correctly match against an in-flight checkout
   await db.from('wallet_audit_logs').insert({
     user_email,
     action:          'purchase',
     amount_denarii:  total,
     reason:          `Bought ${den.toLocaleString()} Denarii${bonus > 0 ? ` + ${bonus.toLocaleString()} bonus` : ''}`,
-    related_entity_id: meta.package_id || null,
+    related_entity_id: stripeSessionId || stripePaymentIntent || meta.package_id || null,
   });
 
   // Currency purchase record (matches actual currency_purchases schema)
   await db.from('currency_purchases').insert({
     user_email,
-    package_name:    meta.package_name || meta.package_id || 'Denarii Package',
-    denarii_amount:  den,
-    bonus_denarii:   bonus,
-    amount_usd:      amountPaid / 100,
-    status:          'completed',
+    package_name:           meta.package_name || meta.package_id || 'Denarii Package',
+    denarii_amount:         den,
+    bonus_denarii:          bonus,
+    amount_usd:             amountPaid / 100,
+    status:                 'completed',
+    stripe_payment_intent:  stripePaymentIntent || null,
+    stripe_session_id:      stripeSessionId || null,
   }).catch((e) => console.error('[webhook] currency_purchases insert failed:', e.message));
 
   console.log(`[webhook] Denarii fulfilled: ${total} denarii`);
@@ -331,7 +334,7 @@ export const handler = async (event) => {
 
         switch (purchaseType) {
           case 'denarii':
-            await fulfillDenarii(db, meta, amountPaid); break;
+            await fulfillDenarii(db, meta, amountPaid, session.payment_intent, session.id); break;
           case 'tip':
             await fulfillTip(db, meta, amountPaid); break;
           case 'fan_club':
