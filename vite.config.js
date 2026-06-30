@@ -14,12 +14,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor:  ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-          ui:      ['framer-motion', 'lucide-react'],
-          three:   ['three'],
-          zego:    ['zego-express-engine-webrtc'],
-          stripe:  ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          vendor:   ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          ui:       ['framer-motion', 'lucide-react'],
+          three:    ['three'],
+          zego:     ['zego-express-engine-webrtc'],
+          stripe:   ['@stripe/stripe-js', '@stripe/react-stripe-js'],
           supabase: ['@supabase/supabase-js'],
+          charts:   ['recharts'],   // 368KB — split so analytics pages don't bloat non-analytics routes
+          jszip:    ['jszip'],      // 95KB — only needed for Live2D ZIP upload
         },
       },
     },

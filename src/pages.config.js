@@ -28,7 +28,7 @@ import React, { lazy, Suspense } from 'react';
  * Example with Layout (wraps all pages):
  *
  *   const Home = lazy(() => import('./pages/Home'));
- *   import Settings from './pages/Settings';
+ *   const Settings = lazy(() => import('./pages/Settings'));
  *   import __Layout from './Layout.jsx';
  *
  *   export const PAGES = {
@@ -89,7 +89,7 @@ const GamingSetup = lazy(() => import('./pages/GamingSetup'));
 const GoLive = lazy(() => import('./pages/GoLive'));
 const HelpAndInfo = lazy(() => import('./pages/HelpAndInfo'));
 const Highlights = lazy(() => import('./pages/Highlights'));
-import Home from './pages/Home';
+const Home = lazy(() => import('./pages/Home'));
 const ImportYouTubeLibrary = lazy(() => import('./pages/ImportYouTubeLibrary'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const MusicStudio = lazy(() => import('./pages/MusicStudio'));
@@ -106,7 +106,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const ProductionReadiness = lazy(() => import('./pages/ProductionReadiness'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Quests = lazy(() => import('./pages/Quests'));
-import Settings from './pages/Settings';
+const Settings = lazy(() => import('./pages/Settings'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const TheAmphitheatre = lazy(() => import('./pages/TheAmphitheatre'));
 const UpcomingStreams = lazy(() => import('./pages/UpcomingStreams'));
