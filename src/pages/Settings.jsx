@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { getColorScheme, setColorScheme } from '@/lib/darkMode';
 import { Sun, Shield, User, LogOut, Palette,
   Sparkles, Zap, Monitor, Trash2, Image, ChevronRight,
   Check, Eye, RefreshCw, HelpCircle, Lock
@@ -46,6 +47,13 @@ const fade = { hidden:{ opacity:0, y:8 }, show:{ opacity:1, y:0, transition:{ du
 
 export default function Settings() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [colorScheme, setColorSchemeState] = useState(() => getColorScheme());
+
+  const toggleDarkMode = (isDark) => {
+    const scheme = isDark ? 'dark' : 'light';
+    setColorScheme(scheme);
+    setColorSchemeState(scheme);
+  };
   const [activeSection, setActiveSection] = useState('appearance');
 
   const [notifications, setNotifications] = useState(() => {
