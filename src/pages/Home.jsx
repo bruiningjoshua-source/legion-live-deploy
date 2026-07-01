@@ -64,23 +64,26 @@ export default function Home() {
 
       {/* ── Hub grid ───────────────────────────────────────────── */}
       <div className="px-4 mb-6">
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2">
           {HUBS.map((hub, i) => (
             <Link key={hub.name} to={createPageUrl(hub.path)}>
               <motion.div
                 whileTap={{ scale: 0.94 }}
                 transition={{ type:'spring', stiffness:500, damping:25 }}
-                className="ll-card ll-interactive relative overflow-hidden p-3.5"
+                className="ll-card ll-interactive relative overflow-hidden p-3"
               >
-                {/* Ambient glow */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background:`radial-gradient(circle at 30% 30%, ${hub.color}12, transparent 70%)` }} />
-                {(() => { const Icon = ICON_MAP[hub.icon]; return <div className="w-8 h-8 mb-2 flex items-center justify-center rounded-xl" style={{ background: hub.color + '18' }}><Icon className="w-4 h-4" style={{ color: hub.color }} /></div>; })()}
-                <p className="text-white font-bold text-sm leading-tight">{hub.name}</p>
-                <p className="text-white/35 text-[10px] font-medium mt-0.5">{hub.sub}</p>
-                <div className="absolute top-2.5 right-2.5">
-                  <span className="ll-label text-[9px]" style={{ color: hub.color }}>{hub.badge}</span>
+                {/* Badge top-right */}
+                <div className="absolute top-2 right-2">
+                  <span className="text-[8px] font-bold tracking-wide" style={{ color: hub.color }}>{hub.badge}</span>
                 </div>
+                {/* Icon */}
+                {(() => { const Icon = ICON_MAP[hub.icon]; return (
+                  <div className="w-7 h-7 mb-2 flex items-center justify-center rounded-lg" style={{ background: hub.color + '15' }}>
+                    <Icon className="w-3.5 h-3.5" style={{ color: hub.color }} />
+                  </div>
+                ); })()}
+                <p className="text-white font-bold text-xs leading-tight truncate">{hub.name}</p>
+                <p className="text-white/35 text-[9px] font-medium mt-0.5 truncate">{hub.sub}</p>
               </motion.div>
             </Link>
           ))}

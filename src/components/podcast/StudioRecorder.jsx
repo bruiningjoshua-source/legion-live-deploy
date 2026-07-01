@@ -415,37 +415,41 @@ export default function StudioRecorder({ onRecordingReady }) {
   return (
     <div className="space-y-4 text-white">
 
-      {/* ── TOP BAR: device + sample rate ── */}
-      <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+      {/* ── TOP BAR: device + controls — two rows so nothing overflows ── */}
+      <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+        {/* Row 1: mic select */}
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.04]">
           <Mic className="w-4 h-4 text-amber-400 shrink-0" />
           <select value={inputDevice} onChange={e => setInputDevice(e.target.value)} disabled={isRecording}
-            className="flex-1 bg-transparent text-white/70 text-sm outline-none truncate">
+            className="flex-1 bg-transparent text-white/70 text-sm outline-none min-w-0">
             <option value="">Default Microphone</option>
             {devices.map(d => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId.slice(0,8)}`}</option>)}
           </select>
         </div>
-        <select value={sampleRate} onChange={e => setSampleRate(Number(e.target.value))} disabled={isRecording}
-          className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1 text-white/60 text-xs outline-none">
-          <option value={44100}>44.1 kHz</option>
-          <option value={48000}>48 kHz</option>
-          <option value={96000}>96 kHz</option>
-        </select>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <div onClick={() => !isRecording && setNoiseCancel(v => !v)}
-              className={`w-8 h-4 rounded-full transition-colors ${noiseCancel ? 'bg-amber-500' : 'bg-white/10'} relative cursor-pointer`}>
-              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${noiseCancel ? 'translate-x-4' : 'translate-x-0.5'}`} />
-            </div>
-            <span className="text-white/40 text-xs">Noise</span>
-          </label>
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <div onClick={() => !isRecording && setEchoCancellation(v => !v)}
-              className={`w-8 h-4 rounded-full transition-colors ${echoCancellation ? 'bg-amber-500' : 'bg-white/10'} relative cursor-pointer`}>
-              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${echoCancellation ? 'translate-x-4' : 'translate-x-0.5'}`} />
-            </div>
-            <span className="text-white/40 text-xs">Echo</span>
-          </label>
+        {/* Row 2: sample rate + noise/echo toggles */}
+        <div className="flex items-center justify-between px-3 py-2">
+          <select value={sampleRate} onChange={e => setSampleRate(Number(e.target.value))} disabled={isRecording}
+            className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1 text-white/60 text-xs outline-none">
+            <option value={44100}>44.1 kHz</option>
+            <option value={48000}>48 kHz</option>
+            <option value={96000}>96 kHz</option>
+          </select>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <div onClick={() => !isRecording && setNoiseCancel(v => !v)}
+                className={`w-8 h-4 rounded-full transition-colors ${noiseCancel ? 'bg-amber-500' : 'bg-white/10'} relative cursor-pointer`}>
+                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${noiseCancel ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </div>
+              <span className="text-white/40 text-xs">Noise</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <div onClick={() => !isRecording && setEchoCancellation(v => !v)}
+                className={`w-8 h-4 rounded-full transition-colors ${echoCancellation ? 'bg-amber-500' : 'bg-white/10'} relative cursor-pointer`}>
+                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${echoCancellation ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </div>
+              <span className="text-white/40 text-xs">Echo</span>
+            </label>
+          </div>
         </div>
       </div>
 

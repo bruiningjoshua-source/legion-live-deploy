@@ -143,18 +143,18 @@ export default function CreatorStudio() {
     <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-amber-100 flex items-center gap-3">
-              <Video className="w-8 h-8 text-amber-400" />
-              Creator Studio
-            </h1>
-            <p className="text-amber-400/70">Manage your videos, analytics, and channel</p>
+        <div className="flex items-start justify-between gap-3 mb-6">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Video className="w-5 h-5 text-amber-400 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-amber-100 leading-tight">Creator Studio</h1>
+              <p className="text-amber-400/60 text-xs mt-0.5">Manage videos, analytics &amp; channel</p>
+            </div>
           </div>
-          <Link to={createPageUrl('VideoUpload')}>
-            <Button className="bg-red-600 hover:bg-red-700">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Video
+          <Link to={createPageUrl('VideoUpload')} className="shrink-0">
+            <Button className="bg-red-600 hover:bg-red-700 h-9 text-sm px-3">
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              Upload
             </Button>
           </Link>
         </div>
