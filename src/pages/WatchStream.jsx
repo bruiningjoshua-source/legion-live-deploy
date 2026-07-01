@@ -112,9 +112,9 @@ export default function WatchStream() {
   const viewerJoinedRef = useRef(false);
   const streamIdRef = useRef(null);
   useEffect(() => {
-    if (!stream?.id || isHost || !user || stream.status !== 'live') return;
-    if (viewerJoinedRef.current && streamIdRef.current === stream.id) return;
-    const sid = stream.id;
+    if (!stream?.id || isHost || !user || stream?.status !== 'live') return;
+    if (viewerJoinedRef.current && streamIdRef.current === stream?.id) return;
+    const sid = stream?.id;
     streamIdRef.current = sid;
     const join = async () => {
       await base44.functions.invoke('updateViewerCount', { streamId: sid, action: 'join' });
@@ -351,6 +351,18 @@ export default function WatchStream() {
   }
 
   // ── MAIN RENDER ────────────────────────────────────────────────────────
+  // Final guard - never render live UI without a valid stream object
+  if (!stream) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-center px-6">
+          <div className="w-16 h-16 border-4 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/40 text-sm">Loading stream...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black z-40 overflow-hidden">
       {/* FULL SCREEN VIDEO */}
