@@ -517,9 +517,9 @@ export default function GoLive() {
         {showChallenge  && <ViewerChallenge streamId={streamId} isHost onClose={()=>setShowChallenge(false)} />}
 
         {/* ── Host Goal Bar ── */}
-        {showGoalBar && stream?.id && (
+        {showGoalBar && goLiveMutation.data?.id && (
           <div className="absolute z-20 left-3 right-3" style={{top:'calc(max(12px, env(safe-area-inset-top)) + 60px)'}}>
-            <HostGoalBar streamId={stream.id} isHost currentTotal={stream?.viewer_count || 0}
+            <HostGoalBar streamId={goLiveMutation.data.id} isHost currentTotal={goLiveMutation.data?.viewer_count || 0}
               onGoalUpdate={(goal)=>setStreamGoal(goal)} />
           </div>
         )}
