@@ -96,10 +96,12 @@ export default function GoLive() {
     enabled: !!user?.email
   });
 
-  // Auto-request camera (skip for game mode — handled on Go Live)
-  useEffect(() => {
-    if (user && !hasPermissions && !cameraStream) requestCamera();
-  }, [user?.email]);
+  // Don't auto-request camera on load — causes double permission dialog and
+  // duplicate error toasts. User explicitly taps "Enable Camera" instead.
+  // Camera is still auto-requested when user clicks Go Live.
+  // useEffect(() => {
+  //   if (user && !hasPermissions && !cameraStream) requestCamera();
+  // }, [user?.email]);
 
   // Auto-open game select when switching to game_live  
   useEffect(() => {

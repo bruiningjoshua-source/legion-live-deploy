@@ -18,14 +18,13 @@
  * Audio engine: Tone.js (MIT) for synthesis + scheduling
  * Samples: MIDI.js Soundfonts (CC-BY-3.0) — hosted on GitHub CDN
  */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Play, Square, RotateCcw, Volume2, Music, Mic, MicOff,
-  Download, Upload, Wand2, Save, Plus, Minus, SkipBack,
-  Sliders, Radio, Disc, Keyboard, Grid3x3, Zap, ChevronDown,
-  ChevronUp, RefreshCw, Shuffle, Repeat, Clock, Activity,
-  Headphones, Layers, Settings, Package
+  Play, Square, RotateCcw, Volume2,
+  Download, Wand2,
+  Sliders, Disc, Keyboard, Grid3x3, ChevronDown,
+  ChevronUp, RefreshCw, Activity, Package
 } from 'lucide-react';
 import { toast } from 'sonner';
 

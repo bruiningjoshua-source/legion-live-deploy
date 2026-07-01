@@ -183,3 +183,117 @@ body {
 .ll-glow-gold { box-shadow: 0 0 15px rgba(245,166,35,0.3), 0 0 40px rgba(245,166,35,0.1); }
 .ll-glow-red  { box-shadow: 0 0 15px rgba(230,57,70,0.3),  0 0 40px rgba(230,57,70,0.1); }
 :focus-visible { outline: 2px solid var(--ll-gold); outline-offset: 2px; border-radius: 4px; }
+
+/* ── Professional Button System ──────────────────────────────────────────── */
+.ll-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.875rem;
+  letter-spacing: -0.01em; line-height: 1; padding: 0 1.25rem; height: 2.75rem;
+  border-radius: 0.875rem; border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer; white-space: nowrap; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ll-btn:disabled { opacity: 0.45; pointer-events: none; }
+.ll-btn-primary {
+  background: var(--ll-gold); color: #0a0800;
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 2px 8px rgba(245,166,35,0.25);
+}
+.ll-btn-primary:hover { background: #f5b53a; box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 4px 16px rgba(245,166,35,0.35); transform: translateY(-1px); }
+.ll-btn-primary:active { transform: translateY(0); box-shadow: none; }
+.ll-btn-secondary {
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.1);
+}
+.ll-btn-secondary:hover { background: rgba(255,255,255,0.09); color: #fff; border-color: rgba(255,255,255,0.16); }
+.ll-btn-danger {
+  background: rgba(239,68,68,0.12); color: #fca5a5;
+  border-color: rgba(239,68,68,0.25);
+}
+.ll-btn-danger:hover { background: rgba(239,68,68,0.18); }
+.ll-btn-ghost { background: transparent; color: rgba(255,255,255,0.5); border-color: transparent; }
+.ll-btn-ghost:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75); }
+.ll-btn-sm { height: 2.25rem; padding: 0 1rem; font-size: 0.8125rem; border-radius: 0.75rem; }
+.ll-btn-lg { height: 3.25rem; padding: 0 1.75rem; font-size: 0.9375rem; border-radius: 1rem; }
+.ll-btn-icon { width: 2.75rem; height: 2.75rem; padding: 0; border-radius: 0.875rem; }
+.ll-btn-icon.ll-btn-sm { width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; }
+
+/* ── Input refinement ─────────────────────────────────────────────────────── */
+.ll-input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 0.875rem;
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+  padding: 0.75rem 1rem; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ll-input::placeholder { color: rgba(255,255,255,0.28); }
+.ll-input:focus { border-color: rgba(245,166,35,0.45); box-shadow: 0 0 0 3px rgba(245,166,35,0.08); }
+
+/* ── Select ───────────────────────────────────────────────────────────────── */
+.ll-input select, select.ll-input {
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.875rem center;
+  padding-right: 2.5rem;
+}
+
+/* ── Card hover refinement ────────────────────────────────────────────────── */
+.ll-card { cursor: default; }
+.ll-interactive {
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s, transform 0.15s, background 0.15s;
+}
+.ll-interactive:active { opacity: 0.75; transform: scale(0.97); }
+
+/* ── Section headers ──────────────────────────────────────────────────────── */
+.ll-section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+  letter-spacing: -0.02em; color: #fff; line-height: 1.3;
+}
+.ll-section-sub {
+  font-family: 'DM Sans', sans-serif; font-size: 0.8125rem;
+  color: rgba(255,255,255,0.45); line-height: 1.5;
+}
+
+/* ── Bottom nav refinement ────────────────────────────────────────────────── */
+.ll-bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(8,8,14,0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 40;
+}
+
+/* ── Smooth page transitions ─────────────────────────────────────────────── */
+.ll-page-enter { animation: ll-page-in 0.22s cubic-bezier(0.4, 0, 0.2, 1) both; }
+@keyframes ll-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Tag / chip components ───────────────────────────────────────────────── */
+.ll-chip {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.25rem 0.625rem; border-radius: 0.5rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.6);
+}
+.ll-chip-gold { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.25); color: var(--ll-gold); }
+.ll-chip-red  { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+
+/* ── Stat display ────────────────────────────────────────────────────────── */
+.ll-stat-num  { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.25rem; color: #fff; }
+.ll-stat-label{ font-family: 'DM Sans', sans-serif; font-size: 0.6875rem; font-weight: 500; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── Empty states ────────────────────────────────────────────────────────── */
+.ll-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 3rem 1.5rem; text-align: center; gap: 0.75rem;
+}
+.ll-empty-icon { width: 3rem; height: 3rem; opacity: 0.25; }
+.ll-empty-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: rgba(255,255,255,0.6); }
+.ll-empty-sub   { font-size: 0.8125rem; color: rgba(255,255,255,0.3); line-height: 1.6; }
