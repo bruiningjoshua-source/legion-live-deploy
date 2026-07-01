@@ -10,8 +10,8 @@
  * ─ 8-channel mixer with volume, pan, mute, solo
  * ─ 7 audio FX: reverb, delay, distortion, filter, chorus, bitcrusher, pitch
  * ─ 16-step sequencer with per-pad velocity
- * ─ ACE-Step AI music generation (open source Suno alternative)
- * ─ ACE-Step UI download — the full open-source project as a zip
+ * ─ Legion AI Composer — Claude-powered AI that generates track structure,
+ *   chord progressions, lyrics, and instrument arrangements
  * ─ Record + export session audio
  * ─ BPM tap tempo, key + scale selector
  *
@@ -636,46 +636,14 @@ export default function MusicStudio() {
     { id: 'dj',        label: 'DJ Deck',     icon: Disc       },
     { id: 'mixer',     label: 'Mixer',       icon: Sliders    },
     { id: 'sequencer', label: 'Sequencer',   icon: Activity   },
-    { id: 'ai',        label: 'ACE-Step AI', icon: Wand2      },
+    { id: 'ai',        label: 'AI Composer', icon: Wand2      },
   ];
 
-  // Full ACE-Step genre list (from ace-step-ui-main/data/main_style.txt)
-  const AI_GENRES = [
-    '16-bit','2-step','acid house','acid techno','acid trance','acoustic chicago blues',
-    'acoustic rock','acoustic texas blues','african folk','afrikaner folk','afro house',
-    'afro trap','afro-cuban jazz','afro-funk','afro-jazz','afro-rock','afrobeat',
-    'afropiano','afroswing','algorave','alternative r&b','alternative rock','ambient techno',
-    'anti-folk','avant-garde jazz','bachata','bedroom pop','bluegrass','blues rock',
-    'boogie','bossa nova','bubblegum bass','bubblegum dance','cabaret','cajun',
-    'caribbean','carnatic','celtic','chanson','chillstep','chillsynth','classical',
-    'cloud rap','cumbia','dance','dancehall','dancepop','dembow','dirty south',
-    'dream pop','drill','dubstep','edm','garage','gnawa','goa trance','grime',
-    'grunge','hip hop','house','hyphy','indie','jazz','jungle','k-pop',
-    'kawaii future bass','klezmer','liquid drum and bass','mariachi','math rock',
-    'merengue','motown','new jack swing','new wave','p-funk','pacific reggae',
-    'polka','pop','raga','rap','reggae','rock','rockabilly','rumba','salsa',
-    'samba','ska','soul','southern rock','surf rock','swamp blues','swing',
-    'symphonic metal','synthpop','synthwave','tango','trance','trap','tuareg',
-    'lo-fi','r&b','afrobeats','trap metal','phonk','jersey club','hyperpop',
-    'drill and bass','ambient','film score','gospel','country','folk','emo',
-    'punk','metal','shoegaze','vaporwave','city pop','bossa nova','flamenco',
-  ];
 
-  const AI_KEYS = ['C major','C minor','D major','D minor','E major','E minor',
-    'F major','F minor','G major','G minor','A major','A minor','B major','B minor',
-    'C# major','C# minor','Eb major','Eb minor','F# major','F# minor','Bb major','Bb minor'];
 
-  const [aiKey, setAiKey] = useState('');
-  const [aiDuration, setAiDuration] = useState(180);
-  const [aiBpm, setAiBpm] = useState(0);
-  const [aiGuidance, setAiGuidance] = useState(9.0);
-  const [aiSeed, setAiSeed] = useState(-1);
-  const [aiRandomSeed, setAiRandomSeed] = useState(true);
-  const [aiSteps, setAiSteps] = useState(12);
-  const [aiInstrumental, setAiInstrumental] = useState(false);
-  const [aiLyrics, setAiLyrics] = useState('');
-  const [aiShowAdvanced, setAiShowAdvanced] = useState(false);
-  const [aiGenreSearch, setAiGenreSearch] = useState('');
+
+
+
 
   return (
     <div className="ll-page-enter min-h-screen bg-[#050508] pb-24" onClick={async () => {
@@ -1036,9 +1004,24 @@ export default function MusicStudio() {
           </div>
         )}
 
-        {/* ── ACE-STEP AI TAB — Real ACE-Step client ── */}
+        {/* ── LEGION AI COMPOSER ── */}
         {activeTab === 'ai' && (
-          <AceStepTab AI_GENRES={AI_GENRES} AI_KEYS={AI_KEYS} />
+          <LegionAIComposer
+            onLoadToSequencer={(track) => {
+              // Map AI track structure into sequencer rows
+              if (!track?.sections) return;
+              const newSeq = Array.from({ length: 4 }, () => Array(16).fill(false));
+              track.sections.slice(0, 4).forEach((section, row) => {
+                const activity = section.arrangement?.[row]?.activity || 50;
+                const active = Math.round(activity / 100 * 16);
+                for (let i = 0; i < active; i++) newSeq[row][i * Math.floor(16/active)] = true;
+              });
+              setSequencer(newSeq);
+              if (track.bpm) setBpm(track.bpm);
+              setActiveTab('sequencer');
+              import('sonner').then(m => m.toast.success('Track loaded into sequencer'));
+            }}
+          />
         )}
       </div>
     </div>
