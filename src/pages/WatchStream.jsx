@@ -89,7 +89,7 @@ export default function WatchStream() {
   const { data: isFollowing } = useFollowStatus(user?.email, creator?.id);
   const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
   const toggleFollowMutation = useToggleFollow(user?.email, creator?.id);
-  const endStreamMutation = useEndStream(streamId, creator?.id, navigate);
+  // endStreamMutation removed — useEndStream called correctly at line ~276 with object params
 
   const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || creatorSubscription?.admin_activated || (creator?.user_email === user?.email && user?.role === 'admin');
   const isHost = user?.email === creator?.user_email;
@@ -170,7 +170,11 @@ export default function WatchStream() {
   const zegoInitAttempted = useRef(false);
   useEffect(() => {
     let mounted = true;
-    if (stream?.status !== 'live' || isHost || !streamId) return;
+    // Wait until creator loads before deciding viewer vs host
+    // Without this, zegoInitAttempted locks in viewer mode before isHost resolves
+    if (stream?.status !== 'live' || !streamId) return;
+    if (creator === undefined) return; // still loading — wait
+    if (isHost) return; // Host has own Zego session from GoLive page
     if (zegoInitAttempted.current) return;
     zegoInitAttempted.current = true;
     const init = async () => {
@@ -218,7 +222,7 @@ export default function WatchStream() {
       ZegoService.leave().catch(() => {});
       document.body.classList.remove('fullscreen-lock');
     };
-  }, [stream?.status, streamId, isHost]);
+  }, [stream?.status, streamId, isHost, creator?.id]);
 
   // Host camera
   useEffect(() => {
@@ -397,6 +401,25 @@ export default function WatchStream() {
         viewerCount={stream?.viewer_count || 0}
         onAvatarClick={() => setShowHostProfile(true)}
       />
+
+      {/* ── HOST END STREAM + CONTROLS — always visible for host ── */}
+      {isHost && (
+        <div className="absolute z-30 left-3 right-3 flex items-center justify-between gap-2"
+          style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 52px)' }}>
+          <button
+            onClick={() => setShowHostControls(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)' }}>
+            ⚙ Controls
+          </button>
+          <button
+            onClick={() => setShowEndDialog(true)}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md"
+            style={{ background: 'rgba(220,38,38,0.85)', border: '1px solid rgba(255,100,100,0.3)', color: '#fff', boxShadow: '0 2px 12px rgba(220,38,38,0.4)' }}>
+            ⏹ End Stream
+          </button>
+        </div>
+      )}
 
       {/* ── GIFT LEADERBOARD (below top bar, left side) ── */}
       <div className="absolute z-20 left-3 flex items-center gap-2"
