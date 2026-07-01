@@ -27,7 +27,7 @@ export default function BottomNav() {
         style={{ background: 'linear-gradient(0deg, rgba(10,10,15,0.98) 0%, transparent 100%)' }}
       />
       <div
-        className="relative bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/[0.06]"
+        className="relative backdrop-blur-xl" style={{ background: "rgba(10,8,4,0.97)", borderTop: "1px solid rgba(200,135,26,0.12)" }}
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center h-14 px-1">
@@ -48,9 +48,9 @@ export default function BottomNav() {
                     <div className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{
                         background: amphActive
-                          ? 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)'
-                          : 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
-                        boxShadow: '0 4px 20px rgba(239,68,68,0.5)',
+                          ? 'linear-gradient(135deg, #8b1a1a 0%, #c42a2a 100%)'
+                          : 'linear-gradient(180deg, #c8871a 0%, #8a5a0e 100%)',
+                        boxShadow: amphActive ? '0 4px 20px rgba(139,26,26,0.6)' : '0 4px 20px rgba(200,135,26,0.4)',
                       }}
                     >
                       {/* Pulse dot when on amphitheatre */}

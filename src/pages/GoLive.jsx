@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
 import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
 import LegionAREngine from '@/components/stream/LegionAREngine';
 import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
@@ -53,6 +52,7 @@ export default function GoLive() {
   const [platformType] = useState(getInitialPlatformType);
   const [cameraStream, setCameraStream] = useState(null);
   const [hasPermissions, setHasPermissions] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [showBeauty, setShowBeauty] = useState(false);
   const [showSoundboard, setShowSoundboard] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
@@ -138,16 +138,21 @@ export default function GoLive() {
 
   const requestCamera = async () => {
     try {
-      // Use standard 9:16 portrait for mobile broadcast (720×1280)
-      // Falls back gracefully if device can't match exactly
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user' }, 
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       });
       setCameraStream(stream);
       setHasPermissions(true);
+      setPermissionDenied(false);
     } catch (error) {
-      toast.error('Camera & microphone access required to go live.');
+      // Don't show toast — show inline instructions instead
+      // Toast was firing twice (once on auto-request, once on manual tap)
+      const isDenied = error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError';
+      setPermissionDenied(isDenied);
+      if (!isDenied) {
+        toast.error('Camera not available. Check if another app is using it.');
+      }
     }
   };
 
@@ -621,27 +626,52 @@ export default function GoLive() {
 
   // ── Pre-permission state ──
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center relative">
-      {/* Back / Close button */}
-      <button
-        onClick={() => navigate(createPageUrl('Home'))}
-        className="absolute top-4 left-4 z-10 w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
-        style={{ marginTop: 'env(safe-area-inset-top)' }}
-      >
+    <div className="min-h-screen bg-[#050508] flex items-center justify-center relative px-6">
+      <button onClick={() => navigate(createPageUrl('Home'))}
+        className="absolute top-4 left-4 z-10 w-10 h-10 bg-white/8 rounded-full flex items-center justify-center text-white"
+        style={{ marginTop: 'env(safe-area-inset-top)' }}>
         <X className="w-5 h-5" />
       </button>
-      <div className="text-center px-6">
-        <div className="w-20 h-20 bg-amber-500/15 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
-          <Radio className="w-10 h-10 text-amber-400" />
+
+      <div className="text-center max-w-xs w-full">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ background: permissionDenied ? 'rgba(239,68,68,0.15)' : 'rgba(245,166,35,0.12)', boxShadow: `0 0 40px ${permissionDenied ? 'rgba(239,68,68,0.2)' : 'rgba(245,166,35,0.15)'}` }}>
+          <Radio className="w-9 h-9" style={{ color: permissionDenied ? '#f87171' : '#f5a623' }} />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Go Live</h1>
-        <p className="text-white/50 text-sm mb-8">Camera & microphone access is needed</p>
-        <Button 
-          onClick={requestCamera}
-          className="bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full px-8 py-3 font-semibold shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-        >
-          Enable Camera
-        </Button>
+
+        {permissionDenied ? (
+          <>
+            <h1 className="text-xl font-bold text-white mb-2">Camera Access Blocked</h1>
+            <p className="text-white/45 text-sm mb-6 leading-relaxed">
+              Your browser has blocked camera and microphone access. To go live you need to allow it manually.
+            </p>
+            <div className="ll-card p-4 rounded-2xl text-left mb-6 space-y-2">
+              <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">How to fix on Chrome Android:</p>
+              {['Tap the 🔒 lock icon in the address bar', 'Tap "Permissions"', 'Set Camera and Microphone to "Allow"', 'Reload the page and try again'].map((step, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5"
+                    style={{ background: 'rgba(245,166,35,0.2)', color: '#f5a623' }}>{i + 1}</span>
+                  <p className="text-white/55 text-xs leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => window.location.reload()}
+              className="w-full py-3 rounded-2xl font-bold text-sm"
+              style={{ background: 'rgba(245,166,35,0.15)', border: '1px solid rgba(245,166,35,0.3)', color: '#f5a623' }}>
+              Reload & Try Again
+            </button>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-white mb-2">Go Live</h1>
+            <p className="text-white/45 text-sm mb-8">Camera & microphone access is needed to start broadcasting.</p>
+            <button onClick={requestCamera}
+              className="w-full py-3.5 rounded-2xl font-bold text-sm"
+              style={{ background: 'linear-gradient(135deg, #f5a623, #d97706)', color: '#0a0800', boxShadow: '0 4px 20px rgba(245,166,35,0.3)' }}>
+              Enable Camera & Mic
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

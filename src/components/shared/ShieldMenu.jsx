@@ -61,7 +61,7 @@ export default function ShieldMenu({ isOpen, onClose }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] backdrop-blur-sm" style={{ background: "rgba(5,3,1,0.8)" }}
           />
 
           {/* Drawer */}
@@ -71,6 +71,7 @@ export default function ShieldMenu({ isOpen, onClose }) {
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 35 }}
             className="fixed top-0 left-0 bottom-0 z-[70] w-72 flex flex-col"
+            style={{ background: 'linear-gradient(180deg, #0f0c07 0%, #1a1510 50%, #0a0804 100%)', borderRight: '1px solid rgba(200,135,26,0.2)', boxShadow: '4px 0 24px rgba(0,0,0,0.6)' }}
           >
             {/* Panel bg */}
             <div className="absolute inset-0 bg-[#0d0d10]/98 backdrop-blur-2xl border-r border-white/[0.06]" />

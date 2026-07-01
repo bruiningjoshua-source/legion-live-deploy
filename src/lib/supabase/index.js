@@ -215,7 +215,7 @@ const functions = {
     const headers = { 'Content-Type': 'application/json' };
     if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-    const netlifyResponse = await fetch(`/.netlify/functions/base44-function`, {
+    const netlifyResponse = await fetch(`/.netlify/functions/legion-api`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ functionName, params }),

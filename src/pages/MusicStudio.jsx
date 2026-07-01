@@ -24,6 +24,8 @@ import {
   Play, Square, RotateCcw, Volume2, Wand2,
   Sliders, Disc, Keyboard, Grid3x3, Activity, Upload
 } from 'lucide-react';
+import LegionAIComposer from '@/components/music/LegionAIComposer';
+import MusicImportTab from '@/components/music/MusicImportTab';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INSTRUMENT PRESETS (loaded from MIDI.js Soundfonts on GitHub)

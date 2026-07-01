@@ -267,7 +267,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               </AnimatedBackground>
             ) : (
-              <div className="min-h-screen bg-[#0f0f12]">
+              <div className="min-h-screen" style={{ background: "var(--ll-bg)" }}>
                 {renderContent()}
               </div>
             )}

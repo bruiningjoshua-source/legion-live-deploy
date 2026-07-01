@@ -7,7 +7,7 @@
 # Netlify detects background functions automatically from the -background suffix
 [[redirects]]
   from = "/api/stripe-webhook"
-  to = "/.netlify/functions/stripe-webhook-background"
+  to = "/.netlify/functions/legion-payments-background"
   status = 200
 
 [[redirects]]
