@@ -68,22 +68,27 @@ export default function Home() {
           {HUBS.map((hub, i) => (
             <Link key={hub.name} to={createPageUrl(hub.path)}>
               <motion.div
-                whileTap={{ scale: 0.94 }}
+                whileTap={{ scale: 0.93 }}
                 transition={{ type:'spring', stiffness:500, damping:25 }}
-                className="ll-card ll-interactive relative overflow-hidden p-3"
+                className="ll-interactive relative overflow-hidden p-3 rounded-xl"
+                style={{
+                  background: 'linear-gradient(145deg, #1a1510 0%, #12100a 100%)',
+                  border: '1px solid rgba(200,135,26,0.2)',
+                  boxShadow: 'inset 0 1px 0 rgba(200,135,26,0.1), inset 0 -1px 0 rgba(0,0,0,0.3), 0 3px 8px rgba(0,0,0,0.4)',
+                }}
               >
-                {/* Badge top-right */}
-                <div className="absolute top-2 right-2">
-                  <span className="text-[8px] font-bold tracking-wide" style={{ color: hub.color }}>{hub.badge}</span>
+                {/* Badge */}
+                <div className="absolute top-1.5 right-2">
+                  <span className="text-[8px] font-bold tracking-widest" style={{ color: 'rgba(200,135,26,0.7)', fontFamily: "'Cinzel', serif" }}>{hub.badge}</span>
                 </div>
                 {/* Icon */}
                 {(() => { const Icon = ICON_MAP[hub.icon]; return (
-                  <div className="w-7 h-7 mb-2 flex items-center justify-center rounded-lg" style={{ background: hub.color + '15' }}>
-                    <Icon className="w-3.5 h-3.5" style={{ color: hub.color }} />
+                  <div className="w-7 h-7 mb-2 flex items-center justify-center rounded-lg" style={{ background: 'rgba(200,135,26,0.12)', border: '1px solid rgba(200,135,26,0.2)' }}>
+                    <Icon className="w-3.5 h-3.5" style={{ color: '#c8871a' }} />
                   </div>
                 ); })()}
-                <p className="text-white font-bold text-xs leading-tight truncate">{hub.name}</p>
-                <p className="text-white/35 text-[9px] font-medium mt-0.5 truncate">{hub.sub}</p>
+                <p className="font-bold text-xs leading-tight truncate" style={{ color: '#e8dcc8', fontFamily: "'Cinzel', serif" }}>{hub.name}</p>
+                <p className="text-[9px] font-medium mt-0.5 truncate" style={{ color: 'rgba(200,135,26,0.5)' }}>{hub.sub}</p>
               </motion.div>
             </Link>
           ))}

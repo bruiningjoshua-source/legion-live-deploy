@@ -62,7 +62,7 @@ export default function DailyLoginReward({ onClose, onClaimed }) {
         style={{ background:"#0F0F1A", border:"1px solid rgba(245,166,35,0.3)", boxShadow:"0 0 60px rgba(245,166,35,0.12)" }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="relative px-6 pt-6 pb-4 text-center"
+        <div className="relative px-6 pt-6 pb-4 text-center" style={{ background: "linear-gradient(180deg, rgba(200,135,26,0.1) 0%, transparent 100%)" }}
           style={{ background:"linear-gradient(180deg, rgba(245,166,35,0.12) 0%, transparent 100%)" }}>
           <button onClick={onClose} className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
             <X className="w-3.5 h-3.5 text-white/50" />
