@@ -4,7 +4,7 @@
  * Auto-updates when a new version deploys.
  */
 
-const CACHE = 'legion-live-v5';
+const CACHE = 'legion-live-v6';
 const STATIC_EXTS = ['.js', '.css', '.woff2', '.png', '.svg', '.mp4'];
 
 self.addEventListener('install', e => {
