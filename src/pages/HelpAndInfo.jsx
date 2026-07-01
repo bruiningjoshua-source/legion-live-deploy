@@ -16,7 +16,7 @@ const FAQ_ITEMS = [
     bg: 'bg-amber-500/10',
     questions: [
       { q: 'How do I start streaming on Legion Live?', a: 'Tap "Go Live" in the navigation bar. Grant camera and microphone permissions, set your stream title, select a category, then hit Start Broadcast. You\'re live in under 30 seconds.' },
-      { q: 'What are Denarii and how do I get them?', a: 'Denarii is Legion Live\'s official virtual currency. 65 Denarii = $1 USD. New users receive 500 free Denarii on sign-up. You can purchase more in the Wallet section, and creators earn Denarii when fans send gifts.' },
+      { q: 'What are Denarii and how do I get them?', a: 'Denarii is Legion Live\'s official virtual currency. 180 Denarii = $1 USD. New users receive 500 free Denarii on sign-up. You can purchase more in the Wallet section, and creators earn Denarii when fans send gifts.' },
       { q: 'How do I follow and discover creators?', a: 'Visit any creator\'s profile or live stream and tap the Follow button. Use the Explore page to discover new creators by category, trending, or search. You\'ll be notified when followed creators go live.' },
       { q: 'Is Legion Live free to use?', a: 'Yes — watching streams, following creators, and using the forums is completely free. Denarii purchases and fan club subscriptions are optional and support your favourite creators.' },
     ]
@@ -27,8 +27,8 @@ const FAQ_ITEMS = [
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/10',
     questions: [
-      { q: 'How do I buy Denarii?', a: 'Go to your Wallet page and select any Denarii package. Payments are processed securely via Stripe. 65 Denarii = $1 USD, with bonus Denarii on larger packages (up to +35%).' },
-      { q: 'How do creators get paid?', a: 'Creators earn 70% of all gift value received. For every 65 Denarii gifted, creators keep $0.70 USD. Minimum payout threshold is 650 Denarii (~$10). Payouts are processed via Stripe Connect, PayPal, Venmo, or CashApp.' },
+      { q: 'How do I buy Denarii?', a: 'Go to your Wallet page and select any Denarii package. Payments are processed securely via Stripe. 180 Denarii = $1 USD, with bonus Denarii on larger packages (up to +35%).' },
+      { q: 'How do creators get paid?', a: 'Creators earn 60% of all gift value received. For every 180 Denarii gifted, creators keep $0.60 USD. Minimum payout threshold is 1800 Denarii (~$10). Payouts are processed via Stripe Connect, PayPal, Venmo, or CashApp.' },
       { q: 'Are Denarii purchases refundable?', a: 'Virtual currency purchases are generally non-refundable once Denarii are delivered to your account. Contact support@legionlive.com for special circumstances or billing errors.' },
       { q: 'What is the VIP system?', a: 'Every Denarii purchase earns VIP points. Accumulate points to unlock VIP levels (1–8), each granting progressively exclusive perks: priority chat, animated badges, custom emotes, creator DM access, and DIVINE aura at max level.' },
     ]
@@ -39,7 +39,7 @@ const FAQ_ITEMS = [
     color: 'text-pink-400',
     bg: 'bg-pink-500/10',
     questions: [
-      { q: 'How do gifts work during a live stream?', a: 'Tap the gift icon during any live stream to open the gift panel. Select a gift, confirm, and it plays an animation on the creator\'s stream. The creator sees your name and earns 70% of the gift\'s Denarii value.' },
+      { q: 'How do gifts work during a live stream?', a: 'Tap the gift icon during any live stream to open the gift panel. Select a gift, confirm, and it plays an animation on the creator\'s stream. The creator sees your name and earns 60% of the gift\'s Denarii value.' },
       { q: 'What are Fan Clubs?', a: 'Fan Clubs are monthly subscriptions to specific creators offering exclusive perks: private chat rooms, custom emotes, badges, direct messaging, ad-free streams, and early access to content.' },
       { q: 'What are PK Battles?', a: 'PK (Player Kill) Battles are head-to-head competitions between two live creators. Viewers support their side with gifts. The creator who receives more gifts in the time limit wins a raised share split.' },
     ]
@@ -114,7 +114,7 @@ function FAQSection({ category, icon: Icon, color, bg, questions }) {
 
 const FEATURES = [
   { icon: Radio, label: 'Live Streaming', desc: 'ZegoCloud-powered 1080p60 broadcasts', color: 'text-red-400', bg: 'bg-red-500/10' },
-  { icon: Gift, label: 'Virtual Gifting', desc: 'Animated gifts with 70% creator share', color: 'text-pink-400', bg: 'bg-pink-500/10' },
+  { icon: Gift, label: 'Virtual Gifting', desc: 'Animated gifts with 60% creator share', color: 'text-pink-400', bg: 'bg-pink-500/10' },
   { icon: Users, label: 'Fan Clubs', desc: 'Exclusive creator subscription tiers', color: 'text-sky-400', bg: 'bg-sky-500/10' },
   { icon: Wallet, label: 'Creator Payouts', desc: 'Multi-method payouts via Stripe Connect', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
   { icon: Zap, label: 'Gaming Arena', desc: 'Tournaments with live prize pools', color: 'text-violet-400', bg: 'bg-violet-500/10' },
@@ -209,7 +209,7 @@ export default function HelpAndInfo() {
                 Legion Live was built for creators who want more than a platform — they want an empire.
                 We combine the energy of live streaming, the depth of a gaming arena, the reach of an affiliate marketplace,
                 and the power of community forums into one Roman-inspired ecosystem. We believe creators deserve
-                70% of what their audience gives — and the tools to grow without limits.
+                60% of what their audience gives — and the tools to grow without limits.
               </p>
             </div>
 
@@ -237,8 +237,8 @@ export default function HelpAndInfo() {
                   { label: 'Developer', value: 'Legion Software Smiths' },
                   { label: 'Streaming', value: 'ZegoCloud' },
                   { label: 'Payments', value: 'Stripe (Live Mode)' },
-                  { label: 'Currency', value: '65 Denarii = $1 USD' },
-                  { label: 'Creator Share', value: '70% of all gifts' },
+                  { label: 'Currency', value: '180 Denarii = $1 USD' },
+                  { label: 'Creator Share', value: '60% of all gifts' },
                   { label: 'Platform', value: 'React · Tailwind CSS' },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex flex-col gap-0.5">

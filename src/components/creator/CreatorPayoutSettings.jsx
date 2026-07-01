@@ -42,9 +42,9 @@ const PAYOUT_METHODS = [
   { id: 'cashapp', name: 'Cash App', icon: '💵', placeholder: '$cashtag' }
 ];
 
-// Platform economics: 65 Denarii = $1 USD; creator earns 70% of gift value
+// Platform economics: 180 Denarii = $1 USD; creator earns 60% of gift value
 const CREATOR_SHARE = 0.70;
-const DENARII_TO_USD = (1 / 65) * CREATOR_SHARE; // ~$0.01077 per Denarii earned
+const DENARII_TO_USD = (0.60 / 180) * CREATOR_SHARE; // ~$0.01077 per Denarii earned
 const MIN_PAYOUT_DENARII = 650; // ~$10 minimum payout
 
 export default function CreatorPayoutSettings({ creator, user }) {
@@ -228,7 +228,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
               <Info className="w-4 h-4 text-amber-400 mt-0.5" />
               <div className="text-xs text-amber-300/80">
                 <p className="font-semibold mb-1">Revenue Split: 30% Platform / 70% Creator</p>
-                <p>For every 65 Denarii gifted to you, you earn $0.70 USD (70% share). Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
+                <p>For every 180 Denarii gifted to you, you earn $0.60 USD (70% share). Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
               </div>
             </div>
           </div>

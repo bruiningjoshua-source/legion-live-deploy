@@ -81,7 +81,7 @@ export default function MonetizationSetupStep({ data, onChange }) {
 
       <OnboardingBanner
         title="You Keep 70%"
-        content="Legion Live creators keep 70% of all earnings from gifts, tips, and subscriptions!"
+        content="Legion Live creators keep 60% of all earnings from gifts, tips, and subscriptions!"
         variant="success"
         icon={DollarSign}
       />
