@@ -166,43 +166,88 @@ function CreatorStorefront({ creator }) {
 }
 
 function BrandOpportunityCard({ brand }) {
+  const initial = brand.name?.charAt(0) || '?';
+  const categoryColors = {
+    'Retail': '#3b82f6', 'Live Commerce': '#ec4899', 'Streaming Gear': '#8b5cf6',
+    'Gaming': '#ef4444', 'Tech / Software': '#06b6d4', 'Streaming Tools': '#6366f1',
+    'Gaming / Energy': '#f97316', 'Music Licensing': '#a855f7', 'Multi-Streaming': '#0ea5e9',
+    'Health & Wellness': '#10b981', 'Food & Lifestyle': '#f59e0b', 'Creator Merch': '#ec4899',
+    'Education': '#3b82f6', 'Mobile & Lifestyle': '#f43f5e', 'Fashion & Style': '#e879f9',
+    'Creator Gear': '#f97316', 'Health': '#10b981', 'Creator Business': '#8b5cf6',
+  };
+  const color = categoryColors[brand.category] || '#10b981';
+
   return (
-    <motion.div whileHover={{ y: -2 }}
-      className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-emerald-500/20 transition-all">
-      <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
-          <span className="text-2xl">{brand.emoji}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-white font-bold text-sm">{brand.name}</p>
-          <p className="text-white/40 text-xs line-clamp-2 mt-0.5">{brand.description}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-emerald-400 text-xs font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              {brand.commission}% commission
-            </span>
-            <span className="text-white/30 text-xs">{brand.products} products</span>
+    <a href={brand.url} target="_blank" rel="noopener noreferrer">
+      <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
+        className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-all cursor-pointer">
+        <div className="flex items-start gap-3">
+          {/* Logo placeholder — first letter in brand color */}
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-black text-base"
+            style={{ background: color + '18', border: `1px solid ${color}30`, color }}>
+            {initial}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-white font-bold text-sm leading-tight">{brand.name}</p>
+              {brand.badge && (
+                <span className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: color + '18', color, border: `1px solid ${color}30` }}>
+                  {brand.badge}
+                </span>
+              )}
+            </div>
+            <p className="text-white/35 text-[11px] leading-relaxed mt-1 line-clamp-2">{brand.description}</p>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: color + '15', color, border: `1px solid ${color}25` }}>
+                {brand.commissionNote || `${brand.commission}%`}
+              </span>
+              <span className="text-white/25 text-[10px]">{brand.category}</span>
+              {brand.minFollowers > 0 && (
+                <span className="text-white/20 text-[10px]">{brand.minFollowers.toLocaleString()}+ followers</span>
+              )}
+            </div>
           </div>
         </div>
-        <button className="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 transition-all">
-          Apply
-        </button>
-      </div>
-    </motion.div>
+        {/* Tags */}
+        {brand.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3 pl-14">
+            {brand.tags.slice(0, 3).map(t => (
+              <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/25">#{t}</span>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </a>
   );
 }
 
 // Seeded brand opportunities for the marketplace
+// Real brand affiliate programs — sourced 2026
 const BRAND_OPPORTUNITIES = [
-  { emoji: '💻', name: 'TechFlow Pro', description: 'Premium tech accessories and gadgets for streamers and creators', commission: 15, products: 48 },
-  { emoji: '👟', name: 'StrideWear', description: 'Athletic footwear and performance clothing for active lifestyles', commission: 12, products: 124 },
-  { emoji: '💄', name: 'GlowLab Beauty', description: 'Clean beauty products loved by influencers worldwide', commission: 18, products: 89 },
-  { emoji: '🎮', name: 'GameVault', description: 'Gaming peripherals, accessories and setup gear', commission: 10, products: 203 },
-  { emoji: '🏠', name: 'HomeCraft', description: 'Premium home decor and lifestyle products for modern living', commission: 14, products: 156 },
-  { emoji: '🥗', name: 'NutriBox', description: 'Health foods, supplements and wellness products', commission: 20, products: 67 },
-  { emoji: '📸', name: 'LensLife', description: 'Photography and videography gear for content creators', commission: 11, products: 92 },
-  { emoji: '🎵', name: 'SoundWave Audio', description: 'Professional audio equipment for musicians and podcasters', commission: 13, products: 44 },
+  { name: 'Amazon Associates', category: 'Retail', description: `The world's largest affiliate program. Promote 350M+ products — gear reviews, unboxings, game setups. Cookie applies to the entire cart.`, commission: 4, commissionType: 'percentage', commissionNote: '1–10% by category', url: 'https://affiliate-program.amazon.com', tags: ['gear','gaming','lifestyle','retail'], minFollowers: 0, badge: 'No Minimum' },
+  { name: 'Walmart Creator', category: 'Retail', description: `Up to 17.5% on select categories. No follower minimum. Access to the Affiliate Member Center with custom link generation, weekly tips, and deep analytics.`, commission: 10, commissionType: 'percentage', commissionNote: 'Up to 17.5%', url: 'https://affiliates.walmart.com', tags: ['retail','home','fashion','food'], minFollowers: 0, badge: 'No Minimum' },
+  { name: 'TikTok Shop', category: 'Live Commerce', description: `Native live shopping for streamers. 5–20% commission by category — beauty up to 20%, electronics 5–8%. Direct product links during live streams convert at 3× standard posts.`, commission: 15, commissionType: 'percentage', commissionNote: '5–20% by category', url: 'https://shop.tiktok.com/business/creator', tags: ['beauty','fashion','electronics','live'], minFollowers: 1000, badge: 'Live Commerce' },
+  { name: 'Elgato Creator Partner', category: 'Streaming Gear', description: `Official partner program for the #1 streaming gear brand. Stream Decks, capture cards, lighting, mics. Dedicated creator portal and audience discount codes.`, commission: 10, commissionType: 'percentage', commissionNote: '10% + bonuses', url: 'https://www.elgato.com/creator', tags: ['streaming','gaming','setup','gear'], minFollowers: 500, badge: 'Creator Gear' },
+  { name: 'Razer Affiliate', category: 'Gaming', description: `Partner with gaming's most iconic brand. Headsets, keyboards, controllers, RGB peripherals. Creator discount codes, quarterly bonus tiers, dedicated affiliate dashboard.`, commission: 10, commissionType: 'percentage', commissionNote: '10% + quarterly bonuses', url: 'https://www.razer.com/affiliate', tags: ['gaming','esports','peripherals','pc'], minFollowers: 1000, badge: 'Gaming' },
+  { name: 'NordVPN', category: 'Tech / Software', description: `Up to 100% commission on first month + 30% recurring. Every gaming and streaming audience needs privacy tools. One of the highest-paying programs in creator marketing.`, commission: 40, commissionType: 'percentage', commissionNote: 'Up to 100% first + 30% recurring', url: 'https://nordvpn.com/affiliates', tags: ['tech','security','software','streaming'], minFollowers: 0, badge: 'Top Payout' },
+  { name: 'Streamlabs', category: 'Streaming Tools', description: `Official partner program for the leading streaming software. Earn 10% recurring on Streamlabs Ultra subscriptions. Perfect for Legion Live creators who also stream elsewhere.`, commission: 10, commissionType: 'percentage', commissionNote: '10% recurring', url: 'https://streamlabs.com/affiliate', tags: ['streaming','overlays','alerts','software'], minFollowers: 0, badge: 'Recurring' },
+  { name: 'GFuel Creator Program', category: 'Gaming / Energy', description: `The official energy drink of esports and streaming. Creator partnerships include custom flavors, merch drops, and 15% commission. One of the most authentic brand fits in gaming.`, commission: 15, commissionType: 'percentage', commissionNote: '15% + merch perks', url: 'https://gfuel.com/pages/affiliates', tags: ['gaming','esports','energy','streaming'], minFollowers: 500, badge: 'Fan Favorite' },
+  { name: 'Epidemic Sound', category: 'Music Licensing', description: `30% recurring commission on music licensing subscriptions. Every creator needs royalty-free music for streams and videos. Very low refund rate, strong LTV per referral.`, commission: 30, commissionType: 'percentage', commissionNote: '30% recurring', url: 'https://www.epidemicsound.com/referral', tags: ['music','streaming','content','audio'], minFollowers: 0, badge: 'Recurring' },
+  { name: 'Restream', category: 'Multi-Streaming', description: `Earn 20% on every referred user's first payment. Referred users get $10 credit on signup. Ideal for creators expanding to multiple platforms simultaneously.`, commission: 20, commissionType: 'percentage', commissionNote: '20% first payment', url: 'https://restream.io/affiliate', tags: ['streaming','multistream','tools','growth'], minFollowers: 0, badge: 'New' },
+  { name: 'iHerb', category: 'Health & Wellness', description: `20% commission on 18,000+ health supplements, vitamins, and wellness products shipped to 185 countries. Strong fit for fitness and self-care content creators.`, commission: 20, commissionType: 'percentage', commissionNote: '20% per sale', url: 'https://www.iherb.com/info/affiliates', tags: ['health','wellness','fitness','supplements'], minFollowers: 0, badge: 'Health' },
+  { name: 'HelloFresh', category: 'Food & Lifestyle', description: `$52.50 flat per sale — one of the highest flat-rate payouts in lifestyle affiliate marketing. Meal kits convert well with lifestyle, fitness, and family-oriented creator audiences.`, commission: 52, commissionType: 'flat', commissionNote: '$52.50 per sale', url: 'https://www.hellofresh.com/pages/affiliate', tags: ['food','lifestyle','health','family'], minFollowers: 500, badge: 'Flat Rate' },
+  { name: 'Printful', category: 'Creator Merch', description: `10% commission on print-on-demand merchandise. Launch branded merch with no inventory. Ideal for streamers ready to monetize their brand with hoodies, tees, and accessories.`, commission: 10, commissionType: 'percentage', commissionNote: '10% per sale', url: 'https://www.printful.com/affiliates', tags: ['merch','branding','streaming','creators'], minFollowers: 0, badge: 'Creator Merch' },
+  { name: 'Skillshare', category: 'Education', description: `40% recurring for the first 4 months per referral. Converts well for creator audiences interested in video editing, music production, and design skills.`, commission: 40, commissionType: 'percentage', commissionNote: '40% x 4 months', url: 'https://www.skillshare.com/affiliates', tags: ['education','creative','skills','learning'], minFollowers: 0, badge: 'Recurring' },
+  { name: 'ExpressVPN', category: 'Tech / Software', description: `Up to $36 flat per sale or 30% recurring. Consistently high conversion in gaming, streaming, and tech audiences. One of the strongest VPN affiliate programs for creators.`, commission: 30, commissionType: 'percentage', commissionNote: '$36 flat or 30% recurring', url: 'https://www.expressvpn.com/affiliates', tags: ['tech','vpn','security','gaming'], minFollowers: 0, badge: 'Top Payout' },
+  { name: 'Ritual Vitamins', category: 'Health', description: `Up to 70% commission on first orders — among the highest-paying health programs. Strong subscription LTV. Wellness and lifestyle audiences convert at high rates.`, commission: 30, commissionType: 'percentage', commissionNote: 'Up to 70% first order', url: 'https://ritual.com/pages/ambassador', tags: ['health','wellness','supplements'], minFollowers: 1000, badge: 'High Commission' },
+  { name: 'Casetify', category: 'Mobile & Lifestyle', description: `15% commission on customizable phone cases loved by the Gen Z creator economy. High visual appeal makes this naturally shareable content in any stream format.`, commission: 15, commissionType: 'percentage', commissionNote: '15% per sale', url: 'https://www.casetify.com/affiliates', tags: ['lifestyle','mobile','fashion','gen-z'], minFollowers: 1000, badge: 'Lifestyle' },
+  { name: 'Moment Photography', category: 'Creator Gear', description: `Premium camera lenses and accessories for content creators. 10% commission with $150+ average order value. Best for IRL streaming, vlog, and photography-focused audiences.`, commission: 10, commissionType: 'percentage', commissionNote: '10% — avg $150 AOV', url: 'https://www.shopmoment.com/affiliates', tags: ['photo','video','vlogging','irl','gear'], minFollowers: 1000, badge: 'Creator Gear' },
+  { name: 'MVMT Watches', category: 'Fashion & Style', description: `12% commission on premium minimalist watches and accessories. Average order $130+. Fashion, lifestyle, and men's content converts especially well with this brand.`, commission: 12, commissionType: 'percentage', commissionNote: '12% — avg $130 AOV', url: 'https://www.mvmt.com/pages/affiliates', tags: ['fashion','lifestyle','accessories','style'], minFollowers: 2000, badge: 'Fashion' },
+  { name: 'HoneyBook', category: 'Creator Business', description: `Up to $200 flat per referral on business management software for freelancers. Best for creators who manage client work, brand deal contracts, or bookings alongside their content.`, commission: 20, commissionType: 'percentage', commissionNote: 'Up to $200 per referral', url: 'https://www.honeybook.com/affiliates', tags: ['business','creators','tools','freelance'], minFollowers: 0, badge: 'Business' },
+  { name: 'Printify', category: 'Creator Merch', description: `5% commission on a competing print-on-demand platform with 900+ products. Pairs well with Printful — recommend both and let your audience choose. No setup fee.`, commission: 5, commissionType: 'percentage', commissionNote: '5% per sale', url: 'https://printify.com/affiliates', tags: ['merch','print','creators','ecommerce'], minFollowers: 0, badge: 'Creator Merch' },
 ];
-
 const TABS = [
   { id: 'discover', label: 'Discover', emoji: '🔥' },
   { id: 'live', label: 'Live Shopping', emoji: '📺' },
