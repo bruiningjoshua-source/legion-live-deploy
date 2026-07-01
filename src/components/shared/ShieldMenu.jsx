@@ -5,18 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Home, Tv, Gamepad2, Users, ShoppingBag, Radio,
   Film, BarChart2, Trophy, Mic, Music, Video,
-  Wallet, Settings, Zap, Calendar, Heart, Palette, HelpCircle, LogOut
+  Wallet, Settings, Zap, Calendar, Palette, HelpCircle, LogOut
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const sections = [
   {
-    title: 'Discover',
+    title: 'Watch',
     items: [
-      { label: 'Home',          path: 'Home',           icon: Home,       color: 'text-amber-400' },
-      { label: 'Live Now',      path: 'TheAmphitheatre',icon: Tv,         color: 'text-red-400' },
-      { label: 'Explore',       path: 'Explore',        icon: Zap,        color: 'text-yellow-400' },
-      { label: 'Following',     path: 'Following',      icon: Heart,      color: 'text-pink-400' },
+      { label: 'Home',          path: 'Home',            icon: Home,       color: 'text-amber-400' },
+      { label: 'Amphitheatre',  path: 'TheAmphitheatre', icon: Tv,         color: 'text-red-400' },
+      { label: 'Videos',        path: 'Videos',          icon: Film,       color: 'text-violet-400' },
+      { label: 'Explore',       path: 'Explore',         icon: Zap,        color: 'text-yellow-400' },
     ]
   },
   {

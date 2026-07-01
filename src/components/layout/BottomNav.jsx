@@ -2,12 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { Home, Compass, Video, MessageCircle, User } from 'lucide-react';
+import { Home, Compass, Radio, MessageCircle, User } from 'lucide-react';
 
 const TABS = [
-  { id: 'live',     label: 'Live',     icon: Home,          path: createPageUrl('Home') },
+  { id: 'home',     label: 'Live',     icon: Home,          path: createPageUrl('Home') },
   { id: 'explore',  label: 'Explore',  icon: Compass,       path: createPageUrl('Explore') },
-  { id: 'golive',   label: '',         icon: Video,         path: createPageUrl('GoLive'), center: true },
+  { id: 'watch',    label: '',         icon: Radio,         path: createPageUrl('TheAmphitheatre'), center: true },
   { id: 'messages', label: 'Messages', icon: MessageCircle, path: createPageUrl('DirectMessages') },
   { id: 'me',       label: 'Me',       icon: User,          path: createPageUrl('Profile') },
 ];
@@ -16,13 +16,12 @@ export default function BottomNav() {
   const location = useLocation();
 
   const isActive = (tab) => {
-    if (tab.path.includes('?')) return location.search.includes(tab.path.split('?')[1]);
-    return location.pathname === tab.path;
+    const tabPath = tab.path.split('?')[0];
+    return location.pathname === tabPath;
   };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Fade gradient above the bar */}
       <div
         className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
         style={{ background: 'linear-gradient(0deg, rgba(10,10,15,0.98) 0%, transparent 100%)' }}
@@ -36,8 +35,9 @@ export default function BottomNav() {
             const active = isActive(tab);
             const Icon = tab.icon;
 
-            /* ── Center broadcast button ── */
+            /* ── Center Amphitheatre button ── */
             if (tab.center) {
+              const amphActive = location.pathname === createPageUrl('TheAmphitheatre');
               return (
                 <Link key={tab.id} to={tab.path} className="flex-1 flex items-center justify-center">
                   <motion.div
@@ -47,12 +47,19 @@ export default function BottomNav() {
                   >
                     <div className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-                        boxShadow: '0 4px 20px rgba(6,182,212,0.45)',
+                        background: amphActive
+                          ? 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)'
+                          : 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                        boxShadow: '0 4px 20px rgba(239,68,68,0.5)',
                       }}
                     >
+                      {/* Pulse dot when on amphitheatre */}
+                      {amphActive && (
+                        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+                      )}
                       <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
                     </div>
+                    <p className="text-[9px] text-center text-white/40 mt-0.5 font-medium">Watch</p>
                   </motion.div>
                 </Link>
               );

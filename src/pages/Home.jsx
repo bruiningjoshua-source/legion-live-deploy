@@ -4,9 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Flame, ChevronRight, Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2 } from 'lucide-react';
+import { Flame, ChevronRight, Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2, Film } from 'lucide-react';
 
-const ICON_MAP = { Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2 };
+const ICON_MAP = { Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2, Film };
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 
 const HUBS = [

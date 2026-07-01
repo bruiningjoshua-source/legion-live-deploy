@@ -22,7 +22,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Play, Square, RotateCcw, Volume2, Wand2,
-  Sliders, Disc, Keyboard, Grid3x3, Activity
+  Sliders, Disc, Keyboard, Grid3x3, Activity, Upload
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -542,6 +542,12 @@ function DJDeck({ deckId, color }) {
             <span className="text-[9px]" style={{color}}>{val}</span>
           </div>
         ))}
+      {/* ── MUSIC IMPORT TAB ── */}
+      {activeTab === 'import' && (
+        <div className="space-y-4">
+          <MusicImportTab />
+        </div>
+      )}
       </div>
     </div>
   );
@@ -637,6 +643,7 @@ export default function MusicStudio() {
     { id: 'mixer',     label: 'Mixer',       icon: Sliders    },
     { id: 'sequencer', label: 'Sequencer',   icon: Activity   },
     { id: 'ai',        label: 'AI Composer', icon: Wand2      },
+    { id: 'import',    label: 'Import',      icon: Upload     },
   ];
 
 
@@ -1023,6 +1030,12 @@ export default function MusicStudio() {
             }}
           />
         )}
+      {/* ── MUSIC IMPORT TAB ── */}
+      {activeTab === 'import' && (
+        <div className="space-y-4">
+          <MusicImportTab />
+        </div>
+      )}
       </div>
     </div>
   );
