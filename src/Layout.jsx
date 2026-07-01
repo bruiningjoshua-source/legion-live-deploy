@@ -9,13 +9,11 @@ import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
 import AnimatedBackground from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
-import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 import { RateLimitProvider } from '@/components/security/RateLimiter';
 import { CSRFProvider } from '@/components/security/CSRFProtection';
 import { ErrorTrackerProvider } from '@/components/monitoring/ErrorTracker';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import PWAInstallBanner from '@/components/pwa/PWAInstallBanner';
-import CustomerSupport from '@/components/support/CustomerSupport';
 import AgeVerificationGate from '@/components/auth/AgeVerificationGate';
 import GettingStartedTutorial from '@/components/onboarding/GettingStartedTutorial';
 import CreatorOnboarding from '@/components/onboarding/CreatorOnboarding';
@@ -236,9 +234,7 @@ export default function Layout({ children, currentPageName }) {
       
       <InstallPrompt />
       
-      <div className="fixed bottom-24 left-4 z-40">
-        <CustomerSupport user={user} />
-      </div>
+
     </>
   );
 
@@ -266,17 +262,7 @@ export default function Layout({ children, currentPageName }) {
                 showParticles={optimizedParticles !== 'off'}
               >
                 <div className="min-h-screen">
-                  <div className="fixed bottom-24 right-4 z-40">
-                    <AdvancedThemeCustomizer
-                      currentTheme={currentTheme}
-                      onThemeChange={setCurrentTheme}
-                      particleIntensity={particleIntensity}
-                      onParticleChange={setParticleIntensity}
-                      animatedBg={animatedBg}
-                      onAnimatedBgChange={setAnimatedBg}
-                      user={user}
-                    />
-                  </div>
+
                   {renderContent()}
                 </div>
               </AnimatedBackground>

@@ -4,16 +4,18 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Flame, ChevronRight, Radio } from 'lucide-react';
+import { Flame, ChevronRight, Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2 } from 'lucide-react';
+
+const ICON_MAP = { Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2 };
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 
 const HUBS = [
-  { name:'Live',     sub:'Streams',    path:'TheAmphitheatre', emoji:'📡', color:'#ef4444', badge:'LIVE' },
-  { name:'Gaming',   sub:'Tournaments',path:'GamesExpo',       emoji:'🎮', color:'#3b82f6', badge:'GG'   },
-  { name:'Discover', sub:'Explore',    path:'Explore',         emoji:'🔭', color:'#8b5cf6', badge:'NEW'  },
-  { name:'Shop',     sub:'Earn',       path:'AffiliateHub',    emoji:'💎', color:'#10b981', badge:'EARN' },
-  { name:'Senate',   sub:'Community',  path:'CommunityForums', emoji:'⚔️', color:'#f59e0b', badge:'TALK' },
-  { name:'Sounds',   sub:'Podcasts',   path:'Podcasts',        emoji:'🎙️', color:'#ec4899', badge:'POD'  },
+  { name:'Live',     sub:'Streams',    path:'TheAmphitheatre', icon:'Radio',    color:'#ef4444', badge:'LIVE' },
+  { name:'Gaming',   sub:'Tournaments',path:'GamesExpo',       icon:'Gamepad2', color:'#3b82f6', badge:'GG'   },
+  { name:'Discover', sub:'Explore',    path:'Explore',         icon:'Compass',  color:'#8b5cf6', badge:'NEW'  },
+  { name:'Shop',     sub:'Earn',       path:'AffiliateHub',    icon:'ShoppingBag',color:'#10b981',badge:'EARN' },
+  { name:'Senate',   sub:'Community',  path:'CommunityForums', icon:'Users',    color:'#f59e0b', badge:'TALK' },
+  { name:'Sounds',   sub:'Podcasts',   path:'Podcasts',        icon:'Mic2',     color:'#ec4899', badge:'POD'  },
 ];
 
 const CATS = ['All','Gaming','Music','Talk Show','Dance','Fitness','Art','Comedy'];
@@ -73,7 +75,7 @@ export default function Home() {
                 {/* Ambient glow */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ background:`radial-gradient(circle at 30% 30%, ${hub.color}12, transparent 70%)` }} />
-                <div className="text-2xl mb-2 leading-none">{hub.emoji}</div>
+                {(() => { const Icon = ICON_MAP[hub.icon]; return <div className="w-8 h-8 mb-2 flex items-center justify-center rounded-xl" style={{ background: hub.color + '18' }}><Icon className="w-4 h-4" style={{ color: hub.color }} /></div>; })()}
                 <p className="text-white font-bold text-sm leading-tight">{hub.name}</p>
                 <p className="text-white/35 text-[10px] font-medium mt-0.5">{hub.sub}</p>
                 <div className="absolute top-2.5 right-2.5">

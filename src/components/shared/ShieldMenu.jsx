@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Home, Tv, Gamepad2, Users, ShoppingBag, Radio,
   Film, BarChart2, Trophy, Mic, Music, Video,
-  Wallet, Settings, Zap, Calendar, Heart
+  Wallet, Settings, Zap, Calendar, Heart, Palette, HelpCircle, LogOut
 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const sections = [
   {
@@ -120,10 +121,31 @@ export default function ShieldMenu({ isOpen, onClose }) {
                 ))}
               </div>
 
-              {/* Footer ornament */}
-              <div className="px-5 py-4 border-t border-white/[0.05]">
-                <p className="text-center text-white/15 text-[10px] tracking-[0.3em] uppercase font-medium">
-                  ⚔ SPQR · LEGION LIVE ⚔
+              {/* Footer — Settings + Support + Sign Out */}
+              <div className="px-3 py-4 border-t border-white/[0.05] space-y-1">
+                <Link to={createPageUrl('Settings')} onClick={onClose}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/[0.07] transition-all">
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center">
+                    <Palette className="w-3.5 h-3.5 text-purple-400" />
+                  </div>
+                  <span className="text-sm font-medium">Appearance</span>
+                </Link>
+                <Link to={createPageUrl('HelpAndInfo')} onClick={onClose}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/[0.07] transition-all">
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center">
+                    <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+                  </div>
+                  <span className="text-sm font-medium">Help & Support</span>
+                </Link>
+                <button onClick={() => { base44.auth.logout('/'); onClose(); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.07] transition-all">
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center">
+                    <LogOut className="w-3.5 h-3.5 text-red-400" />
+                  </div>
+                  <span className="text-sm font-medium">Sign Out</span>
+                </button>
+                <p className="text-center text-white/10 text-[10px] tracking-[0.2em] uppercase pt-2">
+                  Legion Live · v1.0
                 </p>
               </div>
             </div>

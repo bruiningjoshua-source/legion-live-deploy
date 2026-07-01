@@ -6,13 +6,13 @@ import { toast } from 'sonner';
 import { Flame, X } from 'lucide-react';
 
 const DAY_REWARDS = [
-  { day:1, denarii:10,  emoji:'🌟' },
-  { day:2, denarii:15,  emoji:'💫' },
-  { day:3, denarii:25,  emoji:'✨' },
-  { day:4, denarii:35,  emoji:'🔥' },
-  { day:5, denarii:50,  emoji:'💎' },
-  { day:6, denarii:75,  emoji:'👑' },
-  { day:7, denarii:100, emoji:'⚔️' },
+  { day:1, denarii:10, label:'Day 1' },
+  { day:2, denarii:20, label:'Day 2' },
+  { day:3, denarii:30, label:'Day 3' },
+  { day:4, denarii:40, label:'Day 4' },
+  { day:5, denarii:50, label:'Day 5' },
+  { day:6, denarii:60, label:'Day 6' },
+  { day:7, denarii:70, label:'Day 7' },
 ];
 
 export default function DailyLoginReward({ onClose, onClaimed }) {
@@ -85,7 +85,7 @@ export default function DailyLoginReward({ onClose, onClaimed }) {
             return (
               <div key={day.day} className="flex flex-col items-center gap-0.5 py-2 rounded-xl text-center"
                 style={{ background:isCurrent?"rgba(245,166,35,0.18)":isPast?"rgba(255,255,255,0.04)":"rgba(255,255,255,0.02)", border:isCurrent?"1px solid rgba(245,166,35,0.55)":"1px solid rgba(255,255,255,0.05)" }}>
-                <span className="text-base" style={{ opacity:isFuture?0.3:1 }}>{isPast?"✅":day.emoji}</span>
+                <span className="text-base" style={{ opacity:isFuture?0.3:1 }}>{isPast?"✓":"◆"}</span>
                 <span className="text-[8px] font-bold" style={{ color:isCurrent?"#f5a623":"rgba(255,255,255,0.3)" }}>D{day.day}</span>
                 <span className="text-[8px]" style={{ color:isCurrent?"#fff":"rgba(255,255,255,0.2)" }}>{day.denarii}◆</span>
               </div>
@@ -103,7 +103,7 @@ export default function DailyLoginReward({ onClose, onClaimed }) {
             <button onClick={() => claimMutation.mutate()} disabled={claimMutation.isPending}
               className="w-full py-4 rounded-2xl font-black text-black text-base disabled:opacity-50 active:scale-[0.97] transition-transform"
               style={{ background:"linear-gradient(135deg,#f5a623,#d97706)", fontFamily:"Syne, sans-serif" }}>
-              {claimMutation.isPending ? "Claiming…" : `Claim ${currentReward.emoji} ${currentReward.denarii} Denarii`}
+              {claimMutation.isPending ? "Claiming…" : `Claim +${currentReward.denarii} Denarii`}
             </button>
           )}
         </div>
