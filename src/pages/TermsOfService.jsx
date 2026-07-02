@@ -105,7 +105,7 @@ function SectionCard({ icon: Icon, title, content }) {
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen pt-16 pb-24 bg-[#09090b]">
+    <div className="min-h-screen pb-24 bg-[#09090b]">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-amber-500/[0.04] rounded-full blur-3xl" />
       </div>

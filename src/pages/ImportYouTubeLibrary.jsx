@@ -28,7 +28,7 @@ export default function ImportYouTubeLibrary() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-2xl mx-auto px-4">
         <Card className="bg-stone-800/50 border-amber-600/20">
           <CardHeader>

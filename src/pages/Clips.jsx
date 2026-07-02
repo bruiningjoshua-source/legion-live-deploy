@@ -132,7 +132,7 @@ export default function ClipsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

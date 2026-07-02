@@ -94,7 +94,7 @@ export default function CommunityForums() {
   const memberCount = creators.length || 0;
 
   return (
-    <div className="min-h-screen text-white pt-16 pb-24">
+    <div className="min-h-screen text-white pb-24">
       {/* BG */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[#0a0a0f]" />

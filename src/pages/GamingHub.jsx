@@ -129,7 +129,7 @@ export default function GamingHub() {
   const featuredStream = filteredStreams[0];
 
   return (
-    <div className="min-h-screen text-white pt-14 pb-24">
+    <div className="min-h-screen text-white pb-24">
       {/* Header with search */}
       <div className="sticky top-14 z-40 bigo-overlay border-b border-white/10">
         <div className="px-4 pt-3 pb-2">

@@ -211,13 +211,21 @@ export default function Layout({ children, currentPageName }) {
         <Navbar user={user} wallet={wallet} currentPageName={currentPageName} onOpenShieldMenu={() => setShowShieldMenu(true)} />
       )}
       
-      <main className={`${
-        ['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName)
-          ? 'h-screen overflow-hidden'
-        : currentPageName === 'LegionAI'
-          ? 'h-screen overflow-hidden pb-16'
-          : 'min-h-screen pb-24'
-      }`}>
+      <main
+        className={`${
+          ['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName)
+            ? 'h-screen overflow-hidden'
+          : currentPageName === 'LegionAI'
+            ? 'h-screen overflow-hidden pb-16'
+            : 'min-h-screen pb-24'
+        }`}
+        style={
+          // Fullscreen immersive pages manage their own layout (no navbar offset).
+          ['GoLive', 'WatchStream', 'VideoEditor'].includes(currentPageName)
+            ? undefined
+            : { paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }
+        }
+      >
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center gap-3">

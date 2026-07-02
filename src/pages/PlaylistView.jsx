@@ -235,14 +235,14 @@ export default function PlaylistView() {
 
   if (!playlist) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
         <Skeleton className="w-64 h-64 rounded-xl bg-stone-800" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-40">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-40">
       <audio ref={audioRef} src={currentTrack?.audio_url || currentTrack?.video_url} />
 
       <div className="max-w-5xl mx-auto px-4">

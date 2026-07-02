@@ -206,7 +206,7 @@ export default function Highlights() {
   });
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="min-h-screen pb-24">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <motion.div 

@@ -324,7 +324,7 @@ export default function AffiliateMarketplace() {
   const totalLiveViewers = liveStreams.reduce((sum, s) => sum + (s.viewer_count || 0), 0);
 
   return (
-    <div className="min-h-screen pt-16 pb-24">
+    <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Hero Section */}
         <motion.div 

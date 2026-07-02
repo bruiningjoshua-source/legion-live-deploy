@@ -135,7 +135,7 @@ export default function Explore() {
   }, [queryClient]);
 
   return (
-    <div className="ll-page-enter min-h-screen pt-20 pb-24">
+    <div className="ll-page-enter min-h-screen pb-24">
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}

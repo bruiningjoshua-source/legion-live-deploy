@@ -151,7 +151,7 @@ export default function EarningsDashboard() {
   ];
 
   return (
-    <div className="min-h-screen pt-20 pb-24 px-4">
+    <div className="min-h-screen pb-24 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

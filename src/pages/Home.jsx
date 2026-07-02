@@ -46,8 +46,7 @@ export default function Home() {
   }, [streams, cat]);
 
   return (
-    <div className="ll-page-enter min-h-screen bg-[#050508] pb-24"
-      style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>
+    <div className="ll-page-enter min-h-screen bg-[#050508] pb-24">
 
       {/* ── Hero greeting ──────────────────────────────────────── */}
       <div className="relative px-4 pt-4 pb-4 overflow-hidden">

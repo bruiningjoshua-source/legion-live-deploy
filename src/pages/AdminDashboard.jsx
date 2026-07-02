@@ -170,7 +170,7 @@ export default function AdminDashboard() {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen pt-20 pb-24 flex items-center justify-center">
+      <div className="min-h-screen pb-24 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-red-500/30 max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
   const totalRevenue = streams.reduce((sum, s) => sum + (s.total_denarii_earned || 0), 0);
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="min-h-screen pb-24">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Header - Centered */}
         <motion.div

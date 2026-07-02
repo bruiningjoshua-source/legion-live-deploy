@@ -130,7 +130,7 @@ export default function AmbassadorProgram() {
   // Not signed in
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-amber-600/20 max-w-md">
           <CardContent className="p-8 text-center">
             <Briefcase className="w-12 h-12 text-amber-400 mx-auto mb-4" />
@@ -148,7 +148,7 @@ export default function AmbassadorProgram() {
   // Not an ambassador yet
   if (!ambassador && !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -205,7 +205,7 @@ export default function AmbassadorProgram() {
   // Pending approval
   if (ambassador?.status === 'pending') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-amber-600/20 max-w-md">
           <CardContent className="p-8 text-center">
             <Clock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
@@ -218,7 +218,7 @@ export default function AmbassadorProgram() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

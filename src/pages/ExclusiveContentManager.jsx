@@ -107,7 +107,7 @@ export default function ExclusiveContentManager() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-amber-600/20">
           <CardContent className="p-8 text-center">
             <Lock className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
@@ -119,7 +119,7 @@ export default function ExclusiveContentManager() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

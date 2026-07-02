@@ -48,7 +48,7 @@ export default function WatchLater() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-16 pb-24 flex">
+      <div className="min-h-screen bg-stone-950 pb-24 flex">
         <AmphitheatreSidebar />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
@@ -58,7 +58,7 @@ export default function WatchLater() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 pt-16 pb-24 flex">
+    <div className="min-h-screen bg-stone-950 pb-24 flex">
       <AmphitheatreSidebar />
       <div className="flex-1 max-w-7xl mx-auto px-4">
         <div className="mb-8">

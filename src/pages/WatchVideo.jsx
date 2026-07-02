@@ -276,7 +276,7 @@ export default function WatchVideo() {
   if (!video) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
           {/* Main Video Area */}

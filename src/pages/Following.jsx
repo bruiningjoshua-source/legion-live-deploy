@@ -57,7 +57,7 @@ export default function Following() {
 
   if (!user) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <GlassCard className="text-center max-w-sm mx-4 py-12">
           <Heart className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Sign in to Follow Creators</h1>
@@ -69,7 +69,7 @@ export default function Following() {
 
   if (followsLoading || creatorsLoading) {
     return (
-      <div className="min-h-screen pt-20 pb-24">
+      <div className="min-h-screen pb-24">
         <div className="max-w-7xl mx-auto px-4">
           <Skeleton className="h-10 w-48 bg-white/5 mb-8" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -83,7 +83,7 @@ export default function Following() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div 

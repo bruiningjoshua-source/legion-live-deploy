@@ -111,7 +111,7 @@ export default function ForumPost() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full" />
       </div>
     );
@@ -119,7 +119,7 @@ export default function ForumPost() {
 
   if (!post) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <MessageSquare className="w-16 h-16 text-white/10 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-white mb-2">Post Not Found</h1>
@@ -240,7 +240,7 @@ export default function ForumPost() {
   };
 
   return (
-    <div className="min-h-screen text-white pt-16 pb-24">
+    <div className="min-h-screen text-white pb-24">
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0f]" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 pt-4">

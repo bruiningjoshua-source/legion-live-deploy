@@ -141,7 +141,7 @@ export default function Wallet() {
   // Loading state
   if (walletLoading) {
     return (
-      <div className="ll-page-enter min-h-screen pt-20 pb-24">
+      <div className="ll-page-enter min-h-screen pb-24">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
           <Skeleton className="h-12 w-48 bg-white/5" />
           <Skeleton className="h-4 w-32 bg-white/5" />
@@ -155,7 +155,7 @@ export default function Wallet() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-24">
+    <div className="min-h-screen pb-24">
       <TermsOfServiceGate
         isOpen={showTosGate && !tosAccepted}
         onAccept={() => {

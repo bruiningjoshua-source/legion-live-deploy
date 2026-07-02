@@ -85,7 +85,7 @@ export default function ContentModerationAdmin() {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-red-500/30">
           <CardContent className="p-8 text-center">
             <Shield className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
@@ -103,7 +103,7 @@ export default function ContentModerationAdmin() {
   const userReported = violations.filter(v => v.detected_by === 'user_report');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

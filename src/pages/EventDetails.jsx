@@ -32,7 +32,7 @@ export default function EventDetails() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 pb-12">
+      <div className="min-h-screen bg-stone-950 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           <Skeleton className="h-64 rounded-2xl bg-stone-800 mb-6" />
           <Skeleton className="h-48 rounded-2xl bg-stone-800" />
@@ -43,7 +43,7 @@ export default function EventDetails() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
         <div className="text-center">
           <Trophy className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-amber-100 mb-2">Event Not Found</h1>
@@ -75,7 +75,7 @@ export default function EventDetails() {
   const Icon = eventTypeIcons[event.event_type] || Trophy;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       {/* Banner */}
       <div className="relative h-64 md:h-80 overflow-hidden">
         {event.banner_url ? (

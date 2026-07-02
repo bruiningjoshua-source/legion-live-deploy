@@ -154,7 +154,7 @@ export default function CustomizeTheme() {
   `;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">

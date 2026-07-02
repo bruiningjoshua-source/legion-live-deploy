@@ -137,7 +137,7 @@ export default function TheAmphitheatre() {
   const showPod    = activeTab === 'podcasts' || showAll;
 
   return (
-    <div className="min-h-screen text-white pt-14 pb-24">
+    <div className="min-h-screen text-white pb-24">
 
       <div className="sticky top-14 z-40 bigo-overlay border-b border-white/10 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 pt-3 pb-2">

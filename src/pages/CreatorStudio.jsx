@@ -128,7 +128,7 @@ export default function CreatorStudio() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-amber-600/20 p-8 text-center">
           <h2 className="text-xl text-amber-100 mb-4">Sign in to access Creator Studio</h2>
           <Button onClick={() => base44.auth.redirectToLogin()} className="bg-amber-600 hover:bg-amber-700">
@@ -140,7 +140,7 @@ export default function CreatorStudio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-6">

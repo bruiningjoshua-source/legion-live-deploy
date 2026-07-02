@@ -216,7 +216,7 @@ export default function Profile() {
     : 0;
 
   return (
-    <div className="ll-page-enter min-h-screen pt-16 pb-24">
+    <div className="ll-page-enter min-h-screen pb-24">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
         {/* ── Profile Header ── */}
         <div className="ll-card overflow-hidden mb-5">

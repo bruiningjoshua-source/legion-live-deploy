@@ -177,7 +177,7 @@ export default function CreatorCommunity() {
 
   if (creatorLoading || roomsLoading) {
     return (
-      <div className="min-h-screen pt-16 flex">
+      <div className="min-h-screen flex">
         <div className="w-64 bg-black/40 p-4">
           <Skeleton className="h-16 w-full mb-4 bg-white/10" />
           {[...Array(4)].map((_, i) => (
@@ -193,7 +193,7 @@ export default function CreatorCommunity() {
 
   if (!creator) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <GlassCard className="text-center">
           <MessageSquare className="w-16 h-16 text-pink-400/30 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Creator Not Found</h2>
@@ -206,7 +206,7 @@ export default function CreatorCommunity() {
   }
 
   return (
-    <div className="min-h-screen pt-16 flex">
+    <div className="min-h-screen flex">
       {/* Sidebar */}
       <motion.div 
         initial={{ x: -280 }}

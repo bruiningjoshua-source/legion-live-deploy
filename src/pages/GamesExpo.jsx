@@ -248,7 +248,7 @@ export default function GamesExpo() {
   };
 
   return (
-    <div className="min-h-screen text-white pt-14 pb-24">
+    <div className="min-h-screen text-white pb-24">
       {/* Header */}
       <div className="sticky top-14 z-40 bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="px-4 pt-3 pb-2">

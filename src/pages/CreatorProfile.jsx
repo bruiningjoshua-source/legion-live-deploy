@@ -162,7 +162,7 @@ export default function CreatorProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 pb-12">
+      <div className="min-h-screen bg-stone-950 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           <Skeleton className="h-64 rounded-2xl bg-stone-800 mb-8" />
           <div className="grid grid-cols-2 gap-4">
@@ -176,7 +176,7 @@ export default function CreatorProfile() {
 
   if (!creator) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
         <div className="text-center">
           <Users className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-amber-100 mb-2">Creator Not Found</h1>
@@ -197,7 +197,7 @@ export default function CreatorProfile() {
     : 0;
 
   return (
-    <div className="min-h-screen pt-16 pb-24">
+    <div className="min-h-screen pb-24">
       {/* Hero Section */}
       <div className="relative">
         <div className="h-48 md:h-64 bg-gradient-to-r from-amber-900 via-stone-800 to-amber-900">

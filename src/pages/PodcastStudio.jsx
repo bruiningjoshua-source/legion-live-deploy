@@ -139,7 +139,7 @@ export default function PodcastStudio() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080810] pt-16 pb-28 flex">
+    <div className="min-h-screen bg-[#080810] pb-28 flex">
 
       {/* ── Sidebar ─────────────────────────────────────────────── */}
       <aside className="hidden lg:flex flex-col w-56 shrink-0 pt-6 pl-4 pr-3 gap-1">

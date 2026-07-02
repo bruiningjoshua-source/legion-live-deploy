@@ -227,7 +227,7 @@ export default function VideoUpload() {
 
   if (!user || !creator) {
     return (
-      <div className="min-h-screen pt-20 pb-12 flex items-center justify-center px-4">
+      <div className="min-h-screen pb-12 flex items-center justify-center px-4">
         <Card className="bg-white/[0.03] border-white/[0.08] p-8 text-center max-w-sm">
           <Video className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
           <h2 className="text-xl text-white mb-2 font-bold">Create a Channel First</h2>
@@ -241,7 +241,7 @@ export default function VideoUpload() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-24 px-4">
+    <div className="min-h-screen pb-24 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-6">

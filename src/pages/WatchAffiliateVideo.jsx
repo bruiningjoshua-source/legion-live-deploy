@@ -112,7 +112,7 @@ export default function WatchAffiliateVideo() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin" />
       </div>
     );
@@ -120,7 +120,7 @@ export default function WatchAffiliateVideo() {
 
   if (!video) {
     return (
-      <div className="min-h-screen bg-stone-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
         <div className="text-center">
           <ShoppingBag className="w-16 h-16 text-green-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-amber-100 mb-2">Video Not Found</h1>
@@ -133,7 +133,7 @@ export default function WatchAffiliateVideo() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-16 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-6xl mx-auto px-4">
         {/* Back Button */}
         <Link to={createPageUrl('TheAmphitheatre')}>

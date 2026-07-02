@@ -221,7 +221,7 @@ export default function CreatorSuccessProgram() {
     : 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-24 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-24 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

@@ -38,7 +38,7 @@ export default function CreatorPayouts() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
       </div>
     );
@@ -46,7 +46,7 @@ export default function CreatorPayouts() {
 
   if (!user || !creator) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           <Card className="bg-stone-800/30 border-amber-600/20">
             <CardContent className="py-12 text-center">
@@ -59,7 +59,7 @@ export default function CreatorPayouts() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-amber-100 mb-2">Creator Payouts</h1>
