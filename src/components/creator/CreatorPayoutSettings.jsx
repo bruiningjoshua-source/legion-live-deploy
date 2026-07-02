@@ -45,7 +45,7 @@ const PAYOUT_METHODS = [
 // Platform economics: 180 Denarii = $1 USD; creator earns 60% of gift value
 const CREATOR_SHARE = 0.70;
 const DENARII_TO_USD = (0.60 / 180) * CREATOR_SHARE; // ~$0.01077 per Denarii earned
-const MIN_PAYOUT_DENARII = 650; // ~$10 minimum payout
+const MIN_PAYOUT_DENARII = 1800; // ~$10 minimum payout (180 Denarii = $1)
 
 export default function CreatorPayoutSettings({ creator, user }) {
   const queryClient = useQueryClient();
@@ -228,7 +228,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
               <Info className="w-4 h-4 text-amber-400 mt-0.5" />
               <div className="text-xs text-amber-300/80">
                 <p className="font-semibold mb-1">Revenue Split: 30% Platform / 70% Creator</p>
-                <p>For every 180 Denarii gifted to you, you earn $0.60 USD (70% share). Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
+                <p>For every 180 Denarii gifted to you, you earn $0.60 USD (60% share). Minimum cashout: {MIN_PAYOUT_DENARII.toLocaleString()} Denarii (≈${(MIN_PAYOUT_DENARII * DENARII_TO_USD).toFixed(2)})</p>
               </div>
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function CreatorPayoutSettings({ creator, user }) {
                 <p className="text-green-300/70 text-sm mb-1">You'll receive</p>
                 <p className="text-3xl font-bold text-green-100">${estimatedPayout.toFixed(2)}</p>
                 <p className="text-green-400/60 text-xs mt-1">
-                  ({cashoutNum.toLocaleString()} Denarii × 70% share ÷ 65)
+                  ({cashoutNum.toLocaleString()} Denarii ÷ 180 = USD, your 60% share already applied)
                 </p>
               </div>
             )}

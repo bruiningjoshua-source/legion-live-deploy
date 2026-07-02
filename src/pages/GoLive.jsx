@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
 import LegionAREngine from '@/components/stream/LegionAREngine';
-import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
@@ -443,6 +442,11 @@ export default function GoLive() {
                     setShowOBS(true);
                     return;
                   }
+                  if (tool === 'vtuber') {
+                    setMocapMode(v => !v);
+                    setActiveTool(null);
+                    return;
+                  }
                   setActiveTool(tool);
                   if (tool === 'beauty') setShowBeauty(true);
                   else setShowBeauty(false);
@@ -554,18 +558,14 @@ export default function GoLive() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {activeTool === 'magic' && (
-            <FilterMenuPanel onClose={() => setActiveTool(null)} />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
           {showSoundboard && <Soundboard onClose={() => setShowSoundboard(false)} />}
         </AnimatePresence>
 
         <LegionAREngine
           videoRef={videoRef}
           isLive={!!goLiveMutation.data}
+          openPanel={activeTool === 'magic'}
+          onPanelClose={() => setActiveTool(null)}
           onProcessedStream={(stream) => {
             if (!stream) return;
             const track = stream.getVideoTracks()[0];

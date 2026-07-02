@@ -27,12 +27,14 @@ class StreamService {
 
   /** End a stream and clean up */
   async endStream(stream, creator, pkBattle) {
-    const durationMin = Math.floor((Date.now() - new Date(stream.created_date).getTime()) / 60000);
+    const startedAt = stream.created_date || stream.created_at || Date.now();
+    const durationMin = Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000));
 
     await base44.entities.Stream.update(stream.id, {
       status: 'ended',
       duration_minutes: durationMin,
       viewer_count: 0,
+      ended_at: new Date().toISOString(),
     });
 
     await base44.entities.Creator.update(creator.id, {

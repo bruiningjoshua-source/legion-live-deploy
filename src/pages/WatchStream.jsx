@@ -37,7 +37,7 @@ import BigoStreamBottomBar from '@/components/stream/BigoStreamBottomBar';
 import RoomToolsSheet from '@/components/stream/RoomToolsSheet';
 import HostProfileSheet from '@/components/stream/HostProfileSheet';
 import WishlistSheet from '@/components/stream/WishlistSheet';
-import FilterMenuPanel from '@/components/ar/FilterMenuPanel';
+import LegionAREngine from '@/components/stream/LegionAREngine';
 
 export default function WatchStream() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -402,21 +402,21 @@ export default function WatchStream() {
         onAvatarClick={() => setShowHostProfile(true)}
       />
 
-      {/* ── HOST END STREAM + CONTROLS — always visible for host ── */}
+      {/* ── HOST END STREAM + CONTROLS — top-right cluster, clear of leaderboard ── */}
       {isHost && (
-        <div className="absolute z-30 left-3 right-3 flex items-center justify-between gap-2"
-          style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 52px)' }}>
+        <div className="absolute z-30 right-3 flex items-center gap-2"
+          style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 92px)' }}>
           <button
             onClick={() => setShowHostControls(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md"
-            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)' }}>
-            ⚙ Controls
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md active:scale-95 transition-transform"
+            style={{ background: 'rgba(26,21,16,0.7)', border: '1px solid rgba(200,135,26,0.35)', color: '#e8dcc8' }}>
+            <span style={{ fontSize: '11px' }}>⚙</span> Controls
           </button>
           <button
             onClick={() => setShowEndDialog(true)}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md"
-            style={{ background: 'rgba(220,38,38,0.85)', border: '1px solid rgba(255,100,100,0.3)', color: '#fff', boxShadow: '0 2px 12px rgba(220,38,38,0.4)' }}>
-            ⏹ End Stream
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md active:scale-95 transition-transform"
+            style={{ background: 'linear-gradient(180deg, #c42a2a 0%, #8b1a1a 100%)', border: '1px solid rgba(196,42,42,0.5)', color: '#ffe0e0', boxShadow: '0 2px 12px rgba(139,26,26,0.5)' }}>
+            <span style={{ fontSize: '11px' }}>⏹</span> End
           </button>
         </div>
       )}
@@ -543,12 +543,12 @@ export default function WatchStream() {
       {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} onGiftSent={cb => { lotteryGiftCallbackRef.current = cb; }} />}
       {showChallenge  && <ViewerChallenge streamId={streamId} isHost={false} onClose={()=>setShowChallenge(false)} />}
 
-      {showEndDialog && (
-        <EndStreamDialog
-          onConfirm={() => endStream()}
-          onCancel={() => setShowEndDialog(false)}
-        />
-      )}
+      <EndStreamDialog
+        isOpen={showEndDialog}
+        onConfirm={() => endStream()}
+        onCancel={() => setShowEndDialog(false)}
+        isPending={_endStream.isPending}
+      />
 
       {showExpandedLeaderboard && (
         <ExpandedGiftLeaderboard
@@ -607,11 +607,24 @@ export default function WatchStream() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showMagicPanel && (
-          <FilterMenuPanel onClose={() => setShowMagicPanel(false)} />
-        )}
-      </AnimatePresence>
+      {/* Magic filters — host applies AR to their own published stream via the real engine */}
+      {isHost && (
+        <LegionAREngine
+          videoRef={videoRef}
+          isLive={stream?.status === 'live'}
+          openPanel={showMagicPanel}
+          onPanelClose={() => setShowMagicPanel(false)}
+          onProcessedStream={(processed) => {
+            if (!processed) return;
+            const track = processed.getVideoTracks()[0];
+            if (track && typeof ZegoService.replaceTrack === 'function') {
+              ZegoService.replaceTrack(track).catch(err =>
+                console.warn('[LegionAR] replaceTrack:', err.message)
+              );
+            }
+          }}
+        />
+      )}
 
       <AnimatePresence>
         {showWishlist && (

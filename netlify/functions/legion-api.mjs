@@ -761,6 +761,125 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     return { url: accountLink.url };
   },
 
+  // ─── Stripe Connect: sync account status (called on return from onboarding) ──
+  async stripeConnectStatus({ supabase, user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id, stripe_account_id')
+      .eq('user_email', user.email)
+      .single();
+    if (!creator) return json(404, { error: 'Creator profile not found' });
+    if (!creator.stripe_account_id) {
+      return { connected: false, payouts_enabled: false, charges_enabled: false, onboarding_complete: false };
+    }
+
+    const acct = await stripe.accounts.retrieve(creator.stripe_account_id);
+    const onboardingComplete = !!acct.details_submitted && !!acct.payouts_enabled;
+    await supabase.from('creators').update({
+      payouts_enabled: !!acct.payouts_enabled,
+      charges_enabled: !!acct.charges_enabled,
+      stripe_onboarding_complete: onboardingComplete,
+    }).eq('id', creator.id);
+
+    return {
+      connected: true,
+      payouts_enabled: !!acct.payouts_enabled,
+      charges_enabled: !!acct.charges_enabled,
+      onboarding_complete: onboardingComplete,
+      requirements_due: acct.requirements?.currently_due || [],
+    };
+  },
+
+  // ─── Request a payout: convert Denarii balance to a Stripe transfer ──────────
+  async requestPayout({ supabase, admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return json(500, { error: 'Stripe not configured' });
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const db = admin || supabase;
+
+    // Economics: 180 Denarii = $1 USD, creators already hold their 60% share as Denarii
+    const DENARII_PER_USD = 180;
+    const MIN_PAYOUT_DENARII = 1800; // ~$10
+
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id, user_email, stripe_account_id, payouts_enabled')
+      .eq('user_email', user.email)
+      .single();
+    if (!creator) return json(404, { error: 'Creator profile not found' });
+    if (!creator.stripe_account_id || !creator.payouts_enabled) {
+      return json(400, { error: 'Complete Stripe onboarding before requesting a payout.' });
+    }
+
+    // Read wallet balance (service-role to bypass RLS for the debit)
+    const { data: wallet } = await db
+      .from('wallets')
+      .select('denarii_balance')
+      .eq('user_email', user.email)
+      .single();
+    const balance = wallet?.denarii_balance || 0;
+    if (balance < MIN_PAYOUT_DENARII) {
+      return json(400, { error: `Minimum payout is ${MIN_PAYOUT_DENARII} Denarii (~$10). You have ${balance}.` });
+    }
+
+    const usd = Math.floor((balance / DENARII_PER_USD) * 100) / 100; // 2dp
+    const amountCents = Math.round(usd * 100);
+
+    // Debit wallet first (idempotent guard via pending payout row)
+    const { data: payoutRow, error: insErr } = await db
+      .from('creator_payouts')
+      .insert({
+        creator_email: creator.user_email,
+        creator_id: creator.id,
+        amount_usd: usd,
+        fee_usd: 0,
+        net_amount_usd: usd,
+        method_type: 'stripe_connect',
+        stripe_account_id: creator.stripe_account_id,
+        status: 'processing',
+        requested_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    if (insErr) return json(500, { error: 'Could not create payout record' });
+
+    // Zero the Denarii that are being cashed out
+    const { error: debitErr } = await db
+      .from('wallets')
+      .update({ denarii_balance: balance - (Math.floor(usd * DENARII_PER_USD)) })
+      .eq('user_email', user.email);
+    if (debitErr) {
+      await db.from('creator_payouts').update({ status: 'failed', failure_reason: 'wallet debit failed' }).eq('id', payoutRow.id);
+      return json(500, { error: 'Wallet debit failed' });
+    }
+
+    try {
+      const transfer = await stripe.transfers.create({
+        amount: amountCents,
+        currency: 'usd',
+        destination: creator.stripe_account_id,
+        metadata: { creator_id: creator.id, payout_id: payoutRow.id },
+      });
+      await db.from('creator_payouts').update({
+        status: 'completed', stripe_transfer_id: transfer.id, processed_at: new Date().toISOString(),
+      }).eq('id', payoutRow.id);
+      return { success: true, amount_usd: usd, transfer_id: transfer.id };
+    } catch (e) {
+      // Refund the Denarii on transfer failure
+      await db.from('wallets').update({ denarii_balance: balance }).eq('user_email', user.email);
+      await db.from('creator_payouts').update({ status: 'failed', failure_reason: String(e.message || e).slice(0,200) }).eq('id', payoutRow.id);
+      return json(500, { error: 'Transfer failed: ' + (e.message || 'unknown') });
+    }
+  },
+
   // ─── Cancel Subscription ─────────────────────────────────────────────────
   async cancelSubscription({ supabase, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
@@ -979,12 +1098,14 @@ Reply in JSON: { "reply": "your response here" }`;
   async getPayoutConfig({ supabase, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
     return {
-      platform_cut: 0.5,
-      creator_cut: 0.5,
-      minimum_withdrawal_usd: 20,
-      payout_schedule: 'weekly',
-      supported_methods: ['stripe_connect', 'paypal'],
-      denarii_to_usd_rate: 0.01,
+      platform_cut: 0.4,
+      creator_cut: 0.6,
+      minimum_withdrawal_usd: 10,
+      minimum_withdrawal_denarii: 1800,
+      payout_schedule: 'on_request',
+      supported_methods: ['stripe_connect'],
+      denarii_to_usd_rate: 1 / 180,
+      denarii_per_usd: 180,
     };
   },
 

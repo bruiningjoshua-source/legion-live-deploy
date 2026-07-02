@@ -308,7 +308,7 @@ class Particle {
 }
 
 // ── MAIN ENGINE COMPONENT ─────────────────────────────────────────────────
-export default function LegionAREngine({ videoRef, onProcessedStream, isLive = false }) {
+export default function LegionAREngine({ videoRef, onProcessedStream, isLive = false, openPanel, onPanelClose }) {
   const [activeFilter, setActiveFilter] = useState(FILTERS[0]);
   const [activeOverlay, setActiveOverlay] = useState(AR_OVERLAYS[0]);
   const [activeBg, setActiveBg] = useState(BG_EFFECTS[0]);
@@ -316,6 +316,11 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   const [category, setCategory] = useState('all');
   const [showPanel, setShowPanel] = useState(false);
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+
+  // Allow parent (magic menu) to open the real filter panel
+  useEffect(() => {
+    if (openPanel) { setShowPanel(true); setShowAdvancedPanel(false); }
+  }, [openPanel]);
   const [activeTab, setActiveTab] = useState('filters');
   const [intensity, setIntensity] = useState(100);
   const [fps, setFps] = useState(0);
@@ -628,7 +633,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
                 {isProcessing && (
                   <span className="text-amber-400 text-[10px] font-mono">{fps}fps</span>
                 )}
-                <button onClick={() => setShowPanel(false)}
+                <button onClick={() => { setShowPanel(false); onPanelClose?.(); }}
                   className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/50">
                   ✕
                 </button>
