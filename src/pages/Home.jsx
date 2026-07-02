@@ -46,10 +46,11 @@ export default function Home() {
   }, [streams, cat]);
 
   return (
-    <div className="ll-page-enter min-h-screen bg-[#050508] pb-24">
+    <div className="ll-page-enter min-h-screen bg-[#050508] pb-24"
+      style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>
 
       {/* ── Hero greeting ──────────────────────────────────────── */}
-      <div className="relative px-4 pt-5 pb-4 overflow-hidden">
+      <div className="relative px-4 pt-4 pb-4 overflow-hidden">
         <div className="ll-glow-gold -top-20 -left-20" />
         <div className="relative">
           <p className="ll-label text-white/30 mb-0.5">
@@ -70,7 +71,7 @@ export default function Home() {
               <motion.div
                 whileTap={{ scale: 0.93 }}
                 transition={{ type:'spring', stiffness:500, damping:25 }}
-                className="ll-interactive relative overflow-hidden p-3 rounded-xl"
+                className="ll-interactive relative overflow-hidden p-3 rounded-xl flex flex-col min-h-[104px]"
                 style={{
                   background: 'linear-gradient(145deg, #1a1510 0%, #12100a 100%)',
                   border: '1px solid rgba(200,135,26,0.2)',
@@ -87,8 +88,10 @@ export default function Home() {
                     <Icon className="w-3.5 h-3.5" style={{ color: '#c8871a' }} />
                   </div>
                 ); })()}
-                <p className="font-bold text-xs leading-tight truncate" style={{ color: '#e8dcc8', fontFamily: "'Cinzel', serif" }}>{hub.name}</p>
-                <p className="text-[9px] font-medium mt-0.5 truncate" style={{ color: 'rgba(200,135,26,0.5)' }}>{hub.sub}</p>
+                <div className="mt-auto">
+                  <p className="font-bold text-xs leading-tight truncate" style={{ color: '#e8dcc8', fontFamily: "'Cinzel', serif" }}>{hub.name}</p>
+                  <p className="text-[9px] font-medium mt-0.5 truncate" style={{ color: 'rgba(200,135,26,0.5)' }}>{hub.sub}</p>
+                </div>
               </motion.div>
             </Link>
           ))}
