@@ -129,42 +129,18 @@ export default function SpinWheelOverlay({ streamId, creatorId, user, wallet, is
       if (!canAfford) throw new Error(`Need ${costDenarii} Denarii to spin`);
       if (isSpinning) throw new Error('Already spinning');
 
-      // Server picks the prize (authoritative)
-      const prize = pickPrize(prizes);
-      const prizeIndex = prizes.findIndex(p => p.id === prize.id);
-
-      // Deduct cost from viewer wallet
-      await base44.functions.invoke('sendGift', {
-        giftId: null,
-        quantity: 1,
-        creatorId,
-        streamId,
-        amountDenarii: costDenarii,
-        reason: 'spin_wheel',
+      // Server-authoritative: debits fee, picks prize, credits — all atomic.
+      // Client can no longer rig the prize or forge the credit.
+      const { data, error } = await base44.rpc('spin_wheel', {
+        p_cost: costDenarii,
+        p_creator_id: creatorId || null,
+        p_stream_id: streamId || null,
+        p_prizes: prizes,
       });
+      if (error) throw new Error(error.message || 'Spin failed');
 
-      // Credit prize if it has value
-      if (prize.type === 'denarii' && prize.value > 0) {
-        await base44.entities.Wallet.filter({ user_email: user.email }, null, 1).then(async ([w]) => {
-          if (w) await base44.entities.Wallet.update(w.id, {
-            denarii_balance: (w.denarii_balance || 0) + prize.value
-          });
-        });
-      }
-
-      // Log to gift transactions
-      await base44.entities.GiftTransaction.create({
-        stream_id: streamId,
-        sender_email: user.email,
-        sender_name: user.full_name || 'Viewer',
-        receiver_email: creatorId,
-        gift_id: null,
-        quantity: 1,
-        total_as_value: costDenarii,
-        reason: `spin_wheel:${prize.id}`,
-        prize_won: prize.label,
-      }).catch(() => {});
-
+      const prizeIndex = data.prize_index;
+      const prize = prizes[prizeIndex];
       return { prize, prizeIndex };
     },
     onSuccess: ({ prize, prizeIndex }) => {

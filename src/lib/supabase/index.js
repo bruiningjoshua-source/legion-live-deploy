@@ -292,4 +292,8 @@ export const base44 = {
   analytics,
   users,
   connectors,
+  // Direct Supabase RPC passthrough for server-authoritative operations
+  // (wallet ledger, quest claims, PPV purchases). Returns { data, error }.
+  rpc: (fn, args) => supabase.rpc(fn, args),
+  supabase,
 };

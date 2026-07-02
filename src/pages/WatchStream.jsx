@@ -300,14 +300,14 @@ export default function WatchStream() {
     return () => clearInterval(iv);
   }, []);
 
-  // Lotto deduct helper
+  // Lotto deduct helper — server-authoritative debit
   const handleLottoDeduct = useCallback(async (amount) => {
-    if (!wallet?.id) throw new Error('No wallet');
-    await base44.entities.Wallet.update(wallet.id, {
-      denarii_balance: Math.max(0, (wallet.denarii_balance || 0) - amount)
+    const { error } = await base44.rpc('debit_denarii', {
+      p_amount: amount, p_reason: 'lotto_entry', p_related: streamId || null,
     });
+    if (error) throw new Error(error.message || 'Debit failed');
     queryClient.invalidateQueries({ queryKey: ['wallet', user?.email] });
-  }, [wallet, queryClient, user?.email]);
+  }, [streamId, queryClient, user?.email]);
 
   if (streamLoading) {
     return (

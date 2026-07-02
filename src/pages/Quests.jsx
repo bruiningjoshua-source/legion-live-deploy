@@ -176,20 +176,11 @@ export default function Quests() {
 
   const claimMutation = useMutation({
     mutationFn: async ({ quest, userQuest }) => {
-      // Update user quest status
-      await base44.entities.UserQuest.update(userQuest.id, {
-        status: 'claimed',
-        claimed_at: new Date().toISOString()
-      });
-
-      // Award Denarii
-      if (quest.reward_denarii > 0 && wallet) {
-        await base44.entities.Wallet.update(wallet.id, {
-          denarii_balance: (wallet.denarii_balance || 0) + quest.reward_denarii
-        });
-      }
-
-      return { quest, userQuest };
+      // Server-authoritative: validates completion + computes reward server-side.
+      // Client can no longer set its own balance.
+      const { data, error } = await base44.rpc('claim_quest_reward', { p_user_quest_id: userQuest.id });
+      if (error) throw new Error(error.message || 'Claim failed');
+      return { quest, userQuest, result: data };
     },
     onSuccess: ({ quest }) => {
       toast.success(`🎉 Claimed ${quest.reward_denarii} Denarii!`);

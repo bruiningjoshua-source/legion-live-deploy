@@ -114,15 +114,14 @@ export default function LotteryOverlay({ streamId, creatorId, user, wallet, isCr
       // Pick winner
       const winner = pool[Math.floor(Math.random() * pool.length)];
 
-      // Credit prize to winner
+      // Credit prize to winner — host-only server RPC, bounded, atomic
       const prizeAmount = lottery.prizePool || 0;
       if (prizeAmount > 0) {
-        const [winnerWallet] = await base44.entities.Wallet.filter({ user_email: winner.user_email }, null, 1);
-        if (winnerWallet) {
-          await base44.entities.Wallet.update(winnerWallet.id, {
-            denarii_balance: (winnerWallet.denarii_balance || 0) + prizeAmount
-          });
-        }
+        await base44.rpc('credit_lottery_winner', {
+          p_stream_id: streamId,
+          p_winner_email: winner.user_email,
+          p_prize: prizeAmount,
+        }).catch((e) => console.warn('[Lottery] credit failed:', e?.message));
         // Notify winner
         await base44.entities.Notification.create({
           user_email: winner.user_email,

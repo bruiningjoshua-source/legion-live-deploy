@@ -28,18 +28,10 @@ export default function OnboardingFlow({ user, onComplete }) {
   const completeMutation = useMutation({
     mutationFn: async () => {
       await base44.auth.updateMe({ interests: selected }).catch(()=>{});
-      // Try to add bonus to existing wallet; if none exists yet, create one
-      try {
-        const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
-        if (wallets[0]) {
-          await base44.entities.Wallet.update(wallets[0].id, { denarii_balance: (wallets[0].denarii_balance || 0) + 50 });
-        } else {
-          await base44.entities.Wallet.create({ user_email: user.email, denarii_balance: 550 });
-        }
-      } catch (e) {
-        console.warn('[Onboarding] Wallet bonus failed:', e.message);
-        // Non-critical — don't block onboarding completion
-      }
+      // NOTE: The welcome Denarii bonus is granted server-side by the
+      // on_auth_user_created DB trigger. Never grant balance from the client —
+      // the wallets RLS policy allows self-updates and a client-side grant
+      // here would be a trivial economy exploit (repeat to mint Denarii).
       localStorage.setItem('ll_onboarded', 'true');
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['wallet'] }); onComplete?.(); },

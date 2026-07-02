@@ -37,10 +37,11 @@ export default function AwardButton({ postId, replyId, receiverEmail, user }) {
         throw new Error('Not enough coins');
       }
 
-      // Deduct coins
-      await base44.entities.Wallet.update(userWallet.id, {
-        denarii_balance: userWallet.denarii_balance - selectedAward.cost_coins
+      // Server-authoritative debit (client can't forge balance)
+      const { error: debitErr } = await base44.rpc('debit_denarii', {
+        p_amount: selectedAward.cost_coins, p_reason: 'forum_award', p_related: (postId || replyId || null),
       });
+      if (debitErr) throw new Error(debitErr.message || 'Payment failed');
 
       // Create award record
       await base44.entities.PostAward.create({

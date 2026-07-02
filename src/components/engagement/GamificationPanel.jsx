@@ -64,26 +64,11 @@ export default function GamificationPanel({ user }) {
   const claimDailyReward = useMutation({
     mutationFn: async () => {
       if (!dailyReward) return;
-      
-      // Update wallet
-      const wallets = await base44.entities.Wallet.filter({ user_email: user.email }, null, 1);
-      if (wallets[0]) {
-        await base44.entities.Wallet.update(wallets[0].id, {
-          denarii_balance: (wallets[0].denarii_balance || 0) + dailyReward.reward_denarii
-        });
-      }
-
-      // Mark claimed
-      await base44.entities.DailyReward.update(dailyReward.id, {
-        claimed: true,
-        claim_date: new Date().toISOString()
-      });
-
-      // Update streak
-      await base44.entities.UserEngagement.update(engagement.id, {
-        daily_streak: (engagement.daily_streak || 0) + 1,
-        last_activity_date: new Date().toISOString()
-      });
+      // Server-authoritative daily reward — idempotent per day, computes amount server-side.
+      const { data, error } = await base44.rpc('claim_daily_reward', {});
+      if (error) throw new Error(error.message || 'Claim failed');
+      // Streak is updated inside the RPC; nothing client-side to persist.
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-reward'] });

@@ -87,11 +87,11 @@ export default function MarketplaceGiftPanel({
         throw new Error('Not enough coins');
       }
 
-      // Deduct from wallet
-      await base44.entities.Wallet.update(wallet.id, {
-        as_balance: asBalance - totalCost,
-        total_spent: (wallet.total_spent || 0) + totalCost
+      // Server-authoritative debit (client can't forge balance)
+      const { error: debitErr } = await base44.rpc('debit_as_balance', {
+        p_amount: totalCost, p_reason: 'marketplace_gift', p_related: partnerId || null,
       });
+      if (debitErr) throw new Error(debitErr.message || 'Payment failed');
 
       // Record gift transaction
       await base44.entities.GiftTransaction.create({

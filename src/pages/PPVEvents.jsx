@@ -244,26 +244,15 @@ export default function PPVEvents() {
 
       // For now, create with Denarii if available
       if (event.price_denarii && wallet && wallet.denarii_balance >= event.price_denarii) {
-        // Deduct Denarii
-        await base44.entities.Wallet.update(wallet.id, {
-          denarii_balance: wallet.denarii_balance - event.price_denarii
-        });
-
-        // Create ticket
-        const ticket = await base44.entities.PPVTicket.create({
-          user_email: user.email,
-          event_id: event.id,
-          purchase_type: 'denarii',
-          amount_paid_denarii: event.price_denarii,
-          access_code: Math.random().toString(36).substring(2, 10).toUpperCase()
-        });
-
-        // Update event ticket count
+        // Server-authoritative: validates price + balance + double-buy and
+        // creates the ticket atomically. Client can't forge its own balance.
+        const { error } = await base44.rpc('buy_ppv_ticket', { p_event_id: event.id });
+        if (error) throw new Error(error.message || 'Purchase failed');
+        // Update event ticket count (non-sensitive display counter)
         await base44.entities.PPVEvent.update(event.id, {
           ticket_count: (event.ticket_count || 0) + 1
-        });
-
-        return ticket;
+        }).catch(() => {});
+        return { user_email: user.email, event_id: event.id };
       }
 
       // Otherwise use Stripe (simplified - in production use proper checkout)
