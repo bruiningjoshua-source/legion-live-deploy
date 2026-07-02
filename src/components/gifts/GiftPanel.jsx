@@ -40,7 +40,23 @@ function GiftItem({ gift, inCart, onTap }) {
         inCart > 0 ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-500/20' : ''
       } transition-all active:bg-white/10`}
     >
-      <span className="text-2xl mb-0.5 leading-none">{gift.icon}</span>
+      {gift.thumbnail_url ? (
+        <img
+          src={gift.thumbnail_url}
+          alt={gift.name}
+          loading="lazy"
+          className="w-9 h-9 mb-0.5 object-contain rounded-md"
+          onError={(e) => {
+            // Fall back to the emoji if the thumbnail fails to load
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextElementSibling?.style.removeProperty('display');
+          }}
+        />
+      ) : null}
+      <span
+        className="text-2xl mb-0.5 leading-none"
+        style={gift.thumbnail_url ? { display: 'none' } : undefined}
+      >{gift.icon}</span>
       <p className="text-white font-medium text-[10px] leading-tight mb-0.5 line-clamp-1 w-full text-center">{gift.name}</p>
       <div className="flex items-center gap-0.5">
         <span className="text-[9px]">🪙</span>
