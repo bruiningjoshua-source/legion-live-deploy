@@ -76,6 +76,7 @@ const CreatorStudio = lazy(() => import('./pages/CreatorStudio'));
 const CreatorSuccessProgram = lazy(() => import('./pages/CreatorSuccessProgram'));
 const CustomizeTheme = lazy(() => import('./pages/CustomizeTheme'));
 const DataPrivacy = lazy(() => import('./pages/DataPrivacy'));
+const DirectMessages = lazy(() => import('./pages/DirectMessages'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const Events = lazy(() => import('./pages/Events'));
 const ExclusiveContentManager = lazy(() => import('./pages/ExclusiveContentManager'));
@@ -160,6 +161,7 @@ export const PAGES = {
     "CreatorSuccessProgram": CreatorSuccessProgram,
     "CustomizeTheme": CustomizeTheme,
     "DataPrivacy": DataPrivacy,
+    "DirectMessages": DirectMessages,
     "EventDetails": EventDetails,
     "Events": Events,
     "ExclusiveContentManager": ExclusiveContentManager,
