@@ -211,8 +211,27 @@ const handlers = {
 
     if (!resolvedReceiverWalletId && creatorId) {
       // Resolve receiver wallet from creatorId
-      const { data: creator } = await supabase.from('creators').select('user_email').eq('id', creatorId).single().catch(() => ({ data: null }));
+      const { data: creator } = await supabase.from('creators').select('user_email, payouts_enabled').eq('id', creatorId).single().catch(() => ({ data: null }));
       if (!creator) return json(404, { error: 'Creator not found' });
+      // Gifts are only accepted by monetized creators. Free creators receive
+      // tips only (capped separately). Enforced server-side so hiding the gift
+      // menu on the client cannot be bypassed. "Monetized" = Stripe payouts
+      // enabled OR an active creator subscription (incl. admin-activated).
+      let canReceiveGifts = !!creator.payouts_enabled;
+      if (!canReceiveGifts) {
+        const { data: sub } = await supabase
+          .from('creator_subscriptions')
+          .select('status, admin_activated')
+          .eq('user_email', creator.user_email)
+          .order('created_date', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+          .catch(() => ({ data: null }));
+        canReceiveGifts = sub?.status === 'active' || sub?.admin_activated === true;
+      }
+      if (!canReceiveGifts) {
+        return json(403, { error: 'This creator is not set up to receive gifts. You can send a tip instead.', code: 'GIFTS_DISABLED' });
+      }
       const { data: rw } = await supabase.from('wallets').select('id').eq('user_email', creator.user_email).single().catch(() => ({ data: null }));
       if (!rw) return json(404, { error: 'Creator wallet not found' });
       resolvedReceiverWalletId = rw.id;
@@ -625,10 +644,54 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
   },
 
   // ─── Stripe: Tip Checkout ────────────────────────────────────────────────
-  async createTipCheckout({ supabase, user, params }) {
+  async createTipCheckout({ supabase, admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
-    const { creatorEmail, amount, streamId, message } = params || {};
-    if (!creatorEmail || !amount) return json(400, { error: 'creatorEmail and amount required' });
+    let { creatorEmail, creatorId, amount, streamId, message } = params || {};
+    if (!amount) return json(400, { error: 'amount required' });
+    if (!creatorEmail && !creatorId) return json(400, { error: 'creatorEmail or creatorId required' });
+
+    const tipAmount = Number(amount);
+    if (!(tipAmount > 0)) return json(400, { error: 'Tip amount must be positive' });
+
+    // ── Free-creator bi-weekly tip cap ───────────────────────────────────────
+    // Creators who are NOT Stripe-monetized (no payouts_enabled) may receive at
+    // most $100 USD in tips per rolling 14-day window. Monetized creators are
+    // uncapped here (they earn via gifts + payouts). Enforced server-side so it
+    // cannot be bypassed from the client.
+    const db = admin || supabase;
+    // Resolve creator by id if email wasn't supplied (TipButton sends creatorId)
+    let creatorRow = null;
+    if (creatorEmail) {
+      ({ data: creatorRow } = await db.from('creators').select('user_email, payouts_enabled').eq('user_email', creatorEmail).single().catch(() => ({ data: null })));
+    } else {
+      ({ data: creatorRow } = await db.from('creators').select('user_email, payouts_enabled').eq('id', creatorId).single().catch(() => ({ data: null })));
+      if (creatorRow?.user_email) creatorEmail = creatorRow.user_email;
+    }
+    if (!creatorEmail) return json(404, { error: 'Creator not found' });
+
+    const isMonetized = !!creatorRow?.payouts_enabled;
+    if (!isMonetized) {
+      const BIWEEKLY_TIP_CAP_USD = 100;
+      const windowStart = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: recentTips } = await db
+        .from('tips')
+        .select('amount_usd')
+        .eq('creator_email', creatorEmail)
+        .eq('status', 'completed')
+        .gte('created_at', windowStart);
+      const already = (recentTips || []).reduce((s, t) => s + Number(t.amount_usd || 0), 0);
+      if (already + tipAmount > BIWEEKLY_TIP_CAP_USD) {
+        const remaining = Math.max(0, BIWEEKLY_TIP_CAP_USD - already);
+        return json(403, {
+          error: remaining > 0
+            ? `This creator can receive $${remaining.toFixed(2)} more in tips this period (free creators are capped at $${BIWEEKLY_TIP_CAP_USD} per 2 weeks).`
+            : `This creator has reached their $${BIWEEKLY_TIP_CAP_USD} bi-weekly tip limit. Try again later.`,
+          code: 'TIP_CAP_REACHED',
+          cap_usd: BIWEEKLY_TIP_CAP_USD,
+          remaining_usd: remaining,
+        });
+      }
+    }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });

@@ -91,7 +91,14 @@ export default function WatchStream() {
   const toggleFollowMutation = useToggleFollow(user?.email, creator?.id);
   // endStreamMutation removed — useEndStream called correctly at line ~276 with object params
 
-  const creatorCanReceiveGifts = creatorSubscription?.status === 'active' || creatorSubscription?.admin_activated || (creator?.user_email === user?.email && user?.role === 'admin');
+  // Gifts are only accepted by monetized creators (Stripe payouts enabled),
+  // an active subscription, or admin. Mirrors the server-side sendGift gate so
+  // the UI never offers a gift the backend will reject. Free creators get tips only.
+  const creatorCanReceiveGifts =
+    creator?.payouts_enabled === true ||
+    creatorSubscription?.status === 'active' ||
+    creatorSubscription?.admin_activated ||
+    (creator?.user_email === user?.email && user?.role === 'admin');
   const isHost = user?.email === creator?.user_email;
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
@@ -492,13 +499,14 @@ export default function WatchStream() {
           setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji }]);
         }}
         onMenuClick={() => setShowRoomTools(true)}
-        onGiftClick={() => setShowGiftPanel(true)}
+        giftingEnabled={creatorCanReceiveGifts}
+        onGiftClick={() => { if (creatorCanReceiveGifts) setShowGiftPanel(true); }}
         onLottoClick={() => setShowChannelPoints(v => !v)}
       />
 
       {/* ── OVERLAYS ── */}
       <AnimatePresence>
-        {showGiftPanel && (
+        {showGiftPanel && creatorCanReceiveGifts && (
           <div className="fixed bottom-0 left-0 right-0 z-[90]">
             <GiftPanel
               gifts={gifts}
@@ -634,7 +642,7 @@ export default function WatchStream() {
             onClose={() => setShowWishlist(false)}
             onSendGift={(gift) => {
               setShowWishlist(false);
-              setShowGiftPanel(true);
+              if (creatorCanReceiveGifts) setShowGiftPanel(true);
             }}
           />
         )}

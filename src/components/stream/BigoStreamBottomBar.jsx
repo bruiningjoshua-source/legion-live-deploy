@@ -13,6 +13,7 @@ export default function BigoStreamBottomBar({
   onGiftClick,
   onLottoClick,
   isHost,
+  giftingEnabled = true,
 }) {
   const [emojiOpen, setEmojiOpen] = useState(false);
 
@@ -84,8 +85,8 @@ export default function BigoStreamBottomBar({
             <span className="text-lg">🐰</span>
           </motion.button>
 
-          {/* Gift button - primary CTA */}
-          {!isHost && (
+          {/* Gift button - primary CTA (only when the creator is monetized) */}
+          {!isHost && giftingEnabled && (
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={onGiftClick}
