@@ -19,6 +19,29 @@ const PRESET_THEMES = {
   fire:     { colors: ['#ef4444','#f97316','#eab308'], gradient: 'from-stone-950 via-red-950/30 to-stone-950' },
   forest:   { colors: ['#22c55e','#10b981','#14b8a6'], gradient: 'from-slate-950 via-emerald-950/30 to-slate-950' },
   midnight: { colors: ['#6366f1','#8b5cf6','#a855f7'], gradient: 'from-slate-950 via-indigo-950/30 to-slate-950' },
+  // ── Roman per-page themes (all bronze/parchment world, varied scene) ──
+  roman_forum:  { colors: ['#c8871a','#8a5a0e','#5c3a08'], gradient: 'from-stone-950 via-amber-950/25 to-stone-950' },
+  roman_arena:  { colors: ['#b8541a','#8b1a1a','#7a3a0e'], gradient: 'from-stone-950 via-red-950/25 to-stone-950' },
+  roman_market: { colors: ['#d4a017','#a1780a','#6b5208'], gradient: 'from-stone-950 via-yellow-950/25 to-stone-950' },
+  roman_senate: { colors: ['#c8871a','#a0895c','#78350f'], gradient: 'from-stone-950 via-amber-950/20 to-stone-950' },
+  roman_odeon:  { colors: ['#c8871a','#a15c1a','#6d3a0e'], gradient: 'from-stone-950 via-amber-950/25 to-stone-950' },
+  roman_laurel: { colors: ['#eab308','#c8871a','#a1780a'], gradient: 'from-stone-950 via-yellow-950/25 to-stone-950' },
+  roman_aquila: { colors: ['#c8871a','#8a5a0e','#5c3a08'], gradient: 'from-stone-950 via-amber-950/20 to-stone-950' },
+  roman_scroll: { colors: ['#b0965c','#8a6a2e','#5c4a1e'], gradient: 'from-stone-950 via-amber-950/15 to-stone-950' },
+  roman_arch:   { colors: ['#c8871a','#78716c','#44403c'], gradient: 'from-stone-950 via-amber-950/15 to-stone-950' },
+};
+
+// Map a page name to its Roman theme. Anything unlisted falls back to roman_forum.
+export const PAGE_THEME_MAP = {
+  Home: 'roman_forum', TheAmphitheatre: 'roman_forum',
+  GamesExpo: 'roman_arena', GamingHub: 'roman_arena',
+  AffiliateHub: 'roman_market', AffiliateMarketplace: 'roman_market', Marketplace: 'roman_market',
+  CommunityForums: 'roman_senate', ForumPost: 'roman_senate',
+  MusicStudio: 'roman_odeon', Podcasts: 'roman_odeon',
+  CreatorStudio: 'roman_laurel', EarningsDashboard: 'roman_laurel', CreatorPayouts: 'roman_laurel', CreatorMonetization: 'roman_laurel',
+  Explore: 'roman_aquila',
+  DirectMessages: 'roman_scroll', Following: 'roman_scroll',
+  Profile: 'roman_arch', Settings: 'roman_arch', Wallet: 'roman_arch',
 };
 
 // ─── Forge watermark config ───────────────────────────────────────────────────

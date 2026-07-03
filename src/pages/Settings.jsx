@@ -15,6 +15,7 @@ import { Slider } from '@/components/ui/slider';
 import DeleteAccountModal from '@/components/settings/DeleteAccountModal';
 
 const THEMES = [
+  { id:'auto',     name:'Auto (Roman)', primary:'#c8871a', secondary:'#8a5a0e' },
   { id:'roman',    name:'Gold',       primary:'#f5a623', secondary:'#e63946' },
   { id:'neon',     name:'Neon',       primary:'#ec4899', secondary:'#8b5cf6' },
   { id:'ocean',    name:'Ocean',      primary:'#06b6d4', secondary:'#3b82f6' },

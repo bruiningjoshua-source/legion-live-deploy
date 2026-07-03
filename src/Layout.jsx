@@ -6,7 +6,7 @@ import Navbar from '@/components/layout/Navbar.jsx';
 import BottomNav from '@/components/layout/BottomNav.jsx';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
-import AnimatedBackground from '@/components/shared/AnimatedBackground';
+import AnimatedBackground, { PAGE_THEME_MAP } from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import NetworkStatus from '@/components/shared/NetworkStatus';
 import { RateLimitProvider } from '@/components/security/RateLimiter';
@@ -32,11 +32,15 @@ export default function Layout({ children, currentPageName }) {
   
   // Single initializer for all localStorage-backed preferences (via legionStorage)
   const [prefs, setPrefs] = useState(() => ({
-    theme:      legionStorage.get('theme', 'roman'),
+    theme:      legionStorage.get('theme', 'auto'),
     particles:  legionStorage.get('particles', 'medium'),
     animatedBg: legionStorage.get('animated_bg', true),
   }));
-  const currentTheme = prefs.theme;
+  // Theme resolution: if the user has explicitly chosen a theme (not 'auto'),
+  // honor it everywhere. Otherwise use the Roman theme matched to the page.
+  const userThemePref = prefs.theme; // 'auto' | 'roman' | 'neon' | a specific theme
+  const pageTheme = PAGE_THEME_MAP[currentPageName] || 'roman_forum';
+  const currentTheme = (!userThemePref || userThemePref === 'auto') ? pageTheme : userThemePref;
   const particleIntensity = prefs.particles;
   const animatedBg = prefs.animatedBg;
   const setCurrentTheme     = useCallback((v) => { legionStorage.set('theme', v);       setPrefs(p => ({ ...p, theme: v })); }, []);
