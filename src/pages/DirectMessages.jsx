@@ -16,7 +16,6 @@ const CHANNELS = [
   { id:'games',              label:'Gaming',             emoji:'🎮', color:'#3b82f6' },
   { id:'marketplace',        label:'Marketplace',        emoji:'🛍️', color:'#10b981' },
   { id:'brand_partnerships', label:'Brand Partnerships', emoji:'💼', color:'#f5a623' },
-  { id:'amphitheatre',       label:'Amphitheatre',       emoji:'📡', color:'#ef4444' },
   { id:'pods',               label:'Podcasts',           emoji:'🎙️', color:'#ec4899' },
   { id:'music',              label:'Music',              emoji:'🎵', color:'#8b5cf6' },
   { id:'senate',             label:'Senate',             emoji:'⚔️', color:'#f59e0b' },
@@ -130,6 +129,15 @@ export default function DirectMessages() {
 
       {/* ── Sidebar: Channel list ── */}
       <div className={`${selectedConvo ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 border-r border-white/8 bg-[#070710]`}>
+        {/* Search — top of sidebar */}
+        <div className="p-3 border-b border-white/8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+            <input value={search} onChange={e=>setSearch(e.target.value)}
+              placeholder="Search messages…" className="ll-input py-2 pl-9 text-sm" />
+          </div>
+        </div>
+
         {/* Channel tabs */}
         <div className="p-3 border-b border-white/8">
           <p className="ll-label text-white/25 mb-2 px-1">CHANNELS</p>
@@ -153,14 +161,8 @@ export default function DirectMessages() {
           </div>
         </div>
 
-        {/* Search + conversation list */}
+        {/* Conversation list */}
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
-            <input value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder="Search messages…" className="ll-input py-2 pl-9 text-sm" />
-          </div>
-
           {filtered.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-4xl mb-2">{ch?.emoji}</p>

@@ -10,7 +10,7 @@ const ICON_MAP = { Radio, Gamepad2, Compass, ShoppingBag, Users, Mic2, Film };
 import PremiumStreamCard from '@/components/stream/PremiumStreamCard';
 
 const HUBS = [
-  { name:'Watch',    sub:'Live Streams', path:'TheAmphitheatre', icon:'Radio',    color:'#ef4444', badge:'LIVE' },
+  { name:'Watch',    sub:'Live Streams', path:'TheAmphitheatre', icon:'Radio',    color:'#ef4444', badge:'WATCH' },
   { name:'Gaming',   sub:'Tournaments',path:'GamesExpo',       icon:'Gamepad2', color:'#3b82f6', badge:'GG'   },
   { name:'Discover', sub:'Explore',    path:'Explore',         icon:'Compass',  color:'#8b5cf6', badge:'NEW'  },
   { name:'Shop',     sub:'Earn',       path:'AffiliateHub',    icon:'ShoppingBag',color:'#10b981',badge:'EARN' },
