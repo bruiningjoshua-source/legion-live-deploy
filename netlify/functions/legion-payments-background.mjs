@@ -176,6 +176,20 @@ async function fulfillCreatorMonetization(db, meta, stripeSubscriptionId, plan) 
     ppv_enabled: true,
   }, { onConflict: 'creator_email' }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
+  // ALSO create the active creator_subscriptions row — the gift-eligibility gate
+  // (sendGift + WatchStream) checks status='active' here. Without this, paying
+  // for monetization would not actually enable the gift menu.
+  const planInterval = (plan === 'yearly') ? 'yearly' : 'monthly';
+  await db.from('creator_subscriptions').upsert({
+    user_email,
+    plan_type: planInterval,
+    status: 'active',
+    started_at: new Date().toISOString(),
+    expires_at: planInterval === 'yearly'
+      ? new Date(Date.now() + 365 * 86400000).toISOString()
+      : new Date(Date.now() + 30  * 86400000).toISOString(),
+  }, { onConflict: 'user_email' }).catch((e) => console.error('[webhook] sub row failed:', e?.message));
+
   await db.from('notifications').insert({
     user_email,
     type:    'monetization_activated',

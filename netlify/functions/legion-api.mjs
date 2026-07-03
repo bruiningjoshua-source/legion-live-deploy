@@ -765,7 +765,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const prices = { monthly: 999, yearly: 9900 }; // cents
+    const prices = { monthly: 500, yearly: 1200 }; // cents — \$5.00/mo, \$12.00/yr
     const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -882,19 +882,23 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
       return json(400, { error: 'Complete Stripe onboarding before requesting a payout.' });
     }
 
-    // Read wallet balance (service-role to bypass RLS for the debit)
+    // THE WALL: payouts draw ONLY from withdrawable (earned-from-gifts) Denarii.
+    // Purchased Denarii are never cashable — this keeps Legion Live a platform,
+    // not a money transmitter. A creator cannot buy Denarii and withdraw them.
     const { data: wallet } = await db
       .from('wallets')
-      .select('denarii_balance')
+      .select('denarii_balance, withdrawable_denarii')
       .eq('user_email', user.email)
       .single();
-    const balance = wallet?.denarii_balance || 0;
-    if (balance < MIN_PAYOUT_DENARII) {
-      return json(400, { error: `Minimum payout is ${MIN_PAYOUT_DENARII} Denarii (~$10). You have ${balance}.` });
+    const earned = wallet?.withdrawable_denarii || 0;
+    if (earned < MIN_PAYOUT_DENARII) {
+      return json(400, { error: `Minimum payout is ${MIN_PAYOUT_DENARII} earned Denarii (~$10). You have ${earned} withdrawable (earned from gifts). Purchased Denarii cannot be cashed out.` });
     }
 
-    const usd = Math.floor((balance / DENARII_PER_USD) * 100) / 100; // 2dp
+    const usd = Math.floor((earned / DENARII_PER_USD) * 100) / 100; // 2dp
     const amountCents = Math.round(usd * 100);
+    const withdrawnDenarii = Math.floor(usd * DENARII_PER_USD);
+    const balance = earned; // debit basis is the earned pool
 
     // Debit wallet first (idempotent guard via pending payout row)
     const { data: payoutRow, error: insErr } = await db
@@ -914,10 +918,13 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
       .single();
     if (insErr) return json(500, { error: 'Could not create payout record' });
 
-    // Zero the Denarii that are being cashed out
+    // Debit the withdrawn amount from BOTH the spendable balance and the earned pool.
     const { error: debitErr } = await db
       .from('wallets')
-      .update({ denarii_balance: balance - (Math.floor(usd * DENARII_PER_USD)) })
+      .update({
+        denarii_balance: (wallet?.denarii_balance || 0) - withdrawnDenarii,
+        withdrawable_denarii: earned - withdrawnDenarii,
+      })
       .eq('user_email', user.email);
     if (debitErr) {
       await db.from('creator_payouts').update({ status: 'failed', failure_reason: 'wallet debit failed' }).eq('id', payoutRow.id);
@@ -936,8 +943,11 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
       }).eq('id', payoutRow.id);
       return { success: true, amount_usd: usd, transfer_id: transfer.id };
     } catch (e) {
-      // Refund the Denarii on transfer failure
-      await db.from('wallets').update({ denarii_balance: balance }).eq('user_email', user.email);
+      // Refund on transfer failure: restore both pools
+      await db.from('wallets').update({
+        denarii_balance: (wallet?.denarii_balance || 0),
+        withdrawable_denarii: earned,
+      }).eq('user_email', user.email);
       await db.from('creator_payouts').update({ status: 'failed', failure_reason: String(e.message || e).slice(0,200) }).eq('id', payoutRow.id);
       return json(500, { error: 'Transfer failed: ' + (e.message || 'unknown') });
     }
