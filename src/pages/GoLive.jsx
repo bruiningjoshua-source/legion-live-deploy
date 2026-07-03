@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Radio, FlipHorizontal, Gift, ArrowRight, X } from 'lucide-react';
 import LegionAREngine from '@/components/stream/LegionAREngine';
+import CustomStreamBackground from '@/components/stream/CustomStreamBackground';
 import Soundboard from '@/components/stream/Soundboard';
 import LegionMoCap from '@/components/mocap/LegionMoCap';
 import { startMicLipSync, stopMicLipSync } from '@/components/mocap/LegionMicLipSync';
@@ -55,6 +56,7 @@ export default function GoLive() {
   const [showBeauty, setShowBeauty] = useState(false);
   const [showSoundboard, setShowSoundboard] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
+  const [backdropMode, setBackdropMode] = useState(false);
   const [activeTool, setActiveTool] = useState(null);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showLottery, setShowLottery] = useState(false);
@@ -463,6 +465,11 @@ export default function GoLive() {
                     setActiveTool(null);
                     return;
                   }
+                  if (tool === 'backdrop') {
+                    setBackdropMode(v => !v);
+                    setActiveTool(null);
+                    return;
+                  }
                   setActiveTool(tool);
                   if (tool === 'beauty') setShowBeauty(true);
                   else setShowBeauty(false);
@@ -575,6 +582,31 @@ export default function GoLive() {
 
         <AnimatePresence>
           {showSoundboard && <Soundboard onClose={() => setShowSoundboard(false)} />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {backdropMode && (
+            <CustomStreamBackground
+              videoRef={videoRef}
+              onClose={() => setBackdropMode(false)}
+              onProcessedStream={(stream) => {
+                if (!stream) {
+                  // Revert to raw camera track when background is cleared
+                  const raw = cameraStream?.getVideoTracks?.()[0];
+                  if (raw && typeof ZegoService.replaceTrack === 'function') {
+                    ZegoService.replaceTrack(raw).catch(() => {});
+                  }
+                  return;
+                }
+                const track = stream.getVideoTracks()[0];
+                if (track && typeof ZegoService.replaceTrack === 'function') {
+                  ZegoService.replaceTrack(track).catch(err =>
+                    console.warn('[CustomBG] replaceTrack:', err.message)
+                  );
+                }
+              }}
+            />
+          )}
         </AnimatePresence>
 
         <LegionAREngine

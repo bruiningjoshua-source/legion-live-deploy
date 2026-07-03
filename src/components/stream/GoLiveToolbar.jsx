@@ -1,5 +1,5 @@
 import React from 'react';
-import { Armchair, Palette, Sparkles, Wand2, Monitor, Ghost } from 'lucide-react';
+import { Armchair, Palette, Sparkles, Wand2, Monitor, Ghost, ImageIcon } from 'lucide-react';
 
 // Gamification tools exported so GoLive can open them
 export const GAMIFICATION_TOOLS = ['spin', 'lottery', 'challenge', 'goal'];
@@ -10,6 +10,7 @@ const TOOLS = [
   { id: 'beauty',   icon: Sparkles, label: 'Beauty' },
   { id: 'magic',    icon: Wand2,    label: 'Magic' },
   { id: 'vtuber',   icon: Ghost,    label: 'VTuber' },
+  { id: 'backdrop', icon: ImageIcon, label: 'Backdrop' },
   { id: 'obs',      icon: Monitor,  label: 'OBS' },
 ];
 
