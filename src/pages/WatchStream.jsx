@@ -405,6 +405,14 @@ export default function WatchStream() {
         isFollowing={isFollowing}
         onFollowClick={() => followMutation?.mutate()}
         onClose={() => isHost ? setShowEndDialog(true) : navigate(createPageUrl('Home'))}
+        onShare={async () => {
+          const url = `${window.location.origin}${createPageUrl('WatchStream')}?id=${streamId}`;
+          try {
+            if (navigator.share) await navigator.share({ title: stream?.title || 'Legion Live', url });
+            else { await navigator.clipboard.writeText(url); toast.success('Stream link copied'); }
+          } catch { /* user cancelled */ }
+        }}
+        onMinimize={() => navigate(createPageUrl('Home'))}
         viewerCount={stream?.viewer_count || 0}
         onAvatarClick={() => setShowHostProfile(true)}
       />
@@ -502,6 +510,8 @@ export default function WatchStream() {
         giftingEnabled={creatorCanReceiveGifts}
         onGiftClick={() => { if (creatorCanReceiveGifts) setShowGiftPanel(true); }}
         onLottoClick={() => setShowChannelPoints(v => !v)}
+        onPKClick={() => setShowChallenge(true)}
+        onMissionClick={() => setShowSpinWheel(true)}
       />
 
       {/* ── OVERLAYS ── */}

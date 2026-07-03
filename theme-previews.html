@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legion Live — Page Theme Previews</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#050508; color:#e8dcc8; font-family:'Segoe UI',system-ui,sans-serif; padding:24px; }
+  h1 { font-family:Georgia,serif; font-size:24px; margin-bottom:4px; letter-spacing:1px; }
+  .sub { color:#c8871a; font-size:13px; margin-bottom:24px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+  .card { border-radius:16px; overflow:hidden; border:1px solid rgba(200,135,26,0.2); background:#0a0804; }
+  .preview { position:relative; height:220px; overflow:hidden; }
+  .label { padding:12px 16px; }
+  .label .name { font-family:Georgia,serif; font-size:16px; font-weight:bold; }
+  .label .desc { font-size:11px; color:rgba(232,220,200,0.5); margin-top:2px; }
+  .label .pages { font-size:10px; color:#c8871a; margin-top:6px; font-family:monospace; }
+  /* animated orbs */
+  .orb { position:absolute; border-radius:50%; filter:blur(50px); opacity:0.5; animation:float 12s ease-in-out infinite; }
+  .orb2 { animation-delay:-4s; animation-duration:16s; }
+  .orb3 { animation-delay:-8s; animation-duration:20s; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(30px,-20px) scale(1.1); }
+    66% { transform:translate(-20px,20px) scale(0.95); }
+  }
+  /* particles */
+  .particle { position:absolute; width:3px; height:3px; border-radius:50%; opacity:0.6; animation:rise 8s linear infinite; }
+  @keyframes rise {
+    0% { transform:translateY(220px); opacity:0; }
+    10% { opacity:0.7; }
+    90% { opacity:0.7; }
+    100% { transform:translateY(-20px); opacity:0; }
+  }
+  .noise { position:absolute; inset:0; opacity:0.04; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .content-hint { position:absolute; bottom:12px; left:12px; right:12px; display:flex; gap:6px; }
+  .chip { background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px; padding:4px 8px; font-size:9px; color:rgba(255,255,255,0.6); }
+  .note { margin-top:28px; padding:16px; border:1px dashed rgba(200,135,26,0.3); border-radius:12px; font-size:12px; color:rgba(232,220,200,0.6); line-height:1.6; }
+</style>
+</head>
+<body>
+  <h1>LEGION LIVE — Page Theme Previews</h1>
+  <div class="sub">Each page-area gets a background matched to its purpose. Approve, tweak, or reject any before it goes live.</div>
+  <div class="grid" id="grid"></div>
+  <div class="note">
+    <b>How this maps:</b> the background switches automatically based on which page you're on — no user setting.
+    Fullscreen pages (GoLive, WatchStream) keep their pure-black immersive look and are excluded.
+    These are live CSS animations (orbs + drifting particles + subtle film grain), the same technique already
+    in your app — just themed per-area instead of one global look. Tell me which to change and I'll wire the approved set in.
+  </div>
+
+<script>
+const THEMES = [
+  { key:'home', name:'Home / Watch', desc:'Warm Roman bronze — the hearth of the app', pages:'Home, TheAmphitheatre',
+    bg:'radial-gradient(circle at 30% 20%, #1a1006 0%, #050508 60%)', orbs:['#d97706','#f59e0b','#8a5a0e'], particle:'#f5b942', chips:['🔥 Live now','👑 Featured'] },
+  { key:'gaming', name:'Gaming', desc:'Electric blue arena — competitive energy', pages:'GamesExpo, GamingHub',
+    bg:'radial-gradient(circle at 70% 30%, #0a1428 0%, #050508 60%)', orbs:['#3b82f6','#06b6d4','#1e40af'], particle:'#60a5fa', chips:['🎮 Tournaments','⚡ Ranked'] },
+  { key:'marketplace', name:'Marketplace / Shop', desc:'Emerald commerce — money & deals', pages:'AffiliateHub, Marketplace',
+    bg:'radial-gradient(circle at 40% 40%, #06241a 0%, #050508 60%)', orbs:['#10b981','#22d3ee','#047857'], particle:'#34d399', chips:['🛍️ Live shopping','💰 Deals'] },
+  { key:'senate', name:'Senate (Forums)', desc:'Civic amber & marble — community discourse', pages:'CommunityForums, ForumPost',
+    bg:'radial-gradient(circle at 50% 25%, #1c1408 0%, #050508 62%)', orbs:['#f59e0b','#a16207','#78350f'], particle:'#fbbf24', chips:['💬 8 communities','⚖️ Discuss'] },
+  { key:'music', name:'Music & Studio', desc:'Purple neon — studio / DJ booth', pages:'MusicStudio, Podcasts',
+    bg:'radial-gradient(circle at 60% 35%, #1a0a28 0%, #050508 60%)', orbs:['#8b5cf6','#ec4899','#6d28d9'], particle:'#c084fc', chips:['🎵 Beats','🎧 DJ booth'] },
+  { key:'creator', name:'Creator / Earnings', desc:'Gold prestige — monetization', pages:'CreatorStudio, EarningsDashboard, CreatorPayouts',
+    bg:'radial-gradient(circle at 35% 30%, #241a06 0%, #050508 60%)', orbs:['#eab308','#f59e0b','#a16207'], particle:'#fde047', chips:['⭐ Payouts','📈 Earnings'] },
+  { key:'discover', name:'Discover / Explore', desc:'Violet nebula — exploration', pages:'Explore, Discover',
+    bg:'radial-gradient(circle at 55% 25%, #14082a 0%, #050508 62%)', orbs:['#8b5cf6','#a855f7','#6366f1'], particle:'#a78bfa', chips:['🧭 New','✨ For you'] },
+  { key:'social', name:'Messages / Social', desc:'Cool slate — calm, focused chat', pages:'DirectMessages, Following',
+    bg:'radial-gradient(circle at 45% 30%, #0a1220 0%, #050508 62%)', orbs:['#64748b','#0ea5e9','#334155'], particle:'#94a3b8', chips:['💬 Chat','👥 Following'] },
+  { key:'profile', name:'Profile / Settings', desc:'Neutral charcoal — personal space', pages:'Profile, Settings, Wallet',
+    bg:'radial-gradient(circle at 50% 30%, #12100a 0%, #050508 65%)', orbs:['#c8871a','#78716c','#44403c'], particle:'#d6b988', chips:['👤 You','⚙️ Settings'] },
+];
+
+const grid = document.getElementById('grid');
+THEMES.forEach(t => {
+  const orbs = t.orbs.map((c,i)=>`<div class="orb orb${i+1}" style="background:${c}; width:${120+i*30}px; height:${120+i*30}px; top:${10+i*30}%; left:${15+i*25}%;"></div>`).join('');
+  let parts=''; for(let i=0;i<14;i++){ parts+=`<div class="particle" style="background:${t.particle}; left:${Math.random()*100}%; animation-delay:${Math.random()*8}s; animation-duration:${6+Math.random()*6}s;"></div>`; }
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="card">
+      <div class="preview" style="background:${t.bg}">
+        ${orbs}${parts}
+        <div class="noise"></div>
+        <div class="content-hint">${t.chips.map(c=>`<div class="chip">${c}</div>`).join('')}</div>
+      </div>
+      <div class="label">
+        <div class="name">${t.name}</div>
+        <div class="desc">${t.desc}</div>
+        <div class="pages">${t.pages}</div>
+      </div>
+    </div>`);
+});
+</script>
+</body>
+</html>

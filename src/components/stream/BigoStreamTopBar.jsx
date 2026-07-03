@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Check } from 'lucide-react';
+import { X, Plus, Check, Share2, Minimize2 } from 'lucide-react';
 
-// Row 1: [avatar+name+badges+follow] ... [viewer avatars + count + X]
+// Row 1: [avatar+name+badges+follow] ... [share ⤢ minimize ✕] over [viewer avatars + count]
 // Row 2: [⭐ 0/50] ... [ID:username]
 
 export default function BigoStreamTopBar({
@@ -13,7 +13,10 @@ export default function BigoStreamTopBar({
   isFollowing,
   onFollowClick,
   onClose,
+  onShare,
+  onMinimize,
   viewerCount = 0,
+  viewerAvatars = [],
   onAvatarClick,
 }) {
   if (!creator) return null;
@@ -64,23 +67,41 @@ export default function BigoStreamTopBar({
           )}
         </div>
 
-        {/* Right: viewer avatars + count + X */}
-        <div className="flex items-center gap-1.5">
-          {/* Viewer avatar stack */}
-          <div className="flex -space-x-1.5">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="w-6 h-6 rounded-full border border-black bg-gradient-to-br from-slate-500 to-slate-700 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-amber-400/60 to-pink-500/60" />
-              </div>
-            ))}
+        {/* Right: [share, minimize, close] row, then [viewer avatars + count] below */}
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={onShare}
+              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Share">
+              <Share2 className="w-3.5 h-3.5 text-white" />
+            </button>
+            <button
+              onClick={onMinimize}
+              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Minimize">
+              <Minimize2 className="w-3.5 h-3.5 text-white" />
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Close">
+              <X className="w-3.5 h-3.5 text-white" />
+            </button>
           </div>
-          <span className="text-white font-bold text-xs tabular-nums min-w-[20px]">{viewerCount}</span>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center"
-          >
-            <X className="w-3.5 h-3.5 text-white" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Real viewer avatar stack */}
+            <div className="flex -space-x-1.5">
+              {(viewerAvatars.length ? viewerAvatars.slice(0, 3) : [null, null, null]).map((av, i) => (
+                <div key={i} className="w-6 h-6 rounded-full border border-black bg-slate-700 overflow-hidden">
+                  {av
+                    ? <img src={av} alt="" className="w-full h-full object-cover" />
+                    : <div className="w-full h-full bg-gradient-to-br from-amber-400/50 to-pink-500/50" />}
+                </div>
+              ))}
+            </div>
+            <span className="text-white font-bold text-xs tabular-nums min-w-[20px] text-right">{viewerCount}</span>
+          </div>
         </div>
       </div>
 

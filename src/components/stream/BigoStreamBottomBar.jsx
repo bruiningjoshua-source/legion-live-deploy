@@ -12,6 +12,9 @@ export default function BigoStreamBottomBar({
   onMenuClick,
   onGiftClick,
   onLottoClick,
+  onCarClick,
+  onPKClick,
+  onMissionClick,
   isHost,
   giftingEnabled = true,
 }) {
@@ -74,13 +77,35 @@ export default function BigoStreamBottomBar({
           </motion.button>
         </div>
 
-        {/* RIGHT: lotto + gift */}
+        {/* RIGHT: car + PK + mission + lotto + gift (BIGO-style cluster) */}
         <div className="flex items-center gap-1.5">
+          {onCarClick && (
+            <motion.button whileTap={{ scale: 0.85 }} onClick={onCarClick}
+              className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/[0.1] flex items-center justify-center"
+              aria-label="Vehicles">
+              <span className="text-lg">🚗</span>
+            </motion.button>
+          )}
+          {onPKClick && (
+            <motion.button whileTap={{ scale: 0.85 }} onClick={onPKClick}
+              className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/[0.1] flex items-center justify-center"
+              aria-label="PK Battle">
+              <span className="text-sm font-black italic text-amber-400">PK</span>
+            </motion.button>
+          )}
+          {onMissionClick && (
+            <motion.button whileTap={{ scale: 0.85 }} onClick={onMissionClick}
+              className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/[0.1] flex items-center justify-center"
+              aria-label="Missions">
+              <span className="text-lg">🎒</span>
+            </motion.button>
+          )}
           {/* Lotto button */}
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={onLottoClick}
             className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/[0.1] flex items-center justify-center"
+            aria-label="Lotto"
           >
             <span className="text-lg">🐰</span>
           </motion.button>
