@@ -221,10 +221,18 @@ const functions = {
       body: JSON.stringify({ functionName, params }),
     }).catch(() => null);
 
-    if (netlifyResponse?.ok) {
-      return { data: await netlifyResponse.json(), status: netlifyResponse.status };
+    if (netlifyResponse) {
+      const payload = await netlifyResponse.json().catch(() => ({}));
+      if (netlifyResponse.ok) {
+        return { data: payload, status: netlifyResponse.status };
+      }
+      // Surface the real error from Netlify instead of silently falling back
+      // to a Supabase edge function that doesn't exist (which 404s and hides
+      // the actual cause).
+      throw new Error(payload?.error || `Request failed (${netlifyResponse.status})`);
     }
 
+    // Only reach Supabase edge functions if Netlify was completely unreachable
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: params,
     });

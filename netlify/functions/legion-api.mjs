@@ -609,7 +609,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
@@ -697,7 +697,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
@@ -730,7 +730,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const origin = process.env.URL || 'https://legion-live.netlify.app';
     const session = await stripe.checkout.sessions.create({
@@ -763,7 +763,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const prices = { monthly: 500, yearly: 1200 }; // cents — \$5.00/mo, \$12.00/yr
     const origin = process.env.URL || 'https://legion-live.netlify.app';
@@ -796,7 +796,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const { data: creator } = await supabase
       .from('creators')
@@ -830,7 +830,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const { data: creator } = await supabase
       .from('creators')
@@ -865,7 +865,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
     const db = admin || supabase;
 
     // Economics: 180 Denarii = $1 USD, creators already hold their 60% share as Denarii
@@ -974,7 +974,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const cancelled = await stripe.subscriptions.cancel(subscriptionId);
     return { success: true, status: cancelled.status };
@@ -1049,7 +1049,7 @@ Reply in JSON: { "reply": "your response here" }`;
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
     const origin = process.env.URL || 'https://legion-live.netlify.app';
 
     const session = await stripe.checkout.sessions.create({
@@ -1211,7 +1211,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     // Check our audit log first — fastest path
     const { data: logs } = await supabase
@@ -1250,7 +1250,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
     if (!pi) return json(404, { error: 'Payment not found' });
@@ -1383,7 +1383,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (existingSubs?.length) return json(400, { error: 'You already have an active host subscription' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const prices = {
       monthly: { amount: 500,  interval: 'month', name: 'Legion Host — Monthly ($5/mo)' },
@@ -1446,7 +1446,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (existingTickets?.length) return json(400, { error: 'You already have a ticket for this event' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
 
     const origin = process.env.URL || 'https://legion-live.netlify.app';
     const priceUsd = ppvEvent.price_usd || 9.99;
@@ -1492,7 +1492,7 @@ Reply in JSON: { "reply": "your response here" }`;
       const stripeKey = process.env.STRIPE_SECRET_KEY;
       if (!stripeKey) throw new Error('STRIPE_SECRET_KEY not set');
       const { default: Stripe } = await import('stripe');
-      const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+      const stripe = new Stripe(stripeKey);
       await stripe.balance.retrieve();
       checks.stripe = { status: 'PASS', mode: stripeKey.startsWith('sk_live_') ? 'LIVE' : 'TEST' };
     } catch (e) { checks.stripe = { status: 'FAIL', message: e.message }; }
@@ -1519,7 +1519,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
     const { test_type = 'full_cycle' } = params || {};
 
     if (test_type === 'full_cycle') {
@@ -1586,7 +1586,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!stripeKey) return json(500, { error: 'Stripe not configured' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
     const results = { timestamp: new Date().toISOString(), tests: {} };
 
     try {
@@ -1837,7 +1837,7 @@ Reply in JSON: { "reply": "your response here" }`;
     if (!campaign) return json(404, { error: 'Campaign not found' });
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+    const stripe = new Stripe(stripeKey);
     const origin = process.env.URL || 'https://legion-live.netlify.app';
 
     const session = await stripe.checkout.sessions.create({
