@@ -7,7 +7,7 @@ import { Home, Compass, Radio, MessageCircle, User } from 'lucide-react';
 const TABS = [
   { id: 'home',     label: 'Home',     icon: Home,          path: createPageUrl('Home') },
   { id: 'explore',  label: 'Explore',  icon: Compass,       path: createPageUrl('Explore') },
-  { id: 'watch',    label: 'Watch',    icon: Radio,         path: createPageUrl('TheAmphitheatre'), center: true },
+  { id: 'golive',   label: 'Go Live',  icon: Radio,         path: createPageUrl('GoLive'), center: true },
   { id: 'messages', label: 'Messages', icon: MessageCircle, path: createPageUrl('DirectMessages') },
   { id: 'me',       label: 'Me',       icon: User,          path: createPageUrl('Profile') },
 ];
@@ -37,7 +37,7 @@ export default function BottomNav() {
 
             /* ── Center Amphitheatre button ── */
             if (tab.center) {
-              const amphActive = location.pathname === createPageUrl('TheAmphitheatre');
+              const liveActive = location.pathname === createPageUrl('GoLive');
               return (
                 <Link key={tab.id} to={tab.path} className="flex-1 flex items-center justify-center">
                   <motion.div
@@ -47,19 +47,19 @@ export default function BottomNav() {
                   >
                     <div className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{
-                        background: amphActive
+                        background: liveActive
                           ? 'linear-gradient(135deg, #8b1a1a 0%, #c42a2a 100%)'
                           : 'linear-gradient(180deg, #c8871a 0%, #8a5a0e 100%)',
-                        boxShadow: amphActive ? '0 4px 20px rgba(139,26,26,0.6)' : '0 4px 20px rgba(200,135,26,0.4)',
+                        boxShadow: liveActive ? '0 4px 20px rgba(139,26,26,0.6)' : '0 4px 20px rgba(200,135,26,0.4)',
                       }}
                     >
-                      {/* Pulse dot when on amphitheatre */}
-                      {amphActive && (
+                      {/* Pulse dot when live */}
+                      {liveActive && (
                         <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-white animate-pulse" />
                       )}
                       <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
                     </div>
-                    <p className="text-[9px] text-center text-white/40 mt-0.5 font-medium">Watch</p>
+                    <p className="text-[9px] text-center text-white/40 mt-0.5 font-medium">Go Live</p>
                   </motion.div>
                 </Link>
               );
