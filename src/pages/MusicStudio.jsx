@@ -471,20 +471,46 @@ const KB_MAP = {
 // ─────────────────────────────────────────────────────────────────────────────
 // DJ DECK COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-function DJDeck({ deckId, color }) {
+function DJDeck({ deckId, color, onDeckReady }) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [bpm, setBpm] = useState(deckId === 'A' ? 128 : 130);
-  const [pitch, setPitch] = useState(0);
+  const [pitch, setPitch] = useState(0);            // -8%..+8% tempo
   const [eq, setEq] = useState({ low: 50, mid: 50, high: 50 });
   const [rotation, setRotation] = useState(0);
+  const [trackName, setTrackName] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
   const animRef = useRef();
+  const fileRef = useRef(null);
 
+  // Tone nodes for this deck
+  const playerRef = useRef(null);
+  const eqRef = useRef(null);
+  const gainRef = useRef(null);
+
+  // Build the deck audio chain: Player -> EQ3 -> deck gain -> master
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const T = await initTone();
+      if (cancelled) return;
+      const gain = new T.Gain(1).connect(masterBus || T.getDestination());
+      const eq3 = new T.EQ3(0, 0, 0).connect(gain);
+      gainRef.current = gain;
+      eqRef.current = eq3;
+      onDeckReady?.(deckId, { gain, getPlayer: () => playerRef.current });
+    })();
+    return () => {
+      cancelled = true;
+      try { playerRef.current?.stop(); playerRef.current?.dispose(); } catch {}
+      try { eqRef.current?.dispose(); } catch {}
+      try { gainRef.current?.dispose(); } catch {}
+    };
+  }, [deckId, onDeckReady]);
+
+  // Turntable spin while playing
   useEffect(() => {
     if (isPlaying) {
-      const spin = () => {
-        setRotation(r => (r + 1.5) % 360);
-        animRef.current = requestAnimationFrame(spin);
-      };
+      const spin = () => { setRotation(r => (r + 1.5) % 360); animRef.current = requestAnimationFrame(spin); };
       animRef.current = requestAnimationFrame(spin);
     } else {
       cancelAnimationFrame(animRef.current);
@@ -492,39 +518,92 @@ function DJDeck({ deckId, color }) {
     return () => cancelAnimationFrame(animRef.current);
   }, [isPlaying]);
 
+  // Apply EQ (0..100 UI -> -12..+12 dB)
+  useEffect(() => {
+    if (!eqRef.current) return;
+    const toDb = (v) => ((v - 50) / 50) * 12;
+    eqRef.current.low.value = toDb(eq.low);
+    eqRef.current.mid.value = toDb(eq.mid);
+    eqRef.current.high.value = toDb(eq.high);
+  }, [eq]);
+
+  // Apply pitch/tempo to playbackRate
+  useEffect(() => {
+    if (playerRef.current) playerRef.current.playbackRate = 1 + pitch / 100;
+  }, [pitch]);
+
+  const loadFile = async (file) => {
+    if (!file) return;
+    setLoading(true);
+    setReady(false);
+    try {
+      const T = await initTone();
+      const url = URL.createObjectURL(file);
+      // Dispose any previous player
+      try { playerRef.current?.stop(); playerRef.current?.dispose(); } catch {}
+      const player = new T.Player({
+        url,
+        loop: true,
+        onload: () => { setReady(true); setLoading(false); },
+      }).connect(eqRef.current || masterBus);
+      player.playbackRate = 1 + pitch / 100;
+      playerRef.current = player;
+      setTrackName(file.name.replace(/\.[^.]+$/, ''));
+    } catch (e) {
+      console.error('[DJDeck] load failed', e);
+      setLoading(false);
+    }
+  };
+
+  const togglePlay = async () => {
+    const T = await initTone();
+    await T.start(); // resume AudioContext on user gesture
+    const p = playerRef.current;
+    if (!p || !ready) return;
+    if (isPlaying) { p.stop(); setIsPlaying(false); }
+    else { p.start(); setIsPlaying(true); }
+  };
+
   return (
     <div className="ll-card p-4 flex flex-col items-center gap-3" style={{ borderColor: color + '40' }}>
-      <p className="text-white/50 text-xs font-bold tracking-widest uppercase">Deck {deckId}</p>
+      <div className="w-full flex items-center justify-between">
+        <p className="text-white/50 text-xs font-bold tracking-widest uppercase">Deck {deckId}</p>
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="text-[10px] px-2 py-1 rounded ll-card ll-interactive"
+          style={{ color }}
+        >
+          {trackName ? 'Change' : 'Load Track'}
+        </button>
+        <input ref={fileRef} type="file" accept="audio/*" className="hidden"
+          onChange={e => loadFile(e.target.files?.[0])} />
+      </div>
 
-      {/* Turntable */}
-      <div className="relative w-32 h-32 cursor-pointer" onClick={() => setIsPlaying(p => !p)}>
+      <p className="text-[10px] text-white/60 truncate w-full text-center h-4">
+        {loading ? 'Loading…' : (trackName || 'No track loaded')}
+      </p>
+
+      {/* Turntable — click to play/pause */}
+      <div className="relative w-32 h-32 cursor-pointer" onClick={togglePlay}>
         <div className="w-full h-full rounded-full border-4 flex items-center justify-center"
           style={{ borderColor: color, background: 'rgba(0,0,0,0.6)',
-            transform: `rotate(${rotation}deg)`, transition: isPlaying ? 'none' : 'transform 0.5s ease' }}>
+            transform: `rotate(${rotation}deg)`, transition: isPlaying ? 'none' : 'transform 0.5s ease',
+            opacity: ready ? 1 : 0.4 }}>
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="absolute w-full h-full rounded-full border"
+            <div key={i} className="absolute rounded-full border"
               style={{ borderColor: color + '30', width: `${100 - i*14}%`, height: `${100 - i*14}%`, margin: 'auto', top: 0, left: 0, right: 0, bottom: 0 }} />
           ))}
           <div className="w-6 h-6 rounded-full bg-white/90 z-10" />
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          {isPlaying
-            ? <Square className="w-5 h-5 text-white/0" />
-            : <Play className="w-5 h-5 text-white/0" />}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {isPlaying ? <Square className="w-6 h-6 text-white/80" /> : <Play className="w-6 h-6 text-white/80" />}
         </div>
       </div>
 
-      {/* BPM */}
-      <div className="flex items-center gap-2">
-        <button onClick={() => setBpm(b => Math.max(60, b-1))} className="w-6 h-6 rounded ll-card flex items-center justify-center ll-interactive text-white/50 text-xs">-</button>
-        <span className="text-white font-mono font-bold text-sm w-16 text-center">{bpm.toFixed(1)} BPM</span>
-        <button onClick={() => setBpm(b => Math.min(200, b+1))} className="w-6 h-6 rounded ll-card flex items-center justify-center ll-interactive text-white/50 text-xs">+</button>
-      </div>
-
-      {/* Pitch slider */}
+      {/* Pitch/tempo */}
       <div className="w-full">
         <div className="flex justify-between text-[9px] text-white/30 mb-1">
-          <span>PITCH</span><span style={{color}}>{pitch > 0 ? '+' : ''}{pitch.toFixed(1)}%</span>
+          <span>TEMPO</span><span style={{color}}>{pitch > 0 ? '+' : ''}{pitch.toFixed(1)}%</span>
         </div>
         <input type="range" min={-8} max={8} step={0.1} value={pitch}
           onChange={e => setPitch(parseFloat(e.target.value))}
@@ -544,12 +623,6 @@ function DJDeck({ deckId, color }) {
             <span className="text-[9px]" style={{color}}>{val}</span>
           </div>
         ))}
-      {/* ── MUSIC IMPORT TAB ── */}
-      {activeTab === 'import' && (
-        <div className="space-y-4">
-          <MusicImportTab />
-        </div>
-      )}
       </div>
     </div>
   );
@@ -567,6 +640,16 @@ export default function MusicStudio() {
   const [octave, setOctave] = useState(4);
   const [volume, setVolume] = useState(0.8);
   const [crossfader, setCrossfader] = useState(50);
+  // DJ deck gain registry for the crossfader (equal-power curve)
+  const decksRef = useRef({});
+  const registerDeck = useCallback((id, api) => { decksRef.current[id] = api; }, []);
+  const applyCrossfade = useCallback((value) => {
+    const x = value / 100;               // 0 = full A, 1 = full B
+    const gainA = Math.cos(x * Math.PI / 2); // equal-power
+    const gainB = Math.cos((1 - x) * Math.PI / 2);
+    try { if (decksRef.current.A?.gain) decksRef.current.A.gain.gain.rampTo(gainA, 0.05); } catch {}
+    try { if (decksRef.current.B?.gain) decksRef.current.B.gain.gain.rampTo(gainB, 0.05); } catch {}
+  }, []);
   const [pressedPads, setPressedPads] = useState(new Set());
   const [pressedKeys, setPressedKeys] = useState(new Set());
   const [effects, setEffects] = useState({
@@ -899,8 +982,8 @@ export default function MusicStudio() {
         {activeTab === 'dj' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <DJDeck deckId="A" color="#f5a623" />
-              <DJDeck deckId="B" color="#3b82f6" />
+              <DJDeck deckId="A" color="#f5a623" onDeckReady={registerDeck} />
+              <DJDeck deckId="B" color="#3b82f6" onDeckReady={registerDeck} />
             </div>
             {/* Crossfader */}
             <div className="ll-card p-4 rounded-2xl">
@@ -909,7 +992,7 @@ export default function MusicStudio() {
                 <span className="text-amber-400 text-xs font-bold w-6">A</span>
                 <div className="relative flex-1">
                   <input type="range" min={0} max={100} value={crossfader}
-                    onChange={e => setCrossfader(+e.target.value)}
+                    onChange={e => { setCrossfader(+e.target.value); applyCrossfade(+e.target.value); }}
                     className="w-full h-3 rounded-full appearance-none cursor-pointer"
                     style={{ accentColor: '#ffffff' }} />
                 </div>
