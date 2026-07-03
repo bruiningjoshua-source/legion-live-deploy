@@ -135,6 +135,22 @@ export default function GoLive() {
     }
   }, [hasPermissions]);
 
+  // Host heartbeat: while live, ping the server every 30s so the stream-reaper
+  // (which ends streams stale >90s) keeps this stream alive. If the host's tab
+  // dies or network drops, the pings stop and the stream is auto-ended.
+  const liveStreamId = goLiveMutation.data?.id;
+  useEffect(() => {
+    if (!liveStreamId) return;
+    let cancelled = false;
+    const ping = () => {
+      if (cancelled) return;
+      base44.rpc('stream_heartbeat', { p_stream_id: liveStreamId }).catch(() => {});
+    };
+    ping(); // immediate first beat
+    const iv = setInterval(ping, 30000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [liveStreamId]);
+
   const requestCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
