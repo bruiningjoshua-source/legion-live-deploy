@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import { Home, Compass, Radio, MessageCircle, User } from 'lucide-react';
 
 const TABS = [
-  { id: 'home',     label: 'Live',     icon: Home,          path: createPageUrl('Home') },
+  { id: 'home',     label: 'Home',     icon: Home,          path: createPageUrl('Home') },
   { id: 'explore',  label: 'Explore',  icon: Compass,       path: createPageUrl('Explore') },
-  { id: 'watch',    label: '',         icon: Radio,         path: createPageUrl('TheAmphitheatre'), center: true },
+  { id: 'watch',    label: 'Watch',    icon: Radio,         path: createPageUrl('TheAmphitheatre'), center: true },
   { id: 'messages', label: 'Messages', icon: MessageCircle, path: createPageUrl('DirectMessages') },
   { id: 'me',       label: 'Me',       icon: User,          path: createPageUrl('Profile') },
 ];
