@@ -126,7 +126,8 @@ export default function Wallet() {
         toast.error('Checkout is only available in the published app. Please open the app directly.');
       } else {
         console.error('Purchase error:', error);
-        toast.error('Purchase failed. Please try again.');
+        // Show the REAL error so failures are diagnosable instead of a generic message
+        toast.error(`Purchase failed: ${error?.message || 'unknown error'}`);
       }
     }
   });
