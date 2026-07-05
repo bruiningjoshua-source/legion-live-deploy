@@ -136,10 +136,12 @@ class ErrorBoundary extends React.Component {
             </div>
           </div>
 
-          {import.meta.env.DEV && this.state.errorInfo && (
-            <details className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-              <summary className="text-white/30 text-xs cursor-pointer select-none">Component Stack</summary>
-              <pre className="text-white/20 text-[10px] mt-2 overflow-auto max-h-40">
+          {this.state.errorInfo && (
+            <details className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4" open>
+              <summary className="text-white/30 text-xs cursor-pointer select-none">Component Stack (tap to share with support)</summary>
+              <pre className="text-white/40 text-[10px] mt-2 overflow-auto max-h-56 whitespace-pre-wrap">
+                {String(this.state.error?.stack || this.state.error?.message || '')}
+                {'\n---\n'}
                 {this.state.errorInfo.componentStack}
               </pre>
             </details>
