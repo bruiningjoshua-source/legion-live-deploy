@@ -126,117 +126,98 @@ export default function CreatorStudio() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!user) {
+  // While the user query is still resolving, show a calm loader instead of
+  // flashing the sign-in screen (which caused the clunky load).
+  if (user === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
-        <Card className="bg-stone-800/50 border-amber-600/20 p-8 text-center">
+      <div className="ll-page-enter min-h-screen bg-[#050508] pb-20">
+        <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="flex items-center gap-2.5 mb-5">
+            <Video className="w-5 h-5 text-amber-400" />
+            <h1 className="text-xl font-bold text-amber-100">Creator Studio</h1>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 rounded-2xl bg-white/5" />)}
+          </div>
+          <Skeleton className="h-10 rounded-xl bg-white/5 mb-5" />
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl bg-white/5" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user === null) {
+    return (
+      <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center px-4">
+        <div className="ll-panel p-8 text-center max-w-sm">
+          <Video className="w-10 h-10 text-amber-400 mx-auto mb-4" />
           <h2 className="text-xl text-amber-100 mb-4">Sign in to access Creator Studio</h2>
-          <Button onClick={() => base44.auth.redirectToLogin()} className="bg-amber-600 hover:bg-amber-700">
+          <button onClick={() => base44.auth.redirectToLogin()} className="ll-btn ll-btn-primary w-full">
             Sign In
-          </Button>
-        </Card>
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="ll-page-enter min-h-screen bg-[#050508] pb-20">
+      <div className="max-w-2xl mx-auto px-4 pt-4">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2.5 min-w-0">
             <Video className="w-5 h-5 text-amber-400 shrink-0" />
             <div className="min-w-0">
               <h1 className="text-xl font-bold text-amber-100 leading-tight">Creator Studio</h1>
-              <p className="text-amber-400/60 text-xs mt-0.5">Manage videos, analytics &amp; channel</p>
+              <p className="text-white/40 text-xs mt-0.5">Manage videos, analytics &amp; channel</p>
             </div>
           </div>
           <Link to={createPageUrl('VideoUpload')} className="shrink-0">
-            <Button className="bg-red-600 hover:bg-red-700 h-9 text-sm px-3">
-              <Upload className="w-3.5 h-3.5 mr-1.5" />
-              Upload
-            </Button>
+            <button className="ll-btn ll-btn-primary !h-9 !px-4 text-sm">
+              <Upload className="w-3.5 h-3.5" /> Upload
+            </button>
           </Link>
         </div>
 
-        {/* Dashboard Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30">
-            <CardContent className="p-4">
+        {/* Dashboard Stats — unified bronze, 2x2 on mobile */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {[
+            { icon: Eye,      label: 'Total Views', value: formatCount(totalViews) },
+            { icon: ThumbsUp, label: 'Total Likes', value: formatCount(totalLikes) },
+            { icon: Clock,    label: 'Watch Time',  value: `${totalWatchTime.toFixed(1)}h` },
+            { icon: Video,    label: 'Published',   value: publishedCount },
+          ].map((stat, i) => (
+            <div key={i} className="ll-card p-3.5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <Eye className="w-5 h-5 text-blue-400" />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: 'rgba(200,135,26,0.14)' }}>
+                  <stat.icon className="w-4.5 h-4.5 text-amber-400" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-amber-100">{formatCount(totalViews)}</p>
-                  <p className="text-amber-400/60 text-sm">Total Views</p>
+                <div className="min-w-0">
+                  <p className="text-xl font-bold text-amber-100 leading-none">{stat.value}</p>
+                  <p className="text-white/40 text-xs mt-1">{stat.label}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-green-900/30 to-stone-900 border-green-600/30">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                  <ThumbsUp className="w-5 h-5 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-amber-100">{formatCount(totalLikes)}</p>
-                  <p className="text-amber-400/60 text-sm">Total Likes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-purple-900/30 to-stone-900 border-purple-600/30">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-amber-100">{totalWatchTime.toFixed(1)}h</p>
-                  <p className="text-amber-400/60 text-sm">Watch Time</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-amber-900/30 to-stone-900 border-amber-600/30">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                  <Video className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-amber-100">{publishedCount}</p>
-                  <p className="text-amber-400/60 text-sm">Published</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          ))}
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-stone-800/50 border border-amber-600/20 p-1">
-            <TabsTrigger value="content" className="data-[state=active]:bg-amber-600">
-              <Video className="w-4 h-4 mr-2" />
-              Content
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
+          <TabsList className="w-full grid grid-cols-4 bg-white/[0.03] border border-white/8 p-1 rounded-xl h-auto">
+            <TabsTrigger value="content" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
+              <Video className="w-3.5 h-3.5 mr-1" /> Content
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-amber-600">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
+              <BarChart3 className="w-3.5 h-3.5 mr-1" /> Stats
             </TabsTrigger>
-            <TabsTrigger value="comments" className="data-[state=active]:bg-amber-600">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Comments
+            <TabsTrigger value="comments" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
+              <MessageSquare className="w-3.5 h-3.5 mr-1" /> Comments
             </TabsTrigger>
-            <TabsTrigger value="schedule" className="data-[state=active]:bg-amber-600">
-              <span className="flex items-center gap-1.5">
-                📅 Schedule
-              </span>
+            <TabsTrigger value="schedule" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
+              📅 <span className="ml-1">Schedule</span>
             </TabsTrigger>
           </TabsList>
 
