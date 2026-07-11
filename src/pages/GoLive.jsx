@@ -381,13 +381,13 @@ export default function GoLive() {
                     className="flex items-center gap-1 mt-0.5"
                   >
                     <span className="text-xs">{selectedGame.icon || '🎮'}</span>
-                    <span className="text-cyan-400 text-xs font-medium truncate">{selectedGame.title}</span>
+                    <span className="text-amber-300 text-xs font-medium truncate">{selectedGame.title}</span>
                     <span className="text-white/30 text-xs">›</span>
                   </button>
                 ) : streamType === 'game_live' ? (
                   <button
                     onClick={() => setShowGameSelect(true)}
-                    className="text-cyan-400 text-xs font-medium mt-0.5"
+                    className="text-amber-300 text-xs font-medium mt-0.5"
                   >
                     🎮 Select a game ›
                   </button>

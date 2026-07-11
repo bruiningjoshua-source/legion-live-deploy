@@ -149,7 +149,7 @@ export default function GamingHub() {
           ) : (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Gamepad2 className="w-5 h-5 text-purple-400" />
+                <Gamepad2 className="w-5 h-5 text-amber-400" />
                 <span className="text-white font-bold text-lg">Gaming Hub</span>
               </div>
               <div className="flex items-center gap-3">
@@ -203,10 +203,10 @@ export default function GamingHub() {
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-white font-bold text-base flex items-center gap-2">
-                <Eye className="w-5 h-5 text-purple-400" />
+                <Eye className="w-5 h-5 text-amber-400" />
                 Watching Now
               </h2>
-              <Link to={createPageUrl('Explore')} className="text-purple-400 hover:text-purple-300 text-xs font-semibold flex items-center gap-1">
+              <Link to={createPageUrl('Explore')} className="text-amber-400 hover:text-purple-300 text-xs font-semibold flex items-center gap-1">
                 See All <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -254,7 +254,7 @@ export default function GamingHub() {
         {topGamingCreators.length > 0 && (
           <section>
             <h2 className="text-white font-bold text-base mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5 text-cyan-400" />
+              <Users className="w-5 h-5 text-amber-300" />
               Top Gaming Streamers
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

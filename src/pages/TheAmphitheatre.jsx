@@ -72,7 +72,7 @@ function LiveCard({ stream }) {
   );
 }
 
-function SectionHeader({ icon: Icon, title, iconColor = 'text-purple-400' }) {
+function SectionHeader({ icon: Icon, title, iconColor = 'text-amber-400' }) {
   return (
     <div className="flex items-center gap-2 mb-4">
       <Icon className={`w-5 h-5 ${iconColor}`} />

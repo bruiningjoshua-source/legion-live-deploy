@@ -263,12 +263,12 @@ export default function ForumPost() {
               >
                 <ArrowBigUp className="w-6 h-6" />
               </button>
-              <span className={`text-sm font-bold ${score > 0 ? 'text-amber-400' : score < 0 ? 'text-blue-400' : 'text-white/40'}`}>
+              <span className={`text-sm font-bold ${score > 0 ? 'text-amber-400' : score < 0 ? 'text-amber-400' : 'text-white/40'}`}>
                 {score}
               </span>
               <button
                 onClick={() => user && votePostMutation.mutate({ field: 'downvote_count' })}
-                className="p-1 rounded hover:bg-blue-500/20 text-white/30 hover:text-blue-400 transition-colors"
+                className="p-1 rounded hover:bg-amber-500/15 text-white/30 hover:text-amber-400 transition-colors"
               >
                 <ArrowBigDown className="w-6 h-6" />
               </button>
@@ -299,7 +299,7 @@ export default function ForumPost() {
 
               {/* Link */}
               {post.post_type === 'link' && post.link_url && (
-                <a href={post.link_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-blue-400 text-sm mb-3 hover:underline">
+                <a href={post.link_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-amber-400 text-sm mb-3 hover:underline">
                   <Link2 className="w-4 h-4" />
                   {post.link_url}
                 </a>

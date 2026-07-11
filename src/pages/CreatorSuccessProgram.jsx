@@ -221,8 +221,8 @@ export default function CreatorSuccessProgram() {
     : 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#050508] pb-24 px-4">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <motion.div
@@ -373,7 +373,7 @@ export default function CreatorSuccessProgram() {
           {/* Earnings Calculator Tab */}
           <TabsContent value="earnings">
             {/* Industry Context Card */}
-            <Card className="bg-gradient-to-r from-blue-900/30 to-stone-900 border-blue-500/30 mb-6">
+            <Card className="bg-gradient-to-r from-amber-900/20 to-stone-900 border-blue-500/30 mb-6">
               <CardContent className="p-5">
                 <h4 className="text-blue-200 font-medium mb-3 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
@@ -474,7 +474,7 @@ export default function CreatorSuccessProgram() {
 
                 <div className="mt-4 p-4 bg-purple-900/20 rounded-xl border border-purple-500/30">
                   <h4 className="text-purple-100 font-medium mb-2 flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-purple-400" />
+                    <Rocket className="w-4 h-4 text-amber-400" />
                     Platform Revenue Example
                   </h4>
                   <p className="text-purple-200/80 text-sm">

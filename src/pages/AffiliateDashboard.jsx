@@ -89,8 +89,8 @@ export default function AffiliateDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-100 mb-2 flex items-center gap-2">

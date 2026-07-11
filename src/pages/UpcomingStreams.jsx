@@ -90,7 +90,7 @@ export default function UpcomingStreamsPage() {
   const followedStreams = sortedStreams.filter(s => followingIds.includes(s.creator_id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
+    <div className="min-h-screen bg-[#050508] pb-12">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">

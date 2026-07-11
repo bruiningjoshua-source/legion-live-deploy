@@ -35,7 +35,7 @@ const ROOM_ICONS = {
 const ROOM_COLORS = {
   general: 'text-white/60',
   announcements: 'text-amber-400',
-  vip: 'text-purple-400',
+  vip: 'text-amber-400',
   subscribers: 'text-pink-400',
   moderators: 'text-red-400'
 };
@@ -227,7 +227,7 @@ export default function CreatorCommunity() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
                   <h2 className="text-white font-bold truncate">{creator.display_name}</h2>
-                  {creator.is_verified && <BadgeCheck className="w-4 h-4 text-blue-400 shrink-0" />}
+                  {creator.is_verified && <BadgeCheck className="w-4 h-4 text-amber-400 shrink-0" />}
                 </div>
                 <p className="text-white/40 text-xs">Community</p>
               </div>

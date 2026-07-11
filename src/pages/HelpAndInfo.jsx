@@ -47,7 +47,7 @@ const FAQ_ITEMS = [
   {
     category: 'Safety & Moderation',
     icon: Shield,
-    color: 'text-blue-400',
+    color: 'text-amber-400',
     bg: 'bg-blue-500/10',
     questions: [
       { q: 'How do I report inappropriate content?', a: 'Tap the flag/report icon on any stream, comment, or profile. Our moderation team reviews all reports within 24 hours. Serious violations are escalated immediately.' },
@@ -230,7 +230,7 @@ export default function HelpAndInfo() {
             {/* Tech stack / builder */}
             <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
               <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-blue-400" /> Built With
+                <Code2 className="w-4 h-4 text-amber-400" /> Built With
               </h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {[

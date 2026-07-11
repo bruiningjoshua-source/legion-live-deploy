@@ -361,11 +361,11 @@ export default function GamesExpo() {
                 Mobile Games
               </div>
               <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white/60">
-                <Monitor className="w-3.5 h-3.5 text-blue-400" />
+                <Monitor className="w-3.5 h-3.5 text-amber-400" />
                 PC Games
               </div>
               <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white/60">
-                <Play className="w-3.5 h-3.5 text-purple-400" />
+                <Play className="w-3.5 h-3.5 text-amber-400" />
                 HTML5 Games
               </div>
             </div>

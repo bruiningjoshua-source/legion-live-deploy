@@ -60,7 +60,7 @@ export default function WatchLater() {
   return (
     <div className="min-h-screen bg-stone-950 pb-24 flex">
       <AmphitheatreSidebar />
-      <div className="flex-1 max-w-7xl mx-auto px-4">
+      <div className="flex-1 max-w-2xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Watch Later</h1>
           <p className="text-stone-400">{laterVideos.length} videos saved</p>

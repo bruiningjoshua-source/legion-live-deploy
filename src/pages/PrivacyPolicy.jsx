@@ -124,7 +124,7 @@ export default function PrivacyPolicy() {
 
         {/* GDPR Notice */}
         <div className="rounded-2xl bg-blue-900/15 border border-blue-500/20 p-4 mb-4 flex gap-3">
-          <Globe className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <Globe className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-blue-300 text-sm font-semibold mb-1">EU/UK Residents — GDPR Rights Apply</p>
             <p className="text-white/50 text-xs leading-relaxed">

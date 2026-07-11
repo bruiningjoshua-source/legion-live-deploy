@@ -255,7 +255,7 @@ export default function AffiliateGoLive() {
               <Button
                 onClick={() => endStreamMutation.mutate()}
                 disabled={endStreamMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-amber-600 hover:bg-amber-700"
               >
                 <X className="w-4 h-4 mr-2" />
                 End Stream
@@ -395,7 +395,7 @@ export default function AffiliateGoLive() {
                     <Button
                       onClick={() => goLiveMutation.mutate()}
                       disabled={!selectedCampaignId || !streamTitle || goLiveMutation.isPending}
-                      className="w-full bg-red-600 hover:bg-red-700 py-6 text-lg"
+                      className="w-full bg-amber-600 hover:bg-amber-700 py-6 text-lg"
                     >
                       <Radio className="w-5 h-5 mr-2 animate-pulse" />
                       {goLiveMutation.isPending ? 'Starting...' : 'GO LIVE'}

@@ -388,7 +388,7 @@ export default function Profile() {
                   <h3 className="text-white font-semibold mb-2">No Streams Yet</h3>
                   <p className="text-white/50 mb-4">Start streaming to build your legacy!</p>
                   <Link to={createPageUrl('GoLive')}>
-                    <Button className="bg-red-600 hover:bg-red-700">
+                    <Button className="bg-amber-600 hover:bg-amber-700">
                       Go Live Now
                     </Button>
                   </Link>

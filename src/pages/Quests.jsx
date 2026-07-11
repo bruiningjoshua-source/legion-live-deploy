@@ -108,8 +108,8 @@ function QuestCard({ quest, userQuest, onClaim }) {
                   </div>
                 )}
                 {quest.reward_xp > 0 && (
-                  <div className="flex items-center gap-1.5 bg-purple-500/20 px-2.5 py-1 rounded-lg">
-                    <Star className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex items-center gap-1.5 bg-amber-500/15 px-2.5 py-1 rounded-lg">
+                    <Star className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-purple-300 text-sm font-medium">+{quest.reward_xp} XP</span>
                   </div>
                 )}

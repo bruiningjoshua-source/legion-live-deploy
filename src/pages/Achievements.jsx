@@ -64,7 +64,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -93,7 +93,7 @@ export default function AchievementsPage() {
             <p className="text-white/50 text-sm">Unlocked</p>
           </GlassCard>
           <GlassCard delay={0.1} glowColor="purple" className="text-center">
-            <Star className="w-8 h-8 mx-auto mb-2 text-purple-400" />
+            <Star className="w-8 h-8 mx-auto mb-2 text-amber-400" />
             <p className="text-3xl font-black text-white">{totalPoints > 999 ? (totalPoints / 1000).toFixed(1) + 'K' : totalPoints}</p>
             <p className="text-white/50 text-sm">Points</p>
           </GlassCard>

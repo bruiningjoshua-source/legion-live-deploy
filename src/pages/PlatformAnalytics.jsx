@@ -49,7 +49,7 @@ export default function PlatformAnalytics() {
 
   if (user?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050508] flex items-center justify-center">
         <div className="text-center">
           <Zap className="w-16 h-16 text-amber-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-amber-100 mb-2">Admin Only</h1>
@@ -60,8 +60,8 @@ export default function PlatformAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Platform Analytics</h1>
@@ -270,7 +270,7 @@ export default function PlatformAnalytics() {
           className="mt-8 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-6"
         >
           <h3 className="text-xl font-bold text-purple-100 mb-4 flex items-center gap-2">
-            <Rocket className="w-5 h-5 text-purple-400" />
+            <Rocket className="w-5 h-5 text-amber-400" />
             2-Year Growth Trajectory
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -289,7 +289,7 @@ export default function PlatformAnalytics() {
               >
                 <div className="text-sm font-semibold text-purple-300 mb-2">{phase.label}</div>
                 <div className="text-2xl font-bold text-purple-200 mb-2">{phase.target}</div>
-                <div className="text-xs text-purple-400/70">{phase.milestone}</div>
+                <div className="text-xs text-amber-400/70">{phase.milestone}</div>
               </motion.div>
             ))}
           </div>
@@ -343,7 +343,7 @@ export default function PlatformAnalytics() {
                 }
               }}
               disabled={clearLiveStreamsMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {clearLiveStreamsMutation.isPending ? 'Clearing...' : 'Clear Live Streams & Launch'}
             </Button>

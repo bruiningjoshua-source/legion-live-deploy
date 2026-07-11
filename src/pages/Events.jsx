@@ -194,12 +194,12 @@ export default function Events() {
 
   return (
     <div className="min-h-screen pb-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
 
         {/* ── Page Header ── */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-full px-4 py-1.5 mb-5">
-            <Trophy className="w-3.5 h-3.5 text-purple-400" />
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-purple-300 text-xs font-semibold tracking-wider uppercase">Events & Tournaments</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 leading-tight mb-3">

@@ -90,12 +90,12 @@ export default function CommunityGuidelines() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
+    <div className="min-h-screen bg-[#050508] pb-12">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-purple-600/20 border border-purple-500/30 rounded-full px-4 py-2 mb-4">
-            <Users className="w-4 h-4 text-purple-400" />
+            <Users className="w-4 h-4 text-amber-400" />
             <span className="text-purple-200 text-sm">Community</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Community Guidelines</h1>
@@ -209,7 +209,7 @@ export default function CommunityGuidelines() {
           <CardHeader>
             <CardTitle className="text-amber-100 flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-blue-400" />
+                <MessageCircle className="w-5 h-5 text-amber-400" />
               </div>
               Chat Rules
             </CardTitle>

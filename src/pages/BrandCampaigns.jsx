@@ -604,7 +604,7 @@ export default function BrandCampaigns() {
                     <h3 className="text-white font-bold">{campaign.campaign_name}</h3>
                     <p className="text-white/40 text-xs mt-0.5">with {brandMap[campaign.brand_partner_id]?.company_name || 'Brand'}</p>
                   </div>
-                  <span className="text-[10px] bg-blue-500/15 border border-blue-500/30 text-blue-400 px-2.5 py-1 rounded-full font-bold">COMPLETE</span>
+                  <span className="text-[10px] bg-blue-500/15 border border-blue-500/30 text-amber-400 px-2.5 py-1 rounded-full font-bold">COMPLETE</span>
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                   {[

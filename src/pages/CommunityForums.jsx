@@ -101,7 +101,7 @@ export default function CommunityForums() {
         <div className="absolute top-0 left-0 right-0 h-[40vh] bg-gradient-to-b from-amber-900/15 to-transparent" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 pt-4">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 pt-4">
         {/* Banner */}
         <div className="relative rounded-xl overflow-hidden mb-4">
           <div className="h-20 bg-gradient-to-r from-amber-700 via-red-700 to-amber-700" />

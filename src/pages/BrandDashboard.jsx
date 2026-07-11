@@ -94,7 +94,7 @@ export default function BrandDashboard() {
 
   if (!brandPartner) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
+      <div className="min-h-screen bg-[#050508] pb-12">
         <div className="max-w-2xl mx-auto px-4">
           <Card className="bg-stone-800/30 border-amber-600/20">
             <CardHeader>
@@ -113,8 +113,8 @@ export default function BrandDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-amber-100 mb-2">Brand Dashboard</h1>
@@ -126,8 +126,8 @@ export default function BrandDashboard() {
           <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <TrendingUp className="w-8 h-8 text-blue-400" />
-                <Badge className="bg-blue-500/20 text-blue-200">{brandPartner.tier}</Badge>
+                <TrendingUp className="w-8 h-8 text-amber-400" />
+                <Badge className="bg-amber-500/15 text-blue-200">{brandPartner.tier}</Badge>
               </div>
               <div className="text-3xl font-bold text-white mb-1">{stats.activeCampaigns}</div>
               <div className="text-blue-200/70 text-sm">Active Campaigns</div>
@@ -144,7 +144,7 @@ export default function BrandDashboard() {
 
           <Card className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/30">
             <CardContent className="p-6">
-              <Eye className="w-8 h-8 text-purple-400 mb-2" />
+              <Eye className="w-8 h-8 text-amber-400 mb-2" />
               <div className="text-3xl font-bold text-white mb-1">{stats.totalViews}</div>
               <div className="text-purple-200/70 text-sm">Total Views</div>
             </CardContent>
@@ -252,7 +252,7 @@ export default function BrandDashboard() {
                           </div>
                           <Badge className={
                             campaign.status === 'active' ? 'bg-green-500/20 text-green-200' :
-                            campaign.status === 'completed' ? 'bg-blue-500/20 text-blue-200' :
+                            campaign.status === 'completed' ? 'bg-amber-500/15 text-blue-200' :
                             campaign.status === 'pending' ? 'bg-yellow-500/20 text-yellow-200' :
                             'bg-gray-500/20 text-gray-200'
                           }>

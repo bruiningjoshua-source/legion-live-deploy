@@ -70,7 +70,7 @@ export default function Following() {
   if (followsLoading || creatorsLoading) {
     return (
       <div className="min-h-screen pb-24">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-2xl mx-auto px-4">
           <Skeleton className="h-10 w-48 bg-white/5 mb-8" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
@@ -84,7 +84,7 @@ export default function Following() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -12 }}

@@ -212,7 +212,7 @@ export default function PodcastStudio() {
 
         {/* ── SHOWS ── */}
         {activeNav === 'shows' && (
-          <motion.div key="shows" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-5xl">
+          <motion.div key="shows" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-2xl">
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <StatCard icon={Headphones} label="Shows" value={podcasts.length} color="amber" />
@@ -381,7 +381,7 @@ export default function PodcastStudio() {
 
         {/* ── EPISODES ── */}
         {activeNav === 'episodes' && (
-          <motion.div key="episodes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-5xl space-y-4">
+          <motion.div key="episodes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h1 className="text-white font-black text-2xl">Episodes</h1>
               <button onClick={() => setActiveNav('studio')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors">
@@ -448,7 +448,7 @@ export default function PodcastStudio() {
 
         {/* ── ANALYTICS ── */}
         {activeNav === 'analytics' && (
-          <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-5xl space-y-6">
+          <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-6">
             <h1 className="text-white font-black text-2xl">Analytics</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <StatCard icon={Eye} label="Total Plays" value={totalPlays.toLocaleString()} color="blue" />

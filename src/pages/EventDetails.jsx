@@ -75,7 +75,7 @@ export default function EventDetails() {
   const Icon = eventTypeIcons[event.event_type] || Trophy;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
+    <div className="min-h-screen bg-[#050508] pb-12">
       {/* Banner */}
       <div className="relative h-64 md:h-80 overflow-hidden">
         {event.banner_url ? (

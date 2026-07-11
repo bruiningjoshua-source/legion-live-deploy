@@ -996,7 +996,7 @@ export default function MusicStudio() {
                     className="w-full h-3 rounded-full appearance-none cursor-pointer"
                     style={{ accentColor: '#ffffff' }} />
                 </div>
-                <span className="text-blue-400 text-xs font-bold w-6 text-right">B</span>
+                <span className="text-amber-400 text-xs font-bold w-6 text-right">B</span>
               </div>
               <div className="flex justify-center mt-2">
                 <span className="text-white/30 text-[10px] font-mono">A:{100-crossfader}% | B:{crossfader}%</span>

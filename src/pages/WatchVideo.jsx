@@ -276,8 +276,8 @@ export default function WatchVideo() {
   if (!video) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
           {/* Main Video Area */}
           <div className="lg:col-span-2 space-y-4">
@@ -362,7 +362,7 @@ export default function WatchVideo() {
                              .catch(() => toast.error('Failed to start subscription'));
                          }
                        }}
-                       className={subscription ? 'bg-stone-600 hover:bg-stone-700' : 'bg-red-600 hover:bg-red-700'}
+                       className={subscription ? 'bg-stone-600 hover:bg-stone-700' : 'bg-amber-600 hover:bg-amber-700'}
                        size="sm"
                      >
                        {subscription ? 'Subscribed' : 'Subscribe'}
@@ -383,7 +383,7 @@ export default function WatchVideo() {
                         onClick={() => user && likeMutation.mutate()}
                         variant="ghost"
                         size="sm"
-                        className={`rounded-none border-r border-stone-700 h-8 sm:h-9 ${hasLiked ? 'text-blue-400' : 'text-amber-200'}`}
+                        className={`rounded-none border-r border-stone-700 h-8 sm:h-9 ${hasLiked ? 'text-amber-400' : 'text-amber-200'}`}
                       >
                         <ThumbsUp className={`w-4 h-4 ${hasLiked ? 'fill-current' : ''}`} />
                         <span className="hidden sm:inline ml-1">{video.like_count || 0}</span>

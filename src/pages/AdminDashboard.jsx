@@ -235,8 +235,8 @@ export default function AdminDashboard() {
           <Link to={createPageUrl('PlatformAdminAnalytics')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
               <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-blue-400" />
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-amber-400" />
                 </div>
                 <p className="text-white font-medium text-xs">Analytics</p>
               </CardContent>
@@ -275,8 +275,8 @@ export default function AdminDashboard() {
           <Link to={createPageUrl('CreatorMonetization')}>
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all h-full">
               <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <Gift className="w-4 h-4 text-purple-400" />
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-amber-400" />
                 </div>
                 <p className="text-white font-medium text-xs">Monetization</p>
               </CardContent>
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
           <Card className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-500/30 h-full">
             <CardContent className="p-3 flex flex-col items-center text-center gap-1.5">
               <div className="w-9 h-9 rounded-xl bg-cyan-500/30 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-cyan-400" />
+                <Bot className="w-4 h-4 text-amber-300" />
               </div>
               <p className="text-cyan-300 font-medium text-xs">AI Mod</p>
             </CardContent>

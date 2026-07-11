@@ -107,7 +107,7 @@ export default function ExclusiveContentManager() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center">
         <Card className="bg-stone-800/50 border-amber-600/20">
           <CardContent className="p-8 text-center">
             <Lock className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
@@ -119,8 +119,8 @@ export default function ExclusiveContentManager() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -240,16 +240,16 @@ export default function ExclusiveContentManager() {
               <p className="text-amber-400/60 text-sm">🪙 Earned</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30">
+          <Card className="bg-gradient-to-br from-amber-900/20 to-stone-900 border-amber-600/25">
             <CardContent className="p-4">
-              <Lock className="w-6 h-6 text-blue-400 mb-2" />
+              <Lock className="w-6 h-6 text-amber-400 mb-2" />
               <p className="text-2xl font-bold text-amber-100">{totalUnlocks}</p>
               <p className="text-amber-400/60 text-sm">Total Unlocks</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-purple-900/30 to-stone-900 border-purple-600/30">
+          <Card className="bg-gradient-to-br from-amber-900/20 to-stone-900 border-amber-600/25">
             <CardContent className="p-4">
-              <Crown className="w-6 h-6 text-purple-400 mb-2" />
+              <Crown className="w-6 h-6 text-amber-400 mb-2" />
               <p className="text-2xl font-bold text-amber-100">40%</p>
               <p className="text-amber-400/60 text-sm">Your Cut</p>
             </CardContent>

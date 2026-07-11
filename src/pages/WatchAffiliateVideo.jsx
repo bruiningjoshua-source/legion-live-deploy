@@ -133,8 +133,8 @@ export default function WatchAffiliateVideo() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Back Button */}
         <Link to={createPageUrl('TheAmphitheatre')}>
           <Button variant="ghost" className="text-amber-400 mb-4">

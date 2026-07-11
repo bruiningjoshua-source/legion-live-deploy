@@ -235,24 +235,24 @@ export default function PlaylistView() {
 
   if (!playlist) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050508] flex items-center justify-center">
         <Skeleton className="w-64 h-64 rounded-xl bg-stone-800" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-40">
+    <div className="min-h-screen bg-[#050508] pb-40">
       <audio ref={audioRef} src={currentTrack?.audio_url || currentTrack?.video_url} />
 
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Playlist Header */}
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <div className="w-48 h-48 bg-gradient-to-br from-purple-600/30 to-stone-900 rounded-xl flex items-center justify-center flex-shrink-0">
             {playlist.thumbnail_url ? (
               <img src={playlist.thumbnail_url} className="w-full h-full object-cover rounded-xl" alt="" />
             ) : (
-              <ListMusic className="w-20 h-20 text-purple-400/50" />
+              <ListMusic className="w-20 h-20 text-amber-400/50" />
             )}
           </div>
           <div className="flex-1">
@@ -374,7 +374,7 @@ export default function PlaylistView() {
       {/* Now Playing Bar */}
       {currentTrack && (
         <div className="fixed bottom-16 left-0 right-0 bg-stone-900/95 backdrop-blur-lg border-t border-amber-600/20 p-3 z-40">
-          <div className="max-w-5xl mx-auto flex items-center gap-4">
+          <div className="max-w-2xl mx-auto flex items-center gap-4">
             <div className="w-12 h-12 bg-stone-800 rounded flex-shrink-0 overflow-hidden">
               {currentTrack.cover_url ? (
                 <img src={currentTrack.cover_url} className="w-full h-full object-cover" alt="" />
@@ -418,7 +418,7 @@ export default function PlaylistView() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setRepeat(repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off')}
-                className={`h-8 w-8 ${repeat !== 'off' ? 'text-purple-400' : 'text-amber-400/60'}`}
+                className={`h-8 w-8 ${repeat !== 'off' ? 'text-amber-400' : 'text-amber-400/60'}`}
               >
                 <Repeat className="w-4 h-4" />
                 {repeat === 'one' && <span className="absolute text-[8px] font-bold">1</span>}

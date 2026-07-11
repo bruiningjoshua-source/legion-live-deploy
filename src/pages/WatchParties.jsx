@@ -48,7 +48,7 @@ function PartyCard({ party, videos, onJoin }) {
             <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-cyan-900 to-blue-900 flex items-center justify-center">
-              <Film className="w-12 h-12 text-cyan-400/50" />
+              <Film className="w-12 h-12 text-amber-300/50" />
             </div>
           )}
           
@@ -74,7 +74,7 @@ function PartyCard({ party, videos, onJoin }) {
 
           {/* Participants */}
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg">
-            <Users className="w-4 h-4 text-cyan-400" />
+            <Users className="w-4 h-4 text-amber-300" />
             <span className="text-white text-sm">{party.participant_count}/{party.max_participants}</span>
           </div>
         </div>
@@ -89,7 +89,7 @@ function PartyCard({ party, videos, onJoin }) {
           <div className="flex items-center justify-between">
             <button
               onClick={copyInvite}
-              className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 text-sm"
+              className="flex items-center gap-1.5 text-amber-300 hover:text-cyan-300 text-sm"
             >
               {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Invite'}
@@ -167,7 +167,7 @@ export default function WatchParties() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -179,7 +179,7 @@ export default function WatchParties() {
             transition={{ duration: 2, repeat: Infinity }}
             className="inline-block mb-4"
           >
-            <Users className="w-16 h-16 text-cyan-400" />
+            <Users className="w-16 h-16 text-amber-300" />
           </motion.div>
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-cyan-400 to-blue-400 mb-2">
             Watch Parties
@@ -190,7 +190,7 @@ export default function WatchParties() {
         {/* Actions */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400/50" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-300/50" />
             <Input
               placeholder="Search parties..."
               value={searchQuery}
@@ -303,7 +303,7 @@ export default function WatchParties() {
           </div>
         ) : (
           <GlassCard className="text-center py-16" glowColor="cyan">
-            <Users className="w-16 h-16 text-cyan-400/30 mx-auto mb-4" />
+            <Users className="w-16 h-16 text-amber-300/30 mx-auto mb-4" />
             <h3 className="text-white font-semibold text-xl mb-2">No Watch Parties</h3>
             <p className="text-white/50 mb-6">Be the first to create a watch party!</p>
             <PremiumButton

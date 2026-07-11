@@ -292,7 +292,7 @@ export default function PPVEvents() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -304,7 +304,7 @@ export default function PPVEvents() {
             transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
             className="inline-block mb-4"
           >
-            <Ticket className="w-16 h-16 text-purple-400" />
+            <Ticket className="w-16 h-16 text-amber-400" />
           </motion.div>
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-400 to-pink-400 mb-2">
             Premium Events
@@ -364,7 +364,7 @@ export default function PPVEvents() {
               </div>
             ) : (
               <GlassCard className="text-center py-16" glowColor="purple">
-                <Ticket className="w-16 h-16 text-purple-400/30 mx-auto mb-4" />
+                <Ticket className="w-16 h-16 text-amber-400/30 mx-auto mb-4" />
                 <h3 className="text-white font-semibold text-xl mb-2">
                   {activeTab === 'my-tickets' ? 'No Tickets Yet' : 'No Events'}
                 </h3>

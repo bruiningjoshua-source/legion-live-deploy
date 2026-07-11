@@ -316,7 +316,7 @@ export default function CreatorProfile() {
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
-                  <Users className="w-5 h-5 text-blue-400 mx-auto mb-2" />
+                  <Users className="w-5 h-5 text-amber-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{formatCount(creator.follower_count)}</p>
                   <p className="text-white/50 text-xs">Followers</p>
                 </div>

@@ -240,7 +240,7 @@ export default function CollabMatching() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -252,7 +252,7 @@ export default function CollabMatching() {
             transition={{ duration: 2, repeat: Infinity }}
             className="inline-block mb-4"
           >
-            <Sparkles className="w-16 h-16 text-purple-400" />
+            <Sparkles className="w-16 h-16 text-amber-400" />
           </motion.div>
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-400 to-pink-400 mb-2">
             AI Collab Matching
@@ -273,7 +273,7 @@ export default function CollabMatching() {
 
         {!myCreator ? (
           <GlassCard className="text-center py-16" glowColor="purple">
-            <Users className="w-16 h-16 text-purple-400/30 mx-auto mb-4" />
+            <Users className="w-16 h-16 text-amber-400/30 mx-auto mb-4" />
             <h3 className="text-white font-semibold text-xl mb-2">Create Your Creator Profile</h3>
             <p className="text-white/50 mb-6">You need a creator profile to find collaboration matches.</p>
             <Link to={createPageUrl('Profile')}>
@@ -362,7 +362,7 @@ export default function CollabMatching() {
                 </div>
               ) : (
                 <GlassCard className="text-center py-12" glowColor="purple">
-                  <Sparkles className="w-12 h-12 text-purple-400/30 mx-auto mb-4" />
+                  <Sparkles className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
                   <h3 className="text-white font-semibold mb-2">No matches yet</h3>
                   <p className="text-white/50 mb-4">Click "Find New Matches" to discover collaborators!</p>
                 </GlassCard>

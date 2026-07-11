@@ -107,7 +107,7 @@ export default function DataPrivacy() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
+    <div className="min-h-screen bg-[#050508] pb-12">
       <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -132,7 +132,7 @@ export default function DataPrivacy() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-purple-400" />
+                  <Bell className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
                   <Label className="text-amber-100">Marketing Emails</Label>
@@ -149,7 +149,7 @@ export default function DataPrivacy() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-blue-400" />
+                  <BarChart3 className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
                   <Label className="text-amber-100">Analytics & Improvements</Label>
@@ -235,7 +235,7 @@ export default function DataPrivacy() {
             <Button 
               variant="destructive"
               onClick={() => setShowDeleteDialog(true)}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-amber-600 hover:bg-amber-700"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete My Account
@@ -248,7 +248,7 @@ export default function DataPrivacy() {
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-5 h-5 text-blue-400" />
+                <Shield className="w-5 h-5 text-amber-400" />
               </div>
               <div>
                 <h3 className="text-amber-100 font-semibold mb-2">Your Rights Under GDPR</h3>
@@ -296,7 +296,7 @@ export default function DataPrivacy() {
               </AlertDialogCancel>
               <AlertDialogAction 
                 onClick={handleDeleteAccount}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-amber-600 hover:bg-amber-700"
               >
                 Yes, Delete My Account
               </AlertDialogAction>

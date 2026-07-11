@@ -152,7 +152,7 @@ export default function EarningsDashboard() {
 
   return (
     <div className="min-h-screen pb-24 px-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 flex items-center gap-3">
@@ -171,7 +171,7 @@ export default function EarningsDashboard() {
             </Card>
             <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 p-5">
               <p className="text-xs text-blue-300/70 mb-1">Available Balance</p>
-              <p className="text-2xl font-bold text-blue-400">{formatLocalCurrency(denariiToUsd(walletData?.denarii_balance || 0), localCurrency)}</p>
+              <p className="text-2xl font-bold text-amber-400">{formatLocalCurrency(denariiToUsd(walletData?.denarii_balance || 0), localCurrency)}</p>
             </Card>
             <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30 p-5">
               <p className="text-xs text-amber-300/70 mb-1">VIP Points</p>
@@ -179,7 +179,7 @@ export default function EarningsDashboard() {
             </Card>
             <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/30 p-5">
               <p className="text-xs text-purple-300/70 mb-1">Followers</p>
-              <p className="text-2xl font-bold text-purple-400">{creatorData?.follower_count || 0}</p>
+              <p className="text-2xl font-bold text-amber-400">{creatorData?.follower_count || 0}</p>
             </Card>
           </div>
         )}
@@ -278,7 +278,7 @@ export default function EarningsDashboard() {
                     </Card>
                     <Card className="bg-white/5 border-white/10 p-4">
                       <p className="text-xs text-white/50 mb-2">Processing Fee</p>
-                      <p className="text-2xl font-bold text-blue-400">1-2%</p>
+                      <p className="text-2xl font-bold text-amber-400">1-2%</p>
                       <p className="text-xs text-white/30 mt-2">Varies by method</p>
                     </Card>
                   </div>
@@ -292,7 +292,7 @@ export default function EarningsDashboard() {
                   {/* Setup Help */}
                   <Card className="bg-blue-500/10 border-blue-500/30 p-4 mt-6">
                     <div className="flex gap-3">
-                      <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold text-white mb-1">Withdrawals Guide</p>
                         <p className="text-sm text-white/70">
@@ -353,7 +353,7 @@ export default function EarningsDashboard() {
                   <h2 className="text-2xl font-bold text-white mb-4">Earnings History</h2>
                   <p className="text-gray-400 mb-4">Track all your payouts and earnings transactions</p>
                   <Button 
-                    className="gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/50"
+                    className="gap-2 bg-amber-500/15 hover:bg-blue-500/30 text-amber-400 border border-blue-500/50"
                     onClick={() => navigate(createPageUrl('CreatorPayouts'))}
                   >
                     <Download className="w-4 h-4" />

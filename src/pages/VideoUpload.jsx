@@ -294,7 +294,7 @@ export default function VideoUpload() {
                   onClick={() => updateField('video_type', 'long_form')}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                     videoData.video_type === 'long_form'
-                      ? 'bg-blue-500/20 border border-blue-500/40 text-blue-300'
+                      ? 'bg-amber-500/15 border border-blue-500/40 text-blue-300'
                       : 'bg-white/[0.03] border border-white/[0.06] text-white/40'
                   }`}
                 >

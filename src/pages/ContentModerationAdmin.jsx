@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 // Admin authorization is enforced by user.role === 'admin' (managed server-side).
 
 const SEVERITY_CONFIG = {
-  low: { color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: AlertCircle },
+  low: { color: 'bg-amber-500/15 text-blue-300 border-blue-500/30', icon: AlertCircle },
   medium: { color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', icon: AlertTriangle },
   high: { color: 'bg-orange-500/20 text-orange-300 border-orange-500/30', icon: AlertTriangle },
   critical: { color: 'bg-red-500/20 text-red-300 border-red-500/30', icon: XCircle }
@@ -85,7 +85,7 @@ export default function ContentModerationAdmin() {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050508] flex items-center justify-center">
         <Card className="bg-stone-800/50 border-red-500/30">
           <CardContent className="p-8 text-center">
             <Shield className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
@@ -103,8 +103,8 @@ export default function ContentModerationAdmin() {
   const userReported = violations.filter(v => v.detected_by === 'user_report');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] pb-12">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -149,9 +149,9 @@ export default function ContentModerationAdmin() {
               <p className="text-amber-400/60 text-sm">Upheld</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-blue-900/30 to-stone-900 border-blue-600/30">
+          <Card className="bg-gradient-to-br from-amber-900/20 to-stone-900 border-amber-600/25">
             <CardContent className="p-4">
-              <XCircle className="w-6 h-6 text-blue-400 mb-2" />
+              <XCircle className="w-6 h-6 text-amber-400 mb-2" />
               <p className="text-2xl font-bold text-amber-100">{violations.filter(v => v.review_decision === 'overturned').length}</p>
               <p className="text-amber-400/60 text-sm">Dismissed</p>
             </CardContent>
@@ -249,7 +249,7 @@ export default function ContentModerationAdmin() {
                                   data: { review_decision: 'upheld', action_taken: 'account_suspended' }
                                 })}
                                 size="sm"
-                                className="bg-red-600 hover:bg-red-700"
+                                className="bg-amber-600 hover:bg-amber-700"
                               >
                                 <Ban className="w-4 h-4 mr-1" />
                                 Suspend

@@ -137,7 +137,7 @@ export default function Explore() {
   return (
     <div className="ll-page-enter min-h-screen pb-24">
       <PullToRefresh onRefresh={handleRefresh}>
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -12 }}

@@ -163,7 +163,7 @@ export default function LegionAI() {
             className="flex flex-col items-center text-center pt-8"
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-amber-500/20 border border-purple-500/20 flex items-center justify-center mb-4">
-              <Bot className="w-8 h-8 text-purple-400" />
+              <Bot className="w-8 h-8 text-amber-400" />
             </div>
             <h2 className="text-white font-bold text-lg mb-1">Hey {firstName}!</h2>
             <p className="text-white/40 text-sm mb-6 max-w-xs">

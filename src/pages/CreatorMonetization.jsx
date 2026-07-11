@@ -138,7 +138,7 @@ export default function CreatorMonetization() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 mb-2 flex items-center gap-2">
             <Crown className="w-8 h-8 text-amber-400" />

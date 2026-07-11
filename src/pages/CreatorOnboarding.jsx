@@ -189,7 +189,7 @@ export default function CreatorOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
+    <div className="min-h-screen bg-[#050508]">
       {/* Progress Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-stone-950/90 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4">

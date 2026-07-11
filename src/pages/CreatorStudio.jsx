@@ -384,7 +384,7 @@ export default function CreatorStudio() {
                   <h3 className="text-xl text-amber-100 font-semibold mb-2">No Videos Yet</h3>
                   <p className="text-amber-400/60 mb-6">Upload your first video to get started</p>
                   <Link to={createPageUrl('VideoUpload')}>
-                    <Button className="bg-red-600 hover:bg-red-700">
+                    <Button className="bg-amber-600 hover:bg-amber-700">
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Video
                     </Button>
@@ -406,12 +406,12 @@ export default function CreatorStudio() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-stone-900/50 rounded-xl p-6 text-center">
-                    <Eye className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                    <Eye className="w-8 h-8 text-amber-400 mx-auto mb-2" />
                     <p className="text-3xl font-bold text-amber-100">{formatCount(totalViews)}</p>
                     <p className="text-amber-400/60">Total Views</p>
                   </div>
                   <div className="bg-stone-900/50 rounded-xl p-6 text-center">
-                    <Users className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                    <Users className="w-8 h-8 text-amber-400 mx-auto mb-2" />
                     <p className="text-3xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
                     <p className="text-amber-400/60">Subscribers</p>
                   </div>
@@ -438,7 +438,7 @@ export default function CreatorStudio() {
             <Card className="bg-stone-800/30 border-amber-600/20">
               <CardHeader>
                 <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-blue-400" />
+                  <MessageSquare className="w-5 h-5 text-amber-400" />
                   Recent Comments
                 </CardTitle>
               </CardHeader>
