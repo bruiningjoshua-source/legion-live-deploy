@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1206"/>
+      <stop offset="0.5" stop-color="#0a0804"/>
+      <stop offset="1" stop-color="#050403"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5c674"/>
+      <stop offset="0.5" stop-color="#d99a2b"/>
+      <stop offset="1" stop-color="#a06d12"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.55">
+      <stop offset="0" stop-color="#c8871a" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#c8871a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bg)" rx="112"/>
+  <rect width="512" height="512" fill="url(#glow)" rx="112"/>
+  <rect x="8" y="8" width="496" height="496" rx="106" fill="none" stroke="#c8871a" stroke-opacity="0.25" stroke-width="3"/>
+
+  <!-- Laurel wreath -->
+  <g fill="none" stroke="url(#gold)" stroke-width="9" stroke-linecap="round" opacity="0.9">
+    <path d="M170 380 C120 340 108 270 128 214"/>
+    <path d="M342 380 C392 340 404 270 384 214"/>
+  </g>
+  <g fill="url(#gold)" opacity="0.9">
+    <ellipse cx="128" cy="232" rx="15" ry="7" transform="rotate(-52 128 232)"/>
+    <ellipse cx="140" cy="280" rx="15" ry="7" transform="rotate(-42 140 280)"/>
+    <ellipse cx="158" cy="326" rx="15" ry="7" transform="rotate(-32 158 326)"/>
+    <ellipse cx="384" cy="232" rx="15" ry="7" transform="rotate(52 384 232)"/>
+    <ellipse cx="372" cy="280" rx="15" ry="7" transform="rotate(42 372 280)"/>
+    <ellipse cx="354" cy="326" rx="15" ry="7" transform="rotate(32 354 326)"/>
+  </g>
+
+  <!-- Gladius sword (vertical, centered) -->
+  <g>
+    <!-- blade -->
+    <polygon points="256,96 268,120 268,300 256,320 244,300 244,120" fill="url(#gold)"/>
+    <polygon points="256,96 256,320 244,300 244,120" fill="#000" opacity="0.12"/>
+    <!-- crossguard -->
+    <rect x="212" y="316" width="88" height="16" rx="6" fill="url(#gold)"/>
+    <!-- grip -->
+    <rect x="246" y="332" width="20" height="52" rx="6" fill="#8a5a0e"/>
+    <!-- pommel -->
+    <circle cx="256" cy="392" r="14" fill="url(#gold)"/>
+  </g>
+</svg>
