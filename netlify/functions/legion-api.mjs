@@ -366,11 +366,13 @@ const handlers = {
       return json(500, { error: 'Streaming service not configured' });
     }
 
-    // RTMP ingest is activated on the ZegoCloud account. Build the push URL
-    // directly from the activated live domain. Env var overrides the default
-    // so the domain can change without a code deploy.
-    const rtmpDomain = process.env.ZEGOCLOUD_RTMP_DOMAIN || 'i-rtmp1453225977.coolzcloud.com';
+    // RTMP ingest is activated on the ZegoCloud account. The live domain and
+    // WHIP auth key come from env vars (set in Netlify) — no secrets in source.
+    const rtmpDomain = process.env.ZEGOCLOUD_RTMP_DOMAIN || '';
     const whipAuthKey = process.env.ZEGOCLOUD_WHIP_AUTH_KEY || '';
+    if (!rtmpDomain) {
+      return json(500, { error: 'RTMP domain not configured' });
+    }
 
     // Zego RTMP push: rtmp://{domain}/{appId}/{streamId}
     const obsServer = `rtmp://${rtmpDomain}/${appId}`;
