@@ -13,7 +13,7 @@ export default function StreamQualityMonitor({ stats, onQualityChange }) {
 
   const QUALITY_MAP = {
     excellent: { label: 'Excellent', color: 'text-green-400', bars: 3 },
-    good:      { label: 'Good',      color: 'text-blue-400',  bars: 3 },
+    good:      { label: 'Good',      color: 'text-amber-400',  bars: 3 },
     fair:      { label: 'Fair',      color: 'text-amber-400', bars: 2 },
     poor:      { label: 'Poor',      color: 'text-red-400',   bars: 1 },
   };

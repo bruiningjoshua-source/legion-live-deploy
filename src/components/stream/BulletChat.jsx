@@ -8,7 +8,7 @@ const VIP_CONFIG = {
   0: { color: 'text-white/80', nameBg: '', badge: null },
   1: { color: 'text-amber-300', nameBg: 'bg-amber-500/10', badge: '⭐' },
   2: { color: 'text-cyan-300', nameBg: 'bg-cyan-500/10', badge: '💎' },
-  3: { color: 'text-purple-300', nameBg: 'bg-purple-500/10', badge: '👑' },
+  3: { color: 'text-amber-300', nameBg: 'bg-amber-500/10', badge: '👑' },
   4: { color: 'text-orange-300', nameBg: 'bg-orange-500/10', badge: '🔥' },
   5: { color: 'text-yellow-200', nameBg: 'bg-yellow-500/10', badge: '🌟' },
 };

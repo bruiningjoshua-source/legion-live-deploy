@@ -99,7 +99,7 @@ export default function BigoBottomBar({
             className={`relative w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
               giftDisabled
                 ? 'bg-white/10 border border-white/10'
-                : 'bg-gradient-to-br from-pink-500 via-rose-500 to-amber-500 shadow-xl shadow-pink-500/40'
+                : 'bg-gradient-to-br from-amber-500 via-rose-500 to-amber-500 shadow-xl shadow-pink-500/40'
             }`}
             whileTap={giftDisabled ? {} : { scale: 0.85 }}
           >

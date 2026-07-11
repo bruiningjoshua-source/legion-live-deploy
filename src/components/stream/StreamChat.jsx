@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 const vipColors = [
   'text-gray-300',    // 0
   'text-green-400',   // 1
-  'text-blue-400',    // 2
-  'text-purple-400',  // 3
+  'text-amber-400',    // 2
+  'text-amber-400',  // 3
   'text-pink-400',    // 4
   'text-amber-400',   // 5
   'text-orange-400',  // 6

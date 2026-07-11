@@ -141,7 +141,7 @@ export default function AdvancedFilterPanel({
       <SheetTrigger asChild>
         <Button
           size="icon"
-          className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
+          className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg"
         >
           <Wand2 className="w-6 h-6 text-white" />
         </Button>
@@ -168,7 +168,7 @@ export default function AdvancedFilterPanel({
           <TabsList className="w-full bg-white/5 p-1 rounded-xl">
             <TabsTrigger 
               value="filters" 
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600"
             >
               <Palette className="w-4 h-4 mr-2" />
               Filters
@@ -182,7 +182,7 @@ export default function AdvancedFilterPanel({
             </TabsTrigger>
             <TabsTrigger 
               value="backgrounds"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600"
             >
               <ImageIcon className="w-4 h-4 mr-2" />
               Background
@@ -201,7 +201,7 @@ export default function AdvancedFilterPanel({
                     onClick={() => onFilterChange?.(key)}
                     className={`relative p-3 rounded-xl transition-all ${
                       currentFilter === key 
-                        ? 'bg-gradient-to-br from-purple-500 to-pink-500 ring-2 ring-white' 
+                        ? 'bg-gradient-to-br from-amber-500 to-amber-600 ring-2 ring-white' 
                         : 'bg-white/10 hover:bg-white/20'
                     }`}
                   >
@@ -399,8 +399,8 @@ export default function AdvancedFilterPanel({
               </div>
             </ScrollArea>
 
-            <div className="mt-4 p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
-              <p className="text-xs text-purple-300">
+            <div className="mt-4 p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+              <p className="text-xs text-amber-300">
                 <Sparkles className="w-3 h-3 inline mr-1" />
                 AR effects track your face in real-time using AI. Look straight at the camera for best results!
               </p>
@@ -506,8 +506,8 @@ export default function AdvancedFilterPanel({
               </div>
             </ScrollArea>
 
-            <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-              <p className="text-xs text-blue-300">
+            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+              <p className="text-xs text-amber-300">
                 <ImageIcon className="w-3 h-3 inline mr-1" />
                 Background replacement uses AI to separate you from your background. Works best with good lighting!
               </p>

@@ -115,7 +115,7 @@ export default function BigoStreamBottomBar({
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={onGiftClick}
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-amber-500 shadow-xl shadow-pink-500/30 flex items-center justify-center relative overflow-hidden"
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 via-rose-500 to-amber-500 shadow-xl shadow-pink-500/30 flex items-center justify-center relative overflow-hidden"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"

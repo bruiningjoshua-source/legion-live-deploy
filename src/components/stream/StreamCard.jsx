@@ -54,7 +54,7 @@ export default function StreamCard({ stream, creator }) {
                 <Badge className="bg-orange-500/90 text-white border-0 text-[10px]">⚔ PK</Badge>
               )}
               {stream.stream_type === 'multi_panel' && (
-                <Badge className="bg-purple-500/90 text-white border-0 text-[10px]"><Users className="w-2.5 h-2.5 mr-0.5" />Panel</Badge>
+                <Badge className="bg-amber-500/90 text-white border-0 text-[10px]"><Users className="w-2.5 h-2.5 mr-0.5" />Panel</Badge>
               )}
               {stream.is_featured && (
                 <Badge className="bg-amber-500 text-white border-0">

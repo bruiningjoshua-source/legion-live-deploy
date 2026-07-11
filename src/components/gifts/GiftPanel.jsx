@@ -11,11 +11,11 @@ const tierConfig = {
   normal:    { bg: 'bg-white/[0.04]', border: 'border-white/8', label: 'Normal' },
   common:    { bg: 'bg-white/[0.06]', border: 'border-white/10', label: 'Common' },
   uncommon:  { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', label: 'Uncommon' },
-  rare:      { bg: 'bg-blue-500/10', border: 'border-blue-500/20', label: 'Rare' },
-  epic:      { bg: 'bg-purple-500/10', border: 'border-purple-500/20', label: 'Epic' },
-  legendary: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', label: 'Legendary' },
+  rare:      { bg: 'bg-sky-500/10', border: 'border-sky-500/25', label: 'Rare' },
+  epic:      { bg: 'bg-violet-500/10', border: 'border-violet-500/25', label: 'Epic' },
+  legendary: { bg: 'bg-amber-500/12', border: 'border-amber-500/30', label: 'Legendary' },
   prestige:  { bg: 'bg-rose-500/10', border: 'border-rose-500/20', label: 'Prestige' },
-  divine:    { bg: 'bg-yellow-500/10', border: 'border-yellow-300/20', label: 'Divine' }
+  divine:    { bg: 'bg-yellow-500/12', border: 'border-yellow-300/25', label: 'Divine' }
 };
 
 // BIGO-style tab system

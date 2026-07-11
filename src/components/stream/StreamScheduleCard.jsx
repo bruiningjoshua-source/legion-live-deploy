@@ -104,7 +104,7 @@ export default function StreamScheduleCard({ schedule, creator, user }) {
                   </Badge>
                 )}
                 {schedule.is_recurring && (
-                  <Badge className="bg-purple-600/20 text-purple-300 text-xs">
+                  <Badge className="bg-purple-600/20 text-amber-300 text-xs">
                     <Repeat className="w-3 h-3 mr-1" />
                     {schedule.recurrence_pattern}
                   </Badge>

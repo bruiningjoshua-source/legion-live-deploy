@@ -201,7 +201,7 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
       <CardHeader className="pb-3">
         <CardTitle className="text-amber-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-purple-400" />
+            <TrendingUp className="w-5 h-5 text-amber-400" />
             Predictions
           </div>
           {isCreator && !activePrediction && (
@@ -291,7 +291,7 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
               <div className="flex items-center justify-between">
                 <h3 className="text-amber-100 font-medium">{activePrediction.title}</h3>
                 {timeLeft > 0 && (
-                  <Badge className="bg-purple-600/30 text-purple-300">
+                  <Badge className="bg-purple-600/30 text-amber-300">
                     <Clock className="w-3 h-3 mr-1" />
                     {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                   </Badge>
@@ -311,8 +311,8 @@ export default function PredictionPanel({ streamId, creatorId, user, isCreator }
                         isUserBet 
                           ? 'border-yellow-500/50 bg-yellow-500/10' 
                           : selectedOption === option.id
-                            ? 'border-purple-500/50 bg-purple-500/10'
-                            : 'border-stone-700/50 hover:border-purple-500/30'
+                            ? 'border-amber-500/50 bg-amber-500/10'
+                            : 'border-stone-700/50 hover:border-amber-500/30'
                       }`}
                       onClick={() => !userBet && timeLeft > 0 && setSelectedOption(option.id)}
                     >

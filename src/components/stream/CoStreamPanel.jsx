@@ -125,7 +125,7 @@ export default function CoStreamPanel({
       {/* Header */}
       <div className="p-4 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-purple-400" />
+          <Users className="w-5 h-5 text-amber-400" />
           <h3 className="text-white font-semibold">Co-Stream</h3>
         </div>
         <button onClick={onClose} className="p-1 text-white/40 hover:text-white">
@@ -160,7 +160,7 @@ export default function CoStreamPanel({
         {/* Co-Streamers */}
         {coStreamers.map(coStreamer => (
           <div key={coStreamer.id} className="flex items-center gap-3 p-2 rounded-xl bg-white/5 mb-2 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-amber-600 overflow-hidden">
               {coStreamer.avatar_url ? (
                 <img src={coStreamer.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -208,7 +208,7 @@ export default function CoStreamPanel({
                 className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10"
               >
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-amber-600 overflow-hidden">
                     {creator.avatar_url ? (
                       <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (

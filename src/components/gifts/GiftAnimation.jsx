@@ -539,7 +539,7 @@ export default function GiftAnimation({ gift, sender, quantity = 1, onComplete }
                 transition={{ type: 'spring', stiffness: 100, delay: 0.2 }}
                 className="relative"
               >
-                <div className="absolute -inset-20 bg-gradient-to-r from-pink-500/40 via-purple-500/40 to-pink-500/40 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -inset-20 bg-gradient-to-r from-amber-500/40 via-purple-500/40 to-amber-600/40 rounded-full blur-3xl animate-pulse" />
                 
                 <div className="relative bg-black/90 backdrop-blur-xl border-3 border-pink-400 rounded-3xl p-16 text-center shadow-2xl min-w-[420px]">
                   <motion.div
@@ -630,7 +630,7 @@ export default function GiftAnimation({ gift, sender, quantity = 1, onComplete }
             className="fixed top-1/3 left-1/2 -translate-x-1/2 z-[70]"
           >
             <div className="relative">
-              <div className="absolute -inset-8 bg-gradient-to-r from-purple-500/30 to-violet-500/30 rounded-full blur-2xl animate-pulse" />
+              <div className="absolute -inset-8 bg-gradient-to-r from-amber-500/30 to-violet-500/30 rounded-full blur-2xl animate-pulse" />
               
               <div className="relative bg-black/90 backdrop-blur-xl border-2 border-purple-400 rounded-2xl p-8 text-center shadow-2xl">
                 <motion.div 
@@ -641,8 +641,8 @@ export default function GiftAnimation({ gift, sender, quantity = 1, onComplete }
                   {Visual}
                 </motion.div>
                 <p className="text-white font-bold text-2xl mb-1">{gift.name}</p>
-                {quantity > 1 && <p className="text-purple-400 font-bold mb-1">x{quantity}</p>}
-                <p className="text-purple-300/80 text-sm mb-2">from {sender}</p>
+                {quantity > 1 && <p className="text-amber-400 font-bold mb-1">x{quantity}</p>}
+                <p className="text-amber-300/80 text-sm mb-2">from {sender}</p>
                 <div className="flex items-center justify-center gap-1 text-amber-300">
                   <span className="text-xl">🪙</span>
                   <span className="font-bold">{(gift.cost_denarii * quantity).toLocaleString()}</span>

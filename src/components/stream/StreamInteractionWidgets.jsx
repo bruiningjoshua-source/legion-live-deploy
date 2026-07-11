@@ -23,11 +23,11 @@ function LivePoll({ poll, userEmail, onVote }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-xl border border-blue-500/30 rounded-xl p-3"
+      className="bg-gradient-to-r from-amber-500/20 to-amber-600/20 backdrop-blur-xl border border-amber-500/30 rounded-xl p-3"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-blue-400" />
+          <BarChart3 className="w-4 h-4 text-amber-400" />
           <span className="text-white text-sm font-medium">Poll</span>
         </div>
         <span className="text-white/50 text-xs">{totalVotes} votes</span>
@@ -59,7 +59,7 @@ function LivePoll({ poll, userEmail, onVote }) {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${percent}%` }}
-                  className={`absolute inset-y-0 left-0 ${isMyVote ? 'bg-blue-500/40' : 'bg-white/10'}`}
+                  className={`absolute inset-y-0 left-0 ${isMyVote ? 'bg-amber-500/40' : 'bg-white/10'}`}
                 />
               )}
               {!hasVoted && <div className="absolute inset-0 bg-white/5 hover:bg-white/10" />}
@@ -136,17 +136,17 @@ function QAWidget({ streamId, isHost, userEmail, userName }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-xl border border-purple-500/30 rounded-xl p-3"
+      className="bg-gradient-to-r from-amber-500/20 to-amber-600/20 backdrop-blur-xl border border-amber-500/30 rounded-xl p-3"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-purple-400" />
+          <HelpCircle className="w-4 h-4 text-amber-400" />
           <span className="text-white text-sm font-medium">Q&A</span>
         </div>
         {!isHost && (
           <button
             onClick={() => setShowInput(!showInput)}
-            className="text-purple-300 text-xs hover:text-purple-200"
+            className="text-amber-300 text-xs hover:text-purple-200"
           >
             Ask a question
           </button>
@@ -177,7 +177,7 @@ function QAWidget({ streamId, isHost, userEmail, userName }) {
             <button
               onClick={() => upvoteQuestion.mutate(qa)}
               className={`flex flex-col items-center p-1 rounded ${
-                qa.voted_users?.includes(userEmail) ? 'text-purple-400' : 'text-white/40'
+                qa.voted_users?.includes(userEmail) ? 'text-amber-400' : 'text-white/40'
               }`}
             >
               <ChevronUp className="w-3 h-3" />

@@ -268,7 +268,7 @@ function ViewerItem({ viewer, isHost, isModerator, onAppoint, onKick, onMuteAudi
           <p className="text-amber-400/60 text-xs">{viewer.email || 'Viewer'}</p>
         </div>
         {isModerator && (
-          <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 text-xs">
+          <Badge className="bg-purple-600/20 text-amber-300 border-amber-500/30 text-xs">
             <Crown className="w-3 h-3 mr-1" />
             Mod
           </Badge>
@@ -282,7 +282,7 @@ function ViewerItem({ viewer, isHost, isModerator, onAppoint, onKick, onMuteAudi
               size="icon"
               variant="ghost"
               onClick={onAppoint}
-              className="w-7 h-7 text-purple-400 hover:bg-purple-800/20"
+              className="w-7 h-7 text-amber-400 hover:bg-purple-800/20"
               title="Make Moderator"
             >
               <Crown className="w-4 h-4" />
@@ -323,7 +323,7 @@ function ViewerItem({ viewer, isHost, isModerator, onAppoint, onKick, onMuteAudi
 
 function ModeratorItem({ moderator, isHost, onRemove }) {
   return (
-    <div className="flex items-center justify-between p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-purple-900/20 border border-amber-500/30 rounded-lg">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-purple-600/30 flex items-center justify-center">
           {moderator.avatar_url ? (
@@ -335,7 +335,7 @@ function ModeratorItem({ moderator, isHost, onRemove }) {
         <div>
           <p className="text-amber-100 text-sm font-medium flex items-center gap-2">
             {moderator.display_name || 'Moderator'}
-            <Crown className="w-3 h-3 text-purple-400" />
+            <Crown className="w-3 h-3 text-amber-400" />
           </p>
           <p className="text-amber-400/60 text-xs">{moderator.email}</p>
         </div>

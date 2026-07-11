@@ -68,7 +68,7 @@ const AR_COMPLEXITY_LEVELS = [
 // Network quality thresholds
 const NETWORK_QUALITY = {
   excellent: { minBandwidth: 5000, color: 'text-green-400', icon: SignalHigh },
-  good: { minBandwidth: 2500, color: 'text-blue-400', icon: SignalMedium },
+  good: { minBandwidth: 2500, color: 'text-amber-400', icon: SignalMedium },
   fair: { minBandwidth: 1000, color: 'text-yellow-400', icon: SignalLow },
   poor: { minBandwidth: 0, color: 'text-red-400', icon: Signal },
 };
@@ -514,10 +514,10 @@ export default function StreamingSettings({
           <div className="bg-white/5 rounded-xl p-4 space-y-2">
             <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wider">Current Config</h4>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="border-blue-500/50 text-blue-400">
+              <Badge variant="outline" className="border-amber-500/50 text-amber-400">
                 {currentResolution?.label}
               </Badge>
-              <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+              <Badge variant="outline" className="border-amber-500/50 text-amber-400">
                 {frameRate} fps
               </Badge>
               <Badge variant="outline" className="border-amber-500/50 text-amber-400">

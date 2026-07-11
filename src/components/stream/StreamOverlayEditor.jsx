@@ -98,7 +98,7 @@ export default function StreamOverlayEditor({ overlays = [], onUpdate, onClose }
       <div className="p-4 border-b border-white/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700">
               <Layers className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -384,7 +384,7 @@ export default function StreamOverlayEditor({ overlays = [], onUpdate, onClose }
                   </Button>
                   <Button
                     onClick={addOverlay}
-                    className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500"
+                    className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600"
                   >
                     <Plus className="w-4 h-4 mr-1" /> Add
                   </Button>
@@ -400,7 +400,7 @@ export default function StreamOverlayEditor({ overlays = [], onUpdate, onClose }
         <div className="p-4 border-t border-white/10">
           <Button
             onClick={() => setShowAddOverlay(true)}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500"
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Overlay
           </Button>

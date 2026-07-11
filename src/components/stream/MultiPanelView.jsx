@@ -117,7 +117,7 @@ export default function MultiPanelView({
                     <Badge variant="outline" className="border-green-500/50 bg-green-500/20 text-white text-[10px] px-1 py-0 h-5">
                       <Mic className="w-2.5 h-2.5" />
                     </Badge>
-                    <Badge variant="outline" className="border-blue-500/50 bg-blue-500/20 text-white text-[10px] px-1 py-0 h-5">
+                    <Badge variant="outline" className="border-amber-500/50 bg-amber-500/20 text-white text-[10px] px-1 py-0 h-5">
                       <Video className="w-2.5 h-2.5" />
                     </Badge>
                   </div>

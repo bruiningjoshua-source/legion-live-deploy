@@ -29,7 +29,7 @@ const PLATFORMS = {
     name: 'Twitch',
     icon: Twitch,
     color: 'bg-purple-500',
-    textColor: 'text-purple-400',
+    textColor: 'text-amber-400',
     placeholder: 'rtmp://live.twitch.tv/app',
     keyPlaceholder: 'Your Twitch Stream Key'
   },
@@ -37,7 +37,7 @@ const PLATFORMS = {
     name: 'Facebook',
     icon: () => <span className="text-lg">📘</span>,
     color: 'bg-blue-600',
-    textColor: 'text-blue-400',
+    textColor: 'text-amber-400',
     placeholder: 'rtmps://live-api-s.facebook.com:443/rtmp',
     keyPlaceholder: 'Your Facebook Stream Key'
   },
@@ -121,7 +121,7 @@ export default function MultiStreamManager({ isLive, onClose }) {
       <div className="p-4 border-b border-white/10">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-red-500 to-purple-600">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-red-500 to-amber-700">
               <Radio className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -334,7 +334,7 @@ export default function MultiStreamManager({ isLive, onClose }) {
                   <Button
                     onClick={addDestination}
                     disabled={!newDest.platform || !newDest.streamKey}
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                    className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600"
                   >
                     <Plus className="w-4 h-4 mr-1" /> Add
                   </Button>
@@ -350,7 +350,7 @@ export default function MultiStreamManager({ isLive, onClose }) {
         <div className="p-4 border-t border-white/10">
           <Button
             onClick={() => setShowAddPlatform(true)}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Platform
           </Button>

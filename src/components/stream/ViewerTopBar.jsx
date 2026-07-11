@@ -151,7 +151,7 @@ export default function ViewerTopBar({
           <div className="flex -space-x-2 mr-2">
             {[0, 1, 2].map(i => (
               <div key={i} className="w-6 h-6 rounded-full border-[1.5px] border-black bg-gradient-to-br from-slate-500 to-slate-700 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-amber-400/60 to-pink-500/60" />
+                <div className="w-full h-full bg-gradient-to-br from-amber-400/60 to-amber-600/60" />
               </div>
             ))}
           </div>

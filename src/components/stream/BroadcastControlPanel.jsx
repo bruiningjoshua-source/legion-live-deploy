@@ -224,7 +224,7 @@ export default function BroadcastControlPanel({
               <p className="text-white/50 text-xs">Duration</p>
             </div>
             <div className="bg-white/5 rounded-xl p-3 text-center">
-              <Wifi className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+              <Wifi className="w-4 h-4 text-amber-400 mx-auto mb-1" />
               <p className="text-white font-bold">{streamStats.bitrate || '0'} kbps</p>
               <p className="text-white/50 text-xs">Bitrate</p>
             </div>
@@ -412,7 +412,7 @@ export default function BroadcastControlPanel({
               {/* Chat Enabled */}
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <MessageSquare className="w-5 h-5 text-blue-400" />
+                  <MessageSquare className="w-5 h-5 text-amber-400" />
                   <div>
                     <p className="text-white text-sm">Chat Enabled</p>
                     <p className="text-white/50 text-xs">Allow viewers to chat</p>
@@ -443,7 +443,7 @@ export default function BroadcastControlPanel({
               <div className="p-3 bg-white/5 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Timer className="w-5 h-5 text-purple-400" />
+                    <Timer className="w-5 h-5 text-amber-400" />
                     <div>
                       <p className="text-white text-sm">Slow Mode</p>
                       <p className="text-white/50 text-xs">Limit message frequency</p>
@@ -458,14 +458,14 @@ export default function BroadcastControlPanel({
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-white/50">Delay between messages</span>
-                      <span className="text-purple-400">{controls.slowModeDelay}s</span>
+                      <span className="text-amber-400">{controls.slowModeDelay}s</span>
                     </div>
                     <Slider
                       value={[controls.slowModeDelay]}
                       onValueChange={([v]) => handleControlChange('slowModeDelay', v)}
                       min={3}
                       max={60}
-                      className="[&_[role=slider]]:bg-purple-500"
+                      className="[&_[role=slider]]:bg-amber-500"
                     />
                   </div>
                 )}
@@ -522,7 +522,7 @@ export default function BroadcastControlPanel({
               {/* Show Viewer Count */}
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Eye className="w-5 h-5 text-blue-400" />
+                  <Eye className="w-5 h-5 text-amber-400" />
                   <div>
                     <p className="text-white text-sm">Show Viewer Count</p>
                     <p className="text-white/50 text-xs">Display to viewers</p>

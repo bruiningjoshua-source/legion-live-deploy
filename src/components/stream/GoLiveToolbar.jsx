@@ -28,12 +28,12 @@ export default function GoLiveToolbar({ activeTool, onToolSelect }) {
           >
             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
               active
-                ? 'bg-purple-500/25 border border-purple-400/50'
+                ? 'bg-amber-500/25 border border-purple-400/50'
                 : 'bg-white/[0.06] border border-white/[0.08]'
             }`}>
-              <Icon className={`w-5 h-5 ${active ? 'text-purple-300' : 'text-white/60'}`} />
+              <Icon className={`w-5 h-5 ${active ? 'text-amber-300' : 'text-white/60'}`} />
             </div>
-            <span className={`text-[10px] font-medium ${active ? 'text-purple-300' : 'text-white/50'}`}>
+            <span className={`text-[10px] font-medium ${active ? 'text-amber-300' : 'text-white/50'}`}>
               {tool.label}
             </span>
           </button>

@@ -152,8 +152,8 @@ export default function PremiumGiftAnimation({ gift, sender, quantity = 1, onCom
       case 'divine': return 'from-amber-300 via-yellow-400 to-amber-500';
       case 'prestige': return 'from-rose-400 via-pink-500 to-fuchsia-600';
       case 'legendary': return 'from-amber-400 via-orange-500 to-red-500';
-      case 'epic': return 'from-purple-400 via-violet-500 to-purple-600';
-      case 'rare': return 'from-blue-400 via-cyan-500 to-blue-600';
+      case 'epic': return 'from-purple-400 via-violet-500 to-amber-700';
+      case 'rare': return 'from-blue-400 via-cyan-500 to-amber-700';
       case 'uncommon': return 'from-emerald-400 via-green-500 to-emerald-600';
       default: return 'from-slate-400 via-gray-500 to-slate-600';
     }

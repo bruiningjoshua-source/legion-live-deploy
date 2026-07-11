@@ -105,7 +105,7 @@ export default function BigoStreamTopBar({
                 <div key={i} className="w-6 h-6 rounded-full border border-black bg-slate-700 overflow-hidden">
                   {av
                     ? <img src={av} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-gradient-to-br from-amber-400/50 to-pink-500/50" />}
+                    : <div className="w-full h-full bg-gradient-to-br from-amber-400/50 to-amber-600/50" />}
                 </div>
               ))}
             </div>

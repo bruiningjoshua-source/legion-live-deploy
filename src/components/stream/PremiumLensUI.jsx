@@ -319,7 +319,7 @@ export default function PremiumLensUI({
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <motion.button
-            className="relative w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-purple-500/40"
+            className="relative w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 via-purple-500 to-amber-700 flex items-center justify-center text-white shadow-xl shadow-purple-500/40"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -343,7 +343,7 @@ export default function PremiumLensUI({
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 shadow-lg">
+              <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-500 via-purple-500 to-amber-700 shadow-lg">
                 <Wand2 className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -388,7 +388,7 @@ export default function PremiumLensUI({
                 {activeTab === tab.id && (
                   <motion.div 
                     layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 rounded-full"
+                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-amber-500 via-purple-500 to-amber-700 rounded-full"
                   />
                 )}
               </button>
@@ -531,7 +531,7 @@ export default function PremiumLensUI({
                     <h4 className="text-white/60 text-xs font-semibold uppercase tracking-wider">Virtual Backgrounds</h4>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                      className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-medium"
                     >
                       <Upload className="w-3.5 h-3.5" /> Upload
                     </button>
@@ -639,7 +639,7 @@ function FilterButton({ filter, isSelected, onClick }) {
       whileTap={{ scale: 0.92 }}
       className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all ${
         isSelected 
-          ? 'bg-gradient-to-br from-pink-500 to-purple-600 ring-2 ring-white shadow-xl shadow-purple-500/30' 
+          ? 'bg-gradient-to-br from-amber-500 to-amber-700 ring-2 ring-white shadow-xl shadow-purple-500/30' 
           : 'bg-white/10 hover:bg-white/15'
       }`}
     >
@@ -656,7 +656,7 @@ function BeautyButton({ beauty, isSelected, onClick }) {
       whileTap={{ scale: 0.95 }}
       className={`p-4 rounded-2xl flex flex-col items-center transition-all ${
         isSelected 
-          ? 'bg-gradient-to-br from-pink-500 to-rose-600 ring-2 ring-white shadow-xl shadow-pink-500/30' 
+          ? 'bg-gradient-to-br from-amber-500 to-rose-600 ring-2 ring-white shadow-xl shadow-pink-500/30' 
           : 'bg-white/10 hover:bg-white/15'
       }`}
     >
@@ -676,7 +676,7 @@ function EffectButton({ effect, isSelected, onClick, large }) {
       whileTap={{ scale: 0.92 }}
       className={`${large ? 'w-full py-3' : 'aspect-square'} rounded-2xl flex flex-col items-center justify-center transition-all relative ${
         isSelected 
-          ? 'bg-gradient-to-br from-cyan-500 to-blue-600 ring-2 ring-white shadow-xl shadow-cyan-500/30' 
+          ? 'bg-gradient-to-br from-amber-500 to-amber-700 ring-2 ring-white shadow-xl shadow-cyan-500/30' 
           : 'bg-white/10 hover:bg-white/15'
       }`}
     >
@@ -745,7 +745,7 @@ function AdjustmentSlider({ icon, label, value, onChange, min = 0, max = 100, ce
         min={min}
         max={max}
         step={1}
-        className="[&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-pink-500 [&_[role=slider]]:to-purple-500 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg"
+        className="[&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-amber-500 [&_[role=slider]]:to-amber-600 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg"
       />
     </div>
   );

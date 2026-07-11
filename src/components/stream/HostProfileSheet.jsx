@@ -52,7 +52,7 @@ export default function HostProfileSheet({ creator, isFollowing, onFollowClick, 
             {creator.is_verified && (
               <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Verified</span>
             )}
-            <span className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-500/30">Creator</span>
+            <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Creator</span>
           </div>
         </div>
 

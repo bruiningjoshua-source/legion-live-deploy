@@ -315,7 +315,7 @@ export default function SnapchatLensFilters({
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <motion.button
-            className="relative w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+            className="relative w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 via-pink-500 to-amber-700 flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -333,7 +333,7 @@ export default function SnapchatLensFilters({
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-yellow-400 via-pink-500 to-amber-700">
                 <Wand2 className="w-5 h-5 text-white" />
               </div>
               <span className="text-white font-bold">Studio Effects</span>
@@ -366,7 +366,7 @@ export default function SnapchatLensFilters({
                 {activeTab === tab.id && (
                   <motion.div 
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-400 via-pink-500 to-amber-700"
                   />
                 )}
               </button>
@@ -386,7 +386,7 @@ export default function SnapchatLensFilters({
                         onClick={() => setSelectedFilter(filter.id)}
                         className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all ${
                           selectedFilter === filter.id 
-                            ? 'bg-gradient-to-br from-purple-500 to-pink-500 ring-2 ring-white shadow-lg' 
+                            ? 'bg-gradient-to-br from-amber-500 to-amber-600 ring-2 ring-white shadow-lg' 
                             : 'bg-white/10 hover:bg-white/15'
                         }`}
                         whileTap={{ scale: 0.95 }}
@@ -419,7 +419,7 @@ export default function SnapchatLensFilters({
                         onClick={() => setSelectedBeauty(preset.id)}
                         className={`p-4 rounded-2xl flex flex-col items-center transition-all ${
                           selectedBeauty === preset.id 
-                            ? 'bg-gradient-to-br from-pink-500 to-rose-500 ring-2 ring-white shadow-lg' 
+                            ? 'bg-gradient-to-br from-amber-500 to-rose-500 ring-2 ring-white shadow-lg' 
                             : 'bg-white/10 hover:bg-white/15'
                         }`}
                         whileTap={{ scale: 0.95 }}
@@ -446,7 +446,7 @@ export default function SnapchatLensFilters({
                       onClick={() => setSelectedEffect(effect.id)}
                       className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all ${
                         selectedEffect === effect.id 
-                          ? 'bg-gradient-to-br from-cyan-500 to-blue-500 ring-2 ring-white shadow-lg' 
+                          ? 'bg-gradient-to-br from-amber-500 to-amber-600 ring-2 ring-white shadow-lg' 
                           : 'bg-white/10 hover:bg-white/15'
                       }`}
                       whileTap={{ scale: 0.95 }}
@@ -466,7 +466,7 @@ export default function SnapchatLensFilters({
                     <p className="text-white/50 text-xs">Virtual Backgrounds</p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                      className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300"
                     >
                       <Upload className="w-3 h-3" /> Custom
                     </button>
@@ -550,7 +550,7 @@ function SliderControl({ label, value, onChange, min = 0, max = 100, icon }) {
         min={min}
         max={max}
         step={1}
-        className="[&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-pink-500 [&_[role=slider]]:to-purple-500 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white"
+        className="[&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-amber-500 [&_[role=slider]]:to-amber-600 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white"
       />
     </div>
   );

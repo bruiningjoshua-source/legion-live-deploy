@@ -123,12 +123,12 @@ export default function LivePollsWidget({ streamId, creatorId, isCreator, userEm
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-4"
+          className="bg-gradient-to-r from-amber-500/20 to-amber-600/20 backdrop-blur-xl border border-amber-500/30 rounded-2xl p-4"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-400" />
+              <BarChart3 className="w-5 h-5 text-amber-400" />
               <span className="text-white font-semibold">Live Poll</span>
             </div>
             <div className="flex items-center gap-2 text-white/50 text-sm">
@@ -169,7 +169,7 @@ export default function LivePollsWidget({ streamId, creatorId, isCreator, userEm
                       animate={{ width: `${percent}%` }}
                       transition={{ duration: 0.5 }}
                       className={`absolute inset-y-0 left-0 ${
-                        isMyVote ? 'bg-blue-500/40' : 'bg-white/10'
+                        isMyVote ? 'bg-amber-500/40' : 'bg-white/10'
                       }`}
                     />
                   )}
@@ -179,7 +179,7 @@ export default function LivePollsWidget({ streamId, creatorId, isCreator, userEm
           </div>
 
           {hasVoted && (
-            <p className="text-blue-300/60 text-xs text-center mt-3">
+            <p className="text-amber-300/60 text-xs text-center mt-3">
               Thanks for voting!
             </p>
           )}
@@ -190,7 +190,7 @@ export default function LivePollsWidget({ streamId, creatorId, isCreator, userEm
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreate(true)}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30 transition-colors"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 transition-colors"
           >
             <BarChart3 className="w-5 h-5" />
             <span className="font-medium">Create Poll</span>
@@ -255,7 +255,7 @@ export default function LivePollsWidget({ streamId, creatorId, isCreator, userEm
                         {newPoll.options.length < 6 && (
                           <button
                             onClick={addOption}
-                            className="mt-2 text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                            className="mt-2 text-amber-400 hover:text-amber-300 text-sm flex items-center gap-1"
                           >
                             <Plus className="w-4 h-4" />
                             Add option

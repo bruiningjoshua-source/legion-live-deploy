@@ -15,8 +15,8 @@ const STREAM_TYPES = {
 
 const CATEGORY_COLORS = {
   gaming: 'bg-amber-500/80 text-white',
-  music: 'bg-blue-500/80 text-white',
-  talk_show: 'bg-purple-500/80 text-white',
+  music: 'bg-amber-500/80 text-white',
+  talk_show: 'bg-amber-500/80 text-white',
   dance: 'bg-pink-500/80 text-white',
   cooking: 'bg-orange-500/80 text-white',
   fitness: 'bg-green-500/80 text-white',
@@ -72,7 +72,7 @@ const PremiumStreamCard = memo(function PremiumStreamCard({ stream, creator, ind
                   <span className="flex items-center gap-1 bg-orange-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">⚔ PK</span>
                 )}
                 {stream.stream_type === 'multi_panel' && (
-                  <span className="flex items-center gap-1 bg-purple-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"><Users className="w-2.5 h-2.5" /> Panel</span>
+                  <span className="flex items-center gap-1 bg-amber-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"><Users className="w-2.5 h-2.5" /> Panel</span>
                 )}
                 {stream.is_featured && (
                   <LiveBadge type="featured" size="sm" pulse={false} />

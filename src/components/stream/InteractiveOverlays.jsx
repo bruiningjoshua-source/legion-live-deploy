@@ -74,7 +74,7 @@ export function ProductOverlay({ product, position = 'bottom-right', onClose }) 
                     href={product.affiliate_link || product.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl text-white text-sm font-medium"
+                    className="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-amber-500 to-amber-700 rounded-xl text-white text-sm font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <ShoppingBag className="w-4 h-4" />
@@ -231,7 +231,7 @@ export function CoStreamInviteOverlay({ invites = [], onAccept, onDecline }) {
           exit={{ opacity: 0, y: -50 }}
           className="fixed top-20 left-1/2 -translate-x-1/2 z-50"
         >
-          <div className="bg-gradient-to-r from-purple-500/90 to-pink-500/90 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20">
+          <div className="bg-gradient-to-r from-amber-500/90 to-amber-600/90 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-white/20 overflow-hidden">
                 {invite.creator_avatar ? (

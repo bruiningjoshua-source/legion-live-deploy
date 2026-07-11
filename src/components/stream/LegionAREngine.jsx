@@ -573,7 +573,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
         >
           <div className={`w-10 h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all ${
             showAdvancedPanel || advancedActive
-              ? 'bg-purple-500/30 border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]'
+              ? 'bg-amber-500/30 border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]'
               : 'bg-black/40 border-white/10'
           }`}>
             <Layers className="w-4 h-4 text-white" />

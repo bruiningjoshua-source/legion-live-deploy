@@ -52,9 +52,9 @@ export default function HypeTrainOverlay({ streamId, creatorId }) {
   const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
 
   const levelColors = [
-    'from-blue-500 to-blue-600',
-    'from-purple-500 to-purple-600',
-    'from-pink-500 to-pink-600',
+    'from-amber-500 to-amber-700',
+    'from-amber-500 to-amber-700',
+    'from-amber-500 to-amber-700',
     'from-orange-500 to-orange-600',
     'from-red-500 to-red-600'
   ];
