@@ -1,0 +1,54 @@
+{
+  "packageId": "app.legionlive.twa",
+  "host": "legion-live.netlify.app",
+  "name": "Legion Live",
+  "launcherName": "Legion Live",
+  "display": "standalone",
+  "themeColor": "#f5a623",
+  "themeColorDark": "#050508",
+  "navigationColor": "#050508",
+  "navigationColorDark": "#050508",
+  "navigationDividerColor": "#050508",
+  "navigationDividerColorDark": "#050508",
+  "backgroundColor": "#050508",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://legion-live.netlify.app/icons/icon-512.png",
+  "maskableIconUrl": "https://legion-live.netlify.app/icons/icon-maskable-512.png",
+  "monochromeIconUrl": "https://legion-live.netlify.app/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "legion"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Go Live",
+      "shortName": "Go Live",
+      "url": "/GoLive",
+      "chosenIconUrl": "https://legion-live.netlify.app/icons/icon-192.png"
+    },
+    {
+      "name": "Wallet",
+      "shortName": "Wallet",
+      "url": "/Wallet",
+      "chosenIconUrl": "https://legion-live.netlify.app/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://legion-live.netlify.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://legion-live.netlify.app/",
+  "minSdkVersion": 23,
+  "orientation": "portrait",
+  "fingerprints": []
+}

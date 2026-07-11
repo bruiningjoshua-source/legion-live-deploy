@@ -18,6 +18,12 @@
   to = "/.netlify/functions/legion-payments-background"
   status = 200
 
+# Digital Asset Links for the Android TWA — must be served as-is (before SPA catch-all)
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
