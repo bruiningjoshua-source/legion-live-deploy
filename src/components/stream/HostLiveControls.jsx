@@ -46,7 +46,7 @@ export default function HostLiveControls({ stream, streamId, viewerCount = 0, on
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs" style={{ color: "rgba(255,255,255,0.40)", fontFamily: "DM Mono, monospace" }}>{viewerCount} watching</span>
-          <button onClick={onClose} className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"><X className="w-3.5 h-3.5 text-white/50" /></button>
+          <button onClick={onClose} className="ll-icon-btn !w-7 !h-7"><X className="w-3.5 h-3.5" /></button>
         </div>
       </div>
       <div className="p-4 space-y-5">
@@ -66,7 +66,7 @@ export default function HostLiveControls({ stream, streamId, viewerCount = 0, on
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", caretColor: "#f5a623" }}
               />
               <button onClick={() => updateMutation.mutate({ title: newTitle.trim() })} disabled={!newTitle.trim() || updateMutation.isPending}
-                className="px-4 py-2 rounded-xl font-bold text-sm text-black disabled:opacity-50" style={{ background: "#f5a623" }}>
+                className="ll-btn ll-btn-primary !h-10 !px-5 text-sm">
                 Save
               </button>
             </div>
@@ -108,7 +108,7 @@ export default function HostLiveControls({ stream, streamId, viewerCount = 0, on
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", caretColor: "#f5a623" }}
               />
               <button onClick={() => { updateMutation.mutate({ pinned_message: pinText.trim() }); setShowPin(false); }} disabled={!pinText.trim()}
-                className="px-4 py-2 rounded-xl font-bold text-sm text-black disabled:opacity-50" style={{ background: "#f5a623" }}>
+                className="ll-btn ll-btn-primary !h-10 !px-5 text-sm">
                 Pin
               </button>
             </div>
