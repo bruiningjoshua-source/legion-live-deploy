@@ -167,23 +167,25 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-      className="bg-[#0c0c0f]/98 backdrop-blur-xl rounded-t-3xl border-t border-white/10 overflow-hidden"
+      className="ll-panel rounded-t-3xl rounded-b-none overflow-hidden"
       style={{ maxHeight: '70vh' }}
     >
-      {/* Wealth bar — BIGO style */}
+      {/* Wealth bar */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-        <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/30 rounded-full px-2.5 py-1">
-          <span className="text-sm">💎</span>
-          <span className="text-purple-300 font-bold text-xs">{walletBalance.toLocaleString()}</span>
+        <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1"
+          style={{ background: 'rgba(200,135,26,0.15)', border: '1px solid rgba(200,135,26,0.3)' }}>
+          <span className="text-sm">🪙</span>
+          <span className="font-bold text-xs" style={{ color: '#f0c674' }}>{walletBalance.toLocaleString()}</span>
         </div>
         <div className="flex-1 flex items-center gap-1.5 bg-white/[0.04] rounded-full px-3 py-1 border border-white/[0.06]">
-          <span className="text-white/40 text-[10px]">Your wealth point is</span>
+          <span className="text-white/40 text-[10px]">Your balance</span>
           <span className="text-amber-400 text-[10px] font-bold">{walletBalance >= 1000 ? `${(walletBalance / 1000).toFixed(0)}K` : walletBalance}</span>
           <span className="text-white/30 text-[10px] ml-auto">›</span>
         </div>
         <Link to={createPageUrl('Wallet')}>
-          <div className="flex items-center gap-1 bg-purple-500/20 border border-purple-500/30 rounded-full px-2.5 py-1">
-            <span className="text-purple-300 text-xs font-bold">💎 Me</span>
+          <div className="flex items-center gap-1 rounded-full px-2.5 py-1"
+            style={{ background: 'rgba(200,135,26,0.15)', border: '1px solid rgba(200,135,26,0.3)' }}>
+            <span className="text-xs font-bold" style={{ color: '#f0c674' }}>🪙 Top up</span>
           </div>
         </Link>
       </div>
@@ -282,9 +284,9 @@ export default function GiftPanel({ gifts = [], walletBalance = 0, onSendGift, o
             else if (selectedGift) handleQuickSend(selectedGift);
           }}
           disabled={isSending || (!hasGifts && !selectedGift) || (selectedGift && !hasGifts && (selectedGift.cost_denarii || 0) > walletBalance)}
-          className="bg-red-500 hover:bg-red-600 disabled:opacity-30 text-white font-bold text-sm px-5 h-9 rounded-full transition-all active:scale-95 shrink-0"
+          className="ll-btn ll-btn-primary shrink-0 !h-9 !px-6 !rounded-full"
         >
-          Send
+          {isSending ? 'Sending…' : 'Send'}
         </button>
       </div>
     </motion.div>

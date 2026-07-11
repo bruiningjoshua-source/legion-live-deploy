@@ -681,3 +681,113 @@ html.ll-light .text-white\/20 { color: var(--ll-text-faint) !important; }
 html.ll-light .border-white\/10,
 html.ll-light .border-white\/8,
 html.ll-light .border-white\/06 { border-color: var(--ll-border) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STREAM PANEL DESIGN SYSTEM — shared primitives so every in-stream menu is
+   visually consistent (Roman bronze). Replaces per-component ad-hoc styling.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Panel container — the standard floating menu surface */
+.ll-panel {
+  background: rgba(12, 10, 6, 0.94);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(200, 135, 26, 0.18);
+  border-radius: 22px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+
+/* Panel header — consistent title bar */
+.ll-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.ll-panel-title {
+  font-family: 'Syne', 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: #f0e6d2;
+}
+.ll-panel-body { padding: 18px; }
+
+/* Close / icon button — consistent 32px round control */
+.ll-icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 9999px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), background 0.15s;
+}
+.ll-icon-btn:active { transform: scale(0.9); }
+.ll-icon-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* Button variants — one consistent family */
+.ll-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; padding: 0 20px;
+  border-radius: 14px;
+  font-weight: 600; font-size: 14px;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), filter 0.15s, background 0.15s;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.ll-btn:active { transform: scale(0.97); }
+.ll-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+.ll-btn-primary {
+  background: linear-gradient(180deg, #d99a2b 0%, #b06f12 100%);
+  color: #1a1206;
+  box-shadow: 0 4px 16px rgba(200,135,26,0.28);
+}
+.ll-btn-primary:hover { filter: brightness(1.06); }
+
+.ll-btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  color: #f0e6d2;
+}
+.ll-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+.ll-btn-ghost {
+  background: transparent;
+  border-color: rgba(200,135,26,0.35);
+  color: #e8dcc8;
+}
+.ll-btn-ghost:hover { background: rgba(200,135,26,0.08); }
+
+.ll-btn-danger {
+  background: linear-gradient(180deg, #c4472a 0%, #8b1a1a 100%);
+  color: #fff;
+}
+
+/* Row of action tiles — consistent grid for tool buttons */
+.ll-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), background 0.15s, border-color 0.15s;
+}
+.ll-tile:active { transform: scale(0.95); }
+.ll-tile:hover { background: rgba(200,135,26,0.08); border-color: rgba(200,135,26,0.25); }
+.ll-tile-icon { font-size: 22px; line-height: 1; }
+.ll-tile-label { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 500; }
+
+/* Section label — consistent tiny uppercase header */
+.ll-section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: rgba(200,135,26,0.7);
+  margin-bottom: 8px;
+}
