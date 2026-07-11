@@ -34,16 +34,17 @@ export default function TermsOfServiceGate({ isOpen, onAccept, onDismiss }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onDismiss?.()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-[#111114] border border-amber-500/20 text-white">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-amber-300 text-lg">
-            <Scale className="w-5 h-5" />
-            Legion Live — Terms of Service &amp; Virtual Currency Agreement
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0d0d10] border border-amber-500/25 text-white p-0">
+        <DialogHeader className="sticky top-0 z-10 bg-[#0d0d10]/95 backdrop-blur-sm border-b border-white/10 px-6 pt-6 pb-4">
+          <DialogTitle className="flex items-start gap-2.5 text-amber-300 text-lg leading-snug">
+            <Scale className="w-5 h-5 shrink-0 mt-0.5" />
+            <span>Legion Live — Terms of Service &amp; Virtual Currency Agreement</span>
           </DialogTitle>
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/40 text-xs mt-2">
             Effective: March 1, 2026 · Governing Law: State of Delaware, USA · Version 2026-03-01
           </p>
         </DialogHeader>
+        <div className="px-6 pb-6">
 
         <div className="space-y-5 text-sm text-white/80 leading-relaxed">
 
@@ -315,6 +316,7 @@ export default function TermsOfServiceGate({ isOpen, onAccept, onDismiss }) {
           >
             {isSubmitting ? 'Saving...' : 'I Agree — Continue'}
           </Button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

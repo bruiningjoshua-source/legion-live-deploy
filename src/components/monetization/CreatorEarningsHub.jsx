@@ -34,8 +34,13 @@ export default function CreatorEarningsHub({ creatorId }) {
     enabled: !!creator
   });
 
-  if (creatorLoading) return <div className="p-4 text-center">Loading earnings...</div>;
-  if (!creator) return <div className="p-4 text-center text-red-400">Creator not found</div>;
+  if (creatorLoading) return <div className="p-4 text-center text-white/40">Loading earnings...</div>;
+  if (!creator) return (
+    <div className="p-6 text-center rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+      <p className="text-white/70 font-medium mb-1">You're not a creator yet</p>
+      <p className="text-white/40 text-sm">Start streaming to earn Denarii from gifts and unlock payouts.</p>
+    </div>
+  );
 
   const totalEarningsDenarii = creator.total_earnings_denarii || 0;
   const totalEarningsUsd = totalEarningsDenarii / DENARII_PER_USD;
