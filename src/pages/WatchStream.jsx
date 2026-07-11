@@ -1,3 +1,4 @@
+import { useMiniPlayer, enterPictureInPicture } from '@/components/stream/MiniPlayerContext';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
@@ -44,6 +45,7 @@ export default function WatchStream() {
   const streamId = urlParams.get('id');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { minimize } = useMiniPlayer();
 
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [showChat, setShowChat] = useState(true);
@@ -412,7 +414,18 @@ export default function WatchStream() {
             else { await navigator.clipboard.writeText(url); toast.success('Stream link copied'); }
           } catch { /* user cancelled */ }
         }}
-        onMinimize={() => navigate(createPageUrl('Home'))}
+        onMinimize={() => {
+          // Pop the stream into the floating mini-player and go home
+          const ms = liveStreamRef.current || (videoRef.current && videoRef.current.srcObject);
+          minimize({
+            streamId,
+            title: stream?.title,
+            creatorName: creator?.display_name || creator?.username,
+            mediaStream: ms,
+          });
+          navigate(createPageUrl('Home'));
+        }}
+        onPictureInPicture={() => enterPictureInPicture(videoRef.current)}
         viewerCount={stream?.viewer_count || 0}
         onAvatarClick={() => setShowHostProfile(true)}
       />

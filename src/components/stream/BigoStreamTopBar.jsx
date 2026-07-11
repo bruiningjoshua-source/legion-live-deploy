@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Check, Share2, Minimize2 } from 'lucide-react';
+import { X, Plus, Check, Share2, Minimize2, PictureInPicture2 } from 'lucide-react';
 
 // Row 1: [avatar+name+badges+follow] ... [share ⤢ minimize ✕] over [viewer avatars + count]
 // Row 2: [⭐ 0/50] ... [ID:username]
@@ -15,6 +15,7 @@ export default function BigoStreamTopBar({
   onClose,
   onShare,
   onMinimize,
+  onPictureInPicture,
   viewerCount = 0,
   viewerAvatars = [],
   onAvatarClick,
@@ -82,6 +83,14 @@ export default function BigoStreamTopBar({
               aria-label="Minimize">
               <Minimize2 className="w-3.5 h-3.5 text-white" />
             </button>
+            {onPictureInPicture && (
+              <button
+                onClick={onPictureInPicture}
+                className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
+                aria-label="Picture in picture">
+                <PictureInPicture2 className="w-3.5 h-3.5 text-white" />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-black/40 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition-transform"

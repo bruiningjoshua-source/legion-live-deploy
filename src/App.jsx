@@ -7,6 +7,8 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/supabase/SupabaseAuthContext';
+import { MiniPlayerProvider } from '@/components/stream/MiniPlayerContext';
+import FloatingMiniPlayer from '@/components/stream/FloatingMiniPlayer';
 import Auth from './pages/Auth';
 import DailyLoginReward from '@/components/rewards/DailyLoginReward';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
@@ -101,11 +103,14 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <MiniPlayerProvider>
+          <Router>
+            <NavigationTracker />
+            <AuthenticatedApp />
+            <FloatingMiniPlayer />
+          </Router>
+          <Toaster />
+        </MiniPlayerProvider>
       </QueryClientProvider>
     </AuthProvider>
   )
