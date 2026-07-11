@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Crown, Star, Shield, Lock, Loader2, Zap, Coins, Check } from 'lucide-react';
 import GlassCard from '@/components/shared/GlassCard';
@@ -215,6 +217,7 @@ export function getNextVipTier(points) {
 
 export default function CurrencyPackages({ onPurchase, isProcessing }) {
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const [selectedTier, setSelectedTier] = useState('popular');
   const [showVipInfo, setShowVipInfo] = useState(false);
   const [showWhale, setShowWhale] = useState(false);
   const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
@@ -279,110 +282,76 @@ export default function CurrencyPackages({ onPurchase, isProcessing }) {
       </div>
 
       {/* Package Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {visiblePackages.map((pkg, index) => (
-          <motion.div
-            key={pkg.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
-            whileHover={isMobile ? {} : { y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => handlePurchase(pkg)}
-            className="cursor-pointer"
-          >
-            <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${pkg.color} 
-              ${pkg.popular ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-black shadow-2xl shadow-amber-500/40' : 'shadow-xl'}
-              border ${pkg.border} transition-all duration-300`}
+      {/* Coin-tier grid — tap to select, purchase at bottom (clean layout) */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {visiblePackages.map((pkg, index) => {
+          const isSelected = selectedTier === pkg.id;
+          const total = pkg.denarii + pkg.bonus;
+          return (
+            <motion.button
+              key={pkg.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setSelectedTier(pkg.id)}
+              className="relative rounded-2xl overflow-hidden text-center transition-all"
+              style={{
+                background: isSelected ? 'rgba(200,135,26,0.10)' : 'rgba(255,255,255,0.03)',
+                border: isSelected ? '2px solid #d99a2b' : '1px solid rgba(255,255,255,0.08)',
+                boxShadow: isSelected ? '0 8px 28px rgba(200,135,26,0.25)' : 'none',
+              }}
             >
               {pkg.tag && (
-                <div className={`absolute top-0 left-0 right-0 text-center py-1.5 ${
-                  pkg.tag === '⚡ DIVINE' ? 'bg-gradient-to-r from-yellow-500 to-pink-500' :
-                  pkg.tag === 'LEGENDARY' ? 'bg-gradient-to-r from-amber-500 to-purple-600' :
-                  pkg.tag === 'GREAT VALUE' ? 'bg-gradient-to-r from-rose-500 to-rose-700' :
-                  pkg.tag === 'MOST POPULAR' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-white/10'
-                }`}>
-                  <span className="text-xs font-black text-white flex items-center justify-center gap-1.5">
-                    <Star className="w-3 h-3" /> {pkg.tag}
-                  </span>
+                <div className="absolute top-0 inset-x-0 py-0.5 text-[8px] font-black tracking-wide"
+                  style={{ background: 'linear-gradient(90deg,#d99a2b,#b06f12)', color: '#1a1206' }}>
+                  {pkg.tag}
                 </div>
               )}
-
-              {pkg.premium && (
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-purple-500/10"
-                  animate={{ opacity: [0.2, 0.6, 0.2] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                />
-              )}
-
-              <div className={`p-4 ${pkg.tag ? 'pt-9' : ''} relative`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <motion.span
-                      className="text-3xl drop-shadow-lg"
-                      animate={pkg.premium ? { rotate: [0, 5, -5, 0] } : {}}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      {pkg.icon}
-                    </motion.span>
-                    <div>
-                      <h3 className="text-white font-bold text-sm leading-tight">{pkg.name}</h3>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Coins className="w-3 h-3 text-amber-300" />
-                        <span className="text-amber-300 text-xs font-semibold">+{pkg.vipPoints} VIP pts</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Denarii amount */}
-                <div className="flex items-baseline gap-1.5 mb-2">
-                  <span className="text-2xl font-black text-white">{(pkg.denarii + pkg.bonus).toLocaleString()}</span>
-                  <span className="text-white/50 text-xs">Denarii total</span>
-                </div>
-
+              <div className={`px-2 pt-5 pb-2 ${pkg.tag ? '' : 'pt-4'}`}>
+                <div className="text-4xl mb-1 leading-none">{pkg.icon || '🪙'}</div>
+                <div className="text-white font-black text-lg leading-none">{total.toLocaleString()}</div>
                 {pkg.bonus > 0 && (
-                  <motion.div
-                    className="inline-flex items-center gap-1 bg-green-500/25 text-green-200 border border-green-400/30 rounded-full px-2 py-0.5 text-[10px] font-bold mb-3"
-                    animate={{ scale: [1, 1.03, 1] }}
-                    transition={{ duration: 1.8, repeat: Infinity }}
-                  >
-                    <Sparkles className="w-2.5 h-2.5" />
-                    {pkg.denarii.toLocaleString()} + {pkg.bonus.toLocaleString()} FREE ({pkg.bonusPercent}%)
-                  </motion.div>
+                  <div className="text-[9px] font-bold mt-0.5" style={{ color: '#5fd08a' }}>
+                    +{pkg.bonus.toLocaleString()} free
+                  </div>
                 )}
-
-                {/* Perks */}
-                <div className="space-y-0.5 mb-3">
-                  {pkg.perks.map((perk, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-green-400 shrink-0" />
-                      <span className="text-white/60 text-[11px]">{perk}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <motion.button
-                  className="w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/25 font-black text-lg transition-all"
-                  disabled={isProcessing && selectedPackage === pkg.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {isProcessing && selectedPackage === pkg.id ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-base">Processing...</span>
-                    </div>
-                  ) : (
-                    `$${pkg.price.toFixed(2)}`
-                  )}
-                </motion.button>
               </div>
-            </div>
-          </motion.div>
-        ))}
+              {/* Price footer */}
+              <div className="py-1.5 text-sm font-bold"
+                style={{
+                  background: isSelected ? 'linear-gradient(180deg,#f5c674,#d99a2b)' : 'rgba(0,0,0,0.25)',
+                  color: isSelected ? '#1a1206' : 'rgba(255,255,255,0.85)',
+                }}>
+                ${pkg.price.toFixed(2)}
+              </div>
+            </motion.button>
+          );
+        })}
       </div>
+
+      {/* Terms line */}
+      <p className="text-white/40 text-[11px] text-center leading-relaxed px-2">
+        By continuing, you verify that you are at least 18 years old and agree to{' '}
+        <Link to={createPageUrl('TermsOfService')} className="text-amber-400">these terms</Link> and{' '}
+        <Link to={createPageUrl('PrivacyPolicy')} className="text-amber-400">Privacy Policy</Link>.
+      </p>
+
+      {/* Single purchase button */}
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        disabled={!selectedTier || isProcessing}
+        onClick={() => { const p = visiblePackages.find(x => x.id === selectedTier); if (p) handlePurchase(p); }}
+        className="ll-btn ll-btn-primary w-full !h-14 !rounded-full text-lg disabled:opacity-40"
+      >
+        {isProcessing ? (
+          <span className="flex items-center gap-2"><Loader2 className="w-5 h-5 animate-spin" /> Processing…</span>
+        ) : selectedTier ? (
+          `Purchase ${(() => { const p = visiblePackages.find(x => x.id === selectedTier); return p ? (p.denarii + p.bonus).toLocaleString() : ''; })()} Denarii`
+        ) : (
+          'Select a pack'
+        )}
+      </motion.button>
 
       {/* Whale packs toggle */}
       <motion.button
