@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/supabaseCore';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Send, Search, ChevronLeft } from 'lucide-react';
+import { Send, Search, ChevronLeft, SquarePen, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CHANNELS = [
@@ -26,6 +26,7 @@ export default function DirectMessages() {
   const [selectedConvo, setSelectedConvo] = useState(null); // {email, name, avatar}
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages]           = useState([]);
+  const [searchOpen, setSearchOpen]       = useState(false);
   const [draft, setDraft]                 = useState('');
   const [search, setSearch]               = useState('');
   const [unread, setUnread]               = useState({});
@@ -127,64 +128,109 @@ export default function DirectMessages() {
   return (
     <div className="ll-page-enter min-h-screen bg-[#050508] flex pb-16">
 
-      {/* ── Sidebar: Channel list ── */}
-      <div className={`${selectedConvo ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 border-r border-white/8 bg-[#070710]`}>
-        {/* Search — top of sidebar */}
-        <div className="p-3 border-b border-white/8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
-            <input value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder="Search messages…" className="ll-input py-2 pl-9 text-sm" />
-          </div>
-        </div>
+      {/* ── Sidebar / Inbox list (mobile-first, clean layout) ── */}
+      <div className={`${selectedConvo ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 md:border-r border-white/8 bg-[#050508]`}>
 
-        {/* Channel tabs */}
-        <div className="p-3 border-b border-white/8">
-          <p className="ll-label text-white/25 mb-2 px-1">CHANNELS</p>
-          <div className="space-y-0.5">
-            {CHANNELS.map(c => (
+        {/* Stories row — quick-access avatars */}
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+            {/* Your Story */}
+            <button className="flex flex-col items-center gap-1.5 shrink-0">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center border-2 border-dashed border-amber-500/40 bg-white/[0.02]">
+                <span className="text-2xl text-amber-400/70">+</span>
+              </div>
+              <span className="text-[11px] text-white/50">Your Story</span>
+            </button>
+            {/* Channel shortcuts as "stories" */}
+            {CHANNELS.slice(0, 6).map(c => (
               <button key={c.id} onClick={() => { setActiveChannel(c.id); setSelectedConvo(null); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl ll-interactive text-left transition-all"
-                style={{
-                  background: activeChannel === c.id ? `${c.color}15` : 'transparent',
-                  border: activeChannel === c.id ? `1px solid ${c.color}30` : '1px solid transparent',
-                }}>
-                <span className="text-base leading-none">{c.emoji}</span>
-                <span className="text-sm font-medium flex-1"
+                className="flex flex-col items-center gap-1.5 shrink-0">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+                  style={{
+                    background: `${c.color}18`,
+                    border: `2px solid ${activeChannel === c.id ? c.color : c.color + '40'}`,
+                  }}>
+                  {c.emoji}
+                </div>
+                <span className="text-[11px] max-w-[64px] truncate"
                   style={{ color: activeChannel === c.id ? '#fff' : 'rgba(255,255,255,0.5)' }}>{c.label}</span>
-                {(unread[c.id] || 0) > 0 && (
-                  <span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
-                    style={{ background: c.color, color: '#000' }}>{unread[c.id]}</span>
-                )}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Conversation list */}
-        <div className="flex-1 overflow-y-auto p-3">
+        {/* Activity card */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-white/90 font-bold text-sm tracking-wide">Activity</h2>
+          </div>
+          <div className="rounded-2xl p-3.5 flex items-center gap-3"
+            style={{ background: 'linear-gradient(135deg, rgba(200,135,26,0.12), rgba(138,90,14,0.06))', border: '1px solid rgba(200,135,26,0.2)' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg,#c8871a,#8a5a0e)' }}>
+              <span className="text-lg">⚔️</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-semibold text-sm">Welcome to Legion Live</p>
+              <p className="text-white/50 text-xs truncate">Message creators, join the ranks 👋</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Messages header: search + compose */}
+        <div className="px-4 pb-2 flex items-center justify-between">
+          <h2 className="text-white font-bold text-lg">Messages</h2>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setSearchOpen(s => !s)} className="w-9 h-9 rounded-full flex items-center justify-center ll-interactive">
+              <Search className="w-4 h-4 text-white/60" />
+            </button>
+            <button className="w-9 h-9 rounded-full flex items-center justify-center ll-interactive">
+              <SquarePen className="w-4 h-4 text-white/60" />
+            </button>
+          </div>
+        </div>
+
+        {/* Search (collapsible) */}
+        {searchOpen && (
+          <div className="px-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <input value={search} onChange={e=>setSearch(e.target.value)} autoFocus
+                placeholder="Search messages…" className="ll-input py-2.5 pl-9 text-sm w-full rounded-xl" />
+            </div>
+          </div>
+        )}
+
+        {/* Conversation list / empty state */}
+        <div className="flex-1 overflow-y-auto px-4 pt-1">
           {filtered.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-4xl mb-2">{ch?.emoji}</p>
-              <p className="text-white/30 text-sm">No conversations yet</p>
-              <p className="text-white/20 text-xs mt-1">in {ch?.label}</p>
+            <div className="flex flex-col items-center justify-center text-center py-16">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <Mail className="w-9 h-9 text-white/25" />
+              </div>
+              <p className="text-white font-semibold text-lg">Your inbox is quiet</p>
+              <p className="text-white/40 text-sm mt-1">Go start a new conversation.</p>
+              <button className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm ll-interactive"
+                style={{ border: '1px solid rgba(200,135,26,0.35)', color: '#e8dcc8' }}>
+                <SquarePen className="w-4 h-4" /> New message
+              </button>
             </div>
           ) : (
             <div className="space-y-1">
               {filtered.map(convo => (
                 <button key={convo.email} onClick={() => setSelectedConvo(convo)}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl ll-interactive text-left transition-all"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl ll-interactive text-left transition-all"
                   style={{
-                    background: selectedConvo?.email === convo.email ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${selectedConvo?.email === convo.email ? 'rgba(255,255,255,0.12)' : 'transparent'}`,
+                    background: selectedConvo?.email === convo.email ? 'rgba(255,255,255,0.06)' : 'transparent',
                   }}>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold"
                     style={{ background:`${ch?.color}22`, color: ch?.color }}>
                     {convo.name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/80 text-sm font-semibold truncate">{convo.name}</p>
-                    <p className="text-white/30 text-xs truncate">{convo.lastMessage}</p>
+                    <p className="text-white/90 text-sm font-semibold truncate">{convo.name}</p>
+                    <p className="text-white/40 text-xs truncate">{convo.lastMessage}</p>
                   </div>
                   {convo.unread > 0 && (
                     <span className="w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center shrink-0"

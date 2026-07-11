@@ -137,21 +137,8 @@ export default function GoLive() {
     }
   }, [hasPermissions]);
 
-  // Host heartbeat: while live, ping the server every 30s so the stream-reaper
-  // (which ends streams stale >90s) keeps this stream alive. If the host's tab
-  // dies or network drops, the pings stop and the stream is auto-ended.
-  const liveStreamId = goLiveMutation.data?.id;
-  useEffect(() => {
-    if (!liveStreamId) return;
-    let cancelled = false;
-    const ping = () => {
-      if (cancelled) return;
-      base44.rpc('stream_heartbeat', { p_stream_id: liveStreamId }).catch(() => {});
-    };
-    ping(); // immediate first beat
-    const iv = setInterval(ping, 30000);
-    return () => { cancelled = true; clearInterval(iv); };
-  }, [liveStreamId]);
+  // Host heartbeat is defined AFTER goLiveMutation (see below) to avoid a
+  // temporal-dead-zone crash — it depends on goLiveMutation.data.
 
   const requestCamera = async () => {
     try {
@@ -293,6 +280,22 @@ export default function GoLive() {
       toast.error(error.message || 'Failed to start stream.');
     }
   });
+
+  // Host heartbeat: while live, ping the server every 30s so the stream-reaper
+  // (which ends streams stale >90s) keeps this stream alive. Declared here,
+  // AFTER goLiveMutation, because it reads goLiveMutation.data.
+  const liveStreamId = goLiveMutation.data?.id;
+  useEffect(() => {
+    if (!liveStreamId) return;
+    let cancelled = false;
+    const ping = () => {
+      if (cancelled) return;
+      base44.rpc('stream_heartbeat', { p_stream_id: liveStreamId }).catch(() => {});
+    };
+    ping(); // immediate first beat
+    const iv = setInterval(ping, 30000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [liveStreamId]);
 
   const isFormValid = streamType === 'game_live' 
     ? (selectedGame || title.trim()) 
