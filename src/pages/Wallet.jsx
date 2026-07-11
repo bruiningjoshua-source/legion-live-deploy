@@ -42,12 +42,20 @@ export default function Wallet() {
     }
   }, []);
 
-  // Check if user has accepted TOS on first load
+  // Show the ToS gate only if the user has NEVER accepted — checks both the
+  // account record (durable, survives cache clears) and localStorage (fast path).
   useEffect(() => {
-    if (!tosAccepted && !localStorage.getItem('tos_accepted')) {
-      setShowTosGate(true);
+    if (user === undefined) return; // wait for user to load
+    const acceptedOnAccount = user?.tos_accepted === true;
+    const acceptedLocally = !!localStorage.getItem('tos_accepted');
+    if (acceptedOnAccount) {
+      // Sync local flag so we never even flash the gate again
+      if (!acceptedLocally) localStorage.setItem('tos_accepted', 'true');
+      setTosAccepted(true);
+      return;
     }
-  }, [tosAccepted]);
+    if (!acceptedLocally) setShowTosGate(true);
+  }, [user, tosAccepted]);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('buy');
 
