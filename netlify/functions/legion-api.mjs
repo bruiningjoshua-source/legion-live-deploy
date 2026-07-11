@@ -366,64 +366,33 @@ const handlers = {
       return json(500, { error: 'Streaming service not configured' });
     }
 
-    const { signature, signatureNonce, timestamp } = generateZegoSignature(parseInt(appId, 10), serverSecret);
-    const query = new URLSearchParams({
-      Action: 'RTMPDispatchV2',
-      AppId: appId,
-      Signature: signature,
-      SignatureNonce: signatureNonce,
-      SignatureVersion: '2.0',
-      Timestamp: String(timestamp),
-      StreamId: streamId,
-      Sequence: String(Date.now()),
-      Type: 'push',
-    });
+    // RTMP ingest is activated on the ZegoCloud account. Build the push URL
+    // directly from the activated live domain. Env var overrides the default
+    // so the domain can change without a code deploy.
+    const rtmpDomain = process.env.ZEGOCLOUD_RTMP_DOMAIN || 'i-rtmp1453225977.coolzcloud.com';
+    const whipAuthKey = process.env.ZEGOCLOUD_WHIP_AUTH_KEY || '';
 
-    const response = await fetch(`https://rtc-api.zego.im/?${query.toString()}`);
-    const data = await response.json();
+    // Zego RTMP push: rtmp://{domain}/{appId}/{streamId}
+    const obsServer = `rtmp://${rtmpDomain}/${appId}`;
+    const obsStreamKey = streamId;
+    const rtmpUrl = `${obsServer}/${obsStreamKey}`;
 
-    if (data.Code !== 0) {
-      if (data.Code === 1001 || data.Code === 1002 || data.Code === 1005) {
-        return {
-          rtmpUrl: null,
-          streamKey: streamId,
-          fallbackMode: true,
-          message: 'RTMP dispatch requires ZegoCloud configuration.',
-          obsInstructions: {
-            server: 'Contact ZegoCloud support to get your RTMP server URL.',
-            streamKey: streamId,
-            note: 'Use the WebRTC-based Go Live feature in the meantime.',
-          },
-        };
-      }
-      return json(500, { error: data.Message || 'RTMP dispatch failed' });
-    }
-
-    const rtmpUrls = data.Data || [];
-    const primaryUrl = rtmpUrls[0] || null;
-    let obsServer = '';
-    let obsStreamKey = streamId;
-    if (primaryUrl) {
-      const lastSlash = primaryUrl.lastIndexOf('/');
-      if (lastSlash > 0) {
-        obsServer = primaryUrl.substring(0, lastSlash);
-        obsStreamKey = primaryUrl.substring(lastSlash + 1);
-      } else {
-        obsServer = primaryUrl;
-      }
-    }
+    // WHIP (WebRTC-HTTP ingest) — lower-latency alternative for OBS WHIP output
+    const whipUrl = whipAuthKey
+      ? `https://${rtmpDomain}/whip/?appid=${appId}&stream=${streamId}&auth=${whipAuthKey}`
+      : null;
 
     return {
-      rtmpUrl: primaryUrl,
-      allUrls: rtmpUrls,
+      rtmpUrl,
       obsServer,
       obsStreamKey,
+      whipUrl,
       streamId,
       fallbackMode: false,
       obsInstructions: {
         server: obsServer,
         streamKey: obsStreamKey,
-        note: 'In OBS: Settings → Stream → Service: Custom → paste Server and Stream Key',
+        note: 'In OBS: Settings \u2192 Stream \u2192 Service: Custom \u2192 paste Server and Stream Key. For lowest latency, use WHIP output with the WHIP URL.',
       },
     };
   },
