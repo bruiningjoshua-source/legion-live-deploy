@@ -42,20 +42,6 @@ export default function Wallet() {
     }
   }, []);
 
-  // Show the ToS gate only if the user has NEVER accepted — checks both the
-  // account record (durable, survives cache clears) and localStorage (fast path).
-  useEffect(() => {
-    if (user === undefined) return; // wait for user to load
-    const acceptedOnAccount = user?.tos_accepted === true;
-    const acceptedLocally = !!localStorage.getItem('tos_accepted');
-    if (acceptedOnAccount) {
-      // Sync local flag so we never even flash the gate again
-      if (!acceptedLocally) localStorage.setItem('tos_accepted', 'true');
-      setTosAccepted(true);
-      return;
-    }
-    if (!acceptedLocally) setShowTosGate(true);
-  }, [user, tosAccepted]);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('buy');
 
@@ -63,6 +49,21 @@ export default function Wallet() {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me()
   });
+
+  // Show the ToS gate only if the user has NEVER accepted — checks both the
+  // account record (durable) and localStorage (fast path). Declared AFTER `user`
+  // to avoid a temporal-dead-zone crash.
+  useEffect(() => {
+    if (user === undefined) return; // wait for user to load
+    const acceptedOnAccount = user?.tos_accepted === true;
+    const acceptedLocally = !!localStorage.getItem('tos_accepted');
+    if (acceptedOnAccount) {
+      if (!acceptedLocally) localStorage.setItem('tos_accepted', 'true');
+      setTosAccepted(true);
+      return;
+    }
+    if (!acceptedLocally) setShowTosGate(true);
+  }, [user, tosAccepted]);
 
   const { data: wallet, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
     queryKey: ['wallet', user?.email],
