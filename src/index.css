@@ -458,3 +458,20 @@ body.ll-custom-bg [style*="var(--ll-bg)"] {
 body.ll-custom-bg .min-h-screen.bg-\[\#050508\] {
   background-color: transparent !important;
 }
+
+/* Broaden the themed-background transparency to ALL the opaque dark shades pages
+   use (not just #050508), so themed/custom backgrounds show through everywhere. */
+body.ll-custom-bg .bg-\[\#0a0a0f\],
+body.ll-custom-bg .bg-\[\#09090b\],
+body.ll-custom-bg .bg-\[\#07090f\],
+body.ll-custom-bg .bg-\[\#0f0f10\],
+body.ll-custom-bg .bg-\[\#070710\],
+body.ll-custom-bg .bg-\[\#080810\],
+body.ll-custom-bg .bg-\[\#0d0f17\],
+body.ll-custom-bg .bg-\[\#0d1117\],
+body.ll-custom-bg .bg-\[\#111118\],
+body.ll-custom-bg .bg-\[\#131316\],
+body.ll-custom-bg .bg-\[\#0c0c0f\],
+body.ll-custom-bg .bg-\[\#0a0804\] {
+  background-color: transparent !important;
+}
