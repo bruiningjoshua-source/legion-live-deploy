@@ -42,6 +42,12 @@ const STATIC_BACKGROUNDS = {
   Messages: '/backgrounds/mercury-messages.webp',
   Inbox: '/backgrounds/mercury-messages.webp',
 
+  // Senate / community / forums — the Roman Senate
+  Senate: '/backgrounds/senate.webp',
+  CommunityForums: '/backgrounds/senate.webp',
+  CreatorCommunity: '/backgrounds/senate.webp',
+  ForumPost: '/backgrounds/senate.webp',
+
   // Wallet / finances — Roman treasury
   Wallet: '/backgrounds/treasury-wallet.webp',
   Earnings: '/backgrounds/treasury-wallet.webp',
@@ -53,7 +59,7 @@ const STATIC_BACKGROUNDS = {
 
 // Generic pages that cycle day/night
 const DAYNIGHT_PAGES = new Set([
-  'Home', 'Explore', 'Discover', 'Following', 'CommunityForums', 'CreatorCommunity',
+  'Home', 'Explore', 'Discover', 'Following',
 ]);
 
 export function resolvePageBackground(pageName) {
