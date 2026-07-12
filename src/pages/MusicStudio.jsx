@@ -22,9 +22,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Play, Square, RotateCcw, Volume2, Wand2,
-  Sliders, Disc, Keyboard, Grid3x3, Activity, Upload
+  Sliders, Disc, Keyboard, Grid3x3, Activity, Upload, Download
 } from 'lucide-react';
 import LegionAIComposer from '@/components/music/LegionAIComposer';
+import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 import MusicImportTab from '@/components/music/MusicImportTab';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -306,6 +308,9 @@ let Tone = null;
 let samplerRef = null;
 let effectsChain = {};
 let masterBus = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recorderDest = null;
 
 async function initTone() {
   if (Tone) return Tone;
@@ -314,6 +319,13 @@ async function initTone() {
 
   // Master bus with limiter
   masterBus = new Tone.Limiter(-3).toDestination();
+
+  // Recording tap — a MediaStream destination fed from the master bus so we can
+  // capture exactly what's heard into a downloadable file.
+  try {
+    recorderDest = Tone.getContext().createMediaStreamDestination();
+    masterBus.connect(recorderDest);
+  } catch (e) { console.warn('[studio] recorder tap unavailable', e?.message); }
 
   // Effects chain
   effectsChain.reverb  = new Tone.Reverb({ decay: 2.5, wet: 0 }).connect(masterBus);
@@ -328,6 +340,30 @@ async function initTone() {
   await effectsChain.reverb.generate?.();
 
   return Tone;
+}
+
+// Start capturing the master output. Returns true if recording began.
+function startRecording() {
+  if (!recorderDest || (mediaRecorder && mediaRecorder.state === 'recording')) return false;
+  recordedChunks = [];
+  const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+             : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+  mediaRecorder = new MediaRecorder(recorderDest.stream, mime ? { mimeType: mime } : undefined);
+  mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.start();
+  return true;
+}
+
+// Stop and resolve with a Blob of the recorded audio.
+function stopRecording() {
+  return new Promise((resolve) => {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') { resolve(null); return; }
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      resolve(blob);
+    };
+    mediaRecorder.stop();
+  });
 }
 
 function getSynthForType(T, type) {
@@ -633,6 +669,10 @@ function DJDeck({ deckId, color, onDeckReady }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MusicStudio() {
   const [activeTab, setActiveTab] = useState('pads'); // pads|keyboard|dj|mixer|sequencer|ai|samples
+  const [isRecording, setIsRecording] = useState(false);
+  const [lastRecording, setLastRecording] = useState(null); // { blob, url, name }
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
   const [activePack, setActivePack] = useState(SAMPLE_PACKS[0]);
   const [activeInstrument, setActiveInstrument] = useState(INSTRUMENT_PRESETS[0]);
   const [bpm, setBpm] = useState(90);
@@ -643,6 +683,63 @@ export default function MusicStudio() {
   // DJ deck gain registry for the crossfader (equal-power curve)
   const decksRef = useRef({});
   const registerDeck = useCallback((id, api) => { decksRef.current[id] = api; }, []);
+
+  // ── Recording / Export / Publish ──
+  const toggleRecording = useCallback(async () => {
+    await initTone();
+    if (isRecording) {
+      const blob = await stopRecording();
+      setIsRecording(false);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setLastRecording({ blob, url, name: `Legion-Session-${Date.now()}` });
+        toast.success('Recording captured — export or publish it below');
+      }
+    } else {
+      if (startRecording()) { setIsRecording(true); toast.info('Recording master output…'); }
+      else toast.error('Recording not available in this browser');
+    }
+  }, [isRecording]);
+
+  const exportRecording = useCallback(() => {
+    if (!lastRecording) return;
+    const a = document.createElement('a');
+    a.href = lastRecording.url;
+    a.download = `${lastRecording.name}.webm`;
+    a.click();
+  }, [lastRecording]);
+
+  const publishTrack = useCallback(async (title, description) => {
+    if (!lastRecording) return;
+    setIsPublishing(true);
+    try {
+      // Upload the recorded audio, then create a Sounds/track entry
+      const reader = new FileReader();
+      const base64 = await new Promise((res, rej) => {
+        reader.onload = () => res(reader.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(lastRecording.blob);
+      });
+      const up = await base44.functions.invoke('uploadAudioTrack', {
+        audioBase64: base64,
+        mimeType: lastRecording.blob.type,
+        title: title || lastRecording.name,
+        description: description || '',
+        bpm,
+      });
+      if (up.data?.trackId || up.data?.url) {
+        toast.success('Published to your Sounds!');
+        setShowPublish(false);
+      } else {
+        throw new Error(up.data?.error || 'Publish failed');
+      }
+    } catch (e) {
+      toast.error(`Publish failed: ${e.message}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [lastRecording, bpm]);
+
   const applyCrossfade = useCallback((value) => {
     const x = value / 100;               // 0 = full A, 1 = full B
     const gainA = Math.cos(x * Math.PI / 2); // equal-power
@@ -763,6 +860,25 @@ export default function MusicStudio() {
                        border: `1px solid ${isPlaying ? 'rgba(239,68,68,0.5)' : 'rgba(245,166,35,0.5)'}` }}>
               {isPlaying ? <Square className="w-4 h-4 text-red-400" /> : <Play className="w-4 h-4 text-amber-400" />}
             </button>
+            {/* Record */}
+            <button onClick={toggleRecording}
+              className="w-10 h-10 rounded-xl flex items-center justify-center ll-interactive"
+              style={{ background: isRecording ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.04)',
+                       border: `1px solid ${isRecording ? 'rgba(239,68,68,0.7)' : 'rgba(255,255,255,0.1)'}` }}
+              title={isRecording ? 'Stop recording' : 'Record master output'}>
+              <span className={`w-3.5 h-3.5 rounded-full bg-red-500 ${isRecording ? 'animate-pulse' : ''}`} />
+            </button>
+            {/* Export / Publish (appear after a recording exists) */}
+            {lastRecording && (
+              <>
+                <button onClick={exportRecording} className="ll-btn ll-btn-secondary !h-10 !px-3 text-xs" title="Download">
+                  <Download className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowPublish(true)} className="ll-btn ll-btn-primary !h-10 !px-3 text-xs">
+                  Publish
+                </button>
+              </>
+            )}
             {/* Master volume */}
             <div className="flex items-center gap-1">
               <Volume2 className="w-3.5 h-3.5 text-white/30" />
@@ -1121,6 +1237,42 @@ export default function MusicStudio() {
           <MusicImportTab />
         </div>
       )}
+      </div>
+
+      {/* ── PUBLISH MODAL ── */}
+      {showPublish && (
+        <PublishTrackModal
+          defaultName={lastRecording?.name}
+          isPublishing={isPublishing}
+          onPublish={publishTrack}
+          onClose={() => setShowPublish(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function PublishTrackModal({ defaultName, isPublishing, onPublish, onClose }) {
+  const [title, setTitle] = useState(defaultName || '');
+  const [description, setDescription] = useState('');
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-3"
+      onClick={onClose}>
+      <div className="ll-panel w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+        <div className="ll-panel-title mb-3">Publish Track</div>
+        <label className="ll-section-label">Title</label>
+        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Track name"
+          className="ll-input w-full mb-3" />
+        <label className="ll-section-label">Description (optional)</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+          placeholder="Tell listeners about this track…" className="ll-input w-full mb-4 resize-none" />
+        <div className="flex gap-2">
+          <button onClick={onClose} className="ll-btn ll-btn-ghost flex-1">Cancel</button>
+          <button onClick={() => onPublish(title, description)} disabled={isPublishing || !title.trim()}
+            className="ll-btn ll-btn-primary flex-1">
+            {isPublishing ? 'Publishing…' : 'Publish to Sounds'}
+          </button>
+        </div>
       </div>
     </div>
   );

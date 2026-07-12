@@ -107,6 +107,38 @@ const getCurrentUser = async (supabase, event) => {
 
 const handlers = {
 
+  // ─── MUSIC: publish a recorded track to the user's Sounds ─────────────────
+  async uploadAudioTrack({ admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { audioBase64, mimeType, title, bpm, keySignature, visibility } = params || {};
+    if (!audioBase64) return json(400, { error: 'audio required' });
+
+    // Resolve creator record
+    const { data: creator } = await admin.from('creators')
+      .select('id').eq('user_email', user.email).single();
+    if (!creator) return json(400, { error: 'Become a creator to publish tracks' });
+
+    // Upload to storage
+    const ext = (mimeType && mimeType.includes('webm')) ? 'webm' : (mimeType && mimeType.includes('mp3')) ? 'mp3' : 'audio';
+    const path = `tracks/${creator.id}/${Date.now()}.${ext}`;
+    const bytes = Buffer.from(audioBase64, 'base64');
+    const { error: upErr } = await admin.storage.from('uploads').upload(path, bytes, { contentType: mimeType || 'audio/webm', upsert: false });
+    if (upErr) return json(500, { error: `Upload failed: ${upErr.message}` });
+
+    const { data: track, error: insErr } = await admin.from('ll_music_tracks').insert({
+      creator_id: creator.id,
+      title: (title || 'Untitled Track').substring(0, 120),
+      bpm: bpm ? Math.round(bpm) : null,
+      key_signature: keySignature || null,
+      storage_path: path,
+      visibility: visibility || 'public',
+    }).select('id').single();
+    if (insErr) return json(500, { error: insErr.message });
+
+    const { data: urlData } = admin.storage.from('uploads').getPublicUrl(path);
+    return { ok: true, trackId: track.id, url: urlData?.publicUrl };
+  },
+
   // ─── STEAM: link account, sync library/achievements/now-playing ───────────
   async steamLinkStart({ user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
