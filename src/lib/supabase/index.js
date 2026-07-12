@@ -249,6 +249,22 @@ const integrations = new Proxy({}, {
   get(_target, packageName) {
     return new Proxy({}, {
       get(_t, methodName) {
+        // Real file upload → Supabase storage (was a no-op stub, which is why
+        // avatar/banner/background uploads silently failed).
+        if (packageName === 'Core' && methodName === 'UploadFile') {
+          return async ({ file }) => {
+            if (!file) throw new Error('No file provided');
+            const { data: { user } } = await supabase.auth.getUser();
+            const safeName = (file.name || 'upload').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `${user?.id || 'anon'}/${Date.now()}-${safeName}`;
+            const { error } = await supabase.storage.from('uploads').upload(path, file, {
+              cacheControl: '3600', upsert: false, contentType: file.type || undefined,
+            });
+            if (error) throw new Error(`Upload failed: ${error.message}`);
+            const { data: pub } = supabase.storage.from('uploads').getPublicUrl(path);
+            return { file_url: pub.publicUrl, url: pub.publicUrl };
+          };
+        }
         return async (params) => {
           console.warn(`[base44 shim] integrations.${packageName}.${methodName} called – not yet wired to Supabase`);
           return {};

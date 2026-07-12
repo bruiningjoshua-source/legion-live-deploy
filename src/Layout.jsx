@@ -43,6 +43,8 @@ export default function Layout({ children, currentPageName }) {
   const currentTheme = (!userThemePref || userThemePref === 'auto') ? pageTheme : userThemePref;
   const particleIntensity = prefs.particles;
   const animatedBg = prefs.animatedBg;
+  const [background, setBackground] = useState(() => legionStorage.get('background', localStorage.getItem('legion_background') || 'auto'));
+  const [customBgUrl, setCustomBgUrl] = useState(() => localStorage.getItem('legion_custom_bg_url') || '');
   const setCurrentTheme     = useCallback((v) => { legionStorage.set('theme', v);       setPrefs(p => ({ ...p, theme: v })); }, []);
   const setParticleIntensity= useCallback((v) => { legionStorage.set('particles', v);    setPrefs(p => ({ ...p, particles: v })); }, []);
   const setAnimatedBg       = useCallback((v) => { legionStorage.set('animated_bg', v);  setPrefs(p => ({ ...p, animatedBg: v })); }, []);
@@ -154,16 +156,20 @@ export default function Layout({ children, currentPageName }) {
 
   // Listen for theme changes via the Legion event bus (Settings page)
   useEffect(() => {
-    const unsub = legionBus.on('theme-change', ({ theme, particles, animatedBg: bg }) => {
+    const unsub = legionBus.on('theme-change', ({ theme, particles, animatedBg: bg, background: bgMode, customBgUrl: cbg }) => {
       if (theme)             setCurrentTheme(theme);
       if (particles)         setParticleIntensity(particles);
       if (bg !== undefined)  setAnimatedBg(bg);
+      if (bgMode !== undefined) setBackground(bgMode);
+      if (cbg !== undefined) setCustomBgUrl(cbg);
     });
     // Also keep the legacy DOM-event listener for backward compat
     const domHandler = (e) => {
       if (e.detail?.theme)              setCurrentTheme(e.detail.theme);
       if (e.detail?.particles)          setParticleIntensity(e.detail.particles);
       if (e.detail?.animatedBg !== undefined) setAnimatedBg(e.detail.animatedBg);
+      if (e.detail?.background !== undefined) setBackground(e.detail.background);
+      if (e.detail?.customBgUrl !== undefined) setCustomBgUrl(e.detail.customBgUrl);
     };
     window.addEventListener('legion-theme-change', domHandler);
     return () => { unsub(); window.removeEventListener('legion-theme-change', domHandler); };
@@ -271,7 +277,8 @@ export default function Layout({ children, currentPageName }) {
               <AnimatedBackground
                 theme={currentTheme}
                 intensity={optimizedParticles}
-                showParticles={optimizedParticles !== 'off'}
+                showParticles={optimizedParticles !== 'off' && background !== 'custom'}
+                customBgUrl={background === 'custom' ? customBgUrl : ''}
               >
                 <div className="min-h-screen">
 

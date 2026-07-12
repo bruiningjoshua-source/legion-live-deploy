@@ -67,12 +67,19 @@ const AnimatedBackground = memo(function AnimatedBackground({
   theme = 'roman',
   intensity = 'medium',
   showParticles = true,
+  customBgUrl = '',
+  customBgType = 'image', // 'image' | 'video'
   children,
   className = '',
 }) {
   const canvasRef    = useRef(null);
   const animationRef = useRef(null);
   const watermarkRef = useRef(0);
+
+  // A custom uploaded background (image, or animated/live video wallpaper)
+  // overrides the generated theme when present.
+  const isVideo = customBgType === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(customBgUrl);
+  const hasCustom = !!customBgUrl;
 
   const currentTheme = useMemo(() => PRESET_THEMES[theme] || PRESET_THEMES.roman, [theme]);
 
@@ -170,11 +177,31 @@ const AnimatedBackground = memo(function AnimatedBackground({
 
   return (
     <div className={`relative min-h-screen ${className}`}>
-      {/* Base gradient */}
-      <div className={`fixed inset-0 bg-gradient-to-b ${currentTheme.gradient} -z-20`} />
+      {/* Custom uploaded background (image, or animated/live video wallpaper) */}
+      {hasCustom && (
+        isVideo ? (
+          <video
+            src={customBgUrl}
+            autoPlay loop muted playsInline
+            className="fixed inset-0 w-full h-full object-cover -z-20"
+            aria-hidden="true"
+          />
+        ) : (
+          <div
+            className="fixed inset-0 bg-cover bg-center -z-20"
+            style={{ backgroundImage: `url(${customBgUrl})` }}
+            aria-hidden="true"
+          />
+        )
+      )}
+      {/* Dark scrim over custom bg for text legibility */}
+      {hasCustom && <div className="fixed inset-0 -z-20 bg-black/40" aria-hidden="true" />}
 
-      {/* GPU-composited ambient blobs */}
-      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      {/* Base gradient (only when no custom bg) */}
+      {!hasCustom && <div className={`fixed inset-0 bg-gradient-to-b ${currentTheme.gradient} -z-20`} />}
+
+      {/* GPU-composited ambient blobs (dimmed under custom bg) */}
+      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true" style={{ opacity: hasCustom ? 0.4 : 1 }}>
         <div className="absolute w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] rounded-full blur-[80px] opacity-[0.15] animate-blob-1"
           style={{ background: currentTheme.colors[0], willChange: 'transform' }} />
         <div className="absolute w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] rounded-full blur-[60px] opacity-[0.12] animate-blob-2"

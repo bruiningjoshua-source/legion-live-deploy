@@ -176,11 +176,40 @@ export default function Profile() {
     updateMutation.mutate(editData);
   };
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please choose an image'); return; }
+    setUploadingAvatar(true);
+    try {
       const result = await base44.integrations.Core.UploadFile({ file });
+      if (!result?.file_url) throw new Error('No URL returned');
       updateMutation.mutate({ avatar_url: result.file_url });
+      toast.success('Profile picture updated');
+    } catch (err) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please choose an image'); return; }
+    setUploadingBanner(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      if (!result?.file_url) throw new Error('No URL returned');
+      updateMutation.mutate({ banner_url: result.file_url });
+      toast.success('Banner updated');
+    } catch (err) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingBanner(false);
     }
   };
 

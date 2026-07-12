@@ -108,20 +108,31 @@ export default function Settings() {
     localStorage.setItem('legion_reduced_motion', String(v));
   };
 
-  const handleCustomBgUpload = e => {
+  const handleCustomBgUpload = async e => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const url = ev.target.result;
-      setAppearance(p => ({ ...p, customBgUrl: url, background: 'custom' }));
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    if (!isImage && !isVideo) { toast.error('Choose an image or video'); return; }
+    if (file.size > 50 * 1024 * 1024) { toast.error('Max 50MB'); return; }
+    toast.info('Uploading background…');
+    try {
+      // Upload to Supabase storage (base64-in-localStorage broke on large files
+      // and never rendered). Real URL persists and supports video wallpapers.
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const url = result?.file_url;
+      if (!url) throw new Error('No URL returned');
+      const bgType = isVideo ? 'video' : 'image';
+      setAppearance(p => ({ ...p, customBgUrl: url, customBgType: bgType, background: 'custom' }));
       localStorage.setItem('legion_custom_bg_url', url);
+      localStorage.setItem('legion_custom_bg_type', bgType);
       localStorage.setItem('legion_background', 'custom');
-      dispatch({ customBgUrl: url, background: 'custom' });
-      toast.success('Custom background applied');
-    };
-    reader.readAsDataURL(file);
+      legionStorage.set('background', 'custom');
+      dispatch({ customBgUrl: url, customBgType: bgType, background: 'custom' });
+      toast.success(isVideo ? 'Live wallpaper applied!' : 'Custom background applied');
+    } catch (err) {
+      toast.error(`Upload failed: ${err.message}`);
+    }
   };
 
   const notifDefaults = { liveAlerts:true, giftAlerts:true, followAlerts:true, eventReminders:true };
@@ -235,7 +246,7 @@ export default function Settings() {
                     <p className="text-white/70 text-sm font-medium">Upload custom image</p>
                     <p className="text-white/30 text-xs">JPG / PNG / WebP · max 5MB</p>
                   </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleCustomBgUpload} />
+                  <input type="file" accept="image/*,video/*" className="hidden" onChange={handleCustomBgUpload} />
                 </label>
 
                 {appearance.customBgUrl && (
