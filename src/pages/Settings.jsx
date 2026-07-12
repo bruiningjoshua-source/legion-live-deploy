@@ -13,6 +13,7 @@ import { Sun, Shield, User, LogOut, Palette,
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import DeleteAccountModal from '@/components/settings/DeleteAccountModal';
+import GamingAccountsPanel from '@/components/gaming/GamingAccountsPanel';
 
 const THEMES = [
   { id:'auto',     name:'Auto (Roman)', primary:'#c8871a', secondary:'#8a5a0e' },
@@ -41,6 +42,7 @@ const NAV = [
   { id:'appearance',   label:'Appearance',    icon:'🎨' },
   { id:'notifications',label:'Notifications', icon:'🔔' },
   { id:'privacy',      label:'Privacy',       icon:'🔒' },
+  { id:'gaming',       label:'Gaming',        icon:'🎮' },
   { id:'account',      label:'Account',       icon:'👤' },
 ];
 
@@ -407,6 +409,12 @@ export default function Settings() {
           )}
 
           {/* ── ACCOUNT ─────────────────────────────────────────── */}
+          {activeSection === 'gaming' && (
+            <div className="space-y-4">
+              <GamingAccountsPanel userEmail={user?.email} />
+            </div>
+          )}
+
           {activeSection === 'account' && (
             <motion.div key="account" variants={fade} initial="hidden" animate="show" className="space-y-4">
               {/* Account info */}

@@ -106,6 +106,94 @@ const getCurrentUser = async (supabase, event) => {
 };
 
 const handlers = {
+
+  // ─── STEAM: link account, sync library/achievements/now-playing ───────────
+  async steamLinkStart({ user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const realm = process.env.PUBLIC_SITE_URL || 'https://legion-live.netlify.app';
+    const returnTo = `${realm}/.netlify/functions/legion-api?steam_return=1&email=${encodeURIComponent(user.email)}`;
+    const params = new URLSearchParams({
+      'openid.ns': 'http://specs.openid.net/auth/2.0',
+      'openid.mode': 'checkid_setup',
+      'openid.return_to': returnTo,
+      'openid.realm': realm,
+      'openid.identity': 'http://specs.openid.net/auth/2.0/identifier_select',
+      'openid.claimed_id': 'http://specs.openid.net/auth/2.0/identifier_select',
+    });
+    return { redirectUrl: `https://steamcommunity.com/openid/login?${params.toString()}` };
+  },
+
+  async steamSync({ admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const key = process.env.STEAM_API_KEY;
+    if (!key) return json(500, { error: 'Steam not configured' });
+
+    // Resolve the linked steamid for this user
+    const { data: acct } = await admin.from('gaming_accounts')
+      .select('platform_user_id').eq('user_email', user.email).eq('platform', 'steam').single();
+    const steamId = acct?.platform_user_id || params?.steamId;
+    if (!steamId) return json(400, { error: 'No linked Steam account' });
+
+    // Player summary (persona + now-playing)
+    const sumRes = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${key}&steamids=${steamId}`);
+    const sum = await sumRes.json();
+    const p = sum?.response?.players?.[0] || {};
+
+    // Owned games (library)
+    const libRes = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${key}&steamid=${steamId}&include_appinfo=1&include_played_free_games=1`);
+    const lib = await libRes.json();
+    const games = (lib?.response?.games || [])
+      .sort((a,b)=> (b.playtime_forever||0)-(a.playtime_forever||0))
+      .slice(0, 100)
+      .map(g => ({ appid: g.appid, name: g.name, playtime_hours: Math.round((g.playtime_forever||0)/60*10)/10,
+                   icon: g.img_icon_url ? `https://media.steampowered.com/steamcommunity/public/images/apps/${g.appid}/${g.img_icon_url}.jpg` : null }));
+
+    const snapshot = {
+      platform_username: p.personaname || null,
+      avatar_url: p.avatarfull || null,
+      profile_url: p.profileurl || null,
+      now_playing: p.gameextrainfo || null,
+      now_playing_appid: p.gameid || null,
+      library_json: games,
+      last_synced_at: new Date().toISOString(),
+    };
+    await admin.from('gaming_accounts').update(snapshot)
+      .eq('user_email', user.email).eq('platform', 'steam');
+
+    return { ok: true, ...snapshot, gameCount: games.length };
+  },
+
+  async getGamingAccounts({ admin, params }) {
+    // Public: show a creator's linked gaming accounts on their profile
+    const email = params?.email;
+    if (!email) return json(400, { error: 'email required' });
+    const { data } = await admin.from('gaming_accounts')
+      .select('platform, platform_username, avatar_url, profile_url, now_playing, now_playing_appid, library_json, last_synced_at')
+      .eq('user_email', email);
+    return { accounts: data || [] };
+  },
+
+  async unlinkGamingAccount({ admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const platform = params?.platform;
+    if (!['steam','epic'].includes(platform)) return json(400, { error: 'invalid platform' });
+    await admin.from('gaming_accounts').delete()
+      .eq('user_email', user.email).eq('platform', platform);
+    return { ok: true };
+  },
+
+  async epicLinkStart({ user }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const clientId = process.env.EPIC_CLIENT_ID;
+    if (!clientId) return json(500, { error: 'Epic not configured' });
+    const realm = process.env.PUBLIC_SITE_URL || 'https://legion-live.netlify.app';
+    const redirectUri = `${realm}/.netlify/functions/legion-api?epic_return=1`;
+    const params2 = new URLSearchParams({
+      client_id: clientId, response_type: 'code', scope: 'basic_profile',
+      redirect_uri: redirectUri, state: user.email,
+    });
+    return { redirectUrl: `https://www.epicgames.com/id/authorize?${params2.toString()}` };
+  },
   async clearLiveStreams({ supabase, admin, user }) {
     if (!user) return json(401, { error: 'Unauthorized' });
     const { data: profile } = await supabase.from('profiles').select('role, email').eq('id', user.id).single();
@@ -1890,6 +1978,39 @@ Reply in JSON: { "reply": "your response here" }`;
 };
 
 export const handler = async (event) => {
+  // ── Steam OpenID return (GET redirect) ──
+  if (event.httpMethod === 'GET' && event.queryStringParameters?.steam_return) {
+    try {
+      const qp = event.queryStringParameters;
+      const email = qp.email;
+      // Verify the assertion with Steam
+      const verifyParams = new URLSearchParams(qp);
+      verifyParams.set('openid.mode', 'check_authentication');
+      const vr = await fetch('https://steamcommunity.com/openid/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: verifyParams.toString(),
+      });
+      const vt = await vr.text();
+      const claimed = qp['openid.claimed_id'] || '';
+      const m = claimed.match(/\/(\d+)$/);
+      const site = process.env.PUBLIC_SITE_URL || 'https://legion-live.netlify.app';
+      if (vt.includes('is_valid:true') && m && email) {
+        const steamId = m[1];
+        const admin = getServiceClient();
+        await admin.from('gaming_accounts').upsert({
+          user_email: email, platform: 'steam', platform_user_id: steamId,
+        }, { onConflict: 'user_email,platform' });
+        // Kick off a sync in the background (best-effort)
+        try { await handlers.steamSync({ admin, user: { email }, params: { steamId } }); } catch (_) {}
+        return { statusCode: 302, headers: { Location: `${site}/Settings?steam=linked` }, body: '' };
+      }
+      return { statusCode: 302, headers: { Location: `${site}/Settings?steam=error` }, body: '' };
+    } catch (e) {
+      const site = process.env.PUBLIC_SITE_URL || 'https://legion-live.netlify.app';
+      return { statusCode: 302, headers: { Location: `${site}/Settings?steam=error` }, body: '' };
+    }
+  }
+
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
   try {
