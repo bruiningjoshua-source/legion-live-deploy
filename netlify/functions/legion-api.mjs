@@ -107,6 +107,32 @@ const getCurrentUser = async (supabase, event) => {
 
 const handlers = {
 
+  // ─── Notify admins (stream reports, flags) ────────────────────────────────
+  async notifyAdmins({ admin, user, params }) {
+    const { type, message, stream_id } = params || {};
+    if (!message) return json(400, { error: 'message required' });
+    const db = admin;
+    // Write a notification row for each admin account
+    const ADMIN_EMAILS = ['bruiningjoshua@gmail.com', 'inthestixproductions@gmail.com'];
+    try {
+      await db.from('notifications').insert(
+        ADMIN_EMAILS.map(email => ({
+          user_email: email,
+          type: type || 'admin_alert',
+          title: 'Admin Alert',
+          message,
+          metadata: stream_id ? { stream_id } : {},
+          is_read: false,
+        }))
+      );
+    } catch (e) {
+      // notifications table may differ; don't hard-fail the report flow
+      console.error('[notifyAdmins] insert failed:', e.message);
+      return { ok: false, error: e.message };
+    }
+    return { ok: true };
+  },
+
   // ─── MUSIC: publish a recorded track to the user's Sounds ─────────────────
   async uploadAudioTrack({ admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });
