@@ -791,3 +791,14 @@ html.ll-light .border-white\/06 { border-color: var(--ll-border) !important; }
   color: rgba(200,135,26,0.7);
   margin-bottom: 8px;
 }
+
+/* ═══ CUSTOM BACKGROUND OVERRIDE ═══
+   When a user sets a custom background/live wallpaper, pages must not paint an
+   opaque near-black over it. This makes the common page background transparent
+   so the custom wallpaper shows through. */
+body.ll-custom-bg .bg-\[\#050508\] {
+  background-color: transparent !important;
+}
+body.ll-custom-bg [style*="var(--ll-bg)"] {
+  background: transparent !important;
+}

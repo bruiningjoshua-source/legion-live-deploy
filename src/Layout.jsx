@@ -45,6 +45,15 @@ export default function Layout({ children, currentPageName }) {
   const animatedBg = prefs.animatedBg;
   const [background, setBackground] = useState(() => legionStorage.get('background', localStorage.getItem('legion_background') || 'auto'));
   const [customBgUrl, setCustomBgUrl] = useState(() => localStorage.getItem('legion_custom_bg_url') || '');
+  const [customBgType, setCustomBgType] = useState(() => localStorage.getItem('legion_custom_bg_type') || 'image');
+
+  // Toggle a body class so pages that paint an opaque background go transparent
+  // when a custom wallpaper is active (otherwise they'd cover it).
+  useEffect(() => {
+    const active = background === 'custom' && !!customBgUrl;
+    document.body.classList.toggle('ll-custom-bg', active);
+    return () => document.body.classList.remove('ll-custom-bg');
+  }, [background, customBgUrl]);
   const setCurrentTheme     = useCallback((v) => { legionStorage.set('theme', v);       setPrefs(p => ({ ...p, theme: v })); }, []);
   const setParticleIntensity= useCallback((v) => { legionStorage.set('particles', v);    setPrefs(p => ({ ...p, particles: v })); }, []);
   const setAnimatedBg       = useCallback((v) => { legionStorage.set('animated_bg', v);  setPrefs(p => ({ ...p, animatedBg: v })); }, []);
@@ -156,12 +165,13 @@ export default function Layout({ children, currentPageName }) {
 
   // Listen for theme changes via the Legion event bus (Settings page)
   useEffect(() => {
-    const unsub = legionBus.on('theme-change', ({ theme, particles, animatedBg: bg, background: bgMode, customBgUrl: cbg }) => {
+    const unsub = legionBus.on('theme-change', ({ theme, particles, animatedBg: bg, background: bgMode, customBgUrl: cbg, customBgType: cbt }) => {
       if (theme)             setCurrentTheme(theme);
       if (particles)         setParticleIntensity(particles);
       if (bg !== undefined)  setAnimatedBg(bg);
       if (bgMode !== undefined) setBackground(bgMode);
       if (cbg !== undefined) setCustomBgUrl(cbg);
+      if (cbt) setCustomBgType(cbt);
     });
     // Also keep the legacy DOM-event listener for backward compat
     const domHandler = (e) => {
@@ -170,6 +180,7 @@ export default function Layout({ children, currentPageName }) {
       if (e.detail?.animatedBg !== undefined) setAnimatedBg(e.detail.animatedBg);
       if (e.detail?.background !== undefined) setBackground(e.detail.background);
       if (e.detail?.customBgUrl !== undefined) setCustomBgUrl(e.detail.customBgUrl);
+      if (e.detail?.customBgType) setCustomBgType(e.detail.customBgType);
     };
     window.addEventListener('legion-theme-change', domHandler);
     return () => { unsub(); window.removeEventListener('legion-theme-change', domHandler); };
@@ -279,6 +290,7 @@ export default function Layout({ children, currentPageName }) {
                 intensity={optimizedParticles}
                 showParticles={optimizedParticles !== 'off' && background !== 'custom'}
                 customBgUrl={background === 'custom' ? customBgUrl : ''}
+                customBgType={customBgType}
               >
                 <div className="min-h-screen">
 

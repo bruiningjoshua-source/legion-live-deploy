@@ -160,12 +160,18 @@ const auth = {
       if (data) profile = data;
     } catch (_) { /* profiles table may not exist yet */ }
 
+    // Durable admin allowlist — these accounts always resolve as admin even if
+    // the profile.role column somehow drifts. Keeps admin access self-healing.
+    const ADMIN_EMAILS = ['bruiningjoshua@gmail.com', 'inthestixproductions@gmail.com'];
+    const isAllowlistedAdmin = ADMIN_EMAILS.includes((user.email || '').toLowerCase().trim());
+    const resolvedRole = isAllowlistedAdmin ? 'admin' : (profile.role || 'user');
+
     return {
       id: user.id,
       email: user.email,
       full_name: profile.full_name || user.user_metadata?.full_name || '',
-      role: profile.role || 'user',
       ...profile,
+      role: resolvedRole,
       // Ensure core fields aren't overridden by profile
       email: user.email,
       id: user.id,
