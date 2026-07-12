@@ -1107,14 +1107,21 @@ Reply directly and conversationally — no JSON, no preamble, just your response
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
-        messages: [{ role: 'user', content: `${systemPrompt}\n\nCreator: "${message}"` }],
+        system: systemPrompt,
+        messages: [{ role: 'user', content: message }],
       }),
     });
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      console.error('[legionCompanionChat] Anthropic API error', res.status, errText);
-      return json(502, { error: `AI service error (${res.status})`, detail: errText.slice(0, 300) });
+      let detail = '';
+      try {
+        const errJson = await res.json();
+        detail = errJson?.error?.message || JSON.stringify(errJson);
+      } catch (_) {
+        try { detail = await res.text(); } catch (_) { detail = 'no error body'; }
+      }
+      console.error('[legionCompanionChat] Anthropic API error', res.status, detail);
+      return json(502, { error: `AI service error (${res.status})`, detail: String(detail).slice(0, 400) });
     }
     const data = await res.json();
     let reply = data?.content?.[0]?.text?.trim() || '';
