@@ -484,15 +484,84 @@ async function playPad(pad) {
   setTimeout(() => { try { s.dispose(); } catch(_){} }, 3000);
 }
 
-async function playPianoNote(note, duration = '8n') {
+// Map each instrument preset to a real, distinct synth voice. This is what
+// makes the keyboard actually sound like the selected instrument instead of
+// one hardcoded tone.
+function buildInstrumentVoice(T, instrumentId, dest) {
+  const mk = (cfg, poly = false) => poly
+    ? new T.PolySynth(T.Synth, cfg).connect(dest)
+    : new T.Synth(cfg).connect(dest);
+
+  switch (instrumentId) {
+    // ── Keys ──
+    case 'acoustic_grand_piano':
+      return mk({ oscillator: { type: 'triangle' }, envelope: { attack: 0.004, decay: 1.2, sustain: 0.2, release: 1.4 } }, true);
+    case 'electric_piano_1':
+      return mk({ oscillator: { type: 'sine' }, envelope: { attack: 0.002, decay: 0.8, sustain: 0.3, release: 0.8 } }, true);
+    case 'harpsichord':
+      return new T.PluckSynth({ attackNoise: 2, dampening: 6000, resonance: 0.95 }).connect(dest);
+    case 'vibraphone':
+    case 'marimba':
+      return new T.MetalSynth({ frequency: 500, envelope: { attack: 0.001, decay: instrumentId === 'marimba' ? 0.4 : 1.5, release: 0.4 }, harmonicity: 5, modulationIndex: 16, resonance: 2000, octaves: 1.5 }).connect(dest);
+    case 'church_organ':
+      return mk({ oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0, sustain: 1, release: 0.4 } }, true);
+    case 'rock_organ':
+      return mk({ oscillator: { type: 'square8' }, envelope: { attack: 0.01, decay: 0, sustain: 1, release: 0.15 } }, true);
+
+    // ── Guitars (plucked) ──
+    case 'acoustic_guitar_nylon':
+    case 'acoustic_guitar_steel':
+      return new T.PluckSynth({ attackNoise: 1, dampening: 3500, resonance: 0.97 }).connect(dest);
+    case 'electric_guitar_clean':
+    case 'electric_guitar_muted':
+      return new T.PluckSynth({ attackNoise: 0.5, dampening: instrumentId === 'electric_guitar_muted' ? 2000 : 4500, resonance: 0.9 }).connect(dest);
+    case 'distortion_guitar':
+      return mk({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.6, release: 0.3 } });
+
+    // ── Bass ──
+    case 'acoustic_bass':
+    case 'electric_bass_finger':
+      return mk({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.4 } });
+    case 'slap_bass_1':
+      return mk({ oscillator: { type: 'square' }, envelope: { attack: 0.005, decay: 0.15, sustain: 0.2, release: 0.2 } });
+    case 'synth_bass_1':
+      return mk({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.005, decay: 0.4, sustain: 0.3, release: 0.3 } });
+
+    // ── Synth leads/pads ──
+    case 'lead_1_square':
+      return mk({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.2 } });
+    case 'lead_2_sawtooth':
+      return mk({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.3 } });
+    case 'pad_2_warm':
+      return mk({ oscillator: { type: 'sine' }, envelope: { attack: 0.6, decay: 0.3, sustain: 0.85, release: 2 } }, true);
+
+    // ── Brass / Wind / Strings ──
+    case 'trumpet':
+    case 'trombone':
+      return mk({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.7, release: 0.3 } });
+    case 'tenor_sax':
+      return mk({ oscillator: { type: 'sawtooth8' }, envelope: { attack: 0.04, decay: 0.1, sustain: 0.7, release: 0.4 } });
+    case 'flute':
+      return mk({ oscillator: { type: 'sine' }, envelope: { attack: 0.08, decay: 0.05, sustain: 0.9, release: 0.4 } });
+    case 'violin':
+      return mk({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.15, decay: 0.1, sustain: 0.85, release: 0.8 } }, true);
+
+    default:
+      return mk({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.5, sustain: 0.3, release: 1 } }, true);
+  }
+}
+
+async function playPianoNote(note, duration = '8n', instrumentId = 'acoustic_grand_piano') {
   const T = await initTone();
   await T.start();
-  const synth = new T.Synth({
-    oscillator: { type: 'triangle' },
-    envelope: { attack: 0.005, decay: 0.5, sustain: 0.3, release: 1 }
-  }).connect(effectsChain.filter || masterBus || T.Destination);
-  synth.triggerAttackRelease(note, duration);
-  setTimeout(() => { try { synth.dispose(); } catch(_){} }, 3000);
+  const dest = effectsChain.filter || masterBus || T.Destination;
+  const voice = buildInstrumentVoice(T, instrumentId, dest);
+  // PluckSynth/MetalSynth trigger differently
+  if (voice.triggerAttackRelease) {
+    try { voice.triggerAttackRelease(note, duration); }
+    catch { try { voice.triggerAttackRelease(duration); } catch(_){} }
+  }
+  setTimeout(() => { try { voice.dispose(); } catch(_){} }, 3500);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -778,7 +847,7 @@ export default function MusicStudio() {
       const note = KB_MAP[e.key.toLowerCase()];
       if (note && activeTab === 'keyboard' && !pressedKeys.has(note)) {
         setPressedKeys(s => new Set([...s, note]));
-        await playPianoNote(note);
+        await playPianoNote(note, '8n', activeInstrument.id);
       }
     };
     const up = (e) => {
@@ -788,7 +857,7 @@ export default function MusicStudio() {
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, [activeTab, pressedKeys]);
+  }, [activeTab, pressedKeys, activeInstrument]);
 
   // Sequencer playback
   useEffect(() => {
@@ -1047,7 +1116,7 @@ export default function MusicStudio() {
                     return (
                       <button
                         key={key.note}
-                        onPointerDown={() => { setPressedKeys(s => new Set([...s, key.note])); playPianoNote(key.note); }}
+                        onPointerDown={() => { setPressedKeys(s => new Set([...s, key.note])); playPianoNote(key.note, '8n', activeInstrument.id); }}
                         onPointerUp={() => setPressedKeys(s => { const n = new Set(s); n.delete(key.note); return n; })}
                         onPointerLeave={() => setPressedKeys(s => { const n = new Set(s); n.delete(key.note); return n; })}
                         className="flex-1 border border-white/20 rounded-b-lg flex flex-col items-center justify-end pb-2 ll-interactive relative transition-colors"
@@ -1074,7 +1143,7 @@ export default function MusicStudio() {
                       return (
                         <button
                           key={key.note}
-                          onPointerDown={() => { setPressedKeys(s => new Set([...s, key.note])); playPianoNote(key.note); }}
+                          onPointerDown={() => { setPressedKeys(s => new Set([...s, key.note])); playPianoNote(key.note, '8n', activeInstrument.id); }}
                           onPointerUp={() => setPressedKeys(s => { const n = new Set(s); n.delete(key.note); return n; })}
                           className="absolute h-full rounded-b-md ll-interactive pointer-events-auto"
                           style={{
