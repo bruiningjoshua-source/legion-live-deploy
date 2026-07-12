@@ -235,7 +235,8 @@ const functions = {
       // Surface the real error from Netlify instead of silently falling back
       // to a Supabase edge function that doesn't exist (which 404s and hides
       // the actual cause).
-      throw new Error(payload?.error || `Request failed (${netlifyResponse.status})`);
+      const msg = payload?.detail ? `${payload.error}: ${payload.detail}` : (payload?.error || `Request failed (${netlifyResponse.status})`);
+      throw new Error(msg);
     }
 
     // Only reach Supabase edge functions if Netlify was completely unreachable
