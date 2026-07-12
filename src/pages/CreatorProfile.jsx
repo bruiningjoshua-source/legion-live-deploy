@@ -198,153 +198,119 @@ export default function CreatorProfile() {
     : 0;
 
   return (
-    <div className="min-h-screen pb-24">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-[#050508] pb-24">
+      {/* Hero banner */}
       <div className="relative">
-        <div className="h-48 md:h-64 bg-gradient-to-r from-amber-900 via-stone-800 to-amber-900">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200')] bg-cover bg-center opacity-30" />
+        <div className="h-36 sm:h-48 bg-gradient-to-r from-amber-900/60 via-stone-800 to-amber-900/60 overflow-hidden">
+          {creator.banner_url
+            ? <img src={creator.banner_url} alt="" className="w-full h-full object-cover opacity-60" />
+            : <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200')] bg-cover bg-center opacity-25" />}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050508] to-transparent" />
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 -mt-20 relative">
-          <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] overflow-hidden">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row md:items-end gap-6">
-                {/* Avatar */}
-                <div className="relative -mt-24 md:-mt-16">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-stone-800 border-4 border-stone-900">
-                      {creator.avatar_url ? (
-                        <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl">👤</div>
-                      )}
-                    </div>
-                  </div>
-                  {creator.is_live && (
-                    <Badge className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-red-500 text-white border-0 flex items-center gap-1">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-100" />
-                      </span>
-                      LIVE
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h1 className="text-2xl md:text-3xl font-bold text-amber-100">{creator.display_name}</h1>
-                    {creator.is_verified && <Crown className="w-6 h-6 text-amber-400" />}
-                    <Badge className="bg-amber-600/20 text-amber-300 border-amber-500/30">
-                      {badge.icon} {badge.label} • Lv.{creator.level || 1}
-                    </Badge>
-                  </div>
-                  <p className="text-amber-400/70 capitalize mb-3">{creator.category?.replace('_', ' ') || 'Content Creator'}</p>
-                  {creator.bio && (
-                    <p className="text-amber-100/80 text-sm mb-4">{creator.bio}</p>
-                  )}
-                  
-                  {/* Social Links */}
-                  {creator.social_links && Object.keys(creator.social_links).length > 0 && (
-                    <div className="flex items-center gap-2 mb-4">
-                      {creator.social_links.youtube && (
-                        <a href={creator.social_links.youtube} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-900/30">
-                            YouTube <ExternalLink className="w-3 h-3 ml-1" />
-                          </Button>
-                        </a>
-                      )}
-                      {creator.social_links.tiktok && (
-                        <a href={creator.social_links.tiktok} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="ghost" className="text-pink-400 hover:bg-pink-900/30">
-                            TikTok <ExternalLink className="w-3 h-3 ml-1" />
-                          </Button>
-                        </a>
-                      )}
-                    </div>
-                  )}
-                  <SteamProfileCard email={creator.user_email} />
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <TipButton 
-                    creatorId={creatorId} 
-                    streamId={null}
-                    variant="default"
-                    size="lg"
-                  />
-                  {user && creator?.user_email && user.email !== creator.user_email && (
-                    <Button
-                      onClick={() => setShowMessages(true)}
-                      variant="outline"
-                      size="lg"
-                      className="border-cyan-500/30 text-cyan-300"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Message
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => followMutation.mutate()}
-                    variant={isFollowing ? "outline" : "default"}
-                    className={isFollowing 
-                      ? "border-amber-500 text-amber-400" 
-                      : "bg-amber-600 hover:bg-amber-700 text-white"}
-                    size="lg"
-                  >
-                    <Heart className={`w-4 h-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} />
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="border-amber-500/30 text-amber-300"
-                    onClick={() => {
-                      const url = window.location.href;
-                      if (navigator.share) {
-                        navigator.share({ title: creator.display_name, url });
-                      } else {
-                        navigator.clipboard.writeText(url).then(() => toast.success('Profile link copied!'));
-                      }
-                    }}
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
+        <div className="max-w-2xl mx-auto px-4 relative">
+          {/* Avatar — centered, overlapping banner cleanly (no cut-off) */}
+          <div className="flex flex-col items-center -mt-14">
+            <div className="relative">
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1 shadow-xl">
+                <div className="w-full h-full rounded-full overflow-hidden bg-stone-800 border-4 border-[#050508]">
+                  {creator.avatar_url
+                    ? <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center text-4xl">👤</div>}
                 </div>
               </div>
+              {creator.is_live && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-[#050508]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
+                </span>
+              )}
+            </div>
+
+            {/* Name + badge */}
+            <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
+              <h1 className="text-2xl font-bold text-amber-100">{creator.display_name}</h1>
+              {creator.is_verified && <Crown className="w-5 h-5 text-amber-400" />}
+            </div>
+            <div className="mt-1.5">
+              <span className="inline-flex items-center gap-1 bg-amber-600/20 text-amber-300 border border-amber-500/30 rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                {badge.icon} {badge.label} • Lv.{creator.level || 1}
+              </span>
+            </div>
+            <p className="text-white/50 capitalize text-sm mt-1.5">{creator.category?.replace('_', ' ') || 'Content Creator'}</p>
+            {creator.bio && <p className="text-white/70 text-sm mt-2 text-center max-w-md">{creator.bio}</p>}
+
+            {/* Social links */}
+            {creator.social_links && Object.keys(creator.social_links).length > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                {creator.social_links.youtube && (
+                  <a href={creator.social_links.youtube} target="_blank" rel="noopener noreferrer"
+                    className="text-white/60 hover:text-amber-400 text-xs flex items-center gap-1">
+                    YouTube <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {creator.social_links.tiktok && (
+                  <a href={creator.social_links.tiktok} target="_blank" rel="noopener noreferrer"
+                    className="text-white/60 hover:text-amber-400 text-xs flex items-center gap-1">
+                    TikTok <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Action buttons — responsive row, no overflow */}
+            <div className="flex items-center gap-2 mt-4 w-full max-w-sm">
+              <div className="flex-1">
+                <TipButton creatorId={creatorId} streamId={null} variant="default" size="default" className="w-full" />
+              </div>
+              {user && creator?.user_email && user.email !== creator.user_email && (
+                <button onClick={() => setShowMessages(true)}
+                  className="ll-btn ll-btn-secondary flex-1 !h-10">
+                  <MessageSquare className="w-4 h-4" /> Message
+                </button>
+              )}
+              <button onClick={() => followMutation.mutate()}
+                className={`ll-btn flex-1 !h-10 ${isFollowing ? 'll-btn-ghost' : 'll-btn-primary'}`}>
+                <Heart className={`w-4 h-4 ${isFollowing ? 'fill-current' : ''}`} />
+                {isFollowing ? 'Following' : 'Follow'}
+              </button>
+            </div>
+
+            <div className="w-full mt-4">
+              <SteamProfileCard email={creator.user_email} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4">
 
               {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <div className="ll-card p-4 text-center">
                   <Users className="w-5 h-5 text-amber-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{formatCount(creator.follower_count)}</p>
                   <p className="text-white/50 text-xs">Followers</p>
                 </div>
-                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
+                <div className="ll-card p-4 text-center">
                   <Trophy className="w-5 h-5 text-amber-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{formatCount(creator.total_earnings_denarii)}</p>
                   <p className="text-white/50 text-xs">🪙 Earned</p>
                 </div>
-                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
-                  <Swords className="w-5 h-5 text-orange-400 mx-auto mb-2" />
+                <div className="ll-card p-4 text-center">
+                  <Swords className="w-5 h-5 text-amber-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{formatCount(creator.pk_wins)}</p>
                   <p className="text-white/50 text-xs">PK Wins</p>
                 </div>
-                <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
-                  <Star className="w-5 h-5 text-green-400 mx-auto mb-2" />
+                <div className="ll-card p-4 text-center">
+                  <Star className="w-5 h-5 text-amber-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{pkWinRate}%</p>
                   <p className="text-white/50 text-xs">Win Rate</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 mt-8">
+      <div className="max-w-2xl mx-auto px-4 mt-8">
         {/* Free Tier Wallet Tip */}
         <div className="mb-6">
           <FreeTierWalletTip creator={creator} isOwnProfile={false} />
