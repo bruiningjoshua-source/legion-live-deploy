@@ -290,7 +290,10 @@ export default function GoLive() {
     let cancelled = false;
     const ping = () => {
       if (cancelled) return;
-      base44.rpc('stream_heartbeat', { p_stream_id: liveStreamId }).catch(() => {});
+      // supabase.rpc returns a thenable builder (not a native Promise), so
+      // use .then with an error handler instead of .catch.
+      Promise.resolve(base44.rpc('stream_heartbeat', { p_stream_id: liveStreamId }))
+        .then(() => {}, () => {});
     };
     ping(); // immediate first beat
     const iv = setInterval(ping, 30000);

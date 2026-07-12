@@ -177,7 +177,7 @@ export function useSendMessage({ streamId, user, wallet }) {
   });
 }
 
-export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts }) {
+export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGifts } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ gift, quantity }) => GiftService.sendGift({
@@ -213,7 +213,7 @@ export function useSendGift({ user, wallet, creator, stream, creatorCanReceiveGi
   });
 }
 
-export function useToggleFollow({ user, creator, isFollowing }) {
+export function useToggleFollow({ user, creator, isFollowing } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => FollowService.toggleFollow(user?.email, creator?.id, isFollowing),
@@ -242,7 +242,7 @@ export function useToggleFollow({ user, creator, isFollowing }) {
   });
 }
 
-export function useEndStream({ stream, creator, pkBattle, liveStream }) {
+export function useEndStream({ stream, creator, pkBattle, liveStream } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {

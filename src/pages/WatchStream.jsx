@@ -90,8 +90,7 @@ export default function WatchStream() {
   const { data: initialMessages } = useChatMessages(streamId);
   const { data: isFollowing } = useFollowStatus(user?.email, creator?.id);
   const { data: creatorSubscription } = useCreatorSubscription(creator?.user_email);
-  const toggleFollowMutation = useToggleFollow(user?.email, creator?.id);
-  // endStreamMutation removed — useEndStream called correctly at line ~276 with object params
+  // (follow mutation is defined below as followMutation with correct object params)
 
   // Gifts are only accepted by monetized creators (Stripe payouts enabled),
   // an active subscription, or admin. Mirrors the server-side sendGift gate so
