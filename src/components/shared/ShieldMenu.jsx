@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Home, Tv, Gamepad2, Users, ShoppingBag, Radio,
   Film, BarChart2, Trophy, Mic, Music, Video,
-  Wallet, Settings, Zap, Calendar, Palette, HelpCircle, LogOut
+  Wallet, Settings, Zap, Calendar, Palette, HelpCircle, LogOut,
+  Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
@@ -17,6 +18,7 @@ const sections = [
       { label: 'Amphitheatre',  path: 'TheAmphitheatre', icon: Tv,         color: 'text-red-400' },
       { label: 'Videos',        path: 'Videos',          icon: Film,       color: 'text-violet-400' },
       { label: 'Explore',       path: 'Explore',         icon: Zap,        color: 'text-yellow-400' },
+      { label: 'Legion AI',     path: 'LegionAI',        icon: Sparkles,   color: 'text-amber-400' },
     ]
   },
   {

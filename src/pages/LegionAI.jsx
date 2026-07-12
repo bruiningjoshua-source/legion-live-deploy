@@ -29,6 +29,7 @@ export default function LegionAI() {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [talkbackOn, setTalkbackOn] = useState(() => localStorage.getItem('legion_talkback') !== 'off');
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -38,21 +39,28 @@ export default function LegionAI() {
     staleTime: 5 * 60_000,
   });
 
-  // TTS — speak Legion's reply
+  // TTS — speak Legion's reply (talkback)
   const speakReply = useCallback((text) => {
-    if (!('speechSynthesis' in window)) return;
+    if (!talkbackOn || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    // Strip markdown for cleaner speech
     const clean = text.replace(/[*_#`>\-\[\]()]/g, '').replace(/\n+/g, '. ');
     const utterance = new SpeechSynthesisUtterance(clean);
     utterance.rate = 1.05;
     utterance.pitch = 0.95;
-    // Prefer a good English voice
     const voices = window.speechSynthesis.getVoices();
     const preferred = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
       || voices.find(v => v.lang.startsWith('en'));
     if (preferred) utterance.voice = preferred;
     window.speechSynthesis.speak(utterance);
+  }, [talkbackOn]);
+
+  const toggleTalkback = useCallback(() => {
+    setTalkbackOn(prev => {
+      const next = !prev;
+      localStorage.setItem('legion_talkback', next ? 'on' : 'off');
+      if (!next && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+      return next;
+    });
   }, []);
 
   // Send message handler
