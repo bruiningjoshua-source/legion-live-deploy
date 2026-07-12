@@ -81,8 +81,8 @@ export default function PKBattleOverlay({
 
   return (
     <>
-      <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
-        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent p-3 pb-5">
+      <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}>
+        <div className="bg-gradient-to-b from-black/60 via-black/35 to-transparent px-3 pt-2 pb-5">
           {/* Timer */}
           <div className="flex justify-center mb-3">
             {battle.status === 'active' && battle.started_at && (
