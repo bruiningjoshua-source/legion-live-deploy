@@ -9,26 +9,64 @@ import {
 
 const CENTURION_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/695f3a3f9fa9a9799a4c1674/29aa9a1e7_AI_Generated_Image_2026-01-16_506237618000201.png';
 
-// Roman Scutum Shield Component - CSS-based curved shield
+// Roman Scutum Shield Component — forged metal, battle-weathered
 const RomanShield = ({ children }) => (
   <div 
     className="relative"
     style={{
       width: '260px',
       height: '320px',
+      filter: 'url(#shield-weather)',
     }}
   >
-    {/* Shield shape - curved rectangle (scutum) */}
+    {/* SVG filter defs for metal texture + weathering */}
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <defs>
+        <filter id="shield-weather">
+          {/* subtle surface roughness / scratches */}
+          <feTurbulence type="fractalNoise" baseFrequency="0.9 0.02" numOctaves="2" seed="7" result="noise" />
+          <feColorMatrix in="noise" type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0" result="scratches" />
+          <feComposite in="SourceGraphic" in2="scratches" operator="over" />
+        </filter>
+        <radialGradient id="boss-metal" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="#f5f0e6" />
+          <stop offset="35%" stopColor="#c9c2b4" />
+          <stop offset="70%" stopColor="#8a8378" />
+          <stop offset="100%" stopColor="#4a453d" />
+        </radialGradient>
+      </defs>
+    </svg>
+
+    {/* Shield body — weathered bronze metal */}
     <div
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(180deg, #c9553d 0%, #b91c1c 20%, #991b1b 80%, #7f1d1d 100%)',
+        background: `
+          linear-gradient(180deg, #a8894e 0%, #8a6d38 18%, #6b5228 55%, #4a3819 85%, #3a2c14 100%),
+          repeating-linear-gradient(92deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0) 2px, rgba(255,240,200,0.04) 4px)
+        `,
+        backgroundBlendMode: 'overlay',
         borderRadius: '50% / 8%',
-        border: '8px solid #cd7f32',
-        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.4), 0 15px 40px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.1)',
+        border: '7px solid',
+        borderImage: 'linear-gradient(180deg, #e6c886 0%, #b08030 45%, #7a5620 100%) 1',
+        boxShadow: `
+          inset 0 0 40px rgba(0,0,0,0.55),
+          inset 0 3px 8px rgba(255,240,200,0.15),
+          inset 0 -8px 20px rgba(0,0,0,0.5),
+          0 18px 45px rgba(0,0,0,0.6)
+        `,
       }}
     >
+      {/* Weathering: dark battle scuffs + nicks */}
+      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '50% / 8%', opacity: 0.5 }}>
+        <div style={{ position: 'absolute', top: '15%', left: '12%', width: '40px', height: '3px', background: 'rgba(0,0,0,0.4)', transform: 'rotate(-20deg)', filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', top: '60%', right: '18%', width: '55px', height: '2px', background: 'rgba(0,0,0,0.35)', transform: 'rotate(15deg)', filter: 'blur(1px)' }} />
+        <div style={{ position: 'absolute', bottom: '20%', left: '25%', width: '30px', height: '4px', background: 'rgba(20,10,0,0.4)', transform: 'rotate(-8deg)', filter: 'blur(1.5px)' }} />
+        <div style={{ position: 'absolute', top: '35%', right: '30%', width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)' }} />
+      </div>
+
       {/* Gold decorative elements - wing patterns */}
       <div className="absolute inset-0 flex flex-col items-center justify-between py-6 overflow-hidden">
         {/* Top wing decoration */}
@@ -41,7 +79,7 @@ const RomanShield = ({ children }) => (
         <div 
           className="w-14 h-14 rounded-full"
           style={{
-            background: 'radial-gradient(circle at 30% 30%, #e5e5e5 0%, #9ca3af 40%, #6b7280 70%, #4b5563 100%)',
+            background: 'radial-gradient(circle at 32% 28%, #f0e8d8 0%, #b8ad98 30%, #7d7364 60%, #453f35 90%, #2a251d 100%)',
             boxShadow: '0 4px 8px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
             border: '3px solid #78716c',
           }}
@@ -249,13 +287,13 @@ export default function LoadingScreen({ onComplete }) {
         )}
       </AnimatePresence>
 
-      {/* Bottom section - Roman Shield Menu or Loading */}
-      <div className="absolute bottom-0 left-0 right-0 z-30">
+      {/* Shield Menu — centered vertically so the shield sits higher */}
+      <div className="absolute inset-0 z-30 flex items-center justify-center">
         <AnimatePresence mode="wait">
           {phase >= 4 ? (
             <motion.div
               key="menu"
-              className="px-4 pb-8 sm:pb-10 flex flex-col items-center"
+              className="px-4 flex flex-col items-center"
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -287,10 +325,18 @@ export default function LoadingScreen({ onComplete }) {
                                 className="flex flex-col items-center"
                               >
                                 <div 
-                                  className="w-14 h-14 rounded-2xl bg-black border border-red-600/30 flex items-center justify-center"
-                                  style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
+                                  className="w-14 h-14 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                                  style={{
+                                    background: 'linear-gradient(145deg, #7d7364 0%, #4a453d 45%, #2a251d 100%)',
+                                    border: '1.5px solid',
+                                    borderImage: 'linear-gradient(145deg, #d9c48a, #6b5220) 1',
+                                    boxShadow: 'inset 0 2px 4px rgba(255,240,200,0.15), inset 0 -3px 6px rgba(0,0,0,0.5), 0 4px 15px rgba(0,0,0,0.5)',
+                                  }}
                                 >
-                                  <Icon className="w-7 h-7 text-red-500" />
+                                  {/* brushed-metal sheen + weathering */}
+                                  <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0px, rgba(0,0,0,0) 3px)', opacity:0.6 }} />
+                                  <div style={{ position:'absolute', top:'20%', left:'15%', width:'18px', height:'1.5px', background:'rgba(0,0,0,0.4)', transform:'rotate(-25deg)' }} />
+                                  <Icon className="w-7 h-7 text-amber-300 relative z-10" style={{ filter:'drop-shadow(0 1px 2px rgba(0,0,0,0.6))' }} />
                                 </div>
                                 <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
                               </motion.div>
@@ -318,10 +364,18 @@ export default function LoadingScreen({ onComplete }) {
                                 className="flex flex-col items-center"
                               >
                                 <div 
-                                  className="w-14 h-14 rounded-2xl bg-black border border-red-600/30 flex items-center justify-center"
-                                  style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}
+                                  className="w-14 h-14 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                                  style={{
+                                    background: 'linear-gradient(145deg, #7d7364 0%, #4a453d 45%, #2a251d 100%)',
+                                    border: '1.5px solid',
+                                    borderImage: 'linear-gradient(145deg, #d9c48a, #6b5220) 1',
+                                    boxShadow: 'inset 0 2px 4px rgba(255,240,200,0.15), inset 0 -3px 6px rgba(0,0,0,0.5), 0 4px 15px rgba(0,0,0,0.5)',
+                                  }}
                                 >
-                                  <Icon className="w-7 h-7 text-red-500" />
+                                  {/* brushed-metal sheen + weathering */}
+                                  <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0px, rgba(0,0,0,0) 3px)', opacity:0.6 }} />
+                                  <div style={{ position:'absolute', top:'20%', left:'15%', width:'18px', height:'1.5px', background:'rgba(0,0,0,0.4)', transform:'rotate(-25deg)' }} />
+                                  <Icon className="w-7 h-7 text-amber-300 relative z-10" style={{ filter:'drop-shadow(0 1px 2px rgba(0,0,0,0.6))' }} />
                                 </div>
                                 <span className="text-white text-xs font-bold mt-1.5 drop-shadow-lg">{item.label}</span>
                               </motion.div>

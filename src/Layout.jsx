@@ -5,6 +5,7 @@ import { initLegionForge, legionBus, legionStorage } from '@/components/core/leg
 import Navbar from '@/components/layout/Navbar.jsx';
 import BottomNav from '@/components/layout/BottomNav.jsx';
 import LoadingScreen from '@/components/shared/LoadingScreen';
+import PageThemeBackground, { PAGE_BACKGROUNDS } from '@/components/shared/PageThemeBackground';
 import ShieldMenu from '@/components/shared/ShieldMenu.jsx';
 import AnimatedBackground, { PAGE_THEME_MAP } from '@/components/shared/AnimatedBackground';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
@@ -48,12 +49,13 @@ export default function Layout({ children, currentPageName }) {
   const [customBgType, setCustomBgType] = useState(() => localStorage.getItem('legion_custom_bg_type') || 'image');
 
   // Toggle a body class so pages that paint an opaque background go transparent
-  // when a custom wallpaper is active (otherwise they'd cover it).
+  // when a custom wallpaper OR a themed page background is active.
   useEffect(() => {
-    const active = background === 'custom' && !!customBgUrl;
-    document.body.classList.toggle('ll-custom-bg', active);
+    const customActive = background === 'custom' && !!customBgUrl;
+    const themedActive = !customActive && !!PAGE_BACKGROUNDS[currentPageName];
+    document.body.classList.toggle('ll-custom-bg', customActive || themedActive);
     return () => document.body.classList.remove('ll-custom-bg');
-  }, [background, customBgUrl]);
+  }, [background, customBgUrl, currentPageName]);
   const setCurrentTheme     = useCallback((v) => { legionStorage.set('theme', v);       setPrefs(p => ({ ...p, theme: v })); }, []);
   const setParticleIntensity= useCallback((v) => { legionStorage.set('particles', v);    setPrefs(p => ({ ...p, particles: v })); }, []);
   const setAnimatedBg       = useCallback((v) => { legionStorage.set('animated_bg', v);  setPrefs(p => ({ ...p, animatedBg: v })); }, []);
@@ -193,6 +195,11 @@ export default function Layout({ children, currentPageName }) {
 
   const renderContent = () => (
     <>
+      {/* Themed per-page backdrop (only when no custom user wallpaper) */}
+      {!(background === 'custom' && customBgUrl) && (
+        <PageThemeBackground pageName={currentPageName} />
+      )}
+
       <AnimatePresence>
         {showLoadingScreen && <LoadingScreen onComplete={() => setShowLoadingScreen(false)} />}
       </AnimatePresence>
