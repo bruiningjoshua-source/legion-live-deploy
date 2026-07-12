@@ -443,3 +443,18 @@ body {
   color: var(--ll-muted);
   line-height: 1.5;
 }
+
+/* ═══ THEMED / CUSTOM PAGE BACKGROUNDS ═══
+   When a themed page background or custom wallpaper is active, pages must not
+   paint their opaque near-black over it. Force those page backgrounds
+   transparent so the art shows through. (This lives in index.css because that's
+   the stylesheet actually imported by the app.) */
+body.ll-custom-bg .bg-\[\#050508\] {
+  background-color: transparent !important;
+}
+body.ll-custom-bg [style*="var(--ll-bg)"] {
+  background: transparent !important;
+}
+body.ll-custom-bg .min-h-screen.bg-\[\#050508\] {
+  background-color: transparent !important;
+}

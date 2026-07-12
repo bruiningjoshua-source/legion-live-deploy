@@ -68,10 +68,11 @@ export default function PageThemeBackground({ pageName }) {
   return (
     <div className="fixed inset-0 -z-30 pointer-events-none" aria-hidden="true">
       <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${bg})` }} />
+      {/* Scrim: enough to keep text legible, light enough to SEE the art */}
       <div className="absolute inset-0" style={{
-        background: 'linear-gradient(180deg, rgba(5,5,8,0.82) 0%, rgba(5,5,8,0.88) 55%, rgba(5,5,8,0.95) 100%)',
+        background: 'linear-gradient(180deg, rgba(5,5,8,0.58) 0%, rgba(5,5,8,0.68) 55%, rgba(5,5,8,0.82) 100%)',
       }} />
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 0%, rgba(200,135,26,0.10), transparent 60%)' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 0%, rgba(200,135,26,0.08), transparent 55%)' }} />
     </div>
   );
 }
