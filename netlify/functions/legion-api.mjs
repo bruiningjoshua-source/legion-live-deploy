@@ -1095,7 +1095,7 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
     const systemPrompt = `You are Legion, an AI companion and advisor for a live streaming creator on Legion Live.
 Creator: ${user.email}. ${memory?.conversation_summary ? `Context: ${memory.conversation_summary}` : ''}
 Be concise, warm, and actionable. You help creators grow their audience, earn more, and improve streams.
-Reply in JSON: { "reply": "your response here" }`;
+Reply directly and conversationally — no JSON, no preamble, just your response.`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1111,13 +1111,21 @@ Reply in JSON: { "reply": "your response here" }`;
       }),
     });
 
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error('[legionCompanionChat] Anthropic API error', res.status, errText);
+      return json(502, { error: `AI service error (${res.status})`, detail: errText.slice(0, 300) });
+    }
     const data = await res.json();
-    const text = data.content?.[0]?.text || '{"reply":"Sorry, I could not respond right now."}';
-    let reply = 'I could not respond right now.';
-    try {
-      const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || text);
-      reply = parsed.reply || reply;
-    } catch (_) { reply = text; }
+    let reply = data?.content?.[0]?.text?.trim() || '';
+    // Some prompts still return JSON-wrapped text; unwrap if present.
+    if (reply.startsWith('{') && reply.includes('"reply"')) {
+      try { reply = JSON.parse(reply).reply || reply; } catch (_) { /* keep as-is */ }
+    }
+    if (!reply) {
+      console.error('[legionCompanionChat] empty content', JSON.stringify(data).slice(0, 300));
+      return json(502, { error: 'AI returned no content' });
+    }
 
     // Update interaction count
     if (memory) {

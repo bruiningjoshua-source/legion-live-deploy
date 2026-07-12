@@ -76,6 +76,10 @@ export default function LegionAI() {
 
     try {
       const res = await base44.functions.invoke('legionCompanionChat', { message: trimmed });
+      // Surface backend errors instead of hiding them behind a generic message
+      if (res.data?.error) {
+        throw new Error(res.data.detail ? `${res.data.error}: ${res.data.detail}` : res.data.error);
+      }
       const reply = res.data?.reply || 'Sorry, I had trouble responding. Try again.';
       const actions = res.data?.actions || [];
       const botMsg = { role: 'assistant', content: reply, actions, timestamp: Date.now() };
@@ -85,7 +89,7 @@ export default function LegionAI() {
       speakReply(reply);
     } catch (err) {
       console.error('Legion AI error:', err);
-      const errMsg = { role: 'assistant', content: "I'm having trouble connecting right now. Try again in a moment.", timestamp: Date.now() };
+      const errMsg = { role: 'assistant', content: `Connection issue: ${err.message || 'try again in a moment.'}`, timestamp: Date.now() };
       const final = [...nextMessages, errMsg];
       setMessages(final);
     } finally {
