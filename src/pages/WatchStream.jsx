@@ -519,8 +519,14 @@ export default function WatchStream() {
           setFloatingReactions(prev => [...prev.slice(-15), { id: Date.now() + Math.random(), emoji }]);
         }}
         onMenuClick={() => setShowRoomTools(true)}
-        giftingEnabled={creatorCanReceiveGifts}
-        onGiftClick={() => { if (creatorCanReceiveGifts) setShowGiftPanel(true); }}
+        giftingEnabled={true}
+        onGiftClick={() => {
+          if (creatorCanReceiveGifts) {
+            setShowGiftPanel(true);
+          } else {
+            toast.info(`${creator?.display_name || 'This creator'} hasn't enabled gifts yet — they need to finish payout setup first.`);
+          }
+        }}
         onLottoClick={() => setShowChannelPoints(v => !v)}
         onPKClick={() => setShowChallenge(true)}
         onMissionClick={() => setShowSpinWheel(true)}
