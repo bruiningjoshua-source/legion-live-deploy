@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SteamProfileCard from "@/components/gaming/SteamProfileCard";
 import { 
   Crown, 
   Heart, 
@@ -263,6 +264,7 @@ export default function CreatorProfile() {
                       )}
                     </div>
                   )}
+                  <SteamProfileCard email={creator.user_email} />
                 </div>
 
                 {/* Actions */}
