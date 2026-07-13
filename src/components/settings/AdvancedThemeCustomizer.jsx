@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { applyAccentColor, resetAccentColor } from '@/lib/accentTheme';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -156,7 +157,7 @@ export default function AdvancedThemeCustomizer({
   const handleAccentChange = (color) => {
     setAccentColor(color);
     localStorage.setItem('legion_accent_color', color);
-    document.documentElement.style.setProperty('--accent-color', color);
+    applyAccentColor(color);
   };
 
   const handleOpacityChange = (value) => {

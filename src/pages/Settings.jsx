@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import DeleteAccountModal from '@/components/settings/DeleteAccountModal';
 import GamingAccountsPanel from '@/components/gaming/GamingAccountsPanel';
+import AdvancedThemeCustomizer from '@/components/settings/AdvancedThemeCustomizer';
 
 const THEMES = [
   { id:'auto',     name:'Auto (Roman)', primary:'#c8871a', secondary:'#8a5a0e' },
@@ -329,6 +330,11 @@ export default function Settings() {
                   className="flex items-center gap-1.5 text-white/30 hover:text-white/55 text-xs transition-colors ll-interactive">
                   <RefreshCw className="w-3 h-3" /> Reset defaults
                 </button>
+              </div>
+
+              {/* Theme & accent color customizer */}
+              <div className="mt-4">
+                <AdvancedThemeCustomizer />
               </div>
             </motion.div>
           )}

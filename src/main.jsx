@@ -1,6 +1,8 @@
 import React from 'react'
 import { initColorScheme } from './lib/darkMode.js';
 initColorScheme();
+import { initAccentColor } from './lib/accentTheme.js';
+initAccentColor();
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
