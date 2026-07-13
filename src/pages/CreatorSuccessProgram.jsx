@@ -37,7 +37,7 @@ const tiers = [
     color: 'from-slate-500 to-slate-600',
     followers: '0-99',
     monthlyEarnings: '$0-100',
-    split: '50%',
+    split: '60%',
     requirements: ['Complete profile', 'First stream', 'Monetization enabled'],
     perks: ['Basic analytics', 'Standard gifts', 'Chat features']
   },
@@ -47,7 +47,7 @@ const tiers = [
     color: 'from-amber-700 to-amber-800',
     followers: '100-499',
     monthlyEarnings: '$100-400',
-    split: '55%',
+    split: '60%',
     requirements: ['100+ followers', '10+ hours streamed', '20+ average viewers'],
     perks: ['Priority support', 'Custom emotes (3)', 'Bronze badge']
   },
@@ -67,7 +67,7 @@ const tiers = [
     color: 'from-yellow-500 to-amber-600',
     followers: '2,000-9,999',
     monthlyEarnings: '$1,200-4,000',
-    split: '65%',
+    split: '60%',
     requirements: ['2,000+ followers', '100+ hours streamed', '100+ average viewers'],
     perks: ['Homepage feature', 'Custom emotes (25)', 'Gold badge', 'Dedicated manager']
   },
@@ -77,7 +77,7 @@ const tiers = [
     color: 'from-purple-500 to-pink-600',
     followers: '10,000+',
     monthlyEarnings: '$4,000+',
-    split: '70%',
+    split: '60%',
     requirements: ['10,000+ followers', '500+ hours streamed', '500+ average viewers'],
     perks: ['Top creator status', 'Unlimited emotes', 'Platinum badge', 'Revenue bonuses', 'Brand deals access']
   }
@@ -177,13 +177,13 @@ const earningsCalculator = [
 
 const milestones = [
   { followers: 50, reward: 'Starter Badge', bonus: null },
-  { followers: 100, reward: 'Bronze Tier', bonus: '+5% revenue share' },
+  { followers: 100, reward: 'Bronze Tier', bonus: 'exclusive perks' },
   { followers: 250, reward: '3 Custom Emotes', bonus: null },
-  { followers: 500, reward: 'Silver Tier', bonus: '+5% revenue share' },
+  { followers: 500, reward: 'Silver Tier', bonus: 'exclusive perks' },
   { followers: 1000, reward: 'Featured Creator', bonus: 'Homepage spotlight' },
-  { followers: 2000, reward: 'Gold Tier', bonus: '+5% revenue share' },
+  { followers: 2000, reward: 'Gold Tier', bonus: 'exclusive perks' },
   { followers: 5000, reward: 'Partner Manager', bonus: 'Dedicated support' },
-  { followers: 10000, reward: 'Platinum Tier', bonus: '+5% revenue share' }
+  { followers: 10000, reward: 'Platinum Tier', bonus: 'exclusive perks' }
 ];
 
 export default function CreatorSuccessProgram() {

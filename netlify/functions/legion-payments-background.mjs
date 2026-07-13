@@ -101,8 +101,8 @@ async function fulfillDenarii(db, meta, amountPaid, stripePaymentIntent, stripeS
 async function fulfillTip(db, meta, amountPaid) {
   const { user_email: senderEmail, creator_email, stream_id, message } = meta;
 
-  // Credit creator wallet (50% platform cut)
-  const creatorUsd = (amountPaid / 100) * 0.5;
+  // Credit creator wallet (60% creator share, canonical)
+  const creatorUsd = (amountPaid / 100) * 0.6;
   const creatorDenarii = Math.round(creatorUsd * 180); // $1 = 180 denarii
 
   const { data: creatorWallet } = await db.from('wallets').select('*').eq('user_email', creator_email).single().catch(() => ({ data: null }));

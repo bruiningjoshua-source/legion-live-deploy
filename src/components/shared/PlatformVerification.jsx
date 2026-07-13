@@ -18,7 +18,7 @@
  * 💰 MONETIZATION SYSTEM
  * - Virtual currency (Denarii) with Stripe checkout
  * - Gift system with 1-100x bundle support per gift
- * - Creator earnings (40% share after platform fee)
+ * - Creator earnings (60% share after platform fee)
  * - Direct viewer donations to linked wallets (PayPal/Venmo/CashApp)
  * - Host subscription gate ($5/month or $48/year) for monetization
  * - Tipping system for direct USD support
