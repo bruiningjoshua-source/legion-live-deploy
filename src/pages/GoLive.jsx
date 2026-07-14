@@ -170,7 +170,8 @@ export default function GoLive() {
   const goLiveMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Please sign in to go live');
-      if (streamType !== 'game_live' && (!hasPermissions || !cameraStream)) throw new Error('Camera permissions required');
+      const isAudioOnly = streamType === 'audio_live';
+      if (streamType !== 'game_live' && !isAudioOnly && (!hasPermissions || !cameraStream)) throw new Error('Camera permissions required');
       const trimmedTitle = (title.trim() || (selectedGame ? `Playing ${selectedGame.title}` : '')).trim();
       if (!trimmedTitle) throw new Error('Stream title is required');
       if (trimmedTitle.length > 100) throw new Error('Title must be under 100 characters');
@@ -239,7 +240,7 @@ export default function GoLive() {
 
       await ZegoService.initialize(ZEGO_APP_ID, serverUrl);
       await ZegoService.loginRoom(stream.id, userId, user.full_name || 'Host', token);
-      await ZegoService.createLocalStream();
+      await ZegoService.createLocalStream({ audioOnly: isAudioOnly });
       await ZegoService.startPublishing(stream.id);
 
       // Set creator live

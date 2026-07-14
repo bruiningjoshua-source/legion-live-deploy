@@ -2,13 +2,15 @@ import React from 'react';
 
 const MODES = [
   { id: 'solo',        label: 'LIVE' },
-  { id: 'pk_battle',   label: 'Audio LIVE' },
-  { id: 'game_live',   label: 'Game LIVE' },
+  { id: 'audio_live',  label: 'Audio' },
+  { id: 'multi_guest', label: 'Multi' },
+  { id: 'pk_battle',   label: 'PK' },
+  { id: 'game_live',   label: 'Game' },
 ];
 
 export default function GoLiveStreamModeSelector({ streamType, onStreamTypeChange }) {
   return (
-    <div className="flex items-center justify-center gap-6 py-2">
+    <div className="flex items-center justify-center gap-5 py-2">
       {MODES.map(mode => {
         const active = streamType === mode.id;
         return (

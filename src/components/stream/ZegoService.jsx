@@ -216,6 +216,16 @@ class ZegoStreamingService {
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+    // Audio-only mode (audio rooms): no camera at all, just the mic.
+    if (config.audioOnly) {
+      const audioConfig = { ANS: true, AGC: true, AEC: true };
+      if (config.microphoneId) audioConfig.deviceID = config.microphoneId;
+      this.localStream = await this.engine.createStream({ camera: { video: false, audio: audioConfig } });
+      this.isAudioOnly = true;
+      console.log('[Zego] Local AUDIO-ONLY stream created');
+      return this.localStream;
+    }
+
     const cameraConfig = {
       video: {
         width: config.width || (isMobile ? 480 : 720),
