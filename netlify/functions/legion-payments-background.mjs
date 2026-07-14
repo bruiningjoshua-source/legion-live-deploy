@@ -139,6 +139,20 @@ async function fulfillTip(db, meta, amountPaid) {
     metadata: { related_id: stream_id || null },
   }).catch((e) => console.error('[webhook] insert/update failed:', e?.message));
 
+  // Advance any active tip-goal banners on this stream by the earned denarii.
+  if (stream_id) {
+    try {
+      const { data: goals } = await db.from('stream_banners')
+        .select('id, goal_current, goal_target')
+        .eq('stream_id', stream_id).eq('kind', 'tip_goal').eq('visible', true);
+      for (const g of goals || []) {
+        await db.from('stream_banners')
+          .update({ goal_current: (g.goal_current || 0) + creatorDenarii, updated_at: new Date().toISOString() })
+          .eq('id', g.id);
+      }
+    } catch (e) { console.error('[webhook] tip goal update failed:', e?.message); }
+  }
+
   console.log(`[webhook] Tip fulfilled: $${amountPaid / 100}`);
 }
 

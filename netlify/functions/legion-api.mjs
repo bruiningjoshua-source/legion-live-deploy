@@ -563,6 +563,21 @@ const handlers = {
       .single();
     if (txError) throw txError;
 
+    // Advance any active gift-goal banners on this stream by the gift value.
+    if (streamId) {
+      try {
+        const db2 = admin || supabase;
+        const { data: goals } = await db2.from('stream_banners')
+          .select('id, goal_current')
+          .eq('stream_id', streamId).eq('kind', 'gift_goal').eq('visible', true);
+        for (const g of goals || []) {
+          await db2.from('stream_banners')
+            .update({ goal_current: (g.goal_current || 0) + amountDenarii, updated_at: new Date().toISOString() })
+            .eq('id', g.id);
+        }
+      } catch (e) { console.error('[sendGift] gift goal update failed:', e?.message); }
+    }
+
     return { success: true, transfer, transaction };
   },
 
