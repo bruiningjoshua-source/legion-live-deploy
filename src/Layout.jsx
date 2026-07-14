@@ -98,8 +98,13 @@ export default function Layout({ children, currentPageName }) {
   });
 
   useEffect(() => {
-    // Age verification gate disabled — all users set to verified in DB
-    setShowAgeVerification(false);
+    // Show the age gate on startup for any signed-in, non-admin user who
+    // hasn't verified their age yet. Blocks until they confirm 21+.
+    if (user && user.role !== 'admin' && !user.age_verified) {
+      setShowAgeVerification(true);
+    } else {
+      setShowAgeVerification(false);
+    }
   }, [user]);
 
   // Show tutorial for new users — cleanup ensures it only fires once
