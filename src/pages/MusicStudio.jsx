@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import LegionAIComposer from '@/components/music/LegionAIComposer';
 import { toast } from 'sonner';
+import { initSoundfontEngine, isSampledAvailable, playSampledNote, preloadInstruments } from '@/lib/soundfontEngine';
 import { base44 } from '@/api/base44Client';
 import MusicImportTab from '@/components/music/MusicImportTab';
 
@@ -308,6 +309,7 @@ let Tone = null;
 let samplerRef = null;
 let effectsChain = {};
 let masterBus = null;
+let useSampledInstruments = true;
 let mediaRecorder = null;
 let recordedChunks = [];
 let recorderDest = null;
@@ -338,6 +340,16 @@ async function initTone() {
   effectsChain.chorus.set({ wet: 0 });
 
   await effectsChain.reverb.generate?.();
+
+  // Wire the sampled-instrument (soundfont) engine to share Tone's audio context
+  // and route through the master bus, so real recorded instruments run through
+  // the same effects + recording tap as the synths.
+  try {
+    const ctx = Tone.getContext().rawContext || Tone.getContext();
+    initSoundfontEngine(ctx, masterBus.input || masterBus._nativeAudioNode || ctx.destination);
+    // Preload the most-used instruments in the background
+    preloadInstruments(['acoustic_grand_piano', 'electric_piano_1', 'acoustic_guitar_steel', 'violin']);
+  } catch (e) { console.warn('[studio] soundfont init failed:', e?.message); }
 
   return Tone;
 }
@@ -554,9 +566,18 @@ function buildInstrumentVoice(T, instrumentId, dest) {
 async function playPianoNote(note, duration = '8n', instrumentId = 'acoustic_grand_piano') {
   const T = await initTone();
   await T.start();
+
+  // Prefer the REAL sampled instrument (soundfont). Convert Tone duration to
+  // seconds for the sampler; fall back to the synth voice if the sample isn't
+  // loaded/available.
+  if (useSampledInstruments && isSampledAvailable(instrumentId)) {
+    const durSec = (() => { try { return T.Time(duration).toSeconds(); } catch { return 1.2; } })();
+    const played = await playSampledNote(instrumentId, note, Math.max(0.3, durSec + 0.6));
+    if (played) return;
+  }
+
   const dest = effectsChain.filter || masterBus || T.Destination;
   const voice = buildInstrumentVoice(T, instrumentId, dest);
-  // PluckSynth/MetalSynth trigger differently
   if (voice.triggerAttackRelease) {
     try { voice.triggerAttackRelease(note, duration); }
     catch { try { voice.triggerAttackRelease(duration); } catch(_){} }
