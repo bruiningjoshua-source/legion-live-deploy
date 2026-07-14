@@ -306,7 +306,10 @@ class ZegoStreamingService {
   async _playRemoteStream(streamId, userInfo) {
     try {
       const playOption = {
-        resourceMode: 2,
+        // 0 = RTC (real-time WebRTC). The host publishes over WebRTC, so viewers
+        // must play from the RTC network, NOT CDN. resourceMode 2 (CDN-only) was
+        // causing viewers to wait for a CDN stream that isn't there → black screen.
+        resourceMode: 0,
         adaptiveSwitch: true,
       };
       const remoteStream = await this.engine.startPlayingStream(streamId, playOption);
