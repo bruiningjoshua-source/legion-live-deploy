@@ -63,6 +63,29 @@ export default function WatchStream() {
   const [showModerationPanel, setShowModerationPanel] = useState(false);
   const [liveViewers, setLiveViewers] = useState([]);
   const [chatMutedAll, setChatMutedAll] = useState(false);
+  const [streamMods, setStreamMods] = useState([]);
+
+  // Load the appointed moderators for this stream (and keep them fresh via realtime).
+  useEffect(() => {
+    if (!streamId) return;
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase
+        .from('stream_moderators')
+        .select('moderator_email')
+        .eq('stream_id', streamId)
+        .eq('is_active', true);
+      if (active && data) {
+        setStreamMods(data.map(m => ({ email: m.moderator_email, display_name: m.moderator_email.split('@')[0] })));
+      }
+    };
+    load();
+    const chan = supabase
+      .channel(`mods_${streamId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stream_moderators', filter: `stream_id=eq.${streamId}` }, load)
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(chan); };
+  }, [streamId]);
 
   // Enforce moderation: listen for guest-state changes affecting THIS user
   // (kick/ban forces them out; mute/cam-down applies to their published tracks).
@@ -143,6 +166,8 @@ export default function WatchStream() {
     creatorSubscription?.admin_activated ||
     (creator?.user_email === user?.email && user?.role === 'admin');
   const isHost = user?.email === creator?.user_email;
+  const isModerator = !isHost && streamMods.some(m => m.email === user?.email);
+  const canModerate = isHost || isModerator;
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
   const userVipPoints = wallet?.vip_points || 0;
@@ -505,6 +530,19 @@ export default function WatchStream() {
         </div>
       )}
 
+      {/* Appointed moderators (not host) get a Moderate button */}
+      {isModerator && (
+        <div className="absolute z-30 right-3 flex items-center gap-2"
+          style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 92px)' }}>
+          <button
+            onClick={() => setShowModerationPanel(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md active:scale-95 transition-transform"
+            style={{ background: 'rgba(26,21,16,0.7)', border: '1px solid rgba(96,165,250,0.4)', color: '#bfdbfe' }}>
+            <span style={{ fontSize: '11px' }}>🛡</span> Moderate
+          </button>
+        </div>
+      )}
+
       {/* ── GIFT LEADERBOARD (below top bar, left side) ── */}
       <div className="absolute z-20 left-3 flex items-center gap-2"
         style={{ top: 'calc(max(12px, env(safe-area-inset-top)) + 72px)' }}>
@@ -655,7 +693,9 @@ export default function WatchStream() {
           streamId={streamId}
           creatorEmail={creator?.user_email}
           isHost={isHost}
+          currentUserIsMod={isModerator}
           viewers={liveViewers}
+          moderators={streamMods}
           onClose={() => setShowModerationPanel(false)}
           onKickViewer={(v) => moderate('kick', v.email || v.user_email)}
           onMuteViewerAudio={(v) => moderate('mute', v.email || v.user_email)}

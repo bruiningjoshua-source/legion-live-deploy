@@ -44,7 +44,8 @@ export default function ModerationPanel({
   onResetKicks,
   onMuteViewerAudio,
   onEndViewerCamera,
-  isHost = false
+  isHost = false,
+  currentUserIsMod = false
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState('viewers');
@@ -172,6 +173,7 @@ export default function ModerationPanel({
                       key={viewer.email || i}
                       viewer={viewer}
                       isHost={isHost}
+                      isMod={currentUserIsMod}
                       isModerator={moderators.some(m => m.email === viewer.email)}
                       onAppoint={() => appointModMutation.mutate(viewer)}
                       onKick={() => kickMutation.mutate(viewer)}
@@ -252,7 +254,7 @@ export default function ModerationPanel({
   );
 }
 
-function ViewerItem({ viewer, isHost, isModerator, onAppoint, onKick, onMuteAudio, onEndCamera }) {
+function ViewerItem({ viewer, isHost, isMod, isModerator, onAppoint, onKick, onMuteAudio, onEndCamera }) {
   return (
     <div className="flex items-center justify-between p-3 bg-stone-800/50 rounded-lg">
       <div className="flex items-center gap-3">
@@ -275,9 +277,9 @@ function ViewerItem({ viewer, isHost, isModerator, onAppoint, onKick, onMuteAudi
         )}
       </div>
       
-      {isHost && (
+      {(isHost || isMod) && (
         <div className="flex items-center gap-1">
-          {!isModerator && (
+          {isHost && !isModerator && (
             <Button
               size="icon"
               variant="ghost"
