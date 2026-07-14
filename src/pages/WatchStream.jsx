@@ -61,6 +61,48 @@ export default function WatchStream() {
   const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [showModerationPanel, setShowModerationPanel] = useState(false);
+  const [liveViewers, setLiveViewers] = useState([]);
+  const [chatMutedAll, setChatMutedAll] = useState(false);
+
+  // Enforce moderation: listen for guest-state changes affecting THIS user
+  // (kick/ban forces them out; mute/cam-down applies to their published tracks).
+  useEffect(() => {
+    if (!streamId || !user?.email) return;
+    const chan = supabase
+      .channel(`modstate_${streamId}_${user.email}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'stream_guest_states',
+        filter: `stream_id=eq.${streamId}`,
+      }, (payload) => {
+        const row = payload.new;
+        if (!row || row.guest_email !== user.email) return;
+        if (row.is_kicked) {
+          toast.error('You were removed from this stream by a moderator.');
+          ZegoService.leave().catch(() => {});
+          setTimeout(() => navigate(createPageUrl('Home')), 1500);
+          return;
+        }
+        if (typeof ZegoService.setLocalAudioMuted === 'function') ZegoService.setLocalAudioMuted(!!row.is_muted);
+        if (typeof ZegoService.setLocalVideoMuted === 'function') ZegoService.setLocalVideoMuted(!!row.cam_off);
+        if (row.is_muted) toast('A moderator muted your mic', { icon: '🔇' });
+        if (row.cam_off) toast('A moderator turned off your camera', { icon: '📷' });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(chan); };
+  }, [streamId, user?.email, navigate]);
+
+  // Send a moderation action to the backend (host + appointed mods only).
+  const moderate = useCallback(async (action, targetEmail, value) => {
+    if (!targetEmail) return;
+    try {
+      const res = await base44.functions.invoke('streamModerate', { streamId, action, targetEmail, value });
+      if (res.data?.error) throw new Error(res.data.error);
+      const verb = { kick: 'Kicked', ban: 'Banned', mute: 'Muted', cam_off: 'Camera off for', drop_to_chat: 'Dropped to chat', appoint_mod: 'Appointed', remove_mod: 'Removed mod', set_volume: 'Volume set for' }[action] || 'Updated';
+      toast.success(`${verb} ${targetEmail.split('@')[0]}`);
+    } catch (err) {
+      toast.error(`Action failed: ${err.message}`);
+    }
+  }, [streamId]);
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
   const [showChannelPoints, setShowChannelPoints] = useState(false);
   const [quality, setQuality] = useState('auto');
@@ -211,6 +253,20 @@ export default function WatchStream() {
         if (event.type === 'remoteStreamRemoved') {
           if (videoRef.current) videoRef.current.srcObject = null;
           setLiveStream(null);
+        }
+        if (event.type === 'userUpdate' && Array.isArray(event.userList)) {
+          setLiveViewers(prev => {
+            const map = new Map(prev.map(v => [v.email, v]));
+            if (event.updateType === 'ADD') {
+              event.userList.forEach(u => {
+                const email = u.userID || u.userId;
+                if (email && email !== user?.email) map.set(email, { email, display_name: u.userName || email.split('@')[0] });
+              });
+            } else if (event.updateType === 'DELETE') {
+              event.userList.forEach(u => map.delete(u.userID || u.userId));
+            }
+            return Array.from(map.values());
+          });
         }
         if (event.type === 'roomState' && event.state === 'DISCONNECTED') {
           queryClient.invalidateQueries({ queryKey: ['stream', streamId] });
@@ -598,7 +654,15 @@ export default function WatchStream() {
         <ModerationPanel
           streamId={streamId}
           creatorEmail={creator?.user_email}
+          isHost={isHost}
+          viewers={liveViewers}
           onClose={() => setShowModerationPanel(false)}
+          onKickViewer={(v) => moderate('kick', v.email || v.user_email)}
+          onMuteViewerAudio={(v) => moderate('mute', v.email || v.user_email)}
+          onEndViewerCamera={(v) => moderate('cam_off', v.email || v.user_email)}
+          onAppointModerator={(v) => moderate('appoint_mod', v.email || v.user_email)}
+          onRemoveModerator={(v) => moderate('remove_mod', v.email || v.user_email)}
+          onToggleChatMute={(muted) => setChatMutedAll(muted)}
         />
       )}
 

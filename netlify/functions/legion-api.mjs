@@ -107,6 +107,75 @@ const getCurrentUser = async (supabase, event) => {
 
 const handlers = {
 
+  // ─── Stream moderation (host + appointed admins) ─────────────────────────
+  async streamModerate({ admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { streamId, action, targetEmail, value } = params || {};
+    if (!streamId || !action) return json(400, { error: 'streamId and action required' });
+    const db = admin;
+
+    // Authorize: must be the stream host OR an active appointed moderator.
+    const { data: stream } = await db.from('streams').select('id, creator_id').eq('id', streamId).single().catch(() => ({ data: null }));
+    if (!stream) return json(404, { error: 'Stream not found' });
+    const { data: hostCreator } = await db.from('creators').select('user_email').eq('id', stream.creator_id).single().catch(() => ({ data: null }));
+    const isHost = hostCreator?.user_email === user.email;
+    let isMod = false;
+    if (!isHost) {
+      const { data: mod } = await db.from('stream_moderators')
+        .select('id').eq('stream_id', streamId).eq('moderator_email', user.email).eq('is_active', true).maybeSingle().catch(() => ({ data: null }));
+      isMod = !!mod;
+    }
+    if (!isHost && !isMod) return json(403, { error: 'Not authorized to moderate this stream' });
+
+    const upsertGuest = async (patch) => {
+      await db.from('stream_guest_states').upsert({
+        stream_id: streamId, guest_email: targetEmail, updated_by: user.email, updated_at: new Date().toISOString(), ...patch,
+      }, { onConflict: 'stream_id,guest_email' });
+    };
+    const logAction = async () => {
+      await db.from('moderation_actions').insert({
+        stream_id: streamId, action_type: action, target_email: targetEmail, moderator_email: user.email,
+        reason: (action === 'ban' || action === 'kick') ? (value || null) : null,
+      }).catch(() => {});
+    };
+
+    switch (action) {
+      case 'mute':        await upsertGuest({ is_muted: true }); break;
+      case 'unmute':      await upsertGuest({ is_muted: false }); break;
+      case 'cam_off':     await upsertGuest({ cam_off: true }); break;
+      case 'cam_on':      await upsertGuest({ cam_off: false }); break;
+      case 'set_volume':  await upsertGuest({ volume: Math.max(0, Math.min(100, parseInt(value ?? 100, 10))) }); break;
+      case 'drop_to_chat':await upsertGuest({ dropped_to_chat: true, cam_off: true }); break;
+      case 'kick':        await upsertGuest({ is_kicked: true }); break;
+      case 'ban':
+        await upsertGuest({ is_kicked: true });
+        await db.from('user_bans').insert({
+          banned_user_email: targetEmail, banned_by_email: user.email, stream_id: streamId,
+          is_active: true, is_platform_ban: false, is_global: false, reason: value || 'Stream violation',
+        }).catch(() => {});
+        break;
+      case 'unban':
+        await db.from('user_bans').update({ is_active: false })
+          .eq('stream_id', streamId).eq('banned_user_email', targetEmail).eq('is_active', true).catch(() => {});
+        break;
+      case 'appoint_mod':
+        if (!isHost) return json(403, { error: 'Only the host can appoint moderators' });
+        await db.from('stream_moderators').upsert({
+          stream_id: streamId, creator_email: user.email, moderator_email: targetEmail, is_active: true,
+        }, { onConflict: 'stream_id,moderator_email' }).catch(() => {});
+        break;
+      case 'remove_mod':
+        if (!isHost) return json(403, { error: 'Only the host can remove moderators' });
+        await db.from('stream_moderators').update({ is_active: false })
+          .eq('stream_id', streamId).eq('moderator_email', targetEmail).catch(() => {});
+        break;
+      default:
+        return json(400, { error: `Unknown action: ${action}` });
+    }
+    await logAction();
+    return { ok: true, action, targetEmail };
+  },
+
   // ─── Notify admins (stream reports, flags) ────────────────────────────────
   async notifyAdmins({ admin, user, params }) {
     const { type, message, stream_id } = params || {};

@@ -434,6 +434,10 @@ class ZegoStreamingService {
 
   // ─── MIC / CAMERA TOGGLE ──────────────────────────────────────
 
+  // Moderation-friendly aliases (muted = true means OFF).
+  async setLocalAudioMuted(muted) { return this.toggleMic(!muted); }
+  async setLocalVideoMuted(muted) { return this.toggleCamera(!muted); }
+
   async toggleMic(enabled) {
     if (!this.engine) return false;
     try {
