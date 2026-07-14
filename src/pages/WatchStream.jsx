@@ -29,6 +29,7 @@ import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
 import ZegoService from '@/components/stream/ZegoService';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
+import StreamBannerLayer from '@/components/stream/StreamBannerLayer';
 import ChannelPointsPanel from '@/components/stream/ChannelPointsPanel';
 import EntranceEffect from '@/components/stream/EntranceEffect';
 import HostLiveControls from '@/components/stream/HostLiveControls';
@@ -138,6 +139,7 @@ export default function WatchStream() {
   const [showMagicPanel, setShowMagicPanel] = useState(false);
 
   const videoRef = useRef(null);
+  const streamContainerRef = useRef(null);
   const liveStreamRef = useRef(null);
 
   useEffect(() => {
@@ -457,7 +459,7 @@ export default function WatchStream() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-40 overflow-hidden">
+    <div ref={streamContainerRef} className="fixed inset-0 bg-black z-40 overflow-hidden">
       {/* FULL SCREEN VIDEO */}
       <video
         ref={videoRef}
@@ -508,6 +510,14 @@ export default function WatchStream() {
         onPictureInPicture={() => enterPictureInPicture(videoRef.current)}
         viewerCount={stream?.viewer_count || 0}
         onAvatarClick={() => setShowHostProfile(true)}
+      />
+
+      {/* Custom host banners (tip/gift goals, links, text) — draggable/resizable */}
+      <StreamBannerLayer
+        streamId={streamId}
+        creatorEmail={creator?.user_email}
+        isHost={isHost}
+        containerRef={streamContainerRef}
       />
 
       {/* ── HOST END STREAM + CONTROLS — top-right cluster, clear of leaderboard ── */}
