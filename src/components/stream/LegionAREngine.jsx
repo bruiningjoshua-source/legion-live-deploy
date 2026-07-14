@@ -545,9 +545,10 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
         />
       )}
 
-      {/* AR Control Buttons (left side) */}
-      <div className="absolute left-3 z-30 flex flex-col items-center gap-3"
-        style={{ top: '45%', transform: 'translateY(-50%)' }}>
+      {/* AR Control Buttons — hug the LEFT EDGE, lower third (Bigo-style: keep
+          the center/face clear; tools live at the edges). */}
+      <div className="absolute left-2 z-30 flex flex-col items-center gap-2.5"
+        style={{ bottom: '180px' }}>
         {/* Quick FX panel */}
         <button
           onClick={() => { setShowPanel(v => !v); setShowAdvancedPanel(false); }}

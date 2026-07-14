@@ -441,9 +441,10 @@ export default function WatchStream() {
           </button>
           <button
             onClick={() => setShowEndDialog(true)}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md active:scale-95 transition-transform"
-            style={{ background: 'linear-gradient(180deg, #c42a2a 0%, #8b1a1a 100%)', border: '1px solid rgba(196,42,42,0.5)', color: '#ffe0e0', boxShadow: '0 2px 12px rgba(139,26,26,0.5)' }}>
-            <span style={{ fontSize: '11px' }}>⏹</span> End
+            aria-label="End stream"
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md active:scale-95 transition-transform"
+            style={{ background: 'rgba(26,21,16,0.7)', border: '1px solid rgba(196,42,42,0.5)', color: '#ff9a9a' }}>
+            <span style={{ fontSize: '13px' }}>✕</span>
           </button>
         </div>
       )}
