@@ -41,7 +41,7 @@ export default function DirectMessages() {
     try {
       const { data } = await supabase
         .from('direct_messages')
-        .select('sender_email, recipient_email, content, created_at, read, channel')
+        .select('sender_email, recipient_email, message, body, created_at, is_read, channel')
         .or(`sender_email.eq.${user.email},recipient_email.eq.${user.email}`)
         .eq('channel', activeChannel)
         .order('created_at', { ascending: false });
@@ -74,7 +74,7 @@ export default function DirectMessages() {
     setMessages(data || []);
     // Mark as read
     await supabase.from('direct_messages')
-      .update({ read: true })
+      .update({ is_read: true })
       .eq('recipient_email', user.email)
       .eq('sender_email', selectedConvo.email)
       .eq('channel', activeChannel)
