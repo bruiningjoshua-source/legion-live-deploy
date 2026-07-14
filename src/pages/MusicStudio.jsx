@@ -25,6 +25,7 @@ import {
   Sliders, Disc, Keyboard, Grid3x3, Activity, Upload, Download
 } from 'lucide-react';
 import LegionAIComposer from '@/components/music/LegionAIComposer';
+import MultitrackDAW from '@/components/music/MultitrackDAW';
 import { toast } from 'sonner';
 import { initSoundfontEngine, isSampledAvailable, playSampledNote, preloadInstruments } from '@/lib/soundfontEngine';
 import { base44 } from '@/api/base44Client';
@@ -759,6 +760,21 @@ function DJDeck({ deckId, color, onDeckReady }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MusicStudio() {
   const [activeTab, setActiveTab] = useState('pads'); // pads|keyboard|dj|mixer|sequencer|ai|samples
+  const [dawNodes, setDawNodes] = useState({ ctx: null, master: null });
+
+  // When the user opens the Tracks tab, make sure the audio engine is up and
+  // hand its context + master bus to the multitrack DAW.
+  useEffect(() => {
+    if (activeTab !== 'tracks') return;
+    let cancelled = false;
+    (async () => {
+      const T = await initTone();
+      if (cancelled) return;
+      const ctx = T.getContext().rawContext || T.getContext();
+      setDawNodes({ ctx, master: masterBus });
+    })();
+    return () => { cancelled = true; };
+  }, [activeTab]);
   const [isRecording, setIsRecording] = useState(false);
   const [lastRecording, setLastRecording] = useState(null); // { blob, url, name }
   const [isPublishing, setIsPublishing] = useState(false);
@@ -911,6 +927,7 @@ export default function MusicStudio() {
   const TABS = [
     { id: 'pads',      label: 'Sample Pads', icon: Grid3x3    },
     { id: 'keyboard',  label: 'Keyboard',    icon: Keyboard   },
+    { id: 'tracks',    label: 'Tracks',      icon: Activity   },
     { id: 'dj',        label: 'DJ Deck',     icon: Disc       },
     { id: 'mixer',     label: 'Mixer',       icon: Sliders    },
     { id: 'sequencer', label: 'Sequencer',   icon: Activity   },
@@ -1182,6 +1199,15 @@ export default function MusicStudio() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ── TRACKS (MULTITRACK DAW) TAB ── */}
+        {activeTab === 'tracks' && (
+          <MultitrackDAW
+            audioContext={dawNodes.ctx}
+            masterNode={dawNodes.master}
+            instrumentOutput={null}
+          />
         )}
 
         {/* ── DJ DECK TAB ── */}
