@@ -107,6 +107,80 @@ const getCurrentUser = async (supabase, event) => {
 
 const handlers = {
 
+  // ─── Multi-guest panel: seats + join requests ────────────────────────────
+  async streamPanelSeat({ admin, user, params }) {
+    if (!user) return json(401, { error: 'Unauthorized' });
+    const { streamId, action, seatIndex, targetEmail, targetName } = params || {};
+    if (!streamId || !action) return json(400, { error: 'streamId and action required' });
+    const db = admin;
+
+    const { data: stream } = await db.from('streams').select('id, creator_id').eq('id', streamId).single().catch(() => ({ data: null }));
+    if (!stream) return json(404, { error: 'Stream not found' });
+    const { data: hostCreator } = await db.from('creators').select('user_email').eq('id', stream.creator_id).single().catch(() => ({ data: null }));
+    const isHost = hostCreator?.user_email === user.email;
+    let isMod = false;
+    if (!isHost) {
+      const { data: mod } = await db.from('stream_moderators').select('id')
+        .eq('stream_id', streamId).eq('moderator_email', user.email).eq('is_active', true).maybeSingle().catch(() => ({ data: null }));
+      isMod = !!mod;
+    }
+    const hostOrMod = isHost || isMod;
+
+    switch (action) {
+      case 'lock':
+      case 'unlock': {
+        if (!hostOrMod) return json(403, { error: 'Only host/mods can lock seats' });
+        await db.from('stream_panel_seats').upsert({
+          stream_id: streamId, seat_index: seatIndex, is_locked: action === 'lock', updated_at: new Date().toISOString(),
+        }, { onConflict: 'stream_id,seat_index' });
+        return { ok: true, seatIndex, locked: action === 'lock' };
+      }
+      case 'request': {
+        // A viewer asks to join. Only allowed if at least one seat is unlocked/open.
+        await db.from('stream_join_requests').upsert({
+          stream_id: streamId, requester_email: user.email, requester_name: targetName || user.email.split('@')[0], status: 'pending',
+        }, { onConflict: 'stream_id,requester_email' });
+        return { ok: true, requested: true };
+      }
+      case 'accept': {
+        if (!hostOrMod) return json(403, { error: 'Only host/mods can accept' });
+        await db.from('stream_join_requests').update({ status: 'accepted' })
+          .eq('stream_id', streamId).eq('requester_email', targetEmail);
+        await db.from('stream_panel_seats').upsert({
+          stream_id: streamId, seat_index: seatIndex, occupant_email: targetEmail, occupant_name: targetName, is_locked: false, updated_at: new Date().toISOString(),
+        }, { onConflict: 'stream_id,seat_index' });
+        return { ok: true, accepted: targetEmail, seatIndex };
+      }
+      case 'decline': {
+        if (!hostOrMod) return json(403, { error: 'Only host/mods can decline' });
+        await db.from('stream_join_requests').update({ status: 'declined' })
+          .eq('stream_id', streamId).eq('requester_email', targetEmail);
+        return { ok: true, declined: targetEmail };
+      }
+      case 'invite': {
+        if (!hostOrMod) return json(403, { error: 'Only host/mods can invite' });
+        await db.from('stream_panel_seats').upsert({
+          stream_id: streamId, seat_index: seatIndex, occupant_email: targetEmail, occupant_name: targetName, is_locked: false, updated_at: new Date().toISOString(),
+        }, { onConflict: 'stream_id,seat_index' });
+        return { ok: true, invited: targetEmail, seatIndex };
+      }
+      case 'remove_occupant': {
+        if (!hostOrMod) return json(403, { error: 'Only host/mods can remove' });
+        await db.from('stream_panel_seats').update({ occupant_email: null, occupant_name: null })
+          .eq('stream_id', streamId).eq('seat_index', seatIndex);
+        return { ok: true, removed: seatIndex };
+      }
+      case 'leave': {
+        // Occupant leaves their own seat
+        await db.from('stream_panel_seats').update({ occupant_email: null, occupant_name: null })
+          .eq('stream_id', streamId).eq('occupant_email', user.email);
+        return { ok: true, left: true };
+      }
+      default:
+        return json(400, { error: `Unknown action: ${action}` });
+    }
+  },
+
   // ─── Stream moderation (host + appointed admins) ─────────────────────────
   async streamModerate({ admin, user, params }) {
     if (!user) return json(401, { error: 'Unauthorized' });

@@ -12,23 +12,36 @@ function getGridCols(count) {
   return 5;
 }
 
-function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, onKick, canKick }) {
+function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, onKick, canKick, isLocked, onToggleLock, canRequest, onRequest }) {
   const [muted, setMuted] = useState(false);
 
   if (isEmpty) {
     return (
       <motion.div
         whileTap={{ scale: 0.95 }}
-        onClick={() => canKick && onInvite?.(slotIndex)}
+        onClick={() => {
+          if (canKick) { onInvite?.(slotIndex); }        // host: tap to invite
+          else if (canRequest && !isLocked) { onRequest?.(slotIndex); } // viewer: request open seat
+        }}
         className="relative flex flex-col items-center justify-center bg-black/20
           rounded-xl overflow-hidden border border-white/[0.06] cursor-pointer"
         style={{ aspectRatio: "9/16" }}
       >
         <div className="w-10 h-10 rounded-full bg-white/[0.06] flex items-center justify-center mb-1">
-          <Lock className="w-4 h-4 text-white/20" />
+          <Lock className={`w-4 h-4 ${isLocked ? 'text-amber-400' : 'text-white/20'}`} />
         </div>
+        <span className={`text-[9px] font-semibold ${isLocked ? 'text-amber-400/70' : 'text-white/30'}`}>
+          {isLocked ? 'Locked' : (canKick ? 'Invite' : (canRequest ? 'Request' : 'Open'))}
+        </span>
+        {/* Host lock/unlock toggle */}
         {canKick && (
-          <span className="text-white/20 text-[9px] font-semibold">Invite</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleLock?.(slotIndex, !isLocked); }}
+            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 flex items-center justify-center"
+            aria-label={isLocked ? 'Unlock seat' : 'Lock seat'}
+          >
+            <Lock className={`w-2.5 h-2.5 ${isLocked ? 'text-amber-400' : 'text-white/40'}`} />
+          </button>
         )}
       </motion.div>
     );
@@ -92,9 +105,12 @@ export default function BigoMultiPanel({
   onInviteToPanel,
   onLeaveCall,
   onKickParticipant,
+  onToggleSeatLock,
+  onRequestSeat,
+  seatStates = {},
   isHost = false,
   layout = "grid",
-  maxParticipants = 20,
+  maxParticipants = 18,
 }) {
   const [currentLayout, setCurrentLayout] = useState(layout);
   const guestSlots = maxParticipants - 1;
@@ -124,14 +140,19 @@ export default function BigoMultiPanel({
           <ParticipantSlot participant={hostCreator} isHost={true} slotIndex={0} isEmpty={!hostCreator} canKick={false} />
           {Array.from({ length: guestSlots }).map((_, i) => {
             const guest = panelParticipants[i] || null;
+            const seatIdx = i + 1;
             return (
               <ParticipantSlot
                 key={i}
                 participant={guest}
                 isHost={false}
-                slotIndex={i + 1}
+                slotIndex={seatIdx}
                 isEmpty={!guest}
                 canKick={isHost}
+                isLocked={!!seatStates[seatIdx]?.is_locked}
+                onToggleLock={onToggleSeatLock}
+                canRequest={!isHost}
+                onRequest={onRequestSeat}
                 onInvite={onInviteToPanel}
                 onKick={onKickParticipant}
               />
