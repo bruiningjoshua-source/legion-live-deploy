@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { BackgroundSegmenter } from '@/lib/backgroundSegmentation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Layers, Hand } from 'lucide-react';
 import { createWebGLPipeline } from './shaders/FilterShaders';
@@ -241,6 +242,7 @@ const BG_EFFECTS = [
   { id: 'gradient_purple', name: 'Purple Studio', emoji: '💜' },
   { id: 'gradient_gold', name: 'Gold Studio', emoji: '🌟' },
   { id: 'gradient_dark', name: 'Dark Studio', emoji: '🖤' },
+  { id: 'custom_image', name: 'Upload Image', emoji: '🖼️' },
 ];
 
 // ── PARTICLE SYSTEM ──────────────────────────────────────────────────────
@@ -336,6 +338,10 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   const animFrameRef = useRef(null);
   const particlesRef = useRef([]);
   const fpsCounterRef = useRef({ frames: 0, last: Date.now() });
+  const segmenterRef = useRef(null);
+  const segFrameRef = useRef(0);
+  const segCanvasRef = useRef(null);
+  const [customBgUrl, setCustomBgUrl] = useState(null);
 
   const categories = useMemo(() => [
     { id: 'all', label: 'All' },
@@ -348,6 +354,31 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
     category === 'all' ? FILTERS : FILTERS.filter(f => f.category === category || f.id === 'none'),
     [category]
   );
+
+  // Which backgrounds require MediaPipe person-segmentation (real replacement).
+  const bgNeedsSegmentation = (bg) =>
+    bg.id.startsWith('blur') || bg.id.startsWith('gradient') || bg.id === 'custom_image';
+
+  const bgToSegConfig = useCallback((bg) => {
+    if (bg.id.startsWith('blur')) return { type: 'blur' };
+    if (bg.id === 'gradient_purple') return { type: 'gradient', from: '#1e1b4b', to: '#4c1d95' };
+    if (bg.id === 'gradient_gold') return { type: 'gradient', from: '#451a03', to: '#78350f' };
+    if (bg.id === 'gradient_dark') return { type: 'color', color: '#000000' };
+    if (bg.id === 'custom_image') return { type: 'image' };
+    return { type: 'none' };
+  }, []);
+
+  // Lazy-init the segmenter the first time a segmentation background is chosen.
+  useEffect(() => {
+    if (!bgNeedsSegmentation(activeBg)) return;
+    if (!segmenterRef.current) {
+      const seg = new BackgroundSegmenter();
+      seg.init().then(() => { segmenterRef.current = seg; }).catch(e => console.warn('[AR] seg init failed', e?.message));
+    }
+    if (segmenterRef.current && activeBg.id === 'custom_image') {
+      segmenterRef.current.setImageBackground(customBgUrl);
+    }
+  }, [activeBg, customBgUrl]);
 
   // Apply filter to canvas
   const applyFilterToCanvas = useCallback((filter, ctx, canvas) => {
@@ -420,16 +451,27 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       // Fallback to CPU canvas
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-      // Draw background if replacing
-      if (activeBg.id !== 'none' && !activeBg.id.startsWith('blur')) {
-        drawBackground(ctx, canvas, activeBg);
+      // Real background replacement via person segmentation.
+      const seg = segmenterRef.current;
+      const wantsSeg = bgNeedsSegmentation(activeBg) && seg && seg.ready;
+      if (bgNeedsSegmentation(activeBg) && seg) {
+        // Throttle segmentation to every 2nd frame to keep mobile usable.
+        segFrameRef.current = (segFrameRef.current + 1) % 2;
+        if (segFrameRef.current === 0) seg.send(video);
       }
 
-      // Draw video frame (mirrored for selfie)
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -W, 0, W, H);
-      ctx.restore();
+      let composited = false;
+      if (wantsSeg) {
+        composited = seg.composite(ctx, canvas, video, bgToSegConfig(activeBg));
+      }
+
+      if (!composited) {
+        // No segmentation (or not ready yet) — draw the raw mirrored video.
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, -W, 0, W, H);
+        ctx.restore();
+      }
 
       canvas.style.filter = activeFilter.css || '';
 
@@ -750,7 +792,19 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
                   <div className="grid grid-cols-2 gap-2">
                     {BG_EFFECTS.map(bg => (
                       <button key={bg.id}
-                        onClick={() => setActiveBg(bg)}
+                        onClick={() => {
+                          if (bg.id === 'custom_image') {
+                            const input = document.createElement('input');
+                            input.type = 'file'; input.accept = 'image/*';
+                            input.onchange = (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) { setCustomBgUrl(URL.createObjectURL(file)); setActiveBg(bg); }
+                            };
+                            input.click();
+                          } else {
+                            setActiveBg(bg);
+                          }
+                        }}
                         className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${
                           activeBg.id === bg.id
                             ? 'border-amber-400 bg-amber-500/20'
