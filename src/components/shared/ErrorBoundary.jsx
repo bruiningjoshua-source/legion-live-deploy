@@ -37,6 +37,12 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
+
+    // If the app crashed because it's running a STALE deploy (old chunks whose
+    // code no longer matches the current build), auto-recover once: clear caches
+    // and hard-reload against fresh assets. Guarded so it can't loop.
+    this._maybeRecoverStaleDeploy();
+
     try {
       console.error(
         `%c[Legion-Forged] Error Boundary Caught\n${FORGE_TAG}`,
@@ -44,7 +50,6 @@ class ErrorBoundary extends React.Component {
         '\nError:', error?.message,
         '\nStack:', error?.stack?.split('\n').slice(0,4).join('\n'),
       );
-      // Forward to ErrorTrackerService (non-blocking, won't re-throw)
       import('@/components/monitoring/ErrorTracker').then(({ default: errorTracker }) => {
         errorTracker.captureError(error, {
           source: 'ErrorBoundary',
@@ -53,6 +58,27 @@ class ErrorBoundary extends React.Component {
         });
       }).catch(() => {});
     } catch {}
+  }
+
+  async _maybeRecoverStaleDeploy() {
+    if (sessionStorage.getItem('ll_stale_recovered')) return;
+    try {
+      // Fetch the freshest index.html (bypass cache) and compare its referenced
+      // asset hashes against the scripts currently running.
+      const res = await fetch('/?_=' + Date.now(), { cache: 'no-store' });
+      const html = await res.text();
+      const freshAssets = new Set((html.match(/assets\/[A-Za-z0-9_-]+\.js/g) || []));
+      const loaded = Array.from(document.querySelectorAll('script[src]'))
+        .map(s => (s.getAttribute('src') || '').match(/assets\/[A-Za-z0-9_-]+\.js/)?.[0])
+        .filter(Boolean);
+      const isStale = loaded.some(src => freshAssets.size && !freshAssets.has(src));
+      if (isStale) {
+        sessionStorage.setItem('ll_stale_recovered', '1');
+        if ('caches' in window) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+        if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.update())); }
+        window.location.reload();
+      }
+    } catch (_) { /* best effort */ }
   }
 
   componentWillUnmount() {
