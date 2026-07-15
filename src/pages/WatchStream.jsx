@@ -90,43 +90,8 @@ export default function WatchStream() {
 
   // Enforce moderation: listen for guest-state changes affecting THIS user
   // (kick/ban forces them out; mute/cam-down applies to their published tracks).
-  useEffect(() => {
-    if (!streamId || !user?.email) return;
-    const chan = supabase
-      .channel(`modstate_${streamId}_${user.email}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'stream_guest_states',
-        filter: `stream_id=eq.${streamId}`,
-      }, (payload) => {
-        const row = payload.new;
-        if (!row || row.guest_email !== user.email) return;
-        if (row.is_kicked) {
-          toast.error('You were removed from this stream by a moderator.');
-          ZegoService.leave().catch(() => {});
-          setTimeout(() => navigate(createPageUrl('Home')), 1500);
-          return;
-        }
-        if (typeof ZegoService.setLocalAudioMuted === 'function') ZegoService.setLocalAudioMuted(!!row.is_muted);
-        if (typeof ZegoService.setLocalVideoMuted === 'function') ZegoService.setLocalVideoMuted(!!row.cam_off);
-        if (row.is_muted) toast('A moderator muted your mic', { icon: '🔇' });
-        if (row.cam_off) toast('A moderator turned off your camera', { icon: '📷' });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(chan); };
-  }, [streamId, user?.email, navigate]);
+  // NOTE: defined after `user` is declared (see below) to avoid a TDZ crash.
 
-  // Send a moderation action to the backend (host + appointed mods only).
-  const moderate = useCallback(async (action, targetEmail, value) => {
-    if (!targetEmail) return;
-    try {
-      const res = await base44.functions.invoke('streamModerate', { streamId, action, targetEmail, value });
-      if (res.data?.error) throw new Error(res.data.error);
-      const verb = { kick: 'Kicked', ban: 'Banned', mute: 'Muted', cam_off: 'Camera off for', drop_to_chat: 'Dropped to chat', appoint_mod: 'Appointed', remove_mod: 'Removed mod', set_volume: 'Volume set for' }[action] || 'Updated';
-      toast.success(`${verb} ${targetEmail.split('@')[0]}`);
-    } catch (err) {
-      toast.error(`Action failed: ${err.message}`);
-    }
-  }, [streamId]);
   const [showCoStreamPanel, setShowCoStreamPanel] = useState(false);
   const [showChannelPoints, setShowChannelPoints] = useState(false);
   const [quality, setQuality] = useState('auto');
@@ -170,6 +135,45 @@ export default function WatchStream() {
   const isHost = user?.email === creator?.user_email;
   const isModerator = !isHost && streamMods.some(m => m.email === user?.email);
   const canModerate = isHost || isModerator;
+
+  // Enforce moderation on THIS user (kick/ban forces out; mute/cam applies).
+  useEffect(() => {
+    if (!streamId || !user?.email) return;
+    const chan = supabase
+      .channel(`modstate_${streamId}_${user.email}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'stream_guest_states',
+        filter: `stream_id=eq.${streamId}`,
+      }, (payload) => {
+        const row = payload.new;
+        if (!row || row.guest_email !== user.email) return;
+        if (row.is_kicked) {
+          toast.error('You were removed from this stream by a moderator.');
+          ZegoService.leave().catch(() => {});
+          setTimeout(() => navigate(createPageUrl('Home')), 1500);
+          return;
+        }
+        if (typeof ZegoService.setLocalAudioMuted === 'function') ZegoService.setLocalAudioMuted(!!row.is_muted);
+        if (typeof ZegoService.setLocalVideoMuted === 'function') ZegoService.setLocalVideoMuted(!!row.cam_off);
+        if (row.is_muted) toast('A moderator muted your mic', { icon: '🔇' });
+        if (row.cam_off) toast('A moderator turned off your camera', { icon: '📷' });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(chan); };
+  }, [streamId, user?.email, navigate]);
+
+  // Send a moderation action to the backend (host + appointed mods only).
+  const moderate = useCallback(async (action, targetEmail, value) => {
+    if (!targetEmail) return;
+    try {
+      const res = await base44.functions.invoke('streamModerate', { streamId, action, targetEmail, value });
+      if (res.data?.error) throw new Error(res.data.error);
+      const verb = { kick: 'Kicked', ban: 'Banned', mute: 'Muted', cam_off: 'Camera off for', drop_to_chat: 'Dropped to chat', appoint_mod: 'Appointed', remove_mod: 'Removed mod', set_volume: 'Volume set for' }[action] || 'Updated';
+      toast.success(`${verb} ${targetEmail.split('@')[0]}`);
+    } catch (err) {
+      toast.error(`Action failed: ${err.message}`);
+    }
+  }, [streamId]);
   const walletBalance = wallet?.denarii_balance || 0;
   const streamEnded = stream?.status === 'ended';
   const userVipPoints = wallet?.vip_points || 0;

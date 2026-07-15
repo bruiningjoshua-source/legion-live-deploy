@@ -23,11 +23,13 @@ export const FILTER_CATEGORIES = [
 const TRENDING_IDS = ['mask_dog','mask_cat','mask_flames','mask_butterfly','mask_crown','beauty_soft','beauty_glam','porcelain','teal_orange','mask_neon_outline','mask_cyborg','mask_glitter_face','anime_soft','cel_shade','sparkle_eyes','sticker_stars','noir_grade','kodak_400','cyberpunk_2','mask_sunglasses_3d','particle_hearts','particle_flowers','particle_lightning','manga_lines','vtuber_ears','mask_angel_halo','golden_hour','anime_blush_lines','synthwave','horror_blood'];
 
 export function getTrendingFilters() {
-  return TRENDING_IDS.map(id => ADVANCED_FILTERS.find(f => f.id === id)).filter(Boolean);
+  if (!Array.isArray(ADVANCED_FILTERS)) return [];
+  return TRENDING_IDS.map(id => ADVANCED_FILTERS.find(f => f && f.id === id)).filter(Boolean);
 }
 
 export function getFilterById(id) {
-  return ADVANCED_FILTERS.find(f => f.id === id);
+  if (!Array.isArray(ADVANCED_FILTERS)) return null;
+  return ADVANCED_FILTERS.find(f => f && f.id === id) || null;
 }
 
 // ── Pixel manipulation helpers ──────────────────────────────────────────────

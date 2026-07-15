@@ -45,7 +45,7 @@ export default function PayoutConfigManager() {
   const { data: savedConfig, isLoading } = useQuery({
     queryKey: ['payout-config'],
     queryFn: async () => {
-      const configs = await base44.entities.PayoutConfig.filter({ config_name: 'default' }, null, 1);
+      const configs = await base44.entities.PlatformPayoutConfig.filter({}, null, 1);
       return configs[0] || null;
     }
   });
@@ -64,9 +64,9 @@ export default function PayoutConfigManager() {
   const saveMutation = useMutation({
     mutationFn: async (configData) => {
       if (savedConfig?.id) {
-        return base44.entities.PayoutConfig.update(savedConfig.id, configData);
+        return base44.entities.PlatformPayoutConfig.update(savedConfig.id, configData);
       } else {
-        return base44.entities.PayoutConfig.create(configData);
+        return base44.entities.PlatformPayoutConfig.create(configData);
       }
     },
     onSuccess: () => {
