@@ -13,6 +13,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { BackgroundSegmenter } from '@/lib/backgroundSegmentation';
+import { FaceMaskEngine, FACE_MASKS } from '@/lib/faceMaskEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Layers, Hand } from 'lucide-react';
 import { createWebGLPipeline } from './shaders/FilterShaders';
@@ -342,6 +343,9 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   const segFrameRef = useRef(0);
   const segCanvasRef = useRef(null);
   const [customBgUrl, setCustomBgUrl] = useState(null);
+  const [activeMask, setActiveMask] = useState(FACE_MASKS[0]);
+  const maskEngineRef = useRef(null);
+  const maskFrameRef = useRef(0);
 
   const categories = useMemo(() => [
     { id: 'all', label: 'All' },
@@ -379,6 +383,15 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
       segmenterRef.current.setImageBackground(customBgUrl);
     }
   }, [activeBg, customBgUrl]);
+
+  // Lazy-init the face-mask engine the first time a mask is chosen.
+  useEffect(() => {
+    if (activeMask.id === 'none') return;
+    if (!maskEngineRef.current) {
+      const eng = new FaceMaskEngine();
+      eng.init().then(() => { maskEngineRef.current = eng; }).catch(e => console.warn('[AR] mask init failed', e?.message));
+    }
+  }, [activeMask]);
 
   // Apply filter to canvas
   const applyFilterToCanvas = useCallback((filter, ctx, canvas) => {
@@ -477,6 +490,18 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
 
       // Apply color grade filter
       applyFilterToCanvas(activeFilter, ctx, canvas);
+
+      // Face-tracked masks (crown, ears, glasses, etc.)
+      const maskEng = maskEngineRef.current;
+      if (activeMask.id !== 'none' && maskEng) {
+        // Throttle face detection to every 2nd frame for mobile perf.
+        maskFrameRef.current = (maskFrameRef.current + 1) % 2;
+        if (maskFrameRef.current === 0) maskEng.send(video);
+        if (maskEng.ready) {
+          const mctx = canvas.getContext('2d', { willReadFrequently: true });
+          maskEng.draw(mctx, canvas, activeMask.id);
+        }
+      }
     }
 
     // Send processed stream to Zego
@@ -538,7 +563,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
     }
 
     animFrameRef.current = requestAnimationFrame(processFrame);
-  }, [videoRef, activeFilter, activeOverlay, activeBg, applyFilterToCanvas, drawBackground, handTrackingEnabled, faceTrackingEnabled]);
+  }, [videoRef, activeFilter, activeOverlay, activeBg, activeMask, applyFilterToCanvas, drawBackground, handTrackingEnabled, faceTrackingEnabled]);
 
   // Track whether advanced effects are active
   useEffect(() => {
@@ -549,7 +574,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   }, []);
 
   // Start/stop processing loop
-  const hasAnyEffect = activeFilter.id !== 'none' || activeOverlay.id !== 'none' || activeBg.id !== 'none' || advancedActive || handTrackingEnabled || faceTrackingEnabled;
+  const hasAnyEffect = activeFilter.id !== 'none' || activeOverlay.id !== 'none' || activeBg.id !== 'none' || activeMask.id !== 'none' || advancedActive || handTrackingEnabled || faceTrackingEnabled;
   
   useEffect(() => {
     if (!hasAnyEffect) {
@@ -687,6 +712,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
             <div className="flex border-b border-white/10">
               {[
                 { id: 'filters', label: 'Filters', emoji: '🎨' },
+                { id: 'masks', label: 'Masks', emoji: '🎭' },
                 { id: 'overlays', label: 'Overlays', emoji: '✨' },
                 { id: 'background', label: 'Background', emoji: '🖼️' },
               ].map(tab => (
@@ -763,6 +789,26 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
               )}
 
               {/* OVERLAYS TAB */}
+              {activeTab === 'masks' && (
+                <>
+                  <p className="text-white/20 text-xs mb-1">Face-tracked masks — they follow your face live</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {FACE_MASKS.map(mask => (
+                      <button key={mask.id}
+                        onClick={() => setActiveMask(mask)}
+                        className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${
+                          activeMask.id === mask.id
+                            ? 'border-amber-400 bg-amber-500/20'
+                            : 'border-white/10 bg-white/[0.03]'
+                        }`}>
+                        <span className="text-2xl">{mask.emoji}</span>
+                        <span className="text-[9px] text-white/60">{mask.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {activeTab === 'overlays' && (
                 <div className="grid grid-cols-3 gap-2">
                   {AR_OVERLAYS.map(overlay => (
@@ -825,6 +871,7 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
                 onClick={() => {
                   setActiveFilter(FILTERS[0]);
                   setActiveOverlay(AR_OVERLAYS[0]);
+                  setActiveMask(FACE_MASKS[0]);
                   setActiveBg(BG_EFFECTS[0]);
                   setIntensity(100);
                   particlesRef.current = [];
