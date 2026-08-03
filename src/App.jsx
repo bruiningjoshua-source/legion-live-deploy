@@ -1,5 +1,6 @@
 import React from 'react';
 import VTuberTest from '@/pages/VTuberTest';
+import LAFAvatarTest from '@/pages/LAFAvatarTest';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
     <>
       <Routes>
         <Route path="/vtuber-test" element={<VTuberTest />} />
+        <Route path="/laf-test" element={<LAFAvatarTest />} />
         <Route path="/" element={
           <LayoutWrapper currentPageName={mainPageKey}>
             <MainPage />
