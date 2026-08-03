@@ -45,9 +45,9 @@ export default function LAFAvatarTest() {
     scene.background = new THREE.Color(0x14101a);
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(28, mount.clientWidth / mount.clientHeight, 0.1, 20);
-    camera.position.set(0, 1.4, 2.2);
-    camera.lookAt(0, 1.3, 0);
+    const camera = new THREE.PerspectiveCamera(35, mount.clientWidth / mount.clientHeight, 0.01, 20);
+    camera.position.set(0, 0.62, 1.1);
+    camera.lookAt(0, 0.55, 0);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -106,6 +106,22 @@ export default function LAFAvatarTest() {
       if (avatarRef.current?.group) sceneRef.current.remove(avatarRef.current.group);
       sceneRef.current.add(group);
       avatarRef.current = { group, bones: result.bones, blendShapes: result.blendShapes };
+
+      // Auto-frame: fit the camera to the avatar's bounding box (upper body).
+      try {
+        const box = new THREE.Box3().setFromObject(group);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const cam = cameraRef.current;
+        // Frame the head/upper body: look at the top third, back off by height.
+        const focusY = box.max.y - size.y * 0.28;
+        const dist = Math.max(size.y, size.x) * 1.6 + 0.3;
+        cam.position.set(center.x, focusY, dist);
+        cam.lookAt(center.x, focusY, 0);
+        cam.updateProjectionMatrix();
+        console.log('[LAF] framed', { size, center: center.toArray(), focusY, dist });
+      } catch (e) { console.warn('[LAF] auto-frame failed', e?.message); }
+
       setStatus('Avatar built. Start tracking to drive it with your face.');
     } catch (e) {
       console.error('[LAF] build failed', e);
