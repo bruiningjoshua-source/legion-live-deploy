@@ -32,6 +32,10 @@ export default function VTuberTest() {
   const rafRef = useRef(null);
   const clockRef = useRef(new THREE.Clock());
   const sendFrameRef = useRef(0);
+  // Smoothing targets — detection writes these, the render loop lerps toward them
+  // so low-rate face detection still animates fluidly.
+  const targetRef = useRef({ pitch: 0, yaw: 0, roll: 0, mouth: 0, blink: 0 });
+  const currentRef = useRef({ pitch: 0, yaw: 0, roll: 0, mouth: 0, blink: 0 });
 
   const [status, setStatus] = useState('Booting…');
   const [tracking, setTracking] = useState(false);
@@ -53,7 +57,7 @@ export default function VTuberTest() {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     mount.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -74,7 +78,24 @@ export default function VTuberTest() {
     const animate = () => {
       rafRef.current = requestAnimationFrame(animate);
       const delta = clockRef.current.getDelta();
-      if (vrmRef.current) vrmRef.current.update(delta);
+      const vrm = vrmRef.current;
+      if (vrm) {
+        // Smoothly ease current values toward the latest detection targets.
+        const t = targetRef.current, c = currentRef.current;
+        const k = Math.min(1, delta * 12); // smoothing rate
+        c.pitch += (t.pitch - c.pitch) * k;
+        c.yaw   += (t.yaw   - c.yaw)   * k;
+        c.roll  += (t.roll  - c.roll)  * k;
+        c.mouth += (t.mouth - c.mouth) * k;
+        c.blink += (t.blink - c.blink) * k;
+
+        const head = vrm.humanoid?.getNormalizedBoneNode?.('head');
+        if (head) head.rotation.set(c.pitch, c.yaw, c.roll);
+        const em = vrm.expressionManager;
+        if (em) { em.setValue('aa', c.mouth); em.setValue('blink', c.blink); }
+
+        vrm.update(delta);
+      }
       renderer.render(scene, camera);
     };
     animate();
@@ -121,7 +142,7 @@ export default function VTuberTest() {
   const startTracking = useCallback(async () => {
     try {
       setStatus('Requesting camera…');
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, frameRate: 24 }, audio: false });
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
 
@@ -150,50 +171,37 @@ export default function VTuberTest() {
   }, []);
 
   const onFaceResults = useCallback((results) => {
-    // FPS
+    // FPS (detection rate)
     const f = fpsRef.current; f.n++;
     const now = performance.now();
     if (now - f.t > 1000) { setFps(f.n); f.n = 0; f.t = now; }
 
-    const vrm = vrmRef.current;
     const lm = results.multiFaceLandmarks?.[0];
-    if (!vrm || !lm) return;
+    if (!lm) return;
 
-    // ── Head rotation from landmark geometry ──
     const nose = lm[1], leftEye = lm[33], rightEye = lm[263], chin = lm[152], forehead = lm[10];
-    // yaw: nose x offset from face center; pitch: nose y vs eyes; roll: eye line tilt
     const cx = (leftEye.x + rightEye.x) / 2;
     const yaw = (nose.x - cx) * 3.0;
     const pitch = (nose.y - (leftEye.y + rightEye.y) / 2) * 3.0 - 0.15;
     const roll = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+    const faceH = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 1;
 
-    const head = vrm.humanoid?.getNormalizedBoneNode?.('head');
-    if (head) {
-      head.rotation.set(
-        THREE.MathUtils.clamp(pitch, -0.6, 0.6),
-        THREE.MathUtils.clamp(-yaw, -0.8, 0.8),
-        THREE.MathUtils.clamp(-roll, -0.6, 0.6)
-      );
-    }
+    const upperLip = lm[13], lowerLip = lm[14];
+    const mouthOpen = Math.min(1, (Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y) / faceH) * 6);
+    const blinkOf = (a, b) => {
+      const d = Math.hypot(lm[a].x - lm[b].x, lm[a].y - lm[b].y) / faceH;
+      return THREE.MathUtils.clamp(1 - d * 30, 0, 1);
+    };
+    const blink = Math.max(blinkOf(159, 145), blinkOf(386, 374));
 
-    // ── Expressions (blendshapes) ──
-    const em = vrm.expressionManager;
-    if (em) {
-      // Mouth open: vertical distance between top/bottom inner lip, normalized by face height
-      const faceH = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 1;
-      const upperLip = lm[13], lowerLip = lm[14];
-      const mouthOpen = Math.min(1, (Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y) / faceH) * 6);
-      em.setValue('aa', mouthOpen);
-
-      // Blink: eye aperture (upper/lower lid distance), normalized
-      const blink = (a, b) => {
-        const d = Math.hypot(lm[a].x - lm[b].x, lm[a].y - lm[b].y) / faceH;
-        return THREE.MathUtils.clamp(1 - d * 30, 0, 1);
-      };
-      const blinkL = blink(159, 145); // left eye upper/lower
-      const blinkR = blink(386, 374); // right eye upper/lower
-      em.setValue('blink', Math.max(blinkL, blinkR));
-    }
+    // Write TARGETS — the render loop smoothly interpolates toward these.
+    targetRef.current = {
+      pitch: THREE.MathUtils.clamp(pitch, -0.6, 0.6),
+      yaw: THREE.MathUtils.clamp(-yaw, -0.8, 0.8),
+      roll: THREE.MathUtils.clamp(-roll, -0.6, 0.6),
+      mouth: mouthOpen,
+      blink,
+    };
   }, []);
 
   const stopTracking = () => {
@@ -221,7 +229,7 @@ export default function VTuberTest() {
           Upload .vrm
           <input type="file" accept=".vrm,.glb" onChange={onUpload} style={{ display: 'none' }} />
         </label>
-        <span style={{ fontSize: 12, opacity: 0.5, alignSelf: 'center' }}>{fps} fps</span>
+        <span style={{ fontSize: 12, opacity: 0.5, alignSelf: 'center' }}>{fps} detections/s (motion is smoothed to render rate)</span>
       </div>
 
       <div style={{ fontSize: 13, marginBottom: 10, minHeight: 18, color: '#f5c86a' }}>{status}</div>
