@@ -1,4 +1,6 @@
 import React from 'react'
+import { initSentry } from './lib/sentry.js';
+initSentry();
 import { initColorScheme } from './lib/darkMode.js';
 initColorScheme();
 import { initAccentColor } from './lib/accentTheme.js';

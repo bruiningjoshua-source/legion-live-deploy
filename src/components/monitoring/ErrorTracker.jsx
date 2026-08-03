@@ -109,6 +109,11 @@ class ErrorTrackerService {
       this.errors.shift();
     }
 
+    // Forward to Sentry (production error monitoring) — non-blocking.
+    import('@/lib/sentry.js').then(({ reportError }) => {
+      reportError(error, { category, severity, ...context });
+    }).catch(() => {});
+
     // Log to console in development
     console.error('[ErrorTracker]', errorData);
 
@@ -164,6 +169,7 @@ export function ErrorTrackerProvider({ children, user }) {
   useEffect(() => {
     if (user) {
       errorTracker.setUser(user);
+      import('@/lib/sentry.js').then(({ setSentryUser }) => setSentryUser(user)).catch(() => {});
     }
   }, [user]);
 
