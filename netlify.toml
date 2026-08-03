@@ -9,7 +9,7 @@
   #  - ZEGOCLOUD_RTMP_DOMAIN / ZEGOCLOUD_WHIP_AUTH_KEY: WebRTC/RTMP ingest auth used
   #    by the browser to publish streams (not a server secret).
   #  - VITE_* and publishable keys are meant to be public.
-  SECRETS_SCAN_OMIT_KEYS = "ZEGOCLOUD_RTMP_DOMAIN,ZEGOCLOUD_WHIP_AUTH_KEY,VITE_STRIPE_PUBLISHABLE_KEY,ZEGOCLOUD_APP_ID"
+  SECRETS_SCAN_OMIT_KEYS = "ZEGOCLOUD_RTMP_DOMAIN,ZEGOCLOUD_WHIP_AUTH_KEY,VITE_STRIPE_PUBLISHABLE_KEY,ZEGOCLOUD_APP_ID,VITE_SENTRY_DSN"
 
 # Stripe webhook background function (15-min timeout vs 10s default)
 # Netlify detects background functions automatically from the -background suffix

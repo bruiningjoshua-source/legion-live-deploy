@@ -9,9 +9,9 @@
  */
 import * as Sentry from '@sentry/react';
 
-const DSN =
-  import.meta.env.VITE_SENTRY_DSN ||
-  'https://c16ce9958b1df151e9de11e369235109@o4511394910699520.ingest.us.sentry.io/4511848475394048';
+// DSN comes from the VITE_SENTRY_DSN env var (set in Netlify). Not hardcoded
+// here — an in-source secret trips Netlify's secret scanner and fails the build.
+const DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
 let started = false;
 
