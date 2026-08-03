@@ -1,6 +1,8 @@
 import React from 'react';
 import VTuberTest from '@/pages/VTuberTest';
 import LAFAvatarTest from '@/pages/LAFAvatarTest';
+import MoCapTest from '@/pages/MoCapTest';
+import BackdropTest from '@/pages/BackdropTest';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -70,6 +72,8 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/vtuber-test" element={<VTuberTest />} />
         <Route path="/laf-test" element={<LAFAvatarTest />} />
+        <Route path="/mocap-test" element={<MoCapTest />} />
+        <Route path="/backdrop-test" element={<BackdropTest />} />
         <Route path="/" element={
           <LayoutWrapper currentPageName={mainPageKey}>
             <MainPage />
