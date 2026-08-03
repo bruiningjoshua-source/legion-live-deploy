@@ -2208,6 +2208,56 @@ Reply directly and conversationally — no JSON, no preamble, just your response
 
 };
 
+// ─── Rate limiting ──────────────────────────────────────────────────────────
+// Per-action limits: [maxRequests, windowSeconds]. Tight on money/writes, loose
+// on reads. Anything not listed uses DEFAULT_LIMIT. Backed by the rate_limits
+// table via the atomic rl_hit() RPC (durable across stateless function calls).
+const RATE_LIMITS = {
+  // money / abuse-sensitive
+  sendGift:                 [30, 60],
+  createTipCheckout:        [20, 60],
+  createPPVCheckout:        [20, 60],
+  createDenariiCheckout:    [15, 60],
+  createHostSubscription:   [10, 60],
+  createFanClubCheckout:    [10, 60],
+  requestPayout:            [5, 300],
+  stripeConnectOnboard:     [5, 300],
+  // moderation / stream control
+  streamModerate:           [60, 60],
+  streamPanelSeat:          [60, 60],
+  generateZegoToken:        [30, 60],
+  // AI (cost-sensitive)
+  legionCompanionChat:      [20, 60],
+  aiModerateContent:        [40, 60],
+  // messaging / social (spam-prone)
+  notifyAdmins:             [10, 60],
+};
+const DEFAULT_LIMIT = [120, 60];   // generic per-user ceiling
+const ANON_LIMIT    = [40, 60];    // stricter for unauthenticated callers
+
+async function checkRateLimit(admin, fnName, user, event) {
+  const [max, windowSec] = RATE_LIMITS[fnName] || DEFAULT_LIMIT;
+  // Identify the caller: signed-in email, else client IP.
+  const ip = (event.headers?.['x-nf-client-connection-ip']
+           || event.headers?.['x-forwarded-for']
+           || 'unknown').split(',')[0].trim();
+  const identity = user?.email ? `email:${user.email}` : `ip:${ip}`;
+  const key = `${identity}:${fnName}`;
+  const limit = user?.email ? max : Math.min(max, ANON_LIMIT[0]);
+  const win = user?.email ? windowSec : ANON_LIMIT[1];
+  try {
+    const { data, error } = await admin.rpc('rl_hit', { p_key: key, p_window_seconds: win });
+    if (error) return { ok: true };            // fail-open: never block on limiter errors
+    const count = typeof data === 'number' ? data : (data?.[0]?.rl_hit ?? 0);
+    if (count > limit) {
+      return { ok: false, retryAfter: win };
+    }
+    return { ok: true };
+  } catch (_) {
+    return { ok: true };                        // fail-open
+  }
+}
+
 export const handler = async (event) => {
   // ── Steam OpenID return (GET redirect) ──
   if (event.httpMethod === 'GET' && event.queryStringParameters?.steam_return) {
@@ -2254,6 +2304,17 @@ export const handler = async (event) => {
     const supabase = getSupabase(event);
     const admin = getServiceClient();
     const user = await getCurrentUser(supabase, event);
+
+    // Rate limit before running the handler.
+    const rl = await checkRateLimit(admin, functionName, user, event);
+    if (!rl.ok) {
+      return {
+        statusCode: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': String(rl.retryAfter || 60) },
+        body: JSON.stringify({ error: 'Too many requests. Please slow down.', retryAfter: rl.retryAfter }),
+      };
+    }
+
     const result = await handler({ supabase, admin, user, params, event });
 
     if (result?.statusCode) return result;
