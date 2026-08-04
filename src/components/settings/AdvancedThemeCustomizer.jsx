@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { applyAccentColor, resetAccentColor } from '@/lib/accentTheme';
+import { applyAccentColor } from '@/lib/accentTheme';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";

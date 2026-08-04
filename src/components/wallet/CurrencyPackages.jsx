@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Crown, Star, Shield, Lock, Loader2, Zap, Coins, Check } from 'lucide-react';
+import { Sparkles, Crown, Shield, Lock, Loader2, Zap } from 'lucide-react';
 import GlassCard from '@/components/shared/GlassCard';
 
 // ── Pricing Philosophy ──────────────────────────────────────────────────────

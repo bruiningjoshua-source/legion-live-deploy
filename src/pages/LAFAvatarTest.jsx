@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { FaceMesh } from '@mediapipe/face_mesh';
 import {
-  buildAvatarFromLAF, applyPoseToAvatar, applyBlendShapes, setMicVolume,
+  buildAvatarFromLAF, applyPoseToAvatar, applyBlendShapes,
 } from '@/components/mocap/LegionAvatarRenderer';
 
 /**

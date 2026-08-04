@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SteamProfileCard from "@/components/gaming/SteamProfileCard";
@@ -18,14 +17,12 @@ import {
   Users,
   Star,
   ExternalLink,
-  Share2,
   Video,
   Play,
   Eye,
   MessageSquare
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
 import StreamCard from '@/components/stream/StreamCard';
 import SubscriptionTierCard from '@/components/creator/SubscriptionTierCard';
