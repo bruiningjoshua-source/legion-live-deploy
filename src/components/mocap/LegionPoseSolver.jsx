@@ -115,7 +115,32 @@ export function solvePose(poseLM) {
   const shMid =v3((lSh.x+rSh.x)/2,(lSh.y+rSh.y)/2,(lSh.z+rSh.z)/2);
   const spineV=norm(sub(shMid,hipMid));
   const spinePitch=Math.atan2(spineV.z??0,spineV.y)*0.5;
-  const raw = { spineRoll:clampA(spineRoll*0.3), spinePitch:clampA(spinePitch), lUpperArmZ:clampA(lUArmZ), rUpperArmZ:clampA(rUArmZ), lForeArmBend:clampA(lFArmB), rForeArmBend:clampA(rFArmB) };
+
+  // ── Legs (landmarks: 23/24 hip, 25/26 knee, 27/28 ankle) ──
+  // Only solve when the lower body is actually visible (good confidence), else
+  // hold neutral so a waist-up frame doesn't flail the legs.
+  const lKnee=poseLM[25], rKnee=poseLM[26], lAnk=poseLM[27], rAnk=poseLM[28];
+  const legVis = Math.min(lKnee?.visibility??0, rKnee?.visibility??0, lAnk?.visibility??0, rAnk?.visibility??0);
+  let legRig = { lUpperLegBend:0, rUpperLegBend:0, lLowerLegBend:0, rLowerLegBend:0, lUpperLegZ:0, rUpperLegZ:0 };
+  if (legVis > 0.5) {
+    // Thigh direction (hip->knee) vs. straight-down; knee bend (thigh vs shin).
+    const lThigh=norm(sub(lKnee,lHip)), rThigh=norm(sub(rKnee,rHip));
+    const lShin =norm(sub(lAnk,lKnee)), rShin =norm(sub(rAnk,rKnee));
+    const down = v3(0,1,0);
+    legRig = {
+      // forward/back thigh swing (walking) from the vertical angle of the thigh
+      lUpperLegBend: clampA(Math.atan2(lThigh.z??0, lThigh.y) ),
+      rUpperLegBend: clampA(Math.atan2(rThigh.z??0, rThigh.y) ),
+      // knee bend = angle between thigh and shin
+      lLowerLegBend: clampA(angleBetween(lThigh,lShin)),
+      rLowerLegBend: clampA(angleBetween(rThigh,rShin)),
+      // sideways thigh spread
+      lUpperLegZ: clampA(Math.atan2(lThigh.x, lThigh.y)),
+      rUpperLegZ: clampA(Math.atan2(rThigh.x, rThigh.y)),
+    };
+  }
+
+  const raw = { spineRoll:clampA(spineRoll*0.3), spinePitch:clampA(spinePitch), lUpperArmZ:clampA(lUArmZ), rUpperArmZ:clampA(rUArmZ), lForeArmBend:clampA(lFArmB), rForeArmBend:clampA(rFArmB), ...legRig, legVisible: legVis > 0.5 };
   const smoothed = smoothRig(_prevPose, raw, POSE_SMOOTH, now, _lastPoseTime);
   _prevPose = smoothed;
   _lastPoseTime = now;

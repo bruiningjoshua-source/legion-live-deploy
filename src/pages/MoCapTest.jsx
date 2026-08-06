@@ -64,6 +64,7 @@ export default function MoCapTest() {
         <div style={{ marginTop: 12, position: 'relative', minHeight: '70vh' }}>
           <LegionMoCap
             videoRef={videoRef}
+            initialVrmUrl="/avatars/luxe.vrm"
             onProcessedStream={() => { /* isolated test — no streaming */ }}
             onClose={() => {
               const s = videoRef.current?.srcObject;

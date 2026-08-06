@@ -373,6 +373,19 @@ export function applyPoseToAvatar(bones, faceRig, poseRig, handRig) {
     if (bones.rightUpperArm) bones.rightUpperArm.rotation.z = lerp(bones.rightUpperArm.rotation.z, poseRig.rUpperArmZ,  0.15);
     if (bones.leftLowerArm)  bones.leftLowerArm.rotation.z  = lerp(bones.leftLowerArm.rotation.z,  poseRig.lForeArmBend,0.15);
     if (bones.rightLowerArm) bones.rightLowerArm.rotation.z = lerp(bones.rightLowerArm.rotation.z, poseRig.rForeArmBend,0.15);
+
+    // ── Legs (only when lower body is visible; else ease back to neutral) ──
+    if (poseRig.legVisible) {
+      if (bones.leftUpperLeg)  { bones.leftUpperLeg.rotation.x  = lerp(bones.leftUpperLeg.rotation.x,  poseRig.lUpperLegBend, 0.15); bones.leftUpperLeg.rotation.z  = lerp(bones.leftUpperLeg.rotation.z,  poseRig.lUpperLegZ, 0.12); }
+      if (bones.rightUpperLeg) { bones.rightUpperLeg.rotation.x = lerp(bones.rightUpperLeg.rotation.x, poseRig.rUpperLegBend, 0.15); bones.rightUpperLeg.rotation.z = lerp(bones.rightUpperLeg.rotation.z, poseRig.rUpperLegZ, 0.12); }
+      if (bones.leftLowerLeg)  bones.leftLowerLeg.rotation.x  = lerp(bones.leftLowerLeg.rotation.x,  poseRig.lLowerLegBend, 0.15);
+      if (bones.rightLowerLeg) bones.rightLowerLeg.rotation.x = lerp(bones.rightLowerLeg.rotation.x, poseRig.rLowerLegBend, 0.15);
+    } else {
+      // Waist-up frame: keep legs relaxed/straight rather than frozen at random.
+      for (const b of ['leftUpperLeg','rightUpperLeg','leftLowerLeg','rightLowerLeg']) {
+        if (bones[b]) { bones[b].rotation.x = lerp(bones[b].rotation.x, 0, 0.06); }
+      }
+    }
   } else {
     if (bones.leftUpperArm)  bones.leftUpperArm.rotation.z  = lerp(bones.leftUpperArm.rotation.z,  0.15, 0.08);
     if (bones.rightUpperArm) bones.rightUpperArm.rotation.z = lerp(bones.rightUpperArm.rotation.z, -0.15,0.08);

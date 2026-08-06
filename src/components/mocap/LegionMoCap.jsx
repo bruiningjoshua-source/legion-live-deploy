@@ -54,7 +54,7 @@ const TABS = [
   { id:'backdrop', icon: Image,   label:'Scene'     },
 ];
 
-export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
+export default function LegionMoCap({ videoRef, onProcessedStream, onClose, initialVrmUrl }) {
   const canvasRef         = useRef(null);
   const rendererRef       = useRef(null);
   const sceneRef          = useRef(null);
@@ -341,6 +341,22 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose }) {
       setVrmLoading(false);
     }
   }, []);
+
+  // Auto-load a VRM from a URL (e.g. the test page passing Luxe) once ready.
+  useEffect(() => {
+    if (!initialVrmUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(initialVrmUrl);
+        const blob = await res.blob();
+        const name = initialVrmUrl.split('/').pop() || 'avatar.vrm';
+        const file = new File([blob], name, { type: 'application/octet-stream' });
+        if (!cancelled) handleVRMImport(file);
+      } catch (e) { console.error('[LegionMoCap] initial VRM load failed', e); }
+    })();
+    return () => { cancelled = true; };
+  }, [initialVrmUrl, handleVRMImport]);
 
   // ── Backdrop switch ─────────────────────────────────────────────────────
   const switchBackdrop = useCallback(async (presetId) => {
