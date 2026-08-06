@@ -100,7 +100,7 @@ export default function VTuberTest() {
     };
     animate();
 
-    loadVRM(DEFAULT_VRM);
+    loadVRM('/avatars/luxe.vrm');
 
     return () => {
       window.removeEventListener('resize', onResize);
@@ -225,6 +225,7 @@ export default function VTuberTest() {
         ) : (
           <button onClick={stopTracking} style={btn('#c42a2a', '#fff')}>■ Stop</button>
         )}
+        <button onClick={() => loadVRM('/avatars/luxe.vrm')} style={btn('#a855f7', '#fff')}>✦ Load Luxe</button>
         <label style={{ ...btn('rgba(255,255,255,0.08)', '#e8dcc8'), cursor: 'pointer' }}>
           Upload .vrm
           <input type="file" accept=".vrm,.glb" onChange={onUpload} style={{ display: 'none' }} />
