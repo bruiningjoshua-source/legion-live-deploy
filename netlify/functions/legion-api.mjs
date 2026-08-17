@@ -204,9 +204,12 @@ const handlers = {
   },
 
   /** Search / list games from the local cache (fast, no IGDB hit). */
-  async listGames({ supabase, params }) {
+  async listGames({ admin, params }) {
+    // Use the service-role client: the catalog is public data and reading it
+    // must not depend on RLS policy state (an RLS gap silently returned zero
+    // rows and blanked the whole games UI).
     const { search = '', mobileOnly = false, limit = 60, offset = 0 } = params || {};
-    let q = supabase.from('games_catalog').select('*');
+    let q = admin.from('games_catalog').select('*');
     if (mobileOnly) q = q.eq('is_mobile', true);
     if (search) q = q.ilike('name', `%${search}%`);
     q = q.order('popularity', { ascending: false })
@@ -2342,7 +2345,7 @@ const RATE_LIMITS = {
   // messaging / social (spam-prone)
   notifyAdmins:             [10, 60],
   // game catalog
-  syncGameCatalog:          [5, 300],
+  syncGameCatalog:          [60, 300],
   listGames:                [120, 60],
 };
 const DEFAULT_LIMIT = [120, 60];   // generic per-user ceiling
