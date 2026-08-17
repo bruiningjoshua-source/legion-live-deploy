@@ -110,10 +110,23 @@ function createEntityProxy(entityName) {
       if (error) throw error;
     },
 
-    subscribe(callback) {
+    /**
+     * Subscribe to realtime changes.
+     * @param {function} callback
+     * @param {object} [opts] - { filter: 'stream_id=eq.<id>', channel: 'unique-name' }
+     *   Passing a filter makes Supabase filter SERVER-SIDE so this client only
+     *   receives relevant rows (critical at scale — without it every client
+     *   receives every row for the table and discards most of it).
+     */
+    subscribe(callback, opts = {}) {
+      const { filter, channel: channelName } = opts;
+      const cfg = { event: '*', schema: 'public', table: tableName };
+      if (filter) cfg.filter = filter;
+      // Unique channel name per filter so subscriptions don't collide/share.
+      const name = channelName || `${tableName}-changes${filter ? `-${filter}` : ''}`;
       const channel = supabase
-        .channel(`${tableName}-changes`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, (payload) => {
+        .channel(name)
+        .on('postgres_changes', cfg, (payload) => {
           const typeMap = { INSERT: 'create', UPDATE: 'update', DELETE: 'delete' };
           callback({
             type: typeMap[payload.eventType] || payload.eventType,

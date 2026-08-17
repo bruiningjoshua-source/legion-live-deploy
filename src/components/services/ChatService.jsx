@@ -71,11 +71,15 @@ class ChatService {
 
   /** Subscribe to new chat messages for a stream */
   subscribe(streamId, onNewMessage) {
-    return base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data?.stream_id === streamId && event.type === 'create') {
-        onNewMessage(event.data);
-      }
-    });
+    // Server-side filter: only this stream's messages reach this client.
+    return base44.entities.ChatMessage.subscribe(
+      (event) => {
+        if (event.type === 'create' && event.data?.stream_id === streamId) {
+          onNewMessage(event.data);
+        }
+      },
+      { filter: `stream_id=eq.${streamId}`, channel: `chat-${streamId}` }
+    );
   }
 
   /** Add a message to the buffer with deduplication and cap */
