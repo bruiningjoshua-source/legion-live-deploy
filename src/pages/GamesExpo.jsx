@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayableGameModal, { PLAYABLE_GAMES } from '@/components/gaming/PlayableGameModal';
-import { getTrendingGames } from '@/components/gaming/SeededGameLibrary';
 import ScreenShareSetupModal from '@/components/gaming/ScreenShareSetupModal';
 import GooglePlaySearch, { GOOGLE_PLAY_CATALOG } from '@/components/gaming/GooglePlaySearch';
 
@@ -153,8 +152,23 @@ export default function GamesExpo() {
   const [showGoogleSearch, setShowGoogleSearch] = useState(false);
 
   const { data: games = [] } = useQuery({
-    queryKey: ['game-library-all'],
-    queryFn: () => base44.entities.GameLibrary.filter({ is_active: true }, '-rating', 500),
+    queryKey: ['game-library-igdb-all'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listGames', { limit: 200 });
+      const rows = res?.data?.games ?? res?.games ?? [];
+      return rows.map(g => ({
+        id: g.id,
+        title: g.name,
+        icon_url: g.cover_url,           // real IGDB cover art
+        genre: (g.genres || [])[0] || null,
+        platform: (g.platforms || []).join(', '),
+        rating: g.rating ? g.rating / 10 : null,
+        description: g.summary,
+        release_year: g.release_year,
+        is_mobile: g.is_mobile,
+        is_active: true,
+      }));
+    },
     staleTime: 10 * 60_000,
   });
 
@@ -162,14 +176,9 @@ export default function GamesExpo() {
   const allGames = useMemo(() => {
     const dbTitles = new Set(games.map(g => g.title?.toLowerCase()));
 
-    // Built-in HTML5 playable games not in DB
-    const seededAAA = (getTrendingGames(20) || []).map(g => ({
-      id: g.id, title: g.title, genre: g.category, platform: g.platform,
-      rating: g.rating, installs: g.viewers * 10, isFree: true,
-      description: `${g.publisher} · ${g.tags?.join(', ')}`,
-      emoji: g.emoji, _isSeeded: true, _streams: g.streams, _viewers: g.viewers,
-      _trending: g.trending, _featured: g.featured,
-    }));
+    // Seeded emoji placeholder games removed — the DB catalog is now real IGDB
+    // data with cover art, so the emoji stand-ins are no longer needed.
+    const seededAAA = [];
     const builtInGames = PLAYABLE_GAMES
       .filter(pg => !dbTitles.has(pg.title.toLowerCase()))
       .map(pg => ({

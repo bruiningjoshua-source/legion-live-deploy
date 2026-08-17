@@ -92,14 +92,23 @@ export default function GamingHub() {
     refetchInterval: 60_000,
   });
 
-  // Featured game library
+  // Featured game library — real IGDB catalog (cover art, ratings, platforms)
   const { data: gameLibrary = [] } = useQuery({
-    queryKey: ['game-library-featured'],
-    queryFn: () => base44.entities.GameLibrary.filter(
-      { is_streamable: true, is_active: true },
-      '-rating',
-      100
-    ),
+    queryKey: ['game-library-igdb'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listGames', { limit: 60 });
+      const rows = res?.data?.games ?? res?.games ?? [];
+      // Map catalog fields to the shape this page's cards expect.
+      return rows.map(g => ({
+        id: g.id,
+        title: g.name,
+        icon_url: g.cover_url,
+        rating: g.rating ? g.rating / 10 : null,   // IGDB is 0-100; cards show 0-10
+        platforms: g.platforms,
+        is_mobile: g.is_mobile,
+        release_year: g.release_year,
+      }));
+    },
     staleTime: 5 * 60_000,
   });
 
