@@ -11,7 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayableGameModal, { PLAYABLE_GAMES } from '@/components/gaming/PlayableGameModal';
 import ScreenShareSetupModal from '@/components/gaming/ScreenShareSetupModal';
-import GooglePlaySearch, { GOOGLE_PLAY_CATALOG } from '@/components/gaming/GooglePlaySearch';
+import GooglePlaySearch from '@/components/gaming/GooglePlaySearch';
 
 const GENRE_FILTERS = [
   { id: 'all', label: 'All' },
@@ -159,6 +159,32 @@ function GameCard({ game, onPlay, onStream }) {
 export default function GamesExpo() {
   const [genreFilter, setGenreFilter] = useState('all');
   const [tabFilter, setTabFilter] = useState('all');
+
+  // When the Mobile tab is active, fetch the mobile catalog directly so the full
+  // set is available (not just whichever mobile titles land in the popularity
+  // slice).
+  const { data: mobileGames = [] } = useQuery({
+    queryKey: ['games-mobile-igdb', tabFilter],
+    enabled: tabFilter === 'mobile',
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listGames', { limit: 1000, mobileOnly: true });
+      const rows = res?.data?.games ?? res?.games ?? [];
+      return rows.map(g => ({
+        id: g.id,
+        title: g.name,
+        icon_url: g.cover_url,
+        genre: (g.genres || [])[0] || null,
+        platform: (g.platforms || []).join(', '),
+        rating: g.rating ? g.rating / 10 : null,
+        description: g.summary,
+        release_year: g.release_year,
+        is_mobile: true,
+        is_active: true,
+      }));
+    },
+    staleTime: 10 * 60_000,
+  });
+
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState(null);
   const [showScreenShare, setShowScreenShare] = useState(false);
@@ -168,7 +194,7 @@ export default function GamesExpo() {
   const { data: games = [] } = useQuery({
     queryKey: ['game-library-igdb-all'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('listGames', { limit: 200 });
+      const res = await base44.functions.invoke('listGames', { limit: 1000 });
       const rows = res?.data?.games ?? res?.games ?? [];
       if (!rows.length) console.warn('[GamesExpo] listGames returned no rows');
       return rows.map(g => ({
@@ -207,26 +233,12 @@ export default function GamesExpo() {
         _isPlayable: true,
       }));
 
-    // Google Play catalog games not already in DB
-    const allTitles = new Set([...dbTitles, ...builtInGames.map(g => g.title.toLowerCase())]);
-    const googleGames = GOOGLE_PLAY_CATALOG
-      .filter(pg => !allTitles.has(pg.title.toLowerCase()))
-      .map(pg => ({
-        id: `gplay_${pg.playStoreId}`,
-        title: pg.title,
-        developer: pg.developer,
-        genre: pg.genre,
-        rating: pg.rating,
-        source: 'google_play',
-        source_id: pg.playStoreId,
-        play_store_url: `https://play.google.com/store/apps/details?id=${pg.playStoreId}`,
-        is_streamable: true,
-        requires_screen_share: true,
-        is_active: true,
-        _emoji: pg.icon,
-      }));
+    // Google Play emoji catalog removed: the IGDB catalog now supplies real
+    // mobile games (600+) WITH cover art, so the hardcoded emoji list would only
+    // duplicate them and reintroduce emoji cards.
+    const googleGames = [];
 
-    return [...seededAAA, ...games, ...builtInGames, ...googleGames];
+    return [...games, ...builtInGames, ...googleGames];
   }, [games]);
 
   const filteredGames = useMemo(() => {
@@ -244,11 +256,11 @@ export default function GamesExpo() {
         )
       );
     } else if (tabFilter === 'mobile') {
-      // IGDB catalog flags mobile via is_mobile (iOS/Android platforms).
-      // Keep the legacy fields as fallbacks for any older rows.
-      result = result.filter(g =>
-        g.is_mobile === true || g.source === 'google_play' || g.requires_screen_share
-      );
+      // Prefer the dedicated mobile fetch (full 600+); fall back to filtering
+      // the general list if it hasn't loaded yet.
+      result = mobileGames.length
+        ? mobileGames
+        : result.filter(g => g.is_mobile === true || g.source === 'google_play' || g.requires_screen_share);
     } else if (tabFilter === 'streamable') {
       result = result.filter(g => g.is_streamable !== false);
     }
@@ -262,7 +274,7 @@ export default function GamesExpo() {
     }
 
     return result;
-  }, [allGames, genreFilter, tabFilter, search]);
+  }, [allGames, genreFilter, tabFilter, search, mobileGames]);
 
   const handleStream = (game) => {
     setScreenShareGame(game.title);

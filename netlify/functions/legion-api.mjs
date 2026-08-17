@@ -213,7 +213,7 @@ const handlers = {
     if (mobileOnly) q = q.eq('is_mobile', true);
     if (search) q = q.ilike('name', `%${search}%`);
     q = q.order('popularity', { ascending: false })
-         .range(Number(offset) || 0, (Number(offset) || 0) + (Math.min(Number(limit) || 60, 200)) - 1);
+         .range(Number(offset) || 0, (Number(offset) || 0) + (Math.min(Number(limit) || 60, 1000)) - 1);
     const { data, error } = await q;
     if (error) throw error;
     return json(200, { games: data || [] });

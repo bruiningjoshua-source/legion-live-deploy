@@ -96,7 +96,7 @@ export default function GamingHub() {
   const { data: gameLibrary = [] } = useQuery({
     queryKey: ['game-library-igdb'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('listGames', { limit: 60 });
+      const res = await base44.functions.invoke('listGames', { limit: 1000 });
       const rows = res?.data?.games ?? res?.games ?? [];
       // Map catalog fields to the shape this page's cards expect.
       return rows.map(g => ({
