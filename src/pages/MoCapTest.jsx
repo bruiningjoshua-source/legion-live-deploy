@@ -59,9 +59,11 @@ export default function MoCapTest() {
       <video ref={videoRef} playsInline muted
         style={{ position: 'absolute', width: 160, height: 120, bottom: 16, right: 16, borderRadius: 8, opacity: camReady ? 0.8 : 0, transform: 'scaleX(-1)', border: '1px solid rgba(255,255,255,0.2)', zIndex: 60 }} />
 
-      {/* Mount the real mocap system once the camera is live */}
+      {/* Mount the real mocap system once the camera is live. LegionMoCap renders
+          as `absolute inset-0` inside its parent, so the parent MUST be
+          position:relative with an explicit size or the canvas collapses. */}
       {started && camReady && (
-        <div style={{ marginTop: 12, position: 'relative', minHeight: '70vh' }}>
+        <div style={{ marginTop: 12, position: 'relative', width: '100%', height: '75vh', background: '#000', borderRadius: 12, overflow: 'hidden' }}>
           <LegionMoCap
             videoRef={videoRef}
             initialVrmUrl="/avatars/luxe.vrm"
