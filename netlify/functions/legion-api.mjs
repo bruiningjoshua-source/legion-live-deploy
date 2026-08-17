@@ -105,7 +105,108 @@ const getCurrentUser = async (supabase, event) => {
   return data?.user || null;
 };
 
+
+// ─── IGDB (via Twitch OAuth) ────────────────────────────────────────────────
+// Real game catalog with cover art. Server-side only: the client secret must
+// never reach the browser. Token is cached in module scope between invocations.
+let _igdbToken = null;
+let _igdbTokenExp = 0;
+
+async function getIgdbToken() {
+  const id = process.env.TWITCH_CLIENT_ID;
+  const secret = process.env.TWITCH_CLIENT_SECRET;
+  if (!id || !secret) throw new Error('TWITCH_CLIENT_ID / TWITCH_CLIENT_SECRET not configured');
+  // Reuse the token until 60s before expiry.
+  if (_igdbToken && Date.now() < _igdbTokenExp - 60000) return _igdbToken;
+  const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${id}&client_secret=${secret}&grant_type=client_credentials`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Twitch auth failed: ${res.status}`);
+  const j = await res.json();
+  _igdbToken = j.access_token;
+  _igdbTokenExp = Date.now() + (j.expires_in || 3600) * 1000;
+  return _igdbToken;
+}
+
+async function igdbQuery(endpoint, body) {
+  const token = await getIgdbToken();
+  const res = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Client-ID': process.env.TWITCH_CLIENT_ID,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+    body,
+  });
+  if (!res.ok) throw new Error(`IGDB ${endpoint} failed: ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+// IGDB image helper: t_cover_big = 264x374, t_720p for screenshots
+const igdbImg = (hash, size = 't_cover_big') =>
+  hash ? `https://images.igdb.com/igdb/image/upload/${size}/${hash}.jpg` : null;
+
+const MOBILE_PLATFORM_IDS = [39, 34, 55]; // iOS, Android, Mobile
+
+function mapIgdbGame(g) {
+  const platforms = (g.platforms || []).map(p => p.name).filter(Boolean);
+  const platformIds = (g.platforms || []).map(p => p.id);
+  return {
+    id: g.id,
+    name: g.name,
+    slug: g.slug || null,
+    summary: g.summary ? String(g.summary).slice(0, 800) : null,
+    cover_url: igdbImg(g.cover?.image_id, 't_cover_big'),
+    screenshot_url: igdbImg(g.screenshots?.[0]?.image_id, 't_720p'),
+    rating: g.total_rating ? Math.round(g.total_rating * 10) / 10 : null,
+    release_year: g.first_release_date ? new Date(g.first_release_date * 1000).getFullYear() : null,
+    genres: (g.genres || []).map(x => x.name).filter(Boolean),
+    platforms,
+    is_mobile: platformIds.some(id => MOBILE_PLATFORM_IDS.includes(id)),
+    publisher: g.involved_companies?.find(c => c.publisher)?.company?.name || null,
+    popularity: g.total_rating_count || 0,
+    updated_at: new Date().toISOString(),
+  };
+}
+
 const handlers = {
+
+  /** Sync games from IGDB into games_catalog. Admin-only (it writes the cache). */
+  async syncGameCatalog({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { mobileOnly = false, limit = 200, offset = 0 } = params || {};
+    // Pull popular games with cover art. Mobile pass filters to iOS/Android.
+    const platformFilter = mobileOnly ? '& platforms = (39,34,55)' : '';
+    const body = `
+      fields name,slug,summary,cover.image_id,screenshots.image_id,total_rating,total_rating_count,
+             first_release_date,genres.name,platforms.id,platforms.name,
+             involved_companies.publisher,involved_companies.company.name;
+      where cover != null & total_rating_count > 5 ${platformFilter};
+      sort total_rating_count desc;
+      limit ${Math.min(Number(limit) || 200, 500)};
+      offset ${Number(offset) || 0};
+    `;
+    const games = await igdbQuery('games', body);
+    const rows = games.map(mapIgdbGame);
+    if (rows.length) {
+      const { error } = await admin.from('games_catalog').upsert(rows, { onConflict: 'id' });
+      if (error) throw error;
+    }
+    return json(200, { synced: rows.length, mobileOnly, offset });
+  },
+
+  /** Search / list games from the local cache (fast, no IGDB hit). */
+  async listGames({ supabase, params }) {
+    const { search = '', mobileOnly = false, limit = 60, offset = 0 } = params || {};
+    let q = supabase.from('games_catalog').select('*');
+    if (mobileOnly) q = q.eq('is_mobile', true);
+    if (search) q = q.ilike('name', `%${search}%`);
+    q = q.order('popularity', { ascending: false })
+         .range(Number(offset) || 0, (Number(offset) || 0) + (Math.min(Number(limit) || 60, 200)) - 1);
+    const { data, error } = await q;
+    if (error) throw error;
+    return json(200, { games: data || [] });
+  },
+
 
   // ─── Multi-guest panel: seats + join requests ────────────────────────────
   async streamPanelSeat({ admin, user, params }) {
@@ -2231,6 +2332,9 @@ const RATE_LIMITS = {
   aiModerateContent:        [40, 60],
   // messaging / social (spam-prone)
   notifyAdmins:             [10, 60],
+  // game catalog
+  syncGameCatalog:          [5, 300],
+  listGames:                [120, 60],
 };
 const DEFAULT_LIMIT = [120, 60];   // generic per-user ceiling
 const ANON_LIMIT    = [40, 60];    // stricter for unauthenticated callers
