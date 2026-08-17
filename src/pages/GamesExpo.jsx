@@ -53,7 +53,16 @@ function GameCard({ game, onPlay, onStream }) {
       {/* Thumbnail */}
       <div className="relative aspect-square bg-gradient-to-br from-stone-900 to-stone-800 overflow-hidden">
         {game.icon_url ? (
-          <img src={game.icon_url} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={game.icon_url} alt={game.title}
+            loading="lazy"
+            onError={(e) => {
+              // Cover failed to load — swap to the placeholder instead of a
+              // broken-image box.
+              e.currentTarget.style.display = 'none';
+              const ph = e.currentTarget.parentElement?.querySelector('[data-cover-fallback]');
+              if (ph) ph.style.display = 'flex';
+            }}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (game._emoji || game.emoji) ? (
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-stone-900 to-stone-800">
             {game._emoji || game.emoji}
@@ -63,6 +72,11 @@ function GameCard({ game, onPlay, onStream }) {
             <Gamepad2 className="w-10 h-10 text-white/10" />
           </div>
         )}
+        {/* Shown only if the cover image fails to load */}
+        <div data-cover-fallback style={{ display: 'none' }}
+          className="absolute inset-0 w-full h-full items-center justify-center bg-gradient-to-br from-stone-900 to-stone-800">
+          <Gamepad2 className="w-10 h-10 text-white/20" />
+        </div>
 
         {/* Overlay badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -156,6 +170,7 @@ export default function GamesExpo() {
     queryFn: async () => {
       const res = await base44.functions.invoke('listGames', { limit: 200 });
       const rows = res?.data?.games ?? res?.games ?? [];
+      if (!rows.length) console.warn('[GamesExpo] listGames returned no rows');
       return rows.map(g => ({
         id: g.id,
         title: g.name,
@@ -229,7 +244,11 @@ export default function GamesExpo() {
         )
       );
     } else if (tabFilter === 'mobile') {
-      result = result.filter(g => g.source === 'google_play' || g.requires_screen_share);
+      // IGDB catalog flags mobile via is_mobile (iOS/Android platforms).
+      // Keep the legacy fields as fallbacks for any older rows.
+      result = result.filter(g =>
+        g.is_mobile === true || g.source === 'google_play' || g.requires_screen_share
+      );
     } else if (tabFilter === 'streamable') {
       result = result.filter(g => g.is_streamable !== false);
     }
