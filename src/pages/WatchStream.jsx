@@ -1,6 +1,7 @@
 import { useMiniPlayer, enterPictureInPicture } from '@/components/stream/MiniPlayerContext';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase/supabaseCore';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
