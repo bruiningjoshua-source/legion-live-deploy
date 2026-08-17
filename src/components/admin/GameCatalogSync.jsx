@@ -24,9 +24,15 @@ export default function GameCatalogSync() {
         const res = await base44.functions.invoke('syncGameCatalog', {
           limit: 200, offset, mobileOnly,
         });
-        const n = res?.data?.synced ?? res?.synced ?? 0;
+        const payload = res?.data ?? res ?? {};
+        if (payload.error) {
+          addLog(`ERROR [${payload.stage || '?'}]: ${payload.error}`);
+          toast.error('Sync failed — see log');
+          break;
+        }
+        const n = payload.synced ?? 0;
         total += n;
-        addLog(`page ${i + 1}: +${n} games (offset ${offset})`);
+        addLog(`page ${i + 1}: fetched ${payload.fetched ?? '?'}, saved ${n} (offset ${offset})`);
         if (n === 0) break;               // no more results
         await new Promise(r => setTimeout(r, 400));  // be gentle on IGDB rate limits
       }

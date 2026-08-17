@@ -185,13 +185,22 @@ const handlers = {
       limit ${Math.min(Number(limit) || 200, 500)};
       offset ${Number(offset) || 0};
     `;
-    const games = await igdbQuery('games', body);
+    let games;
+    try {
+      games = await igdbQuery('games', body);
+    } catch (e) {
+      // Surface the REAL IGDB/Twitch error to the caller instead of a generic 500.
+      return json(200, { synced: 0, error: `IGDB request failed: ${e.message}`, stage: 'igdb' });
+    }
+    if (!Array.isArray(games)) {
+      return json(200, { synced: 0, error: `IGDB returned unexpected shape: ${JSON.stringify(games).slice(0,300)}`, stage: 'igdb-shape' });
+    }
     const rows = games.map(mapIgdbGame);
     if (rows.length) {
       const { error } = await admin.from('games_catalog').upsert(rows, { onConflict: 'id' });
-      if (error) throw error;
+      if (error) return json(200, { synced: 0, error: `DB upsert failed: ${error.message}`, stage: 'db' });
     }
-    return json(200, { synced: rows.length, mobileOnly, offset });
+    return json(200, { synced: rows.length, fetched: games.length, mobileOnly, offset });
   },
 
   /** Search / list games from the local cache (fast, no IGDB hit). */
