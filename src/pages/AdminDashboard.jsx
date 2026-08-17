@@ -29,6 +29,7 @@ import formatCount from '@/components/shared/FormatCount';
 import PayoutConfigManager from '@/components/admin/PayoutConfigManager';
 import FraudMonitoringDashboard from '@/components/admin/FraudMonitoringDashboard';
 import GrantMonetization from '@/components/admin/GrantMonetization';
+import GameCatalogSync from '@/components/admin/GameCatalogSync';
 
 // Admin authorization is enforced by user.role === 'admin' (managed server-side).
 // No hardcoded email lists — admin roles are assigned in the platform.
@@ -422,6 +423,7 @@ export default function AdminDashboard() {
 
           {/* Settings/Controls */}
           <TabsContent value="settings" className="space-y-4">
+            <GameCatalogSync />
             <Card className="bg-white/5 backdrop-blur-sm border-red-500/20">
               <CardHeader className="pb-2">
                 <CardTitle className="text-red-400 text-base flex items-center gap-2">
