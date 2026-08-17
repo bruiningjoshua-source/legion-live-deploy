@@ -78,7 +78,12 @@ export default function GiftTest() {
               borderRadius: 12, padding: '12px 6px', display: 'flex', flexDirection: 'column',
               alignItems: 'center', gap: 4, opacity: g.is_active === false ? 0.45 : 1, cursor: 'pointer',
             }}>
-            <span style={{ fontSize: 26 }}>{g.icon || '🎁'}</span>
+            {g.thumbnail_url ? (
+              <img src={g.thumbnail_url} alt={g.name}
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block'; }}
+                style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8 }} />
+            ) : null}
+            <span style={{ fontSize: 26, display: g.thumbnail_url ? 'none' : 'block' }}>{g.icon || '🎁'}</span>
             <span style={{ fontSize: 10, color: '#e8dcc8', textAlign: 'center', lineHeight: 1.2 }}>{g.name}</span>
             <span style={{ fontSize: 10, color: '#f5a623', fontWeight: 700 }}>{g.cost_denarii?.toLocaleString()}</span>
             <span style={{ fontSize: 8, opacity: 0.5 }}>
@@ -88,25 +93,27 @@ export default function GiftTest() {
         ))}
       </div>
 
-      {/* Animation stage — renders the real gift animation components */}
+      {/* Animation stage — the gift components already render as `fixed inset-0`
+          overlays, so DON'T wrap them in another fixed container (that broke
+          stacking and showed only the black backdrop). Render them directly. */}
       {playing && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 90, pointerEvents: 'none' }}>
-          {isVideo(playing.gift) ? (
-            <GiftVideoOverlay
-              gift={playing.gift}
-              sender={{ display_name: 'Test Sender', user_email: 'test@legion.live' }}
-              quantity={playing.quantity}
-              onComplete={() => setPlaying(null)}
-            />
-          ) : (
-            <GiftAnimation
-              gift={playing.gift}
-              sender={{ display_name: 'Test Sender', user_email: 'test@legion.live' }}
-              quantity={playing.quantity}
-              onComplete={() => setPlaying(null)}
-            />
-          )}
-        </div>
+        isVideo(playing.gift) ? (
+          <GiftVideoOverlay
+            key={playing.gift.id + playing.quantity}
+            gift={playing.gift}
+            sender={{ display_name: 'Test Sender', user_email: 'test@legion.live' }}
+            quantity={playing.quantity}
+            onComplete={() => setPlaying(null)}
+          />
+        ) : (
+          <GiftAnimation
+            key={playing.gift.id + playing.quantity}
+            gift={playing.gift}
+            sender={{ display_name: 'Test Sender', user_email: 'test@legion.live' }}
+            quantity={playing.quantity}
+            onComplete={() => setPlaying(null)}
+          />
+        )
       )}
 
       {playing && (

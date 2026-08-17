@@ -38,6 +38,18 @@ export default function GiftVideoOverlay({ gift, sender, quantity = 1, onComplet
       setEnded(true);
       setTimeout(() => onComplete?.(), 400);
     }, (gift.duration_seconds || 5) * 1000 + 300);
+
+    // Belt-and-braces: some mobile browsers ignore the autoPlay attribute.
+    // Explicitly call play() (muted, so it's permitted) once mounted.
+    const v = videoRef.current;
+    if (v) {
+      v.muted = true;
+      const p = v.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(err => console.warn('[GiftVideo] autoplay blocked:', err?.message));
+      }
+    }
+
     return () => clearTimeout(timer);
   }, [gift, onComplete, tierColor]);
 
@@ -72,12 +84,20 @@ export default function GiftVideoOverlay({ gift, sender, quantity = 1, onComplet
                 ref={videoRef}
                 src={gift.video_url}
                 autoPlay
-                muted={false}
+                // MUST start muted: mobile browsers block autoplay of unmuted
+                // video, which silently fails and leaves a black overlay.
+                // We unmute once playback has actually started.
+                muted
                 playsInline
                 preload="auto"
                 className="w-full h-auto rounded-2xl"
                 style={{
                   filter: `drop-shadow(0 0 ${isBigGift ? 40 : 20}px ${tierColor}aa)`,
+                }}
+                onPlaying={(e) => {
+                  // Try to enable sound now that playback is running. If the
+                  // browser refuses, the video still plays silently.
+                  try { e.currentTarget.muted = false; } catch (_) {}
                 }}
                 onEnded={() => setEnded(true)}
                 onError={() => { setEnded(true); }}
