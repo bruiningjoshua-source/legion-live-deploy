@@ -5,6 +5,7 @@ import MoCapTest from '@/pages/MoCapTest';
 import BackdropTest from '@/pages/BackdropTest';
 import SplatTest from '@/pages/SplatTest';
 import GiftTest from '@/pages/GiftTest';
+import AdminOnlyRoute from '@/components/shared/AdminOnlyRoute';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -72,12 +73,12 @@ const AuthenticatedApp = () => {
   return (
     <>
       <Routes>
-        <Route path="/vtuber-test" element={<VTuberTest />} />
-        <Route path="/laf-test" element={<LAFAvatarTest />} />
-        <Route path="/mocap-test" element={<MoCapTest />} />
-        <Route path="/backdrop-test" element={<BackdropTest />} />
-        <Route path="/splat-test" element={<SplatTest />} />
-        <Route path="/gift-test" element={<GiftTest />} />
+        <Route path="/vtuber-test" element={<AdminOnlyRoute><VTuberTest /></AdminOnlyRoute>} />
+        <Route path="/laf-test" element={<AdminOnlyRoute><LAFAvatarTest /></AdminOnlyRoute>} />
+        <Route path="/mocap-test" element={<AdminOnlyRoute><MoCapTest /></AdminOnlyRoute>} />
+        <Route path="/backdrop-test" element={<AdminOnlyRoute><BackdropTest /></AdminOnlyRoute>} />
+        <Route path="/splat-test" element={<AdminOnlyRoute><SplatTest /></AdminOnlyRoute>} />
+        <Route path="/gift-test" element={<AdminOnlyRoute><GiftTest /></AdminOnlyRoute>} />
         <Route path="/" element={
           <LayoutWrapper currentPageName={mainPageKey}>
             <MainPage />
