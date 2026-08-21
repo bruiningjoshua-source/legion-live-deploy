@@ -41,6 +41,11 @@ export default function VTuberTest() {
   const [tracking, setTracking] = useState(false);
   const [fps, setFps] = useState(0);
   const fpsRef = useRef({ n: 0, t: performance.now() });
+  // Live axis inversion — different setups/expectations want different
+  // directions, so these are toggleable instead of hard-coded.
+  const [invert, setInvert] = useState({ yaw: false, pitch: false, roll: false });
+  const invertRef = useRef(invert);
+  useEffect(() => { invertRef.current = invert; }, [invert]);
 
   // ── Set up the Three.js scene ──
   useEffect(() => {
@@ -179,12 +184,25 @@ export default function VTuberTest() {
     const lm = results.multiFaceLandmarks?.[0];
     if (!lm) return;
 
+    // MediaPipe x,y are normalised [0..1] with Y increasing DOWNWARD, while
+    // Three.js Y increases UPWARD — and the preview is mirrored (selfie).
+    // The signs below account for both so the avatar moves WITH you.
     const nose = lm[1], leftEye = lm[33], rightEye = lm[263], chin = lm[152], forehead = lm[10];
-    const cx = (leftEye.x + rightEye.x) / 2;
-    const yaw = (nose.x - cx) * 3.0;
-    const pitch = (nose.y - (leftEye.y + rightEye.y) / 2) * 3.0 - 0.15;
-    const roll = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
-    const faceH = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 1;
+
+    const eyeMidX = (leftEye.x + rightEye.x) / 2;
+    const eyeMidY = (leftEye.y + rightEye.y) / 2;
+    // Normalise by face size so distance from the camera doesn't change how
+    // sensitive the tracking feels.
+    const faceW = Math.abs(rightEye.x - leftEye.x) || 0.1;
+    const faceH = Math.hypot(chin.x - forehead.x, chin.y - forehead.y) || 0.1;
+
+    // YAW — turn left/right.
+    const yaw = ((nose.x - eyeMidX) / faceW) * 1.6;
+    // PITCH — nod. Nose lower than the eye line means looking DOWN (larger y in
+    // MediaPipe), which is a NEGATIVE x-rotation in Three.js.
+    const pitch = -(((nose.y - eyeMidY) / faceH) - 0.06) * 2.2;
+    // ROLL — head tilt from the eye-line angle (mirrored).
+    const roll = -Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
 
     const upperLip = lm[13], lowerLip = lm[14];
     const mouthOpen = Math.min(1, (Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y) / faceH) * 6);
@@ -195,10 +213,11 @@ export default function VTuberTest() {
     const blink = Math.max(blinkOf(159, 145), blinkOf(386, 374));
 
     // Write TARGETS — the render loop smoothly interpolates toward these.
+    const inv = invertRef.current;
     targetRef.current = {
-      pitch: THREE.MathUtils.clamp(pitch, -0.6, 0.6),
-      yaw: THREE.MathUtils.clamp(-yaw, -0.8, 0.8),
-      roll: THREE.MathUtils.clamp(-roll, -0.6, 0.6),
+      pitch: THREE.MathUtils.clamp(inv.pitch ? -pitch : pitch, -0.7, 0.7),
+      yaw: THREE.MathUtils.clamp(inv.yaw ? -yaw : yaw, -0.9, 0.9),
+      roll: THREE.MathUtils.clamp(inv.roll ? -roll : roll, -0.6, 0.6),
       mouth: mouthOpen,
       blink,
     };
@@ -231,6 +250,21 @@ export default function VTuberTest() {
           <input type="file" accept=".vrm,.glb" onChange={onUpload} style={{ display: 'none' }} />
         </label>
         <span style={{ fontSize: 12, opacity: 0.5, alignSelf: 'center' }}>{fps} detections/s (motion is smoothed to render rate)</span>
+      </div>
+
+      {/* Axis inversion — flip any axis live if it tracks the wrong way */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{ fontSize: 11, opacity: 0.5 }}>Invert:</span>
+        {['yaw', 'pitch', 'roll'].map(ax => (
+          <button key={ax} onClick={() => setInvert(v => ({ ...v, [ax]: !v[ax] }))}
+            style={{
+              background: invert[ax] ? '#f5a623' : 'rgba(255,255,255,0.08)',
+              color: invert[ax] ? '#000' : '#e8dcc8',
+              border: 'none', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 600,
+            }}>
+            {ax === 'yaw' ? 'Left/Right' : ax === 'pitch' ? 'Up/Down' : 'Tilt'}
+          </button>
+        ))}
       </div>
 
       <div style={{ fontSize: 13, marginBottom: 10, minHeight: 18, color: '#f5c86a' }}>{status}</div>

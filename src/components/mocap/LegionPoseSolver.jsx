@@ -48,6 +48,10 @@ const len   = a         => Math.sqrt(dot(a,a));
 const norm  = a         => { const l=len(a); return l>0.0001?v3(a.x/l,a.y/l,a.z/l):v3(0,0,0); };
 const clampA = r        => Math.max(-Math.PI,Math.min(Math.PI,r));
 
+// Head rotation gains/directions. Flip a sign to invert that axis.
+// pitch: nod up/down · yaw: turn left/right · roll: head tilt
+export const HEAD_GAIN = { pitch: 2.5, yaw: 1.5, roll: 1.0 };
+
 function angleBetween(a,b) {
   return Math.acos(Math.max(-1,Math.min(1,dot(norm(a),norm(b)))));
 }
@@ -83,9 +87,11 @@ export function solveFace(faceLM) {
   const now = Date.now();
   const nose=faceLM[1], chin=faceLM[152], lEar=faceLM[234], rEar=faceLM[454];
   const upV=sub(nose,chin), rightV=sub(rEar,lEar);
-  const pitch = Math.atan2(upV.z??0, len({x:upV.x,y:upV.y,z:0})) * -2.5;
-  const yaw   = Math.atan2(rightV.z??0, rightV.x) * -1.5;
-  const roll  = Math.atan2(upV.x, upV.y) * -1.0;
+  // Axis gains. Sign controls direction — flip a sign here if an axis tracks
+  // the wrong way (mirrored preview vs. camera view expectations differ).
+  const pitch = Math.atan2(upV.z??0, len({x:upV.x,y:upV.y,z:0})) * HEAD_GAIN.pitch;
+  const yaw   = Math.atan2(rightV.z??0, rightV.x) * HEAD_GAIN.yaw;
+  const roll  = Math.atan2(upV.x, upV.y) * HEAD_GAIN.roll;
   const lEyeV=len(sub(faceLM[386],faceLM[374])), lEyeH=len(sub(faceLM[362],faceLM[263]))+0.001;
   const rEyeV=len(sub(faceLM[159],faceLM[145])), rEyeH=len(sub(faceLM[33], faceLM[133]))+0.001;
   const blinkL=Math.max(0,Math.min(1,1.0-lEyeV/lEyeH*6));

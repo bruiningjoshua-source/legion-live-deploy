@@ -54,7 +54,7 @@ const TABS = [
   { id:'backdrop', icon: Image,   label:'Scene'     },
 ];
 
-export default function LegionMoCap({ videoRef, onProcessedStream, onClose, initialVrmUrl }) {
+export default function LegionMoCap({ videoRef, onProcessedStream, onClose, initialVrmUrl, hideControls = false }) {
   const canvasRef         = useRef(null);
   const rendererRef       = useRef(null);
   const sceneRef          = useRef(null);
@@ -85,7 +85,7 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose, init
   const [vrmLoading,       setVrmLoading]       = useState(false);
   const [customColors,     setCustomColors]     = useState({});  // overrides on selectedPreset
   const [exprActive,       setExprActive]       = useState(null);
-  const [showPanel,        setShowPanel]        = useState(true);
+  const [showPanel,        setShowPanel]        = useState(!hideControls);
 
   // ── Init Three.js ──────────────────────────────────────────────────────
   const initThree = useCallback(async (preset) => {
@@ -432,7 +432,7 @@ export default function LegionMoCap({ videoRef, onProcessedStream, onClose, init
 
       {/* Status badges */}
       {trackingActive && !loading && (
-        <div className="absolute top-4 left-4 flex flex-col gap-1.5 pointer-events-none">
+        <div className="absolute top-4 left-4 flex-col gap-1.5 pointer-events-none" style={{ display: hideControls ? 'none' : 'flex' }}>
           <div className="flex items-center gap-1.5 bg-purple-500/20 border border-purple-400/40 rounded-full px-3 py-1">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
             <span className="text-purple-300 text-[10px] font-bold">{vrmLoaded ? 'VRM' : 'LEGION'} MOCAP</span>

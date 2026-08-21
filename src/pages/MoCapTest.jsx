@@ -67,6 +67,7 @@ export default function MoCapTest() {
           <LegionMoCap
             videoRef={videoRef}
             initialVrmUrl="/avatars/luxe.vrm"
+            hideControls
             onProcessedStream={() => { /* isolated test — no streaming */ }}
             onClose={() => {
               const s = videoRef.current?.srcObject;
