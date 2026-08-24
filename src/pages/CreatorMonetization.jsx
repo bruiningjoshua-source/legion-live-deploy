@@ -319,7 +319,7 @@ export default function CreatorMonetization() {
                   <TrendingUp className="w-5 h-5 text-amber-400" />
                   Your Payout Tier
                 </CardTitle>
-                <p className="text-white/50 text-sm mt-2">All creators earn a flat 60% revenue share — higher tiers unlock exclusive perks</p>
+                <p className="text-white/50 text-sm mt-2">All creators earn a flat 70% revenue share — higher tiers unlock exclusive perks</p>
               </CardHeader>
               <CardContent>
                 <CreatorPayoutOptimizer creatorEarningsUsd={creator?.total_earnings_denarii || 0} />

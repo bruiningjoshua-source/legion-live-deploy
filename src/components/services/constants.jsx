@@ -13,9 +13,18 @@ export const CURRENCY = {
 };
 
 // ─── Platform Fees ───────────────────────────────────────────
+// DISPLAY ONLY. The authoritative rates live in the platform_payout_config
+// table and are applied server-side; these exist so the UI can show expected
+// earnings without a round-trip. Keep them in sync with that table.
 export const FEES = {
-  GIFT_CREATOR_SHARE: 0.60,   // Creator gets 60% of gift value
-  TIP_PLATFORM_FEE: 0.10,     // 10% platform fee on tips (40% platform base)
+  GIFT_CREATOR_SHARE: 0.70,   // platform takes 30%
+  TIP_CREATOR_SHARE: 0.80,    // platform takes 20%
+  SUB_CREATOR_SHARE: 0.80,    // platform takes 20%
+  PPV_CREATOR_SHARE: 0.85,    // platform takes 15%
+  EXCLUSIVE_CREATOR_SHARE: 0.80, // platform takes 20%
+  CAMPAIGN_CREATOR_SHARE: 0.90,  // platform takes 10%
+  TIP_PLATFORM_FEE: 0.20,
+  MIN_DENARII_PURCHASE_USD: 5,
 };
 
 // ─── Streaming ───────────────────────────────────────────────

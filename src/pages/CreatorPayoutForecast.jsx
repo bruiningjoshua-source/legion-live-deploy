@@ -92,7 +92,7 @@ export default function CreatorPayoutForecast() {
             <li>• Analyzes 60 days of historical data (subscriptions, tips, ad revenue)</li>
             <li>• Applies growth trends to project next 30 days</li>
             <li>• Includes all revenue streams: subs, tips, video ads, music royalties, referrals</li>
-            <li>• Based on the flat 60% creator revenue share</li>
+            <li>• Based on the flat 70% creator revenue share</li>
             <li>• Updates hourly as new data comes in</li>
           </ul>
         </div>

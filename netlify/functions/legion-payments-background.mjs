@@ -98,11 +98,45 @@ async function fulfillDenarii(db, meta, amountPaid, stripePaymentIntent, stripeS
   console.log(`[webhook] Denarii fulfilled: ${total} denarii`);
 }
 
+
+// ─── Platform fee config ─────────────────────────────────────────────────────
+// Rates live in platform_payout_config so they can be changed without a deploy.
+// Cached per invocation; falls back to safe defaults if the row is unreadable.
+let _feeCfg = null;
+async function getFeeConfig(db) {
+  if (_feeCfg) return _feeCfg;
+  const FALLBACK = {
+    gift_platform_fee: 0.30, tip_platform_fee: 0.20, subscription_platform_fee: 0.20,
+    ppv_platform_fee: 0.15, exclusive_content_fee: 0.20, campaign_platform_fee: 0.10,
+    fees_on_net: true,
+  };
+  try {
+    const { data } = await db.from('platform_payout_config').select('*').limit(1);
+    _feeCfg = { ...FALLBACK, ...(data?.[0] || {}) };
+  } catch (e) {
+    console.warn('[fees] config load failed, using defaults:', e.message);
+    _feeCfg = FALLBACK;
+  }
+  return _feeCfg;
+}
+
+// Stripe's cut so small transactions can't pay out more than we received.
+const stripeFeeUsd = (grossUsd) => grossUsd * 0.029 + 0.30;
+
+/** Creator's share in USD for a given revenue type. */
+async function creatorShareUsd(db, grossUsd, feeKey) {
+  const cfg = await getFeeConfig(db);
+  const platformFee = Number(cfg[feeKey] ?? 0.30);
+  const base = cfg.fees_on_net ? Math.max(0, grossUsd - stripeFeeUsd(grossUsd)) : grossUsd;
+  return base * (1 - platformFee);
+}
+
 async function fulfillTip(db, meta, amountPaid) {
   const { user_email: senderEmail, creator_email, stream_id, message } = meta;
 
-  // Credit creator wallet (60% creator share, canonical)
-  const creatorUsd = (amountPaid / 100) * 0.6;
+  // Credit creator wallet using the configured TIP rate (this previously used
+  // the gift rate of 60%, under-crediting creators on every tip).
+  const creatorUsd = await creatorShareUsd(db, amountPaid / 100, 'tip_platform_fee');
   const creatorDenarii = Math.round(creatorUsd * 180); // $1 = 180 denarii
 
   const { data: creatorWallet } = await db.from('wallets').select('*').eq('user_email', creator_email).single().catch(() => ({ data: null }));
