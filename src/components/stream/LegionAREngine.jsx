@@ -311,7 +311,7 @@ class Particle {
 }
 
 // ── MAIN ENGINE COMPONENT ─────────────────────────────────────────────────
-export default function LegionAREngine({ videoRef, onProcessedStream, isLive = false, openPanel, onPanelClose }) {
+export default function LegionAREngine({ videoRef, onProcessedStream, isLive = false, openPanel, onPanelClose, initialTab }) {
   const [activeFilter, setActiveFilter] = useState(FILTERS[0]);
   const [activeOverlay, setActiveOverlay] = useState(AR_OVERLAYS[0]);
   const [activeBg, setActiveBg] = useState(BG_EFFECTS[0]);
@@ -324,7 +324,12 @@ export default function LegionAREngine({ videoRef, onProcessedStream, isLive = f
   useEffect(() => {
     if (openPanel) { setShowPanel(true); setShowAdvancedPanel(false); }
   }, [openPanel]);
-  const [activeTab, setActiveTab] = useState('filters');
+  const [activeTab, setActiveTab] = useState(initialTab || 'filters');
+  // If the caller opens the panel wanting a specific tab (e.g. Beauty from the
+  // room-tools menu vs. Magic), jump to it each time the panel opens.
+  useEffect(() => {
+    if (openPanel && initialTab) setActiveTab(initialTab);
+  }, [openPanel, initialTab]);
   const [intensity, setIntensity] = useState(100);
   const [fps, setFps] = useState(0);
   const [handTrackingEnabled, setHandTrackingEnabled] = useState(false);

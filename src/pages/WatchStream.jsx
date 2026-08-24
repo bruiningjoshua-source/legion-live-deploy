@@ -106,6 +106,7 @@ export default function WatchStream() {
   const [showHostProfile, setShowHostProfile] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [showMagicPanel, setShowMagicPanel] = useState(false);
+  const [magicInitialTab, setMagicInitialTab] = useState('filters');
 
   const videoRef = useRef(null);
   const streamContainerRef = useRef(null);
@@ -958,7 +959,8 @@ export default function WatchStream() {
             onClose={() => setShowRoomTools(false)}
             onAction={(action) => {
               if (action === 'quality') setShowQuality(v => !v);
-              if (action === 'magic') { setShowRoomTools(false); setShowMagicPanel(true); }
+              if (action === 'magic') { setShowRoomTools(false); setMagicInitialTab('filters'); setShowMagicPanel(true); }
+              if (action === 'beauty') { setShowRoomTools(false); setMagicInitialTab('beauty'); setShowMagicPanel(true); }
             }}
           />
         )}
@@ -981,6 +983,7 @@ export default function WatchStream() {
           videoRef={videoRef}
           isLive={stream?.status === 'live'}
           openPanel={showMagicPanel}
+          initialTab={magicInitialTab}
           onPanelClose={() => setShowMagicPanel(false)}
           onProcessedStream={(processed) => {
             if (!processed) return;
