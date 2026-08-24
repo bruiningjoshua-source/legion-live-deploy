@@ -184,6 +184,73 @@ export default function WatchStream() {
   const isModerator = !isHost && streamMods.some(m => m.email === user?.email);
   const canModerate = isHost || isModerator;
 
+  // ── Multi-guest panel: seats + join requests, real data + realtime sync ──
+  const [panelSeats, setPanelSeats] = useState([]);     // stream_panel_seats rows
+  const [panelSeatCount, setPanelSeatCount] = useState(6);
+  useEffect(() => {
+    if (!streamId || stream?.stream_type !== 'multi_panel') return;
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase.from('stream_panel_seats').select('*').eq('stream_id', streamId);
+      if (active && data) setPanelSeats(data);
+    };
+    load();
+    const chan = supabase
+      .channel(`panel_seats_${streamId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stream_panel_seats', filter: `stream_id=eq.${streamId}` }, load)
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(chan); };
+  }, [streamId, stream?.stream_type]);
+
+  const seatStates = React.useMemo(() => {
+    const map = {};
+    panelSeats.forEach(s => { map[s.seat_index] = s; });
+    return map;
+  }, [panelSeats]);
+  const panelParticipants = React.useMemo(() => {
+    return panelSeats
+      .filter(s => s.occupant_email)
+      .sort((a, b) => a.seat_index - b.seat_index)
+      .map(s => ({ email: s.occupant_email, display_name: s.occupant_name }));
+  }, [panelSeats]);
+
+  const [joinRequests, setJoinRequests] = useState([]);   // pending stream_join_requests
+  useEffect(() => {
+    if (!streamId || !isHost || stream?.stream_type !== 'multi_panel') return;
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase.from('stream_join_requests')
+        .select('*').eq('stream_id', streamId).eq('status', 'pending').order('created_at', { ascending: true });
+      if (active && data) setJoinRequests(data);
+    };
+    load();
+    const chan = supabase
+      .channel(`join_requests_${streamId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stream_join_requests', filter: `stream_id=eq.${streamId}` }, load)
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(chan); };
+  }, [streamId, isHost, stream?.stream_type]);
+
+  const callPanelSeat = useCallback(async (action, extra = {}) => {
+    try {
+      const res = await base44.functions.invoke('streamPanelSeat', { streamId, action, ...extra });
+      const payload = res?.data ?? res ?? {};
+      if (payload.error) throw new Error(payload.error);
+      return payload;
+    } catch (e) {
+      toast.error(e.message || 'Action failed');
+      return null;
+    }
+  }, [streamId]);
+
+  const shareStream = useCallback(async () => {
+    const url = `${window.location.origin}${createPageUrl('WatchStream')}?id=${streamId}`;
+    try {
+      if (navigator.share) await navigator.share({ title: stream?.title || 'Legion Live', url });
+      else { await navigator.clipboard.writeText(url); toast.success('Stream link copied'); }
+    } catch { /* user cancelled */ }
+  }, [streamId, stream?.title]);
+
   // Enforce moderation on THIS user (kick/ban forces out; mute/cam applies).
   useEffect(() => {
     if (!streamId || !user?.email) return;
@@ -777,6 +844,21 @@ export default function WatchStream() {
           streamId={streamId}
           isHost={isHost}
           hostCreator={creator}
+          currentUser={user}
+          panelParticipants={panelParticipants}
+          seatStates={seatStates}
+          seatCount={panelSeatCount}
+          onChangeSeatCount={setPanelSeatCount}
+          onShare={shareStream}
+          onToggleSeatLock={(seatIndex, locked) => callPanelSeat(locked ? 'lock' : 'unlock', { seatIndex })}
+          onRequestSeat={(seatIndex) => callPanelSeat('request', { seatIndex, targetName: user?.full_name })}
+          onInviteToPanel={(seatIndex) => {
+            // Host taps an empty seat: seat the oldest pending join request.
+            const next = joinRequests[0];
+            if (!next) { toast('No pending join requests'); return; }
+            callPanelSeat('accept', { seatIndex, targetEmail: next.requester_email, targetName: next.requester_name });
+          }}
+          onKickParticipant={(participant, seatIndex) => callPanelSeat('remove_occupant', { seatIndex })}
         />
       )}
 
