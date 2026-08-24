@@ -27,6 +27,7 @@ import GiftLeaderboard from '@/components/stream/GiftLeaderboard';
 import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard';
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
+import AudioLiveStage from '@/components/stream/AudioLiveStage';
 import ZegoService from '@/components/stream/ZegoService';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
@@ -188,7 +189,7 @@ export default function WatchStream() {
   const [panelSeats, setPanelSeats] = useState([]);     // stream_panel_seats rows
   const [panelSeatCount, setPanelSeatCount] = useState(6);
   useEffect(() => {
-    if (!streamId || stream?.stream_type !== 'multi_panel') return;
+    if (!streamId || !['multi_panel','audio_live'].includes(stream?.stream_type)) return;
     let active = true;
     const load = async () => {
       const { data } = await supabase.from('stream_panel_seats').select('*').eq('stream_id', streamId);
@@ -216,7 +217,7 @@ export default function WatchStream() {
 
   const [joinRequests, setJoinRequests] = useState([]);   // pending stream_join_requests
   useEffect(() => {
-    if (!streamId || !isHost || stream?.stream_type !== 'multi_panel') return;
+    if (!streamId || !isHost || !['multi_panel','audio_live'].includes(stream?.stream_type)) return;
     let active = true;
     const load = async () => {
       const { data } = await supabase.from('stream_join_requests')
@@ -626,14 +627,36 @@ export default function WatchStream() {
     );
   }
 
+  const isAudioOnly = stream?.stream_type === 'audio_live';
+
   return (
     <div ref={streamContainerRef} className="fixed inset-0 bg-black z-40 overflow-hidden">
-      {/* FULL SCREEN VIDEO */}
-      <video
-        ref={videoRef}
-        autoPlay playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Audio-only streams show NO video — a decorative host avatar + seat
+          chairs instead, matching Bigo's Audio LIVE layout. The <video>
+          element still mounts (hidden) so ZegoService's audio pipeline has
+          somewhere to attach; only the visual differs. */}
+      {isAudioOnly ? (
+        <AudioLiveStage
+          hostCreator={creator}
+          isHost={isHost}
+          seatParticipants={panelParticipants}
+          seatStates={seatStates}
+          seatCount={panelSeatCount}
+          onRequestSeat={(seatIndex) => callPanelSeat('request', { seatIndex, targetName: user?.full_name })}
+          onInviteToPanel={(seatIndex) => {
+            const next = joinRequests[0];
+            if (!next) { toast('No pending join requests'); return; }
+            callPanelSeat('accept', { seatIndex, targetEmail: next.requester_email, targetName: next.requester_name });
+          }}
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          autoPlay playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      {isAudioOnly && <video ref={videoRef} autoPlay playsInline className="hidden" />}
 
       {entranceViewer && (
         <EntranceEffect
