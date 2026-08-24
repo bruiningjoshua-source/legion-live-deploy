@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AudioLiveStage from '@/components/stream/AudioLiveStage';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -313,7 +314,7 @@ export default function GoLive() {
       <div className="fixed inset-0 z-50 bg-black">
         {/* Debug overlay — toggle via console: window.__legionDebug() */}
         <DebugOverlay />
-        {/* Full screen camera or game preview */}
+        {/* Full screen camera, game, or audio preview */}
         {streamType === 'game_live' ? (
           <div className="absolute inset-0 bg-[#0d1117]">
             <GameLivePreview
@@ -322,6 +323,19 @@ export default function GoLive() {
               onSelectGame={() => setShowGameSelect(true)}
             />
           </div>
+        ) : streamType === 'audio_live' ? (
+          <>
+            {/* Audio mode has no camera feed to preview — show the same host
+                avatar + seat visual the viewer will see. The mic still needs a
+                live capture, so a hidden video element keeps that pipeline. */}
+            <AudioLiveStage
+              hostCreator={{ display_name: user?.full_name, avatar_url: user?.avatar_url }}
+              isHost={true}
+              seatParticipants={[]}
+              seatCount={8}
+            />
+            <video ref={videoRef} autoPlay playsInline muted className="hidden" />
+          </>
         ) : (
           <video
             ref={videoRef}
@@ -343,7 +357,7 @@ export default function GoLive() {
 
           {/* Close + Flip row */}
           <div className="flex items-center justify-end px-4 mb-2">
-            {streamType !== 'game_live' && (
+            {streamType !== 'game_live' && streamType !== 'audio_live' && (
               <button onClick={() => {
                 if (cameraStream) {
                   const tracks = cameraStream.getVideoTracks();
