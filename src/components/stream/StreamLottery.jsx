@@ -58,6 +58,7 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
   const [reward, setReward]       = useState(500);
   const [duration, setDuration]   = useState(300);   // 5 min default
   const [password, setPassword]   = useState('');
+  const [minGift, setMinGift]     = useState(100);   // min gift value to enter (send_gift)
   const [timeLeft, setTimeLeft]   = useState(0);
   const [entries, setEntries]     = useState([]);
   const [winner, setWinner]       = useState(null);
@@ -81,7 +82,7 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
   useEffect(() => {
     if (lottoType === 'send_gift' && phase === 'open' && onGiftSent) {
       // Parent calls this whenever a gift is sent during the lottery
-      onGiftSent(() => { if (!myEntry) enterLottery(); });
+      onGiftSent(() => { if (!myEntry) enterLottery({}); });   // server verifies the gift
     }
   }, [lottoType, phase, onGiftSent, myEntry, enterLottery]);
 
@@ -109,7 +110,12 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
     setStarting(true);
     try {
       const res = await base44.functions.invoke('startStreamLottery', {
-        streamId, prizeDenarii: reward, durationSeconds: duration,
+        streamId,
+        prizeDenarii: reward,
+        durationSeconds: duration,
+        entryType: lottoType,                       // share_stream | send_gift | password
+        password: lottoType === 'password' ? password : undefined,
+        minGiftDenarii: lottoType === 'send_gift' ? (minGift || 1) : undefined,
       });
       const lot = res?.data?.lottery ?? res?.lottery;
       if (!lot?.id) throw new Error(res?.data?.error || 'Could not start lottery');
@@ -125,17 +131,31 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
     }
   };
 
-  const enterLottery = useCallback((nameOverride) => {
+  // Entry goes through the backend, which verifies the host's chosen condition
+  // (correct password / qualifying gift / share) before recording an entry.
+  const enterLottery = useCallback(async (proof = {}) => {
     if (myEntry) { toast('Already entered!'); return; }
-    const name = nameOverride || user?.full_name || user?.email?.split('@')[0] || 'Anonymous';
-    setEntries(e => [...e, { name, email: user?.email, id: Date.now() }]);
-    setMyEntry(true);
-    toast.success('🎟️ You\'re entered!');
-  }, [myEntry, user]);
+    if (!lotteryId) { toast.error('Lottery not ready'); return; }
+    try {
+      const res = await base44.functions.invoke('enterStreamLottery', {
+        lotteryId, ...proof,
+      });
+      const payload = res?.data ?? res ?? {};
+      if (payload.error) throw new Error(payload.error);
+      const name = user?.full_name || user?.email?.split('@')[0] || 'Anonymous';
+      setEntries(e => [...e, { name, email: user?.email, id: Date.now() }]);
+      setMyEntry(true);
+      toast.success('🎟️ You\'re entered!');
+    } catch (e) {
+      toast.error(e.message || 'Could not enter');
+    }
+  }, [myEntry, user, lotteryId]);
 
   const submitPassword = () => {
-    if (pwInput.trim().toLowerCase() === password.trim().toLowerCase()) {
-      enterLottery();
+    // The server verifies the password hash — no local comparison, so the
+    // password can't be read out of the client bundle or state.
+    if (pwInput.trim()) {
+      enterLottery({ password: pwInput.trim() });
     } else {
       toast.error('Wrong password');
     }
@@ -336,9 +356,9 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
                     <button onClick={() => {
                       navigator.share
                         ? navigator.share({ title:'Join my stream on Legion Live!', url: shareUrlRef.current })
-                            .then(() => enterLottery())
-                            .catch(() => { copyLink(); enterLottery(); })
-                        : (() => { copyLink(); enterLottery(); })();
+                            .then(() => enterLottery({ shared: true }))
+                            .catch(() => { copyLink(); enterLottery({ shared: true }); })
+                        : (() => { copyLink(); enterLottery({ shared: true }); })();
                     }}
                       className="w-full py-3 rounded-2xl font-bold text-sm ll-interactive"
                       style={{ background:`${typeData?.color}22`, border:`1px solid ${typeData?.color}44`, color: typeData?.color }}>

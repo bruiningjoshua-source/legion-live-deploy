@@ -179,6 +179,20 @@ const handlers = {
 
     const prize = Number(prizeDenarii);
     const dur = Number(durationSeconds);
+    // Exactly ONE entry condition, chosen by the host.
+    const entryType = ['share_stream', 'send_gift', 'password'].includes(params?.entryType)
+      ? params.entryType : null;
+    if (!entryType) {
+      return json(400, { error: 'entryType must be one of share_stream, send_gift, password' });
+    }
+    const password = String(params?.password || '').trim();
+    const minGift = Number(params?.minGiftDenarii || 0);
+    if (entryType === 'password' && password.length < 3) {
+      return json(400, { error: 'Password must be at least 3 characters' });
+    }
+    if (entryType === 'send_gift' && (!Number.isFinite(minGift) || minGift < 1)) {
+      return json(400, { error: 'Set the minimum gift value to enter' });
+    }
     if (!Number.isFinite(prize) || prize < 100 || prize > 5000) {
       return json(400, { error: 'Prize must be between 100 and 5,000 Denarii' });
     }
@@ -212,9 +226,15 @@ const handlers = {
     if (debitErr) return json(500, { error: 'Could not reserve prize' });
 
     const endsAt = new Date(Date.now() + dur * 1000).toISOString();
+    const { createHash } = await import('node:crypto');
     const { data: lottery, error } = await admin.from('stream_lotteries').insert({
       stream_id: streamId, host_email: user.email,
       prize_denarii: prize, duration_seconds: dur, ends_at: endsAt,
+      entry_type: entryType,
+      // Never store the raw password.
+      password_hash: entryType === 'password'
+        ? createHash('sha256').update(password.toLowerCase()).digest('hex') : null,
+      min_gift_denarii: entryType === 'send_gift' ? Math.round(minGift) : null,
     }).select().single();
     if (error) {
       // Refund the escrow if the insert failed.
@@ -239,9 +259,49 @@ const handlers = {
       return json(403, { error: 'The host cannot enter their own lottery' });
     }
 
+    // ── Enforce the host's chosen entry condition ──
+    let qualifiedVia = lottery.entry_type;
+    let qualifyingRef = null;
+
+    if (lottery.entry_type === 'password') {
+      const { createHash } = await import('node:crypto');
+      const given = String(params?.password || '').trim().toLowerCase();
+      const hash = createHash('sha256').update(given).digest('hex');
+      if (!given || hash !== lottery.password_hash) {
+        return json(403, { error: 'Incorrect password' });
+      }
+
+    } else if (lottery.entry_type === 'send_gift') {
+      // Must have sent a qualifying gift to THIS stream while the lottery is open.
+      const min = lottery.min_gift_denarii || 1;
+      const { data: gifts } = await admin.from('gift_transactions')
+        .select('id, total_denarii, created_date')
+        .eq('stream_id', lottery.stream_id)
+        .eq('sender_email', user.email)
+        .gte('created_date', lottery.started_at)
+        .order('created_date', { ascending: false })
+        .limit(20);
+      const qualifying = (gifts || []).find(g => Number(g.total_denarii || 0) >= min);
+      if (!qualifying) {
+        return json(403, {
+          error: `Send a gift worth ${min.toLocaleString()}+ Denarii during this lottery to enter`,
+          code: 'GIFT_REQUIRED',
+        });
+      }
+      qualifyingRef = qualifying.id;
+
+    } else if (lottery.entry_type === 'share_stream') {
+      // Share is self-attested (we can't verify an external share), but we record
+      // it and still require an explicit share action from the client.
+      if (!params?.shared) {
+        return json(403, { error: 'Share the stream to enter', code: 'SHARE_REQUIRED' });
+      }
+    }
+
     const { error } = await admin.from('stream_lottery_entries').insert({
       lottery_id: lotteryId, user_email: user.email,
       display_name: user.full_name || user.email.split('@')[0],
+      qualified_via: qualifiedVia, qualifying_ref: qualifyingRef,
     });
     if (error && !String(error.message).includes('duplicate')) {
       return json(500, { error: error.message });
