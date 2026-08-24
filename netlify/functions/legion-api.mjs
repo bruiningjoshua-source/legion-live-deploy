@@ -1258,7 +1258,16 @@ Return JSON: {"status":"approved"|"warning"|"violation","category":"none"|"sexua
 
     // Economics: 180 Denarii = $1 USD, creators already hold their 60% share as Denarii
     const DENARII_PER_USD = 180;
-    const MIN_PAYOUT_DENARII = 1800; // ~$10
+    // Minimum payout comes from platform_payout_config so it can change without a
+  // deploy. 180 Denarii = $1. Falls back to $50 if the config can't be read.
+  let MIN_PAYOUT_DENARII = 9000;
+  try {
+    const { data: cfgRows } = await db.from('platform_payout_config').select('min_payout_usd').limit(1);
+    const minUsd = Number(cfgRows?.[0]?.min_payout_usd);
+    if (minUsd > 0) MIN_PAYOUT_DENARII = Math.round(minUsd * 180);
+  } catch (e) {
+    console.warn('[payout] config read failed, using $50 default:', e.message);
+  }
 
     const { data: creator } = await supabase
       .from('creators')

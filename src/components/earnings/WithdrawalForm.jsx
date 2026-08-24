@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 const DENARII_PER_USD = 180;
 const CREATOR_SHARE = 0.60;
 const DENARII_TO_USD = (1 / DENARII_PER_USD) * CREATOR_SHARE; // ~$0.003333 per Denarii earned
-const MIN_WITHDRAWAL_DENARII = 1500; // ~$5 minimum (matches backend MIN_PAYOUT_USD)
+const MIN_WITHDRAWAL_DENARII = 9000; // $50 minimum (matches platform_payout_config.min_payout_usd)
 
 export default function WithdrawalForm({ creator, earnings, payoutMethods }) {
   const queryClient = useQueryClient();

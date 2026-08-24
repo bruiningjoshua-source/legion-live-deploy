@@ -28,7 +28,7 @@ const SECTIONS = [
     title: '3. Payments & Monetization',
     content: [
       { heading: '3.1 Virtual Currency', body: 'Legion Live uses Denarii as its virtual currency. The rate is 180 Denarii = $1 USD. Denarii are used for in-app transactions including gifts, fan club subscriptions, and PPV events. Virtual currency has no independent monetary value outside the platform and cannot be redeemed for cash by viewers.' },
-      { heading: '3.2 Creator Earnings', body: 'Creators earn 60% of the face value of virtual gifts received. For every 180 Denarii gifted, creators receive $0.60 USD. Earnings are subject to a minimum payout threshold of 1800 Denarii (~$10 USD). Payouts may be withheld for suspected fraud, chargebacks, or policy violations.' },
+      { heading: '3.2 Creator Earnings', body: 'Creators earn 70% of the face value of virtual gifts received. For every 180 Denarii gifted, creators receive $0.70 USD. Earnings are subject to a minimum payout threshold of 9,000 Denarii (~$50 USD). Payouts may be withheld for suspected fraud, chargebacks, or policy violations.' },
       { heading: '3.3 Subscriptions & Fan Clubs', body: 'Fan club subscriptions are billed on the cycle selected. Cancellation takes effect at the end of the current billing period. Refunds are evaluated on a case-by-case basis by our support team.' },
       { heading: '3.4 Chargebacks & Fraud', body: 'Fraudulent chargebacks will result in immediate account suspension, reversal of associated Denarii, and potential permanent ban. Legion Live cooperates fully with payment processors and law enforcement to investigate financial fraud.' },
     ]

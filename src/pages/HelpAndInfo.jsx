@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
     bg: 'bg-emerald-500/10',
     questions: [
       { q: 'How do I buy Denarii?', a: 'Go to your Wallet page and select any Denarii package. Payments are processed securely via Stripe. 180 Denarii = $1 USD, with bonus Denarii on larger packages (up to +35%).' },
-      { q: 'How do creators get paid?', a: 'Creators earn 70% of all gift value received. For every 180 Denarii gifted, creators keep $0.70 USD. Minimum payout threshold is 1800 Denarii (~$10). Payouts are processed via Stripe Connect, PayPal, Venmo, or CashApp.' },
+      { q: 'How do creators get paid?', a: 'Creators earn 70% of all gift value received. For every 180 Denarii gifted, creators keep $0.70 USD. Minimum payout threshold is 9,000 Denarii (~$50). Payouts are processed via Stripe Connect, PayPal, Venmo, or CashApp.' },
       { q: 'Are Denarii purchases refundable?', a: 'Virtual currency purchases are generally non-refundable once Denarii are delivered to your account. Contact support@legionlive.com for special circumstances or billing errors.' },
       { q: 'What is the VIP system?', a: 'Every Denarii purchase earns VIP points. Accumulate points to unlock VIP levels (1–8), each granting progressively exclusive perks: priority chat, animated badges, custom emotes, creator DM access, and DIVINE aura at max level.' },
     ]
