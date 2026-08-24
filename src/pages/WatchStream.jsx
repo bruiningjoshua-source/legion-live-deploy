@@ -58,6 +58,7 @@ export default function WatchStream() {
   const [recentGifts, setRecentGifts] = useState([]);
   const lotteryGiftCallbackRef = useRef(null);
   const [liveStream, setLiveStream] = useState(null);
+  const [ppvLocked, setPpvLocked] = useState(false);   // gated behind a PPV ticket
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showExpandedLeaderboard, setShowExpandedLeaderboard] = useState(false);
@@ -261,9 +262,21 @@ export default function WatchStream() {
     zegoInitAttempted.current = true;
     const init = async () => {
       const viewerId = user?.email?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32) || `viewer_${Date.now()}`;
-      const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
+      let res;
+      try {
+        res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: viewerId, role: 'audience' });
+      } catch (err) {
+        // Server refused a token — most importantly the PPV gate (403).
+        if (/ticket required|PPV_TICKET_REQUIRED/i.test(err?.message || '')) {
+          if (mounted) setPpvLocked(true);
+          return;
+        }
+        throw err;
+      }
       if (!mounted) return;
-      const { appId, token, serverUrl } = res.data || {};
+      const payload = res.data || {};
+      if (payload.code === 'PPV_TICKET_REQUIRED') { setPpvLocked(true); return; }
+      const { appId, token, serverUrl } = payload;
       if (!appId || !token) { setLiveStream(true); return; }
       await ZegoService.initialize(appId, serverUrl);
       if (!mounted) return;
@@ -409,6 +422,43 @@ export default function WatchStream() {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // PPV paywall — the stream exists and is visible (title, host, cover), but the
+  // player is locked until a ticket is purchased. The server also refuses to
+  // issue a stream token without one, so this cannot be bypassed client-side.
+  if (ppvLocked) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-center max-w-sm mx-auto px-6">
+          {creator?.avatar_url && (
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 mx-auto mb-4">
+              <img src={creator.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+            </div>
+          )}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3"
+            style={{ background: 'rgba(245,166,35,0.15)', border: '1px solid rgba(245,166,35,0.4)' }}>
+            <span className="text-amber-400 text-[11px] font-bold tracking-wide">PAY-PER-VIEW EVENT</span>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">{stream?.title || 'Ticketed Event'}</h1>
+          <p className="text-white/50 text-sm mb-1">
+            {creator?.display_name ? `Hosted by ${creator.display_name}` : ''}
+          </p>
+          <p className="text-white/40 text-sm mb-6">
+            This event requires a ticket. Buy one to watch live.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl('PPVEvents'))}
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold h-12 rounded-xl">
+            Get a Ticket
+          </Button>
+          <button onClick={() => navigate(createPageUrl('Home'))}
+            className="mt-3 text-white/40 text-sm">
+            Back to Home
+          </button>
+        </div>
       </div>
     );
   }

@@ -739,6 +739,29 @@ const handlers = {
     const sanitizedRoomId = String(roomId).replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 128);
     const sanitizedUserId = String(userId).replace(/[^a-zA-Z0-9_]/g, '').substring(0, 64);
     const sanitizedRole = ['host', 'audience', 'cohost'].includes(role) ? role : 'audience';
+
+    // PPV GATE: the roomId is the stream id. If that stream is gated behind a
+    // ppv_event, only ticket holders (plus the host and admins) get a token.
+    // Enforced here because without a token the stream cannot be played at all —
+    // a client-side paywall alone could be bypassed.
+    try {
+      const { data: allowed, error: gateErr } = await supabase.rpc('has_ppv_access', {
+        p_stream_id: sanitizedRoomId,
+        p_email: user.email,
+      });
+      if (!gateErr && allowed === false) {
+        return json(403, {
+          error: 'Ticket required',
+          detail: 'This is a pay-per-view event. Purchase a ticket to watch.',
+          code: 'PPV_TICKET_REQUIRED',
+        });
+      }
+    } catch (e) {
+      // Fail CLOSED only for malformed ids; otherwise log and continue so a
+      // gate outage can't take down all free streams.
+      console.warn('[ppv] access check failed:', e?.message);
+    }
+
     if (!sanitizedRoomId || !sanitizedUserId) {
       return json(400, { error: 'Invalid roomId or userId after sanitization' });
     }
@@ -1840,7 +1863,7 @@ Reply directly and conversationally — no JSON, no preamble, just your response
 
     // Check event exists
     const { data: events } = await supabase
-      .from('events')
+      .from('ppv_events')
       .select('*')
       .eq('id', event_id)
       .limit(1);
