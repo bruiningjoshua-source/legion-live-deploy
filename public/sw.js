@@ -13,7 +13,7 @@
  * - API calls: never cache
  */
 
-const CACHE = 'legion-live-v108';
+const CACHE = 'legion-live-v109';
 const NEVER_CACHE = ['.js', '.css']; // Vite chunks — content-hashed, let CDN handle them
 const CACHE_FOREVER = ['.png', '.jpg', '.jpeg', '.webp', '.svg', '.woff2', '.woff', '.mp4'];
 

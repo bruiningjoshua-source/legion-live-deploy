@@ -169,6 +169,147 @@ function mapIgdbGame(g) {
 }
 
 const handlers = {
+  /** Host-only: start a lottery on their own stream. Prize 100-5000 denarii,
+   *  duration 5-10 minutes. The prize is debited from the host up front so a
+   *  lottery can never pay out money the host doesn't have. */
+  async startStreamLottery({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { streamId, prizeDenarii, durationSeconds } = params || {};
+    if (!streamId) return json(400, { error: 'streamId required' });
+
+    const prize = Number(prizeDenarii);
+    const dur = Number(durationSeconds);
+    if (!Number.isFinite(prize) || prize < 100 || prize > 5000) {
+      return json(400, { error: 'Prize must be between 100 and 5,000 Denarii' });
+    }
+    if (!Number.isFinite(dur) || dur < 300 || dur > 600) {
+      return json(400, { error: 'Duration must be between 5 and 10 minutes' });
+    }
+
+    // HOST CHECK — only the stream's creator may start a lottery on it.
+    const { data: stream } = await admin.from('streams')
+      .select('id, creator_email').eq('id', streamId).single();
+    if (!stream) return json(404, { error: 'Stream not found' });
+    if (String(stream.creator_email).toLowerCase() !== user.email.toLowerCase()) {
+      return json(403, { error: 'Only the stream host can start a lottery' });
+    }
+
+    // One open lottery per stream at a time.
+    const { data: existing } = await admin.from('stream_lotteries')
+      .select('id').eq('stream_id', streamId).eq('status', 'open').limit(1);
+    if (existing?.length) return json(409, { error: 'A lottery is already running on this stream' });
+
+    // Escrow the prize from the host's wallet up front.
+    const { data: hostWallet } = await admin.from('wallets')
+      .select('id, denarii_balance').eq('user_email', user.email).single();
+    if (!hostWallet) return json(400, { error: 'Wallet not found' });
+    if ((hostWallet.denarii_balance || 0) < prize) {
+      return json(400, { error: 'Insufficient Denarii for that prize' });
+    }
+    const { error: debitErr } = await admin.from('wallets')
+      .update({ denarii_balance: hostWallet.denarii_balance - prize })
+      .eq('id', hostWallet.id);
+    if (debitErr) return json(500, { error: 'Could not reserve prize' });
+
+    const endsAt = new Date(Date.now() + dur * 1000).toISOString();
+    const { data: lottery, error } = await admin.from('stream_lotteries').insert({
+      stream_id: streamId, host_email: user.email,
+      prize_denarii: prize, duration_seconds: dur, ends_at: endsAt,
+    }).select().single();
+    if (error) {
+      // Refund the escrow if the insert failed.
+      await admin.from('wallets').update({ denarii_balance: hostWallet.denarii_balance }).eq('id', hostWallet.id);
+      return json(500, { error: error.message });
+    }
+    return json(200, { lottery });
+  },
+
+  /** Viewer: enter an open lottery. Free entry, one per user. */
+  async enterStreamLottery({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { lotteryId } = params || {};
+    if (!lotteryId) return json(400, { error: 'lotteryId required' });
+
+    const { data: lottery } = await admin.from('stream_lotteries')
+      .select('*').eq('id', lotteryId).single();
+    if (!lottery) return json(404, { error: 'Lottery not found' });
+    if (lottery.status !== 'open') return json(409, { error: 'Lottery is closed' });
+    if (new Date(lottery.ends_at) < new Date()) return json(409, { error: 'Lottery has ended' });
+    if (String(lottery.host_email).toLowerCase() === user.email.toLowerCase()) {
+      return json(403, { error: 'The host cannot enter their own lottery' });
+    }
+
+    const { error } = await admin.from('stream_lottery_entries').insert({
+      lottery_id: lotteryId, user_email: user.email,
+      display_name: user.full_name || user.email.split('@')[0],
+    });
+    if (error && !String(error.message).includes('duplicate')) {
+      return json(500, { error: error.message });
+    }
+    const { count } = await admin.from('stream_lottery_entries')
+      .select('id', { count: 'exact', head: true }).eq('lottery_id', lotteryId);
+    return json(200, { entered: true, entryCount: count || 0 });
+  },
+
+  /** Host-only: draw a winner and pay the escrowed prize. */
+  async drawStreamLottery({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { lotteryId } = params || {};
+    if (!lotteryId) return json(400, { error: 'lotteryId required' });
+
+    const { data: lottery } = await admin.from('stream_lotteries')
+      .select('*').eq('id', lotteryId).single();
+    if (!lottery) return json(404, { error: 'Lottery not found' });
+    if (String(lottery.host_email).toLowerCase() !== user.email.toLowerCase()) {
+      return json(403, { error: 'Only the host can draw' });
+    }
+    if (lottery.status !== 'open') return json(409, { error: 'Lottery already drawn' });
+
+    const { data: entries } = await admin.from('stream_lottery_entries')
+      .select('user_email, display_name').eq('lottery_id', lotteryId);
+
+    // No entries — refund the host's escrow and close.
+    if (!entries?.length) {
+      const { data: hw } = await admin.from('wallets')
+        .select('id, denarii_balance').eq('user_email', lottery.host_email).single();
+      if (hw) {
+        await admin.from('wallets')
+          .update({ denarii_balance: (hw.denarii_balance || 0) + lottery.prize_denarii })
+          .eq('id', hw.id);
+      }
+      await admin.from('stream_lotteries')
+        .update({ status: 'cancelled', completed_at: new Date().toISOString() })
+        .eq('id', lotteryId);
+      return json(200, { winner: null, refunded: true });
+    }
+
+    const winner = entries[Math.floor(Math.random() * entries.length)];
+
+    // Credit the winner (prize was already escrowed from the host at start).
+    const { data: ww } = await admin.from('wallets')
+      .select('id, denarii_balance').eq('user_email', winner.user_email).single();
+    if (ww) {
+      await admin.from('wallets')
+        .update({ denarii_balance: (ww.denarii_balance || 0) + lottery.prize_denarii })
+        .eq('id', ww.id);
+    } else {
+      await admin.from('wallets').insert({
+        user_email: winner.user_email, denarii_balance: lottery.prize_denarii,
+      });
+    }
+
+    await admin.from('stream_lotteries').update({
+      status: 'complete', winner_email: winner.user_email,
+      completed_at: new Date().toISOString(),
+    }).eq('id', lotteryId);
+
+    return json(200, {
+      winner: { email: winner.user_email, display_name: winner.display_name },
+      prize: lottery.prize_denarii,
+      entryCount: entries.length,
+    });
+  },
+
 
   /** Sync games from IGDB into games_catalog. Admin-only (it writes the cache). */
   async syncGameCatalog({ admin, user, params }) {

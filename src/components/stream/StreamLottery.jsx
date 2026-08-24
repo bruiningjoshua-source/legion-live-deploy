@@ -44,7 +44,9 @@ const LOTTO_TYPES = [
   },
 ];
 
-const REWARD_PRESETS = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+// Spec: prize 100–5,000 Denarii (enforced server-side too).
+const REWARD_PRESETS = [100, 250, 500, 1000, 2000, 3000, 4000, 5000];
+const PRIZE_MIN = 100, PRIZE_MAX = 5000;
 
 export default function StreamLottery({ streamId, streamUrl, isHost, onClose, onGiftSent }) {
   const qc           = useQueryClient();
@@ -54,7 +56,7 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
   const [phase, setPhase]         = useState('type');     // type | config | open | drawing | winner
   const [lottoType, setLottoType] = useState(null);
   const [reward, setReward]       = useState(500);
-  const [duration, setDuration]   = useState(120);
+  const [duration, setDuration]   = useState(300);   // 5 min default
   const [password, setPassword]   = useState('');
   const [timeLeft, setTimeLeft]   = useState(0);
   const [entries, setEntries]     = useState([]);
@@ -95,12 +97,32 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
     return () => clearInterval(timerRef.current);
   }, [phase]);
 
-  const startLottery = () => {
+  const [lotteryId, setLotteryId] = useState(null);
+  const [starting, setStarting]   = useState(false);
+
+  // Start goes through the backend: it verifies the caller is the stream host,
+  // enforces the 100–5,000 prize / 5–10 min limits, and escrows the prize from
+  // the host's wallet so a lottery can't pay out money that isn't there.
+  const startLottery = async () => {
     if (!canAfford) { toast.error(`Need ${reward.toLocaleString()} Denarii to fund this lottery`); return; }
     if (lottoType === 'password' && !password.trim()) { toast.error('Set a password first'); return; }
-    setEntries([]); setWinner(null); setMyEntry(false);
-    setTimeLeft(duration); setPhase('open');
-    toast.success(`🎟️ Lottery open! ${typeData?.description}`);
+    setStarting(true);
+    try {
+      const res = await base44.functions.invoke('startStreamLottery', {
+        streamId, prizeDenarii: reward, durationSeconds: duration,
+      });
+      const lot = res?.data?.lottery ?? res?.lottery;
+      if (!lot?.id) throw new Error(res?.data?.error || 'Could not start lottery');
+      setLotteryId(lot.id);
+      setEntries([]); setWinner(null); setMyEntry(false);
+      setTimeLeft(duration); setPhase('open');
+      qc.invalidateQueries({ queryKey: ['wallet'] });
+      toast.success(`🎟️ Lottery live! ${reward.toLocaleString()} Denarii prize`);
+    } catch (e) {
+      toast.error(e.message || 'Could not start lottery');
+    } finally {
+      setStarting(false);
+    }
   };
 
   const enterLottery = useCallback((nameOverride) => {
@@ -224,9 +246,9 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
                   ))}
                 </div>
                 {/* Custom amount */}
-                <input type="number" min={10} max={10000} value={reward}
-                  onChange={e => setReward(Math.max(10, Math.min(10000, Number(e.target.value))))}
-                  className="ll-input py-2.5 text-sm" placeholder="Custom amount (10–10,000)" />
+                <input type="number" min={PRIZE_MIN} max={PRIZE_MAX} value={reward}
+                  onChange={e => setReward(Math.max(PRIZE_MIN, Math.min(PRIZE_MAX, Number(e.target.value))))}
+                  className="ll-input py-2.5 text-sm" placeholder="Custom amount (100–5,000)" />
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-white/30 text-xs">Your balance: {balance.toLocaleString()} Denarii</p>
                   {!canAfford && <p className="text-red-400 text-xs">Insufficient balance</p>}
@@ -237,7 +259,7 @@ export default function StreamLottery({ streamId, streamUrl, isHost, onClose, on
               <div>
                 <p className="ll-label text-white/30 mb-2">Duration</p>
                 <div className="grid grid-cols-4 gap-2">
-                  {[[30,'30s'],[60,'1m'],[120,'2m'],[300,'5m']].map(([s, l]) => (
+                  {[[300,'5m'],[420,'7m'],[540,'9m'],[600,'10m']].map(([s, l]) => (
                     <button key={s} onClick={() => setDuration(s)}
                       className="py-2 rounded-xl text-xs font-bold ll-interactive"
                       style={{
