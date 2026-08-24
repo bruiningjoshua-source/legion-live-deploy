@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Check, Share2, Minimize2, PictureInPicture2 } from 'lucide-react';
+import { X, Plus, Check, Share2, Minimize2, PictureInPicture2, Zap } from 'lucide-react';
 
 // Row 1: [avatar+name+badges+follow] ... [share ⤢ minimize ✕] over [viewer avatars + count]
 // Row 2: [⭐ 0/50] ... [ID:username]
@@ -16,17 +16,25 @@ export default function BigoStreamTopBar({
   onShare,
   onMinimize,
   onPictureInPicture,
+  onBoost,
+  boosting,
   viewerCount = 0,
   viewerAvatars = [],
   onAvatarClick,
+  onViewerListClick,
 }) {
   if (!creator) return null;
+
+  const boostActive = stream?.boosted_until && new Date(stream.boosted_until) > new Date();
+  const boostMinsLeft = boostActive
+    ? Math.max(1, Math.ceil((new Date(stream.boosted_until) - new Date()) / 60000))
+    : 0;
 
   return (
     <div className="absolute top-0 left-0 right-0 z-30" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
       {/* Row 1 */}
       <div className="flex items-center justify-between px-3 pb-1">
-        {/* Left: avatar + name + follow */}
+        {/* Left: avatar + name + badges + boost + follow */}
         <div className="flex items-center gap-1.5">
           <button onClick={onAvatarClick} className="relative shrink-0">
             <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-amber-500/70 bg-black">
@@ -48,6 +56,24 @@ export default function BigoStreamTopBar({
             </div>
             <span className="text-green-400 text-[9px] leading-none">● {creator.follower_count || 0}</span>
           </div>
+
+          {/* Boost — host only. Free, 20 min, matches Bigo's lightning-icon spot. */}
+          {isHost && (
+            <motion.button
+              onClick={onBoost}
+              disabled={boosting || boostActive}
+              whileTap={{ scale: 0.9 }}
+              title={boostActive ? `Boosted — ${boostMinsLeft}m left` : 'Boost visibility for 20 minutes (free)'}
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+              style={{
+                background: boostActive ? 'rgba(245,166,35,0.9)' : 'rgba(245,166,35,0.15)',
+                border: '1px solid rgba(245,166,35,0.5)',
+                opacity: boosting ? 0.5 : 1,
+              }}
+            >
+              <Zap className={`w-3.5 h-3.5 ${boostActive ? 'text-black' : 'text-amber-400'}`} fill={boostActive ? 'currentColor' : 'none'} />
+            </motion.button>
+          )}
 
           {!isHost && (
             <motion.button
@@ -98,7 +124,7 @@ export default function BigoStreamTopBar({
               <X className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <div className="flex items-center gap-1.5">
+          <button onClick={onViewerListClick} className="flex items-center gap-1.5 active:scale-95 transition-transform" aria-label="View viewers">
             {/* Real viewer avatar stack */}
             <div className="flex -space-x-1.5">
               {(viewerAvatars.length ? viewerAvatars.slice(0, 3) : [null, null, null]).map((av, i) => (
@@ -110,7 +136,7 @@ export default function BigoStreamTopBar({
               ))}
             </div>
             <span className="text-white font-bold text-xs tabular-nums min-w-[20px] text-right">{viewerCount}</span>
-          </div>
+          </button>
         </div>
       </div>
 

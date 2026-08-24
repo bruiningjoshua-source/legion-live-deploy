@@ -36,6 +36,7 @@ import EntranceEffect from '@/components/stream/EntranceEffect';
 import HostLiveControls from '@/components/stream/HostLiveControls';
 import { ViewerAuctionWidget } from '@/components/affiliate/LiveAuctionEngine';
 import BigoStreamTopBar from '@/components/stream/BigoStreamTopBar';
+import ViewerListSheet from '@/components/stream/ViewerListSheet';
 import BigoStreamBottomBar from '@/components/stream/BigoStreamBottomBar';
 import RoomToolsSheet from '@/components/stream/RoomToolsSheet';
 import HostProfileSheet from '@/components/stream/HostProfileSheet';
@@ -113,6 +114,51 @@ export default function WatchStream() {
     document.body.classList.add('fullscreen-lock');
     return () => document.body.classList.remove('fullscreen-lock');
   }, []);
+
+  // ── Presence: who is actually watching (for the viewer list, not just count) ──
+  const [presenceViewers, setPresenceViewers] = useState([]);
+  const [showViewerList, setShowViewerList] = useState(false);
+  useEffect(() => {
+    if (!streamId) return;
+    const chan = supabase.channel(`presence_${streamId}`, {
+      config: { presence: { key: user?.email || `anon_${Date.now()}` } },
+    });
+    chan
+      .on('presence', { event: 'sync' }, () => {
+        const state = chan.presenceState();
+        const list = Object.values(state).flat().map((p) => ({
+          email: p.email, display_name: p.display_name, avatar_url: p.avatar_url,
+        }));
+        setPresenceViewers(list);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await chan.track({
+            email: user?.email || null,
+            display_name: user?.full_name || 'Viewer',
+            avatar_url: user?.avatar_url || null,
+          });
+        }
+      });
+    return () => { supabase.removeChannel(chan); };
+  }, [streamId, user?.email]);
+
+  const [boosting, setBoosting] = useState(false);
+  const boostStream = useCallback(async () => {
+    if (!streamId) return;
+    setBoosting(true);
+    try {
+      const res = await base44.functions.invoke('boostStream', { streamId });
+      const payload = res?.data ?? res ?? {};
+      if (payload.error) throw new Error(payload.error);
+      toast.success('🚀 Stream boosted for 20 minutes!');
+      queryClient.invalidateQueries({ queryKey: ["stream", streamId] });
+    } catch (e) {
+      toast.error(e.message || 'Could not boost');
+    } finally {
+      setBoosting(false);
+    }
+  }, [streamId, queryClient]);
 
   const { data: user } = useCurrentUser();
   const { data: stream, isLoading: streamLoading } = useStream(streamId);
@@ -543,6 +589,10 @@ export default function WatchStream() {
         isHost={isHost}
         isFollowing={isFollowing}
         onFollowClick={() => followMutation?.mutate()}
+        onBoost={boostStream}
+        boosting={boosting}
+        onViewerListClick={() => setShowViewerList(true)}
+        viewerAvatars={presenceViewers.map(v => v.avatar_url).filter(Boolean)}
         onClose={() => isHost ? setShowEndDialog(true) : navigate(createPageUrl('Home'))}
         onShare={async () => {
           const url = `${window.location.origin}${createPageUrl('WatchStream')}?id=${streamId}`;
@@ -738,6 +788,13 @@ export default function WatchStream() {
       {showSpinWheel  && <SpinWheel    streamId={streamId} isHost={false} onClose={()=>setShowSpinWheel(false)} />}
       {showLottery    && <StreamLottery streamId={streamId} isHost={false} onClose={()=>setShowLottery(false)} onGiftSent={cb => { lotteryGiftCallbackRef.current = cb; }} />}
       {showChallenge  && <ViewerChallenge streamId={streamId} isHost={false} onClose={()=>setShowChallenge(false)} />}
+
+      <ViewerListSheet
+        open={showViewerList}
+        onClose={() => setShowViewerList(false)}
+        viewers={presenceViewers}
+        hostEmail={creator?.user_email}
+      />
 
       <EndStreamDialog
         isOpen={showEndDialog}

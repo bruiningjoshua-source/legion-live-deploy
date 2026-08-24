@@ -169,6 +169,44 @@ function mapIgdbGame(g) {
 }
 
 const handlers = {
+  /** Host-only: boost their own live stream's visibility for 20 minutes.
+   *  Free, but rate-limited (below) so it can't be spammed to permanently
+   *  dominate discovery. */
+  async boostStream({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { streamId } = params || {};
+    if (!streamId) return json(400, { error: 'streamId required' });
+
+    const { data: stream } = await admin.from('streams')
+      .select('id, creator_email, status, boosted_until, last_boosted_at')
+      .eq('id', streamId).single();
+    if (!stream) return json(404, { error: 'Stream not found' });
+    if (String(stream.creator_email).toLowerCase() !== user.email.toLowerCase()) {
+      return json(403, { error: 'Only the host can boost this stream' });
+    }
+    if (stream.status !== 'live') return json(409, { error: 'Stream must be live to boost' });
+
+    const now = Date.now();
+    if (stream.boosted_until && new Date(stream.boosted_until).getTime() > now) {
+      const remainingMin = Math.ceil((new Date(stream.boosted_until).getTime() - now) / 60000);
+      return json(409, { error: `Already boosted — ${remainingMin} min remaining` });
+    }
+    // Cooldown: once every 60 minutes, so a stream can't stay boosted back-to-back.
+    const COOLDOWN_MS = 60 * 60 * 1000;
+    if (stream.last_boosted_at && now - new Date(stream.last_boosted_at).getTime() < COOLDOWN_MS) {
+      const waitMin = Math.ceil((COOLDOWN_MS - (now - new Date(stream.last_boosted_at).getTime())) / 60000);
+      return json(429, { error: `Boost is on cooldown — try again in ${waitMin} min` });
+    }
+
+    const boostedUntil = new Date(now + 20 * 60 * 1000).toISOString();
+    const { error } = await admin.from('streams')
+      .update({ boosted_until: boostedUntil, last_boosted_at: new Date(now).toISOString() })
+      .eq('id', streamId);
+    if (error) return json(500, { error: error.message });
+
+    return json(200, { boostedUntil, durationMinutes: 20 });
+  },
+
   /** Host-only: start a lottery on their own stream. Prize 100-5000 denarii,
    *  duration 5-10 minutes. The prize is debited from the host up front so a
    *  lottery can never pay out money the host doesn't have. */

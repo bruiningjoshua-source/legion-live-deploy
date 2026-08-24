@@ -96,20 +96,18 @@ export default function Explore() {
       return matchesSearch && matchesCategory && matchesType;
     });
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'viewers':
-        result.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
-        break;
-      case 'trending':
-        result.sort((a, b) => (b.total_gifts_received || 0) - (a.total_gifts_received || 0));
-        break;
-      case 'newest':
-        result.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-        break;
-      default:
-        break;
-    }
+    // Apply sorting — active boosts (boosted_until in the future) rank above
+    // everything else, then fall back to the chosen sort within each group.
+    const isBoosted = (s) => s.boosted_until && new Date(s.boosted_until) > new Date();
+    const cmp = {
+      viewers:  (a, b) => (b.viewer_count || 0) - (a.viewer_count || 0),
+      trending: (a, b) => (b.total_gifts_received || 0) - (a.total_gifts_received || 0),
+      newest:   (a, b) => new Date(b.created_date) - new Date(a.created_date),
+    }[sortBy] || (() => 0);
+    result.sort((a, b) => {
+      const boostDiff = Number(isBoosted(b)) - Number(isBoosted(a));
+      return boostDiff !== 0 ? boostDiff : cmp(a, b);
+    });
 
     return result;
   }, [streams, searchQuery, selectedCategory, selectedType, sortBy, creatorMap]);
