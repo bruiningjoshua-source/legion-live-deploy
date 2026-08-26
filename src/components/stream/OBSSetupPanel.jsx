@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Monitor, Copy, Check, X, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -10,6 +10,21 @@ export default function OBSSetupPanel({ user, creator, onClose, onStreamCreated 
   const [loading, setLoading] = useState(false);
   const [obsData, setObsData] = useState(null);
   const [copiedField, setCopiedField] = useState(null);
+  const [gameQuery, setGameQuery] = useState('');
+  const [gameResults, setGameResults] = useState([]);
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  useEffect(() => {
+    if (!gameQuery.trim() || selectedGame) { setGameResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await base44.functions.invoke('listGames', { search: gameQuery.trim(), limit: 8 });
+        const rows = res?.data?.games ?? res?.games ?? [];
+        setGameResults(rows);
+      } catch { /* ignore search errors, non-critical */ }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [gameQuery, selectedGame]);
 
   const handleGenerateKey = async () => {
     if (!title.trim()) {
@@ -44,14 +59,19 @@ export default function OBSSetupPanel({ user, creator, onClose, onStreamCreated 
         }
       }
 
-      // Create stream record
+      // Create stream record — starts as SCHEDULED (waiting lounge), not live.
+      // It flips to live only once OBS is confirmed actually sending video, so
+      // viewers who join early see the lounge and chat instead of dead air.
       const stream = await base44.entities.Stream.create({
         creator_id: creatorId,
         title: title.trim().substring(0, 100),
         category,
         stream_type: 'solo',
         platform_type: 'legion_live',
-        status: 'live',
+        status: 'scheduled',
+        game_id: selectedGame?.id || null,
+        game_name: selectedGame?.name || null,
+        game_cover_url: selectedGame?.cover_url || null,
         viewer_count: 0,
         peak_viewers: 0,
         total_gifts_received: 0,
@@ -59,7 +79,10 @@ export default function OBSSetupPanel({ user, creator, onClose, onStreamCreated 
       });
 
       // Mark creator as live
-      await base44.entities.Creator.update(creatorId, { is_live: true, current_stream_id: stream.id });
+      // NOT marking is_live yet — the stream is 'scheduled' (lounge) until OBS's
+      // RTMP feed is actually confirmed. current_stream_id is set now so the
+      // creator's profile can link to the lounge/live page either way.
+      await base44.entities.Creator.update(creatorId, { current_stream_id: stream.id });
 
       // Get OBS RTMP key
       const response = await base44.functions.invoke('getOBSStreamKey', { streamId: stream.id });
@@ -173,6 +196,42 @@ export default function OBSSetupPanel({ user, creator, onClose, onStreamCreated 
                   ))}
                 </div>
               </div>
+
+              {/* Game picker — only for Gaming category. Real IGDB catalog, so
+                  the stream is tagged with the actual game + cover art rather
+                  than a generic 'Gaming' label. */}
+              {category === 'gaming' && (
+                <div>
+                  <label className="text-white/60 text-xs font-semibold mb-1 block">What are you playing?</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={gameQuery}
+                      onChange={(e) => { setGameQuery(e.target.value); setSelectedGame(null); }}
+                      placeholder="Search for a game…"
+                      className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/30 outline-none focus:border-green-500/40"
+                    />
+                    {gameResults.length > 0 && !selectedGame && (
+                      <div className="absolute z-10 top-full mt-1 left-0 right-0 bg-[#1a1a24] border border-white/10 rounded-xl max-h-56 overflow-y-auto">
+                        {gameResults.map(g => (
+                          <button key={g.id} onClick={() => { setSelectedGame(g); setGameQuery(g.name); setGameResults([]); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-left">
+                            {g.cover_url && <img src={g.cover_url} alt="" className="w-6 h-8 object-cover rounded" />}
+                            <span className="text-white text-xs truncate">{g.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedGame && (
+                    <div className="flex items-center gap-2 mt-2 bg-green-500/10 border border-green-500/20 rounded-xl px-2.5 py-1.5">
+                      {selectedGame.cover_url && <img src={selectedGame.cover_url} alt="" className="w-5 h-7 object-cover rounded" />}
+                      <span className="text-green-300 text-xs font-medium flex-1 truncate">{selectedGame.name}</span>
+                      <button onClick={() => { setSelectedGame(null); setGameQuery(''); }} className="text-white/40 text-xs">✕</button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button
                 onClick={handleGenerateKey}

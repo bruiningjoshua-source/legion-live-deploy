@@ -169,6 +169,31 @@ function mapIgdbGame(g) {
 }
 
 const handlers = {
+  /** Called by the STREAMER'S CLIENT once Zego confirms a remote stream (i.e.
+   *  OBS is actually publishing) — flips the lounge to live. Also the target
+   *  for a future ZegoCloud "stream created" server callback (configured in
+   *  their console), so the same handler covers both paths. */
+  async confirmStreamLive({ admin, user, params }) {
+    if (!user?.email) return json(401, { error: 'Unauthorized' });
+    const { streamId } = params || {};
+    if (!streamId) return json(400, { error: 'streamId required' });
+
+    const { data: stream } = await admin.from('streams')
+      .select('id, creator_email, status').eq('id', streamId).single();
+    if (!stream) return json(404, { error: 'Stream not found' });
+    if (String(stream.creator_email).toLowerCase() !== user.email.toLowerCase()) {
+      return json(403, { error: 'Only the host can confirm their own stream' });
+    }
+    if (stream.status === 'live') return json(200, { alreadyLive: true });
+
+    await admin.from('streams').update({ status: 'live' }).eq('id', streamId);
+    const { data: streamRow } = await admin.from('streams').select('creator_id').eq('id', streamId).single();
+    if (streamRow?.creator_id) {
+      await admin.from('creators').update({ is_live: true }).eq('id', streamRow.creator_id);
+    }
+    return json(200, { live: true });
+  },
+
   /** Host-only: boost their own live stream's visibility for 20 minutes.
    *  Free, but rate-limited (below) so it can't be spammed to permanently
    *  dominate discovery. */

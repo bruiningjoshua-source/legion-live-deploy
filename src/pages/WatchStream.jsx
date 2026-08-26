@@ -28,6 +28,7 @@ import ExpandedGiftLeaderboard from '@/components/stream/ExpandedGiftLeaderboard
 import PKBattleOverlay from '@/components/pk/PKBattleOverlay';
 import BigoMultiPanel from '@/components/stream/BigoMultiPanel';
 import AudioLiveStage from '@/components/stream/AudioLiveStage';
+import WaitingLounge from '@/components/stream/WaitingLounge';
 import ZegoService from '@/components/stream/ZegoService';
 import EndStreamDialog from '@/components/stream/EndStreamDialog';
 import ModerationPanel from '@/components/stream/ModerationPanel';
@@ -352,14 +353,20 @@ export default function WatchStream() {
     });
   }, [streamId]);
 
-  // Realtime viewer count — subscribe to stream entity changes for live count
+  // Realtime stream updates — viewer count AND status (so the lounge -> live
+  // transition, or ending, reaches viewers without a refresh).
   useEffect(() => {
     if (!streamId) return;
     return base44.entities.Stream.subscribe((event) => {
-      if (event.id === streamId && event.type === 'update' && event.data?.viewer_count !== undefined) {
-        queryClient.setQueryData(['stream', streamId], (old) => 
-          old ? { ...old, viewer_count: event.data.viewer_count, peak_viewers: event.data.peak_viewers ?? old.peak_viewers } : old
-        );
+      if (event.id === streamId && event.type === 'update') {
+        queryClient.setQueryData(['stream', streamId], (old) => old ? {
+          ...old,
+          viewer_count: event.data.viewer_count ?? old.viewer_count,
+          peak_viewers: event.data.peak_viewers ?? old.peak_viewers,
+          status: event.data.status ?? old.status,
+          lounge_message: event.data.lounge_message ?? old.lounge_message,
+          lounge_background_url: event.data.lounge_background_url ?? old.lounge_background_url,
+        } : old);
       }
     });
   }, [streamId, queryClient]);
@@ -575,6 +582,41 @@ export default function WatchStream() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  // Streamer generated OBS credentials but Zego hasn't confirmed a real video
+  // feed yet — show the lounge (chat + customizable message) instead of dead
+  // air or an error screen.
+  if (stream?.status === 'scheduled') {
+    return (
+      <WaitingLounge
+        stream={stream}
+        creator={creator}
+        isHost={isHost}
+        chatSlot={
+          <div className="w-full px-3 pb-24">
+            <BulletChat messages={chatMessages} maxMessages={10} />
+            <BigoStreamBottomBar
+              isHost={isHost}
+              onSendMessage={() => {
+                const msg = prompt('Say something...');
+                if (msg?.trim()) {
+                  base44.entities.ChatMessage.create({
+                    stream_id: streamId,
+                    sender_email: user?.email,
+                    sender_name: user?.full_name || 'Viewer',
+                    message: msg.trim(),
+                    message_type: 'text',
+                  });
+                }
+              }}
+              onGiftClick={() => {}}
+              onMenuClick={() => {}}
+            />
+          </div>
+        }
+      />
     );
   }
 
