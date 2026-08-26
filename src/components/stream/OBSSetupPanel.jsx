@@ -64,6 +64,7 @@ export default function OBSSetupPanel({ user, creator, onClose, onStreamCreated 
       // viewers who join early see the lounge and chat instead of dead air.
       const stream = await base44.entities.Stream.create({
         creator_id: creatorId,
+        creator_email: user.email,   // required by confirmStreamLive's host check
         title: title.trim().substring(0, 100),
         category,
         stream_type: 'solo',
