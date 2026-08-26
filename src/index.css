@@ -196,7 +196,10 @@ body {
 }
 .ll-btn:disabled { opacity: 0.45; pointer-events: none; }
 .ll-btn-primary {
-  background: linear-gradient(180deg, var(--ll-gold-light) 0%, var(--ll-gold) 40%, var(--ll-gold-dim) 100%);
+  /* Falls back to the scoped per-page/creator theme (ThemeScope) if set,
+     otherwise the global --ll-gold. This is how CustomizeTheme's saved colors
+     actually reach the UI without hand-editing every button's classes. */
+  background: linear-gradient(180deg, var(--scope-gold-bright, var(--ll-gold-light)) 0%, var(--scope-gold, var(--ll-gold)) 40%, var(--scope-gold-dim, var(--ll-gold-dim)) 100%);
   color: #1a0f00;
   border-color: rgba(200,135,26,0.4);
   /* 3D pressed-metal look */

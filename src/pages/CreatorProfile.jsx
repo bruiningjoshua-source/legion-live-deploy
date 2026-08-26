@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ThemeScope from '@/components/theme/ThemeScope';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -51,6 +52,16 @@ export default function CreatorProfile() {
     enabled: !!creatorId,
     staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false
+  });
+
+  // Creator's custom theme (CustomizeTheme page) — scoped to THIS page only via
+  // ThemeScope below, unless the creator opted into applyEverywhere (which
+  // pushes to the global accent separately, on save, not by reading it here).
+  const { data: creatorTheme } = useQuery({
+    queryKey: ['creator-theme', creator?.user_email],
+    queryFn: () => base44.entities.CreatorTheme.filter({ user_email: creator.user_email }, '-updated_date', 1).then(r => r[0]?.theme_data),
+    enabled: !!creator?.user_email,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allStreams = [] } = useQuery({
@@ -195,7 +206,7 @@ export default function CreatorProfile() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#050508] pb-24">
+    <ThemeScope theme={creatorTheme} className="min-h-screen bg-[#050508] pb-24">
       {/* Hero banner */}
       <div className="relative">
         <div className="h-36 sm:h-48 bg-gradient-to-r from-amber-900/60 via-stone-800 to-amber-900/60 overflow-hidden">
@@ -459,7 +470,7 @@ export default function CreatorProfile() {
           initialRecipient={creator?.user_email}
         />
       </div>
-    </div>
+    </ThemeScope>
   );
 }
 
