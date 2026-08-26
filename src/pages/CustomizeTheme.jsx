@@ -87,39 +87,21 @@ export default function CustomizeTheme() {
     }
   }, [savedTheme]);
 
-  // Default OFF: the theme only styles the creator's own profile/stream pages
-  // (via ThemeScope), never the visitor's whole app. Turning this on ALSO
-  // pushes the accent globally via the existing accentTheme mechanism — that
-  // one is a real, intentional app-wide override (same as the Settings
-  // customizer), so it's opt-in here rather than automatic.
-  const [applyEverywhere, setApplyEverywhere] = useState(!!savedTheme?.theme_data?.applyEverywhere);
-  useEffect(() => {
-    setApplyEverywhere(!!savedTheme?.theme_data?.applyEverywhere);
-  }, [savedTheme]);
-
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const theme_data = { ...theme, applyEverywhere };
       if (savedTheme) {
-        return base44.entities.CreatorTheme.update(savedTheme.id, { theme_data });
+        return base44.entities.CreatorTheme.update(savedTheme.id, { theme_data: theme });
       } else {
         return base44.entities.CreatorTheme.create({
           user_email: user.email,
           theme_name: 'My Theme',
-          theme_data
+          theme_data: theme
         });
       }
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-theme'] });
-      // Opt-in global push, using the SAME mechanism the Settings accent
-      // picker already uses correctly — not a separate/competing system.
-      if (applyEverywhere) {
-        const { applyAccentColor } = await import('@/lib/accentTheme');
-        applyAccentColor(theme.accentColor);
-        localStorage.setItem('legion_accent_color', theme.accentColor);
-      }
-      toast.success(applyEverywhere ? 'Theme saved — applied to your whole app' : 'Theme saved for your profile/stream');
+      toast.success('Theme saved for your profile and stream');
     }
   });
 
@@ -369,19 +351,6 @@ export default function CustomizeTheme() {
                 </Card>
               </TabsContent>
             </Tabs>
-
-            {/* Where this theme applies */}
-            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 mb-3">
-              <div>
-                <p className="text-white text-sm font-semibold">Apply everywhere in the app</p>
-                <p className="text-white/40 text-xs mt-0.5">
-                  {applyEverywhere
-                    ? 'This will also become your personal app-wide accent color.'
-                    : 'Off: only styles your own profile and stream pages for visitors.'}
-                </p>
-              </div>
-              <Switch checked={applyEverywhere} onCheckedChange={setApplyEverywhere} />
-            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
