@@ -249,7 +249,10 @@ export default function WatchStream() {
         await ZegoService.createLocalStream({});
         const publishId = `${streamId}_${guestUserId}`;
         await ZegoService.startPublishing(publishId);
-        if (!cancelled) guestPublishingRef.current = true;
+        if (!cancelled) {
+          guestPublishingRef.current = true;
+          toast.success("🎥 You're live on the panel!");
+        }
       } catch (e) {
         console.warn('[guest-publish] failed:', e?.message);
       }
@@ -314,6 +317,11 @@ export default function WatchStream() {
       const res = await base44.functions.invoke('streamPanelSeat', { streamId, action, ...extra });
       const payload = res?.data ?? res ?? {};
       if (payload.error) throw new Error(payload.error);
+      // Requesting a seat has no other visible feedback (the seat doesn't
+      // change until the host accepts) — confirm the tap actually registered.
+      if (action === 'request' && payload.requested) {
+        toast.success('Request sent — waiting for the host');
+      }
       return payload;
     } catch (e) {
       toast.error(e.message || 'Action failed');
