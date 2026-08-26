@@ -128,7 +128,6 @@ export default function Settings() {
       localStorage.setItem('legion_custom_bg_url', url);
       localStorage.setItem('legion_custom_bg_type', bgType);
       localStorage.setItem('legion_background', 'custom');
-      legionStorage.set('background', 'custom');
       dispatch({ customBgUrl: url, customBgType: bgType, background: 'custom' });
       toast.success(isVideo ? 'Live wallpaper applied!' : 'Custom background applied');
     } catch (err) {

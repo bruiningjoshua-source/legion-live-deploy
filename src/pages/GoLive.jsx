@@ -560,9 +560,9 @@ export default function GoLive() {
         </div>
 
         {/* ── Gamification overlays ── */}
-        {showSpinWheel  && <SpinWheel    streamId={streamId} isHost onClose={()=>setShowSpinWheel(false)} />}
-        {showLottery    && <StreamLottery streamId={streamId} isHost onClose={()=>setShowLottery(false)} />}
-        {showChallenge  && <ViewerChallenge streamId={streamId} isHost onClose={()=>setShowChallenge(false)} />}
+        {showSpinWheel  && <SpinWheel    streamId={liveStreamId} isHost onClose={()=>setShowSpinWheel(false)} />}
+        {showLottery    && <StreamLottery streamId={liveStreamId} isHost onClose={()=>setShowLottery(false)} />}
+        {showChallenge  && <ViewerChallenge streamId={liveStreamId} isHost onClose={()=>setShowChallenge(false)} />}
 
         {/* ── Host Goal Bar ── */}
         {showGoalBar && goLiveMutation.data?.id && (
