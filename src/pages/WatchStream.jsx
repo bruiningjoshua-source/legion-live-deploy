@@ -223,6 +223,7 @@ export default function WatchStream() {
   // their own camera/mic into the room (previously guests never published at
   // all — the panel only ever showed identity, never real video). ──
   const [myGuestCameraOn, setMyGuestCameraOn] = useState(true);
+  const [roomJoined, setRoomJoined] = useState(false); // set once loginRoom succeeds
   const guestPublishingRef = useRef(false);
   const myOccupiedSeat = React.useMemo(
     () => panelSeats.find(s => s.occupant_email && user?.email && s.occupant_email.toLowerCase() === user.email.toLowerCase()),
@@ -230,7 +231,9 @@ export default function WatchStream() {
   );
 
   useEffect(() => {
-    if (!myOccupiedSeat || !streamId || !user?.email || isHost) return; // host publishes via GoLive, not here
+    // Wait for the viewer-join effect's loginRoom to actually complete first —
+    // calling startPublishing before that would race Zego's connection state.
+    if (!myOccupiedSeat || !streamId || !user?.email || isHost || !roomJoined) return;
     let cancelled = false;
     (async () => {
       try {
@@ -259,7 +262,7 @@ export default function WatchStream() {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myOccupiedSeat?.id, streamId, user?.email, isHost]);
+  }, [myOccupiedSeat?.id, streamId, user?.email, isHost, roomJoined]);
 
   const toggleMyGuestCamera = useCallback(async () => {
     const next = !myGuestCameraOn;
@@ -476,6 +479,8 @@ export default function WatchStream() {
       if (!mounted) return;
       await ZegoService.loginRoom(streamId, viewerId, user?.full_name || 'Viewer', token);
       if (!mounted) return;
+      setRoomJoined(true); // guest-publish effect waits on this — avoids
+      // calling startPublishing before loginRoom has actually completed.
       ZegoService.onRoomEvent((event) => {
         if (event.type === 'remoteStreamAdded') {
           const { remoteStream } = event;
