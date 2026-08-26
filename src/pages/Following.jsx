@@ -40,7 +40,7 @@ export default function Following() {
     queryKey: ['following-streams', creatorIds],
     queryFn: async () => {
       if (creatorIds.length === 0) return [];
-      const allStreams = await base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 100);
+      const allStreams = await base44.entities.Stream.filter({ status: 'live', platform_type: 'legion_live' }, '-viewer_count', 100);
       return allStreams.filter(s => creatorIds.includes(s.creator_id));
     },
     enabled: creatorIds.length > 0,

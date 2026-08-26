@@ -84,7 +84,7 @@ export default function GamingHub() {
   const { data: liveStreams = [] } = useQuery({
     queryKey: ['gaming-streams-live'],
     queryFn: () => base44.entities.Stream.filter(
-      { status: 'live', category: 'gaming' },
+      { status: 'live', category: 'gaming', platform_type: 'legion_live' },
       '-viewer_count',
       50
     ),

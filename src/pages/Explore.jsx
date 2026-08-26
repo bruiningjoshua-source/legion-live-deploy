@@ -58,7 +58,7 @@ export default function Explore() {
 
   const { data: streams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ['streams-explore'],
-    queryFn: () => base44.entities.Stream.filter({ status: 'live' }, '-viewer_count', 50),
+    queryFn: () => base44.entities.Stream.filter({ status: 'live', platform_type: 'legion_live' }, '-viewer_count', 50),
     staleTime: 8 * 1000,
     refetchInterval: 12 * 1000,
     retry: 1
