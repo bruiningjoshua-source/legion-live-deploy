@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Mic, MicOff, Lock, LayoutGrid, Circle, Share2 } from 'lucide-react';
+import { Heart, Mic, MicOff, Lock, LayoutGrid, Circle, Share2, Video, VideoOff } from 'lucide-react';
 
 // Bigo's real seat presets (from reference screenshots): 4, 6, 9, 12 total
 // spots INCLUDING the host.
@@ -16,8 +16,16 @@ function getGridCols(count) {
   return 5;
 }
 
-function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, onKick, canKick, isLocked, onToggleLock, canRequest, onRequest }) {
+function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, onKick, canKick, isLocked, onToggleLock, canRequest, onRequest, mediaStream, cameraOn, isSelf, onToggleOwnCamera }) {
   const [muted, setMuted] = useState(false);
+  const videoElRef = useRef(null);
+
+  useEffect(() => {
+    if (videoElRef.current && mediaStream) {
+      videoElRef.current.srcObject = mediaStream;
+      videoElRef.current.play().catch(() => {});
+    }
+  }, [mediaStream]);
 
   if (isEmpty) {
     return (
@@ -64,7 +72,9 @@ function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, on
         boxShadow: isHost ? '0 0 12px rgba(245,166,35,0.3)' : 'none',
       }}
     >
-      {participant?.avatar_url ? (
+      {mediaStream && cameraOn !== false ? (
+        <video ref={videoElRef} autoPlay playsInline muted={isSelf} className="w-full h-full object-cover" />
+      ) : participant?.avatar_url ? (
         <img src={participant.avatar_url} alt="" className="w-full h-full object-cover" />
       ) : (
         <div
@@ -74,6 +84,11 @@ function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, on
           }}
         >
           {participant?.display_name?.[0] || "?"}
+        </div>
+      )}
+      {cameraOn === false && (
+        <div className="absolute top-1.5 left-1.5 bg-black/60 rounded-full p-1">
+          <VideoOff className="w-3 h-3 text-white/70" />
         </div>
       )}
       {participant?.isSpeaking && (
@@ -89,6 +104,11 @@ function ParticipantSlot({ participant, isHost, slotIndex, isEmpty, onInvite, on
         <button onClick={(e) => { e.stopPropagation(); setMuted(m => !m); }} className="shrink-0">
           {muted ? <MicOff className="w-3 h-3 text-red-400" /> : <Mic className="w-3 h-3 text-white/50" />}
         </button>
+        {isSelf && (
+          <button onClick={(e) => { e.stopPropagation(); onToggleOwnCamera?.(); }} className="shrink-0 ml-1">
+            {cameraOn === false ? <VideoOff className="w-3 h-3 text-red-400" /> : <Video className="w-3 h-3 text-white/50" />}
+          </button>
+        )}
       </div>
       {canKick && !isHost && (
         <button
@@ -117,6 +137,12 @@ export default function BigoMultiPanel({
   layout = "grid",
   seatCount,                 // 4 | 6 | 9 | 12, host-selected
   onChangeSeatCount,
+  hostMediaStream,           // host's own local/remote MediaStream
+  hostCameraOn = true,
+  guestMediaStreams = {},    // { [seatIndex]: MediaStream }
+  guestCameraStates = {},    // { [seatIndex]: boolean }
+  selfEmail,                 // current user's email, to know which seat is "self"
+  onToggleOwnCamera,
 }) {
   const [currentLayout, setCurrentLayout] = useState(layout);
   const total = SEAT_PRESETS.includes(seatCount) ? seatCount : 6;
@@ -163,10 +189,21 @@ export default function BigoMultiPanel({
           className="flex-1 p-1"
           style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "3px" }}
         >
-          <ParticipantSlot participant={hostCreator} isHost={true} slotIndex={0} isEmpty={!hostCreator} canKick={false} />
+          <ParticipantSlot
+            participant={hostCreator}
+            isHost={true}
+            slotIndex={0}
+            isEmpty={!hostCreator}
+            canKick={false}
+            mediaStream={hostMediaStream}
+            cameraOn={hostCameraOn}
+            isSelf={isHost && selfEmail && hostCreator?.email === selfEmail}
+            onToggleOwnCamera={onToggleOwnCamera}
+          />
           {Array.from({ length: guestSlots }).map((_, i) => {
             const guest = panelParticipants[i] || null;
             const seatIdx = i + 1;
+            const isSelfSeat = !!guest && !!selfEmail && guest.email === selfEmail;
             return (
               <ParticipantSlot
                 key={i}
@@ -181,6 +218,10 @@ export default function BigoMultiPanel({
                 onRequest={onRequestSeat}
                 onInvite={onInviteToPanel}
                 onKick={onKickParticipant}
+                mediaStream={guestMediaStreams[seatIdx]}
+                cameraOn={guestCameraStates[seatIdx] !== false}
+                isSelf={isSelfSeat}
+                onToggleOwnCamera={onToggleOwnCamera}
               />
             );
           })}

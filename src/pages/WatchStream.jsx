@@ -218,6 +218,78 @@ export default function WatchStream() {
   }, [panelSeats]);
 
   const [joinRequests, setJoinRequests] = useState([]);   // pending stream_join_requests
+
+  // ── Guest publishing: if THIS viewer occupies a panel seat, they publish
+  // their own camera/mic into the room (previously guests never published at
+  // all — the panel only ever showed identity, never real video). ──
+  const [myGuestCameraOn, setMyGuestCameraOn] = useState(true);
+  const guestPublishingRef = useRef(false);
+  const myOccupiedSeat = React.useMemo(
+    () => panelSeats.find(s => s.occupant_email && user?.email && s.occupant_email.toLowerCase() === user.email.toLowerCase()),
+    [panelSeats, user?.email]
+  );
+
+  useEffect(() => {
+    if (!myOccupiedSeat || !streamId || !user?.email || isHost) return; // host publishes via GoLive, not here
+    let cancelled = false;
+    (async () => {
+      try {
+        const guestUserId = `guest_${user.email.replace(/[^a-zA-Z0-9]/g, '_')}`.substring(0, 60);
+        const res = await base44.functions.invoke('generateZegoToken', { roomId: streamId, userId: guestUserId, role: 'cohost' });
+        const payload = res?.data ?? res ?? {};
+        if (payload.code === 'PPV_TICKET_REQUIRED' || cancelled) return;
+        const { appId, token, serverUrl } = payload;
+        if (!appId || !token) return;
+        // ZegoService is already initialized/logged in as this viewer from the
+        // main join effect above; just add publishing on top of the existing
+        // room connection rather than logging in twice.
+        await ZegoService.createLocalStream({});
+        const publishId = `${streamId}_${guestUserId}`;
+        await ZegoService.startPublishing(publishId);
+        if (!cancelled) guestPublishingRef.current = true;
+      } catch (e) {
+        console.warn('[guest-publish] failed:', e?.message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (guestPublishingRef.current) {
+        ZegoService.stopPublishing?.();
+        guestPublishingRef.current = false;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myOccupiedSeat?.id, streamId, user?.email, isHost]);
+
+  const toggleMyGuestCamera = useCallback(async () => {
+    const next = !myGuestCameraOn;
+    setMyGuestCameraOn(next);
+    try { await ZegoService.toggleCamera?.(next); } catch (_) {}
+  }, [myGuestCameraOn]);
+
+  // ── Track every guest's remote video stream so the panel can render it ──
+  const [guestRemoteStreams, setGuestRemoteStreams] = useState({}); // { seatIndex: MediaStream }
+  useEffect(() => {
+    if (!panelSeats.length) return;
+    const unsub = ZegoService.onRoomEvent((event) => {
+      if (event.type !== 'streamUpdate') return;
+      setGuestRemoteStreams(prev => {
+        const next = { ...prev };
+        for (const s of event.streamList || []) {
+          const seat = panelSeats.find(ps => s.streamID?.includes(ps.occupant_email?.replace(/[^a-zA-Z0-9]/g, '_')));
+          if (!seat) continue;
+          if (event.updateType === 'ADD') {
+            next[seat.seat_index] = ZegoService.remoteStreams?.get(s.streamID) || null;
+          } else if (event.updateType === 'DELETE') {
+            delete next[seat.seat_index];
+          }
+        }
+        return next;
+      });
+    });
+    return unsub;
+  }, [panelSeats]);
+
   useEffect(() => {
     if (!streamId || !isHost || !['multi_panel','audio_live'].includes(stream?.stream_type)) return;
     let active = true;
@@ -925,6 +997,11 @@ export default function WatchStream() {
             callPanelSeat('accept', { seatIndex, targetEmail: next.requester_email, targetName: next.requester_name });
           }}
           onKickParticipant={(participant, seatIndex) => callPanelSeat('remove_occupant', { seatIndex })}
+          selfEmail={user?.email}
+          hostMediaStream={isHost ? ZegoService.localStream : liveStream}
+          hostCameraOn={isHost ? myGuestCameraOn : true}
+          guestMediaStreams={guestRemoteStreams}
+          onToggleOwnCamera={toggleMyGuestCamera}
         />
       )}
 
