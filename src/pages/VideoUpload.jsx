@@ -204,7 +204,15 @@ export default function VideoUpload() {
     onSuccess: (result) => {
       const msg = result.type === 'music' ? 'Audio uploaded successfully!' : 'Video uploaded! It will be reviewed shortly.';
       toast.success(msg);
-      navigate(createPageUrl('CreatorStudio'));
+      if (result.type === 'video') {
+        // Videos surface as Shorts/Long Form in the Amphitheatre, not the
+        // private studio dashboard — that's where viewers will actually find
+        // and watch what was just posted.
+        const tab = videoData.video_type === 'short' ? 'shorts' : 'longform';
+        navigate(createPageUrl(`TheAmphitheatre?tab=${tab}`));
+      } else {
+        navigate(createPageUrl('CreatorStudio'));
+      }
     },
     onError: (error) => {
       setIsUploading(false);

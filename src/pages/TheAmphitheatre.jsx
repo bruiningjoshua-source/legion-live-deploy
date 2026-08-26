@@ -89,12 +89,15 @@ const TABS = [
   { id: 'gaming',   label: 'Gaming' },
   { id: 'live',     label: 'Live' },
   { id: 'shorts',   label: 'Shorts' },
+  { id: 'longform', label: 'Long Form' },
   { id: 'fitness',  label: 'Fitness' },
   { id: 'comedy',   label: 'Comedy' },
 ];
 
 export default function TheAmphitheatre() {
-  const [activeTab, setActiveTab] = useState('all');
+  // Support ?tab=shorts / ?tab=longform (e.g. arriving fresh from a video upload)
+  const initialTab = new URLSearchParams(window.location.search).get('tab') || 'all';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -117,6 +120,19 @@ export default function TheAmphitheatre() {
     staleTime: 5 * 60_000,
   });
 
+  // Shorts / Long Form — real posted videos, tagged by VideoUpload's
+  // video_type. Was a UI-only tab with no data source before this.
+  const { data: shortVideos = [] } = useQuery({
+    queryKey: ['amphitheatre-shorts'],
+    queryFn: () => base44.entities.VlogVideo.filter({ is_published: true, video_type: 'short' }, '-created_date', 100),
+    staleTime: 60_000,
+  });
+  const { data: longFormVideos = [] } = useQuery({
+    queryKey: ['amphitheatre-longform'],
+    queryFn: () => base44.entities.VlogVideo.filter({ is_published: true, video_type: 'long_form' }, '-created_date', 100),
+    staleTime: 60_000,
+  });
+
   const musicFiltered = useMemo(() => {
     if (!search) return musicVideos;
     const q = search.toLowerCase();
@@ -132,6 +148,7 @@ export default function TheAmphitheatre() {
   const showAll    = activeTab === 'all';
   const showMusic  = activeTab === 'music' || showAll;
   const showShorts = activeTab === 'shorts' || showAll;
+  const showLongForm = activeTab === 'longform' || showAll;
   const showMixes  = activeTab === 'mixes' || showAll;
   const showLive   = activeTab === 'live' || showAll;
   const showPod    = activeTab === 'podcasts' || showAll;
@@ -269,6 +286,50 @@ export default function TheAmphitheatre() {
                   </Link>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {showShorts && shortVideos.length > 0 && (
+          <section>
+            <SectionHeader icon={Play} title="Shorts" iconColor="text-pink-400" />
+            <div className="grid grid-cols-3 gap-3">
+              {shortVideos.slice(0, activeTab === 'shorts' ? 200 : 9).map((v) => (
+                <Link key={v.id} to={createPageUrl(`WatchVideo?id=${v.id}`)}>
+                  <div className="relative group rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06]" style={{ aspectRatio: '9/16' }}>
+                    {v.thumbnail_url && <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="w-8 h-8 text-white drop-shadow-lg" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/80 to-transparent">
+                      <p className="text-white text-[10px] font-semibold line-clamp-2 leading-snug">{v.title}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {showLongForm && longFormVideos.length > 0 && (
+          <section>
+            <SectionHeader icon={Play} title="Long Form" iconColor="text-blue-400" />
+            <div className="grid grid-cols-2 gap-4">
+              {longFormVideos.slice(0, activeTab === 'longform' ? 200 : 6).map((v) => (
+                <Link key={v.id} to={createPageUrl(`WatchVideo?id=${v.id}`)}>
+                  <div className="space-y-2">
+                    <div className="relative group rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.06]" style={{ aspectRatio: '16/9' }}>
+                      {v.thumbnail_url && <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="w-10 h-10 text-white drop-shadow-lg" />
+                      </div>
+                    </div>
+                    <div className="px-0.5">
+                      <p className="text-white text-xs font-semibold line-clamp-2 leading-snug">{v.title}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </section>
         )}
