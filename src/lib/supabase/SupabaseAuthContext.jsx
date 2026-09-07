@@ -1,15 +1,38 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/supabaseCore';
 
 const AuthContext = createContext();
 
+// Mock auth for local development
+const MOCK_USER = {
+  id: 'mock-user-123',
+  email: 'demo@legion.local',
+  full_name: 'Demo Creator',
+  role: 'user',
+  avatar_url: '',
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const isMockMode = import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true';
 
   useEffect(() => {
     let mounted = true;
+
+    // Mock mode: skip Supabase auth entirely, use mock user
+    if (isMockMode) {
+      setTimeout(() => {
+        if (mounted) {
+          setUser(MOCK_USER);
+          setIsAuthenticated(true);
+          setIsLoadingAuth(false);
+        }
+      }, 500); // Simulate async auth check
+      return;
+    }
 
     // Check for existing session on mount.
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -37,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isMockMode]);
 
   const loadUser = async (authUser) => {
     try {
@@ -68,6 +91,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    if (isMockMode) {
+      setUser(null);
+      setIsAuthenticated(false);
+      return;
+    }
     await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);

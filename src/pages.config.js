@@ -93,7 +93,7 @@ const Highlights = lazy(() => import('./pages/Highlights'));
 const Home = lazy(() => import('./pages/Home'));
 const ImportYouTubeLibrary = lazy(() => import('./pages/ImportYouTubeLibrary'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
-const MusicStudio = lazy(() => import('./pages/MusicStudio'));
+const MusicStudio = lazy(() => import('./pages/GatedMusicStudio'));
 const PPVEvents = lazy(() => import('./pages/PPVEvents'));
 const PayoutRouting = lazy(() => import('./pages/PayoutRouting'));
 const PlatformAdminAnalytics = lazy(() => import('./pages/PlatformAdminAnalytics'));

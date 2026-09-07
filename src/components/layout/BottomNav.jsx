@@ -27,8 +27,7 @@ export default function BottomNav() {
         style={{ background: 'linear-gradient(0deg, rgba(10,10,15,0.98) 0%, transparent 100%)' }}
       />
       <div
-        className="relative backdrop-blur-xl" style={{ background: "rgba(10,8,4,0.97)", borderTop: "1px solid rgba(200,135,26,0.12)" }}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="relative backdrop-blur-xl" style={{ background: "rgba(10,8,4,0.97)", borderTop: "1px solid rgba(200,135,26,0.12)", paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center h-14 px-1">
           {TABS.map((tab) => {
