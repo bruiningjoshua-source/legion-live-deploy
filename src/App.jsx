@@ -71,17 +71,23 @@ const AuthenticatedApp = () => {
             <MainPage />
           </LayoutWrapper>
         } />
-        {Object.entries(Pages).map(([path, Page]) => (
-          <Route
-            key={path}
-            path={`/${path.replace(/([A-Z])/g, (m, l, i) => (i ? '-' : '') + l.toLowerCase())}`}
-            element={
-              <LayoutWrapper currentPageName={path}>
-                <Page />
-              </LayoutWrapper>
-            }
-          />
-        ))}
+        {Object.entries(Pages).map(([path, Page]) => {
+          const element = (
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          );
+
+          return (
+            <React.Fragment key={path}>
+              <Route
+                path={`/${path.replace(/([A-Z])/g, (m, l, i) => (i ? '-' : '') + l.toLowerCase())}`}
+                element={element}
+              />
+              <Route path={`/${path}`} element={element} />
+            </React.Fragment>
+          );
+        })}
         <Route path="/login" element={<Auth />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>

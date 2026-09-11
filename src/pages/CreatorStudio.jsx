@@ -33,8 +33,6 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  TrendingUp,
-  Users,
   Play,
   Filter
 } from 'lucide-react';
@@ -83,12 +81,6 @@ export default function CreatorStudio() {
     enabled: !!creator?.id
   });
 
-  const { data: analytics = [] } = useQuery({
-    queryKey: ['studio-analytics', creator?.id],
-    queryFn: () => base44.entities.VideoAnalytics.filter({ creator_id: creator.id }, '-date', 30),
-    enabled: !!creator?.id
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (videoId) => base44.entities.VlogVideo.delete(videoId),
     onSuccess: () => {
@@ -104,12 +96,6 @@ export default function CreatorStudio() {
       toast.success('Video updated');
     }
   });
-
-  // Calculate dashboard stats
-  const totalViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
-  const totalLikes = videos.reduce((sum, v) => sum + (v.like_count || 0), 0);
-  const totalWatchTime = videos.reduce((sum, v) => sum + (v.watch_time_hours || 0), 0);
-  const publishedCount = videos.filter(v => v.is_published && v.review_status === 'approved').length;
 
   // Filter videos
   const filteredVideos = videos.filter(v => {
@@ -162,6 +148,21 @@ export default function CreatorStudio() {
     );
   }
 
+  if (creator === null) {
+    return (
+      <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center px-4">
+        <div className="ll-panel p-8 text-center max-w-sm">
+          <Video className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-xl text-white mb-2">Create your channel first</h2>
+          <p className="text-white/50 text-sm mb-5">Creator Studio is available after you set up a public creator profile.</p>
+          <Link to={createPageUrl('CreatorOnboarding')}>
+            <button className="ll-btn ll-btn-primary w-full">Set up creator profile</button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ll-page-enter min-h-screen bg-[#050508] pb-20">
       <div className="max-w-2xl mx-auto px-4 pt-4">
@@ -171,47 +172,24 @@ export default function CreatorStudio() {
             <Video className="w-5 h-5 text-amber-400 shrink-0" />
             <div className="min-w-0">
               <h1 className="text-xl font-bold text-amber-100 leading-tight">Creator Studio</h1>
-              <p className="text-white/40 text-xs mt-0.5">Manage videos, analytics &amp; channel</p>
+              <p className="text-white/40 text-xs mt-0.5">Manage videos and publishing</p>
             </div>
           </div>
-          <Link to={createPageUrl('VideoUpload')} className="shrink-0">
-            <button className="ll-btn ll-btn-primary !h-9 !px-4 text-sm">
+          <div className="flex shrink-0 gap-2">
+            <Link to={createPageUrl('CreatorAnalytics')} className="ll-btn ll-btn-secondary !h-9 !px-3 text-sm" title="Creator Analytics">
+              <BarChart3 className="w-3.5 h-3.5" /> Analytics
+            </Link>
+            <Link to={createPageUrl('VideoUpload')} className="ll-btn ll-btn-primary !h-9 !px-4 text-sm">
               <Upload className="w-3.5 h-3.5" /> Upload
-            </button>
-          </Link>
-        </div>
-
-        {/* Dashboard Stats — unified bronze, 2x2 on mobile */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {[
-            { icon: Eye,      label: 'Total Views', value: formatCount(totalViews) },
-            { icon: ThumbsUp, label: 'Total Likes', value: formatCount(totalLikes) },
-            { icon: Clock,    label: 'Watch Time',  value: `${totalWatchTime.toFixed(1)}h` },
-            { icon: Video,    label: 'Published',   value: publishedCount },
-          ].map((stat, i) => (
-            <div key={i} className="ll-card p-3.5">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(200,135,26,0.14)' }}>
-                  <stat.icon className="w-4.5 h-4.5 text-amber-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-bold text-amber-100 leading-none">{stat.value}</p>
-                  <p className="text-white/40 text-xs mt-1">{stat.label}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+            </Link>
+          </div>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
-          <TabsList className="w-full grid grid-cols-4 bg-white/[0.03] border border-white/8 p-1 rounded-xl h-auto">
+          <TabsList className="w-full grid grid-cols-3 bg-white/[0.03] border border-white/8 p-1 rounded-xl h-auto">
             <TabsTrigger value="content" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
               <Video className="w-3.5 h-3.5 mr-1" /> Content
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
-              <BarChart3 className="w-3.5 h-3.5 mr-1" /> Stats
             </TabsTrigger>
             <TabsTrigger value="comments" className="data-[state=active]:bg-amber-600 data-[state=active]:text-black rounded-lg text-xs py-2">
               <MessageSquare className="w-3.5 h-3.5 mr-1" /> Comments
@@ -392,45 +370,6 @@ export default function CreatorStudio() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
-            <Card className="bg-stone-800/30 border-amber-600/20">
-              <CardHeader>
-                <CardTitle className="text-amber-100 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
-                  Channel Analytics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-stone-900/50 rounded-xl p-6 text-center">
-                    <Eye className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-amber-100">{formatCount(totalViews)}</p>
-                    <p className="text-amber-400/60">Total Views</p>
-                  </div>
-                  <div className="bg-stone-900/50 rounded-xl p-6 text-center">
-                    <Users className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-amber-100">{formatCount(creator?.follower_count)}</p>
-                    <p className="text-amber-400/60">Subscribers</p>
-                  </div>
-                  <div className="bg-stone-900/50 rounded-xl p-6 text-center">
-                    <Clock className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-amber-100">{totalWatchTime.toFixed(1)}h</p>
-                    <p className="text-amber-400/60">Watch Time</p>
-                  </div>
-                </div>
-                
-                <div className="mt-8 text-center">
-                  <Link to={createPageUrl('ChannelAnalytics')}>
-                    <Button variant="outline" className="border-amber-600/30 text-amber-300">
-                      View Detailed Analytics
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Comments Tab */}

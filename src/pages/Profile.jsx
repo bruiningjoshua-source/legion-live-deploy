@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -25,34 +22,14 @@ import {
   Edit, 
   Camera, 
   Crown, 
-  Trophy, 
-  Swords,
   Link as LinkIcon,
-  Copy,
-  Check,
-  Share2,
-  BarChart3,
-  DollarSign,
-  Video,
-  Wallet,
-  Settings,
-  HelpCircle,
-  ChevronRight,
-  LogOut
+  ImagePlus,
+  MapPin,
+  Send,
+  Trash2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import formatCount from '@/components/shared/FormatCount';
-import StreamCard from '@/components/stream/StreamCard';
-import CreatorPayoutSettings from '@/components/creator/CreatorPayoutSettings';
-import HostSubscriptionGate from '@/components/creator/HostSubscriptionGate';
-import DirectDonationSettings from '@/components/creator/DirectDonationSettings';
-import VideoUploadSection from '@/components/creator/VideoUploadSection';
-import FreeTierWalletTip from '@/components/creator/FreeTierWalletTip';
-import CreatorInfoSection from '@/components/creator/CreatorInfoSection';
-import EarningsDashboard from '@/components/earnings/EarningsDashboard';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 const categories = [
   { value: 'gaming', label: 'Gaming' },
@@ -70,20 +47,10 @@ const categories = [
 export default function Profile() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [editData, setEditData] = useState({});
-
-  // Handle subscription redirect
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('subscription') === 'success') {
-      toast.success('🎉 Host subscription activated! You can now monetize your streams.');
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (urlParams.get('subscription') === 'cancelled') {
-      toast.info('Subscription cancelled');
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
+  const [postBody, setPostBody] = useState('');
+  const [postVisibility, setPostVisibility] = useState('public');
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -128,21 +95,12 @@ export default function Profile() {
     refetchOnWindowFocus: false
   });
 
-  const { data: hostSubscription } = useQuery({
-    queryKey: ['host-subscription', user?.email],
-    queryFn: async () => {
-      const subs = await base44.entities.CreatorSubscription.filter({ 
-        user_email: user.email, 
-        status: 'active' 
-      }, '-created_date', 1);
-      return subs[0] || null;
-    },
-    enabled: !!user?.email,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+  const { data: profilePosts = [] } = useQuery({
+    queryKey: ['profile-posts', creator?.id],
+    queryFn: () => base44.entities.ProfilePost.filter({ creator_id: creator.id }, '-created_date', 50),
+    enabled: !!creator?.id,
+    staleTime: 60 * 1000,
   });
-
-  const isSubscribed = hostSubscription?.status === 'active';
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
@@ -167,7 +125,9 @@ export default function Profile() {
       display_name: creator?.display_name || user?.full_name || '',
       bio: creator?.bio || '',
       category: creator?.category || '',
-      social_links: creator?.social_links || {}
+      social_links: creator?.social_links || {},
+      location_label: creator?.location_label || '',
+      location_visible: creator?.location_visible || false
     });
     setIsEditing(true);
   };
@@ -213,36 +173,38 @@ export default function Profile() {
     }
   };
 
-  const copyAffiliateLink = () => {
-    const link = `${window.location.origin}?ref=${creator?.affiliate_code || 'legion'}`;
-    navigator.clipboard.writeText(link).then(() => {
-      toast.success('Affiliate link copied!');
-    });
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleGalleryUpload = async (e) => {
+    const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+    const availableSlots = 6 - (creator?.gallery_urls?.length || 0);
+    if (!files.length) return;
+    if (availableSlots <= 0) { toast.error('Your profile gallery can contain up to 6 photos.'); return; }
+    setUploadingGallery(true);
+    try {
+      const uploads = await Promise.all(files.slice(0, availableSlots).map(file => base44.integrations.Core.UploadFile({ file })));
+      const gallery_urls = [...(creator?.gallery_urls || []), ...uploads.map(upload => upload.file_url)];
+      await updateMutation.mutateAsync({ gallery_urls });
+      toast.success(`${uploads.length} photo${uploads.length === 1 ? '' : 's'} added to your gallery.`);
+    } catch (err) {
+      toast.error(`Gallery upload failed: ${err.message}`);
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = '';
+    }
   };
 
-  const levelBadges = {
-    1: { label: 'Recruit', color: 'stone', icon: '🔰' },
-    5: { label: 'Legionary', color: 'green', icon: '⚔️' },
-    10: { label: 'Decanus', color: 'blue', icon: '🛡️' },
-    20: { label: 'Centurion', color: 'purple', icon: '🏛️' },
-    35: { label: 'Praetor', color: 'amber', icon: '👑' },
-    50: { label: 'Consul', color: 'rose', icon: '🦅' },
-    75: { label: 'Imperator', color: 'yellow', icon: '✨' }
-  };
+  const createPostMutation = useMutation({
+    mutationFn: () => base44.entities.ProfilePost.create({ creator_id: creator.id, body: postBody.trim(), visibility: postVisibility }),
+    onSuccess: () => {
+      setPostBody('');
+      queryClient.invalidateQueries({ queryKey: ['profile-posts', creator?.id] });
+      toast.success('Post published');
+    },
+  });
 
-  const getLevelBadge = (level) => {
-    const thresholds = Object.keys(levelBadges).map(Number).sort((a, b) => b - a);
-    const threshold = thresholds.find(t => level >= t) || 1;
-    return levelBadges[threshold];
-  };
-
-  const badge = getLevelBadge(creator?.level || 1);
-  const totalEarnings = creator?.total_earnings_denarii || 0;
-  const pkWinRate = creator?.pk_wins && creator?.pk_losses 
-    ? ((creator.pk_wins / (creator.pk_wins + creator.pk_losses)) * 100).toFixed(1)
-    : 0;
+  const deletePostMutation = useMutation({
+    mutationFn: (id) => base44.entities.ProfilePost.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile-posts', creator?.id] }),
+  });
 
   return (
     <div className="ll-page-enter min-h-screen pb-24">
@@ -250,15 +212,12 @@ export default function Profile() {
         {/* ── Profile Header ── */}
         <div className="ll-card overflow-hidden mb-5">
           {/* Banner */}
-          <div className="h-24 relative overflow-hidden"
-            style={{ background:'linear-gradient(135deg, #1a0a00, #3d1a00, #7a3010)' }}>
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage:"url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800')", backgroundSize:'cover', backgroundPosition:'center' }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="h-32 relative overflow-hidden bg-[#24211b]">
+            {creator?.banner_url && <img src={creator.banner_url} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+            <div className="absolute inset-0 bg-black/35" />
             {/* Edit button */}
             <button onClick={handleEdit}
-              className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ll-interactive"
-              style={{ background:'rgba(0,0,0,0.5)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.15)', color:'rgba(255,255,255,0.8)' }}>
+              className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ll-interactive bg-[#171719] border border-white/[0.15] text-white hover:bg-[#222225]">
               <Edit className="w-3 h-3" /> Edit
             </button>
           </div>
@@ -267,24 +226,23 @@ export default function Profile() {
             {/* Avatar */}
             <div className="flex items-end justify-between mb-3">
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden border-3 border-[#050508]"
-                  style={{ boxShadow:'0 0 0 3px #050508, 0 0 0 4px rgba(245,166,35,0.4)', background:'linear-gradient(135deg,#f5a623,#e63946)' }}>
+                <div className="w-20 h-20 rounded-lg overflow-hidden border-4 border-[#171719] bg-[#323237]"
+                  style={{ boxShadow:'0 0 0 1px rgba(255,255,255,0.15)' }}>
                   {creator?.avatar_url ? (
                     <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl">⚔️</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">
+                      {(creator?.display_name || user?.full_name || 'L').charAt(0).toUpperCase()}
+                    </div>
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer ll-interactive"
+                <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer ll-interactive"
                   style={{ background:'#f5a623' }}>
                   <Camera className="w-3.5 h-3.5 text-black" />
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </label>
               </div>
-              {/* Badge pill */}
-              <div className="mb-1">
-                <span className="ll-pill ll-pill-gold">{badge.icon} {badge.label}</span>
-              </div>
+              {creator?.is_verified && <span className="mb-1 text-xs font-semibold text-amber-300">Verified creator</span>}
             </div>
 
             {/* Name + info */}
@@ -295,6 +253,9 @@ export default function Profile() {
               </div>
               <p className="text-white/40 text-xs capitalize mb-1.5">{creator?.category?.replace('_',' ') || 'Content Creator'}</p>
               {creator?.bio && <p className="text-white/60 text-sm leading-relaxed">{creator.bio}</p>}
+              {creator?.location_visible && creator?.location_label && (
+                <p className="mt-2 flex items-center gap-1.5 text-white/45 text-xs"><MapPin className="w-3.5 h-3.5" />{creator.location_label}</p>
+              )}
               {creator?.social_links && Object.values(creator.social_links).some(Boolean) && (
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   {Object.entries(creator.social_links).filter(([,v]) => v).map(([platform, value]) => (
@@ -308,13 +269,12 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-4 gap-2">
+            {/* Public profile summary */}
+            <div className="grid grid-cols-3 gap-2">
               {[
                 { val: formatCount(creator?.follower_count), label:'Followers' },
-                { val: creator?.level || 1,                  label:'Level'     },
-                { val: formatCount(creator?.pk_wins),        label:'PK Wins'   },
-                { val: formatCount(totalEarnings),           label:'Earned 🪙' },
+                { val: myVideos.length,                      label:'Videos' },
+                { val: pastStreams.length,                   label:'Streams' },
               ].map(stat => (
                 <div key={stat.label} className="ll-card-inset text-center py-3 px-1">
                   <p className="ll-heading text-base text-white">{stat.val}</p>
@@ -325,225 +285,47 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* ── Quick Links ── */}
-        <div className="ll-card overflow-hidden mb-5">
-          {[
-            { icon: Wallet,     label: 'My Wallet',    path: 'Wallet',           color: '#f5a623', bg:'rgba(245,166,35,0.12)' },
-            { icon: DollarSign, label: 'Earnings Hub', path: 'EarningsDashboard',color: '#10b981', bg:'rgba(16,185,129,0.12)' },
-            { icon: Trophy,     label: 'Achievements', path: 'Achievements',      color: '#8b5cf6', bg:'rgba(139,92,246,0.12)' },
-            { icon: Settings,   label: 'Settings',     path: 'Settings',          color: '#94a3b8', bg:'rgba(148,163,184,0.10)' },
-            { icon: HelpCircle, label: 'Help & FAQ',   path: 'HelpAndInfo',       color: '#06b6d4', bg:'rgba(6,182,212,0.12)' },
-          ].map((item, i, arr) => (
-            <Link
-              key={item.path}
-              to={createPageUrl(item.path)}
-              className="flex items-center justify-between px-4 py-3.5 ll-interactive transition-colors hover:bg-white/[0.03]"
-              style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: item.bg }}>
-                  <item.icon className="w-4 h-4" style={{ color: item.color }} />
-                </div>
-                <span className="text-white/80 text-sm font-medium">{item.label}</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/20" />
-            </Link>
-          ))}
-          <button
-            onClick={() => base44.auth.logout('/')}
-            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-red-500/10 transition-colors border-t border-white/[0.04]"
-          >
-            <div className="flex items-center gap-3">
-              <LogOut className="w-5 h-5 text-red-400" />
-              <span className="text-red-400 text-sm font-medium">Sign Out</span>
+        <section className="ll-card mb-5 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h2 className="ll-section-title">Profile gallery</h2>
+              <p className="text-white/40 text-xs mt-1">Share up to 6 photos that represent your work and community.</p>
             </div>
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="videos" className="space-y-4">
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-            <TabsList className="bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl inline-flex min-w-max">
-              <TabsTrigger value="videos" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                <Video className="w-3.5 h-3.5 mr-1" />
-                Videos
-              </TabsTrigger>
-              <TabsTrigger value="info" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                Info
-              </TabsTrigger>
-              <TabsTrigger value="streams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                Streams
-              </TabsTrigger>
-              <TabsTrigger value="stats" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                Stats
-              </TabsTrigger>
-              <TabsTrigger value="earnings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                <DollarSign className="w-3.5 h-3.5 mr-1" />
-                Earn
-              </TabsTrigger>
-              <TabsTrigger value="affiliate" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl text-white/60 text-xs sm:text-sm px-3">
-                Affiliate
-              </TabsTrigger>
-            </TabsList>
+            <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-white/15 px-3 text-xs font-semibold text-white hover:bg-white/[0.06]">
+              <ImagePlus className="w-4 h-4" /> {uploadingGallery ? 'Uploading' : 'Add photos'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={uploadingGallery} />
+            </label>
           </div>
-
-          <TabsContent value="videos" className="mt-0">
-            <VideoUploadSection creator={creator} videos={myVideos} />
-          </TabsContent>
-
-          <TabsContent value="info" className="mt-0">
-            <CreatorInfoSection creator={creator} isOwnProfile={true} />
-          </TabsContent>
-
-          <TabsContent value="streams" className="mt-0">
-            {pastStreams.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {pastStreams.map((stream, i) => (
-                  <motion.div
-                    key={stream.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.25 }}
-                  >
-                    <StreamCard stream={{ ...stream, status: 'ended' }} creator={creator} />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
-                <CardContent className="py-12 text-center">
-                  <BarChart3 className="w-12 h-12 text-amber-400/30 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">No Streams Yet</h3>
-                  <p className="text-white/50 mb-4">Start streaming to build your legacy!</p>
-                  <Link to={createPageUrl('GoLive')}>
-                    <Button className="bg-amber-600 hover:bg-amber-700">
-                      Go Live Now
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="stats" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Swords className="w-5 h-5 text-orange-400" />
-                    PK Battle Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-white/50">Wins</span>
-                      <span className="text-green-400 font-bold">{creator?.pk_wins || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/50">Losses</span>
-                      <span className="text-red-400 font-bold">{creator?.pk_losses || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/50">Win Rate</span>
-                      <span className="text-white font-bold">{pkWinRate}%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-400" />
-                    Achievements
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {(creator?.badges || []).length > 0 ? (
-                      creator.badges.map((badge, i) => (
-                        <Badge key={i} className="bg-amber-500/15 text-amber-300 border-amber-500/30">
-                          {badge}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-white/40 text-sm">No badges earned yet</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+          {(creator?.gallery_urls || []).length ? (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {creator.gallery_urls.map((url, index) => <img key={url} src={url} alt={`Profile gallery image ${index + 1}`} className="aspect-square w-full rounded-md object-cover" />)}
             </div>
-          </TabsContent>
+          ) : <p className="py-5 text-sm text-white/35">Add photos to give your profile a more complete public identity.</p>}
+        </section>
 
-          <TabsContent value="earnings" className="mt-0">
-            {/* Earnings Dashboard with analytics */}
-            <EarningsDashboard creator={creator} user={user} />
-
-            {/* Free Tier Wallet */}
-            <div className="mt-8">
-              <FreeTierWalletTip creator={creator} isOwnProfile={true} />
+        <section className="ll-card mb-5 p-4">
+          <h2 className="ll-section-title">Updates</h2>
+          <div className="mt-3 rounded-lg border border-white/[0.10] bg-[#101011] p-3">
+            <textarea value={postBody} onChange={event => setPostBody(event.target.value)} maxLength={2000} rows={3} placeholder="Share an update with your audience" className="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/30" />
+            <div className="mt-3 flex items-center justify-between border-t border-white/[0.08] pt-3">
+              <select value={postVisibility} onChange={event => setPostVisibility(event.target.value)} className="bg-[#171719] text-xs text-white/70 outline-none">
+                <option value="public">Public</option>
+                <option value="followers">Followers</option>
+                <option value="subscribers">Subscribers</option>
+              </select>
+              <button onClick={() => createPostMutation.mutate()} disabled={!postBody.trim() || createPostMutation.isPending} className="inline-flex items-center gap-2 rounded-lg bg-[#e1a33a] px-3 py-2 text-xs font-bold text-black disabled:opacity-40">
+                <Send className="w-3.5 h-3.5" /> Post
+              </button>
             </div>
-
-            {/* Payout Settings & Donation Settings */}
-            <div className="mt-8">
-              {isSubscribed ? (
-                <div className="space-y-8">
-                  <CreatorPayoutSettings creator={creator} user={user} />
-                  <DirectDonationSettings creator={creator} subscription={hostSubscription} />
-                </div>
-              ) : (
-                <HostSubscriptionGate 
-                  user={user} 
-                  creator={creator} 
-                  subscription={hostSubscription}
-                  onSubscribed={() => queryClient.invalidateQueries({ queryKey: ['host-subscription'] })}
-                />
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="affiliate" className="mt-0">
-            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08]">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Share2 className="w-5 h-5 text-green-400" />
-                  Affiliate Program
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <p className="text-white/50 mb-4">
-                    Share your unique link and earn 10% of any purchases made by users you refer!
-                  </p>
-                  
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={`${window.location.origin}?ref=${creator?.affiliate_code || 'legion'}`}
-                      readOnly
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                    <Button onClick={copyAffiliateLink} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
-                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
-                    <p className="text-2xl font-bold text-green-400">{formatCount(creator?.affiliate_earnings)}</p>
-                    <p className="text-white/50 text-sm">🪙 Earned</p>
-                  </div>
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
-                    <p className="text-2xl font-bold text-white">0</p>
-                    <p className="text-white/50 text-sm">Referrals</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+          <div className="mt-4 space-y-2">
+            {profilePosts.map(post => <article key={post.id} className="rounded-lg border border-white/[0.08] bg-[#101011] p-3">
+              <div className="flex items-center justify-between gap-3"><p className="text-xs text-white/35">{new Date(post.created_date).toLocaleDateString()}</p><button onClick={() => deletePostMutation.mutate(post.id)} aria-label="Delete post" title="Delete post" className="text-white/35 hover:text-red-400"><Trash2 className="w-4 h-4" /></button></div>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-white/85">{post.body}</p>
+            </article>)}
+            {!profilePosts.length && <p className="py-4 text-sm text-white/35">Your updates will appear here.</p>}
+          </div>
+        </section>
 
         {/* Edit Dialog */}
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
@@ -583,6 +365,24 @@ export default function Profile() {
                   className="bg-white/5 border-white/10 text-white"
                   maxLength={200}
                 />
+              </div>
+              <div>
+                <Label className="text-white/70">Location</Label>
+                <Input
+                  value={editData.location_label || ''}
+                  onChange={(e) => setEditData({ ...editData, location_label: e.target.value })}
+                  placeholder="City, region, or country"
+                  className="bg-white/5 border-white/10 text-white"
+                />
+                <label className="mt-2 flex items-center gap-2 text-xs text-white/55">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(editData.location_visible)}
+                    onChange={(e) => setEditData({ ...editData, location_visible: e.target.checked })}
+                    className="h-4 w-4 accent-amber-500"
+                  />
+                  Show this location publicly on my profile
+                </label>
               </div>
               
               {/* Social Links */}

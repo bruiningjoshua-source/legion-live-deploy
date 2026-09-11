@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,6 +133,36 @@ export default function CreatorMonetization() {
       }
     }
   });
+
+  if (user === undefined || (user && creator === undefined)) {
+    return <div className="min-h-screen bg-[#050508]" />;
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#050508] px-4 flex items-center justify-center">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <Lock className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Sign in to manage monetization</h1>
+          <p className="text-sm text-white/50 mb-5">Monetization controls are available to creators.</p>
+          <button onClick={() => base44.auth.redirectToLogin()} className="ll-btn ll-btn-primary w-full">Sign in</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!creator) {
+    return (
+      <div className="min-h-screen bg-[#050508] px-4 flex items-center justify-center">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <Crown className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Create your channel first</h1>
+          <p className="text-sm text-white/50 mb-5">Set up a public creator profile before configuring monetization.</p>
+          <Link to={createPageUrl('CreatorOnboarding')} className="ll-btn ll-btn-primary w-full">Set up creator profile</Link>
+        </div>
+      </div>
+    );
+  }
 
   const totalTipRevenue = tips.reduce((sum, tip) => sum + (tip.amount_usd || 0), 0);
   const isAdmin = user?.role === 'admin';

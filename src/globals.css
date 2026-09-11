@@ -7,30 +7,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* BIGO-Style Design System */
+/* Legion Live product design system */
 :root {
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #12121a;
-  --color-bg-tertiary: #1a1a26;
-  --color-bg-card: rgba(139, 92, 246, 0.08);
-  --color-border: rgba(168, 85, 247, 0.15);
-  --color-accent: #a855f7;
-  --color-accent-hover: #c084fc;
-  --color-accent-dim: rgba(168, 85, 247, 0.2);
-  --color-primary-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-  --color-secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
-  --card-radius: 1.5rem;
+  --color-bg-primary: #0b0b0c;
+  --color-bg-secondary: #141416;
+  --color-bg-tertiary: #1d1d20;
+  --color-bg-card: #171719;
+  --color-border: #2c2c30;
+  --color-accent: #e1a33a;
+  --color-accent-hover: #f0bb5c;
+  --color-accent-dim: #3c2c14;
+  --card-radius: 0.5rem;
   --nav-height: 56px;
   --bottom-nav-height: 64px;
 }
 
 html, body {
-  background: linear-gradient(135deg, #0a0a0f 0%, #1a0f2e 100%);
+  background: #0b0b0c;
   color: #f5f5fa;
   font-feature-settings: 'cv11' 1, 'ss01' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 /* Smooth scrolling */
@@ -89,8 +87,8 @@ button, a, nav, label, svg, [role="tab"], [role="button"], [role="menuitem"],
 
 /* Mirror effect for camera preview */
 video.mirror {
-  transform: scaleX(-1) !important;
   -webkit-transform: scaleX(-1) !important;
+  transform: scaleX(-1) !important;
 }
 
 /* Performance optimizations with smooth transitions */
@@ -108,12 +106,6 @@ video.mirror {
 button, a, input, select, textarea {
   min-height: 44px;
   min-width: 44px;
-}
-
-/* Prevent text size adjustment on iOS */
-html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 /* Safe area support */
@@ -167,7 +159,6 @@ video::-webkit-media-controls {
 /* Hide scrollbar but allow scrolling */
 .scrollbar-hide {
   -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
@@ -175,36 +166,31 @@ video::-webkit-media-controls {
 
 /* Smooth scrolling containers */
 .overflow-scroll, .overflow-auto {
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
-/* Glass morphism — BIGO style */
+/* Solid application surfaces */
 .glass {
-  background: rgba(168, 85, 247, 0.06);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: #171719;
+  border: 1px solid #2c2c30;
 }
 
 .glass-strong {
-  background: rgba(168, 85, 247, 0.1);
-  backdrop-filter: blur(50px);
-  -webkit-backdrop-filter: blur(50px);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  background: #1d1d20;
+  border: 1px solid #36363b;
 }
 
-/* BIGO Card */
+/* Legacy class retained for existing pages. */
 .bigo-card {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
-  border-radius: 1.5rem;
+  background: #171719;
+  border: 1px solid #2c2c30;
+  border-radius: 0.5rem;
 }
 
 /* BIGO Overlay */
 .bigo-overlay {
   background: rgba(10, 10, 15, 0.8);
+  -webkit-backdrop-filter: blur(40px);
   backdrop-filter: blur(40px);
 }
 
@@ -690,8 +676,8 @@ html.ll-light .border-white\/06 { border-color: var(--ll-border) !important; }
 /* Panel container — the standard floating menu surface */
 .ll-panel {
   background: rgba(12, 10, 6, 0.94);
-  backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid rgba(200, 135, 26, 0.18);
   border-radius: 22px;
   box-shadow: 0 12px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);

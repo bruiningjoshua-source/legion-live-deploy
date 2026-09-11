@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +13,8 @@ import {
   Play,
   Eye,
   Heart,
-  Film
+  Film,
+  LockKeyhole
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -85,6 +88,36 @@ export default function VlogStudio() {
       setUploading(false);
     }
   };
+
+  if (user === undefined || (user && creator === undefined)) {
+    return <div className="min-h-screen bg-[#050508]" />;
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#050508] px-4 flex items-center justify-center">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <LockKeyhole className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Sign in to use Vlog Studio</h1>
+          <p className="text-sm text-white/50 mb-5">Video uploads and management are available to creators.</p>
+          <button onClick={() => base44.auth.redirectToLogin()} className="ll-btn ll-btn-primary w-full">Sign in</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!creator) {
+    return (
+      <div className="min-h-screen bg-[#050508] px-4 flex items-center justify-center">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <Film className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Create your channel first</h1>
+          <p className="text-sm text-white/50 mb-5">Set up a public creator profile before uploading videos.</p>
+          <Link to={createPageUrl('CreatorOnboarding')} className="ll-btn ll-btn-primary w-full">Set up creator profile</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050508] pb-12">

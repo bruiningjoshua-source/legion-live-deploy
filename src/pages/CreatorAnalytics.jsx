@@ -1,6 +1,8 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, TrendingUp, Users, Eye, Heart } from 'lucide-react';
@@ -37,10 +39,36 @@ export default function CreatorAnalytics() {
     staleTime: 5 * 60 * 1000
   });
 
-  if (isLoading) {
+  if (user === undefined || (user && isLoading)) {
     return (
       <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center px-4">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <Eye className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Sign in to view analytics</h1>
+          <p className="text-sm text-white/50 mb-5">Analytics are available to the creator who owns this channel.</p>
+          <button onClick={() => base44.auth.redirectToLogin()} className="ll-btn ll-btn-primary w-full">Sign in</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!creator) {
+    return (
+      <div className="min-h-screen bg-[#050508] pb-12 flex items-center justify-center px-4">
+        <div className="ll-panel max-w-sm p-8 text-center">
+          <TrendingUp className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Create your channel first</h1>
+          <p className="text-sm text-white/50 mb-5">Set up a public creator profile to start tracking performance.</p>
+          <Link to={createPageUrl('CreatorOnboarding')} className="ll-btn ll-btn-primary w-full">Set up creator profile</Link>
+        </div>
       </div>
     );
   }

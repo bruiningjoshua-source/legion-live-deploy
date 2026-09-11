@@ -43,8 +43,8 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled
-        ? 'bg-[#0a0a0f]/95 backdrop-blur-2xl border-b border-white/[0.06]'
-        : 'bg-[#0a0a0f]/80 backdrop-blur-sm'
+        ? 'bg-[#111112] border-b border-white/[0.08]'
+        : 'bg-[#111112] border-b border-white/[0.06]'
     }`}>
       <div className="px-4 h-14 flex items-center justify-between gap-3"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
@@ -53,7 +53,8 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={onOpenShieldMenu}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.07] transition-all active:scale-95"
+            aria-label="Open navigation menu"
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-all active:scale-95"
           >
             <Menu className="w-[18px] h-[18px]" />
           </button>
@@ -76,7 +77,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
                 animate={{ width: 180, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center bg-white/[0.08] border border-white/[0.1] rounded-full px-3 h-8 overflow-hidden"
+                className="flex items-center bg-[#09090a] border border-white/[0.12] rounded-lg px-3 h-8 overflow-hidden"
               >
                 <Search className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
                 <input
@@ -95,7 +96,8 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
             ) : (
               <button
                 onClick={() => setSearchOpen(true)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                aria-label="Search Legion Live"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
               >
                 <Search className="w-[18px] h-[18px]" />
               </button>
@@ -108,7 +110,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:border-amber-500/40 transition-all active:scale-95 flex-shrink-0">
+                <button aria-label="Open account menu" className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-amber-500/40 transition-all active:scale-95 flex-shrink-0">
                   {user?.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                   ) : (
@@ -122,7 +124,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-52 bg-[#131316]/98 backdrop-blur-2xl border border-white/[0.08] shadow-2xl shadow-black/60 rounded-2xl p-1.5 mt-1"
+                className="w-52 bg-[#1a1a1c] border border-white/[0.10] shadow-2xl shadow-black/60 rounded-lg p-1.5 mt-1"
               >
                 <div className="px-3 py-2.5 mb-1">
                   <p className="text-white font-semibold text-sm truncate">{user.full_name}</p>
@@ -132,7 +134,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
 
                 {[
                   { to: 'Profile',           icon: User,       label: 'Profile' },
-                  { to: 'EarningsDashboard', icon: TrendingUp, label: '💰 Earnings Hub' },
+                  { to: 'EarningsDashboard', icon: TrendingUp, label: 'Earnings Hub' },
                   { to: 'Wallet',            icon: Wallet,     label: 'Wallet' },
                   { to: 'CreatorStudio',     icon: Film,       label: 'Creator Studio' },
                   { to: 'Settings',          icon: Settings,   label: 'Settings' },
@@ -174,7 +176,7 @@ export default function Navbar({ user, wallet, currentPageName, onOpenShieldMenu
           ) : (
             <button
               onClick={() => base44.auth.redirectToLogin(window.location.href)}
-              className="bg-white text-black hover:bg-white/90 font-semibold text-sm px-4 h-9 rounded-full transition-all active:scale-95"
+              className="bg-[#e1a33a] text-black hover:bg-[#f0bb5c] font-semibold text-sm px-4 h-9 rounded-lg transition-all active:scale-95"
             >
               Sign In
             </button>
